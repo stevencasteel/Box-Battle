@@ -6,6 +6,8 @@ export_presets.cfg
 data_*/
 mono_crash.*.json
 .godot/
+*.import
+*.uid
 
 # OS/Editor specific
 .DS_Store
