@@ -1,0 +1,13 @@
+Audio Assets License
+===================
+
+All sound effects and music in this project were created by Steven Casteel using paid subscription services that grant full commercial usage rights:
+
+- Sound Effects: Generated using ElevenLabs paid tier
+- Music: Generated using Udio paid subscription
+
+Under the terms of both services' paid plans, the creator retains full ownership and distribution rights to the generated content. 
+
+These audio assets are hereby released under CC0 1.0 Universal, dedicating them to the public domain alongside the rest of this project.
+
+You may use these audio files for any purpose, including commercial use, without attribution or permission.

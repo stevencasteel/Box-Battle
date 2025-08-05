@@ -2,9 +2,12 @@
         DIRECTORY TREE
 =====================================
 .
+├── LICENSE
+├── README.md
 ├── all_godot_source_code.txt
 ├── assets
 │   ├── audio
+│   │   ├── audio-license.txt
 │   │   ├── music
 │   │   │   ├── title-screen-loop.mp3
 │   │   │   └── title-screen-loop.mp3.import
@@ -89,9 +92,12 @@
 │           └── title
 │               ├── box_battle_title.png
 │               └── box_battle_title.png.import
+├── create_all_godot_source_code_terminal_prompt.txt
 ├── default_bus_layout.tres
 ├── icon.svg
 ├── icon.svg.import
+├── progess
+│   └── progress_001-1.jpg
 ├── project.godot
 └── src
     ├── arenas
@@ -169,7 +175,7 @@
                 ├── title_screen.gd.uid
                 └── title_screen.tscn
 
-35 directories, 132 files
+36 directories, 137 files
 
 
 
@@ -754,8 +760,9 @@ func _ready():
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	# hurtbox.body_entered is no longer needed for damage, but we leave the connection.
-	hurtbox.body_entered.connect(_on_hurtbox_body_entered)
+	# The body_entered signal for the hurtbox is no longer needed.
+	# If it's still connected in the editor, it will now point to a non-existent function,
+	# which is harmless but can be disconnected in the editor for ultimate cleanliness.
 
 
 func _physics_process(delta):
@@ -982,6 +989,9 @@ func _perform_melee_attack():
 	is_pogo_attack = false
 	if Input.is_action_pressed("ui_down"):
 		is_pogo_attack = true; hitbox.position = Vector2(0, 60)
+		# Call the new check. If it succeeds, the pogo is handled instantly.
+		if _check_for_immediate_pogo():
+			return # Stop here, the pogo was triggered.
 	elif Input.is_action_pressed("ui_up"):
 		hitbox.position = Vector2(0, -60)
 	else:
@@ -997,17 +1007,46 @@ func _fire_shot():
 	shot_instance.position = global_position + (shot_direction * 60)
 	get_parent().add_child(shot_instance)
 
+func _check_for_immediate_pogo() -> bool:
+	# Proactively checks if the pogo hitbox is already overlapping a valid surface.
+	var space_state = get_world_2d().direct_space_state
+	var hitbox_shape_res = hitbox_shape.shape
+	
+	var query = PhysicsShapeQueryParameters2D.new()
+	query.shape = hitbox_shape_res
+	query.transform = hitbox.global_transform
+	# Check against world (2), enemy (4), and hazard (8) layers.
+	query.collision_mask = 14
+	
+	var results = space_state.intersect_shape(query)
+	
+	if not results.is_empty():
+		_trigger_pogo(results[0].collider)
+		return true # Signal success
+	
+	return false # Signal failure
+
 func _trigger_pogo(pogo_target):
+	# This is now the single source of truth for all pogo actions.
+	hitbox_shape.call_deferred("set", "disabled", true) # Disable hitbox after one hit.
+	is_pogo_attack = false # Ensure we don't pogo twice.
+	
 	can_dash = true
 	velocity.y = -Constants.POGO_FORCE
 	air_jumps_left = Constants.MAX_AIR_JUMPS
 	dash_duration_timer = 0
-	change_state(State.FALL)
-	if pogo_target and pogo_target.has_method("take_damage"):
-		pogo_target.take_damage(1)
-		_on_damage_dealt()
-	elif pogo_target and pogo_target.is_in_group("enemy_projectile"):
-		pogo_target.queue_free()
+	change_state(State.FALL) # Force state to FALL to re-evaluate logic.
+	
+	# --- POGO TARGET LOGIC ---
+	# Check if we hit a valid pogo target.
+	if pogo_target:
+		# If it's an enemy, deal damage and gain determination.
+		if pogo_target.has_method("take_damage"):
+			pogo_target.take_damage(1)
+			_on_damage_dealt()
+		# If it's a projectile, destroy it.
+		elif pogo_target.is_in_group("enemy_projectile"):
+			pogo_target.queue_free()
 
 func take_damage(damage_amount: int, damage_source = null):
 	if is_invincible: return
@@ -1027,9 +1066,7 @@ func die():
 	print("Player has been defeated! Reloading stage.")
 	get_tree().call_deferred("reload_current_scene")
 
-# --- NEW: Contact Damage Check ---
 func _check_for_contact_damage():
-	# Iterate through all collisions that happened this frame.
 	for i in range(get_slide_collision_count()):
 		var collision = get_slide_collision(i)
 		if not collision: continue
@@ -1037,13 +1074,10 @@ func _check_for_contact_damage():
 		var body_hit = collision.get_collider()
 		if not body_hit: continue
 
-		# If we run into a solid enemy or hazard, take damage.
 		if body_hit.is_in_group("enemy") or body_hit.is_in_group("hazard"):
 			take_damage(1, body_hit)
-			# We break so we only take damage from one source per frame.
 			break
 
-# --- Determination & Healing Functions ---
 func _on_damage_dealt():
 	if healing_charges >= Constants.PLAYER_MAX_HEALING_CHARGES:
 		return
@@ -1064,7 +1098,9 @@ func _cancel_heal():
 # --- Signal Callbacks ---
 
 func _on_hitbox_body_entered(body):
-	if is_pogo_attack: _trigger_pogo(body)
+	if is_pogo_attack: 
+		# Let the centralized pogo function handle all the logic.
+		_trigger_pogo(body)
 	elif body.is_in_group("enemy"):
 		body.take_damage(1)
 		_on_damage_dealt()
@@ -1073,12 +1109,6 @@ func _on_hitbox_body_entered(body):
 func _on_hitbox_area_entered(area):
 	if is_pogo_attack and area.is_in_group("enemy_projectile"): _trigger_pogo(area)
 
-# --- THIS IS THE FIX ---
-# Prefix the parameter with an underscore to denote it is intentionally unused.
-func _on_hurtbox_body_entered(_body):
-	pass
-
-# This function now correctly handles only non-solid hazards like projectiles.
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		take_damage(1, area); area.queue_free()
@@ -1091,7 +1121,7 @@ func _on_healing_timer_timeout():
 		health = min(health + 1, Constants.PLAYER_MAX_HEALTH)
 		healing_charges -= 1
 		print("Healing successful! Health: %d. Charges left: %d" % [health, healing_charges])
-		change_state(State.MOVE) # Return to idle after successful heal
+		change_state(State.MOVE)
 
 
 
@@ -1110,7 +1140,7 @@ size = Vector2(40, 40)
 
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 1
-collision_mask = 2
+collision_mask = 14
 script = ExtResource("1_4d1td")
 
 [node name="ColorRect" type="ColorRect" parent="."]

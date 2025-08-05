@@ -1,0 +1,14 @@
+{
+  echo "====================================="
+  echo "        DIRECTORY TREE"
+  echo "====================================="
+  tree
+  echo -e "\n\n"
+  find . -name "*.gd" -o -name "*.tscn" -o -name "project.godot" | sort | while read file; do
+    echo "====================================="
+    echo "FILE: $file"
+    echo "====================================="
+    cat "$file"
+    echo -e "\n\n"
+  done
+} > all_godot_source_code.txt

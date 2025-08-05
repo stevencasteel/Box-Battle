@@ -1,69 +1,71 @@
 # Box Battle
 
-A Mega Man & Hollow Knight inspired arena-style battle game built in Godot.
+A combat-focused 2D action game built in Godot 4, showcasing clean architecture and comprehensive game systems.
 
-## Hello World! 👋
+## What Makes This Code Notable
 
-Welcome to Box Battle - an action-packed arena battle game that combines the fast-paced combat of Mega Man with the atmospheric design of Hollow Knight.
+### Architectural Excellence
+- **Centralized Asset Management**: All file paths are managed through a single `AssetPaths` singleton, eliminating broken references and making refactoring trivial
+- **Singleton-Based Core Systems**: Audio, settings, cursor management, and constants are globally accessible without tight coupling
+- **Modular Arena System**: Level layouts and encounters are separated into data-only scripts, making level creation declarative and maintainable
 
-## 🎮 About
+### Advanced Player Controller
+- **Robust State Machine**: Clean finite state machine handling movement, combat, dashing, wall-sliding, and healing states
+- **Physics-Driven Design**: Implements coyote time, jump buffering, wall jumping, and variable jump height for responsive controls
+- **Pogo Mechanics**: Sophisticated downward attack system with instant collision detection and momentum preservation
+- **Determination System**: Risk/reward mechanics where dealing damage builds healing charges
 
-This project is being developed using a code-first approach with help from AI assistants (Gemini 2.5 Pro, Claude 4.0, and ChatGPT). The game features:
+### Production-Quality UI
+- **Custom Menu Navigation**: Unified system supporting both keyboard and mouse input with audio feedback
+- **Global HUD Management**: Context-aware UI elements that appear/disappear based on current scene
+- **Real-time Settings Sync**: Audio sliders and checkboxes update immediately without save/load cycles
+- **Custom Slider Component**: Self-contained, reusable UI widget with proper mouse interaction
 
-- **State machine-based architecture** for clean, maintainable code
-- **Professional singleton patterns** and constants instead of scattered booleans
-- **Complete menu system** with title screen, options, controls, and sound settings
-- **Responsive player movement** system (currently being fine-tuned)
+### Smart Audio Architecture
+- **Pooled SFX Players**: Multiple AudioStreamPlayer instances prevent sound cutoff during rapid-fire events
+- **Context-Aware Sounds**: Different menu actions trigger appropriate audio cues (back vs select vs error)
+- **Robust Music Management**: Prevents music restarts when switching between menu screens
 
-## 🚀 Current Status
+### Clean Code Practices
+- **Extensive Documentation**: Every script explains its purpose and key design decisions
+- **Consistent Naming**: Clear, descriptive variable and function names throughout
+- **Proper Signal Usage**: Decoupled communication between components using Godot's signal system
+- **Layer-Based Physics**: Thoughtful collision layer setup for different object types and interactions
 
-**Week 1 Complete!** ✅
-- ✅ Title screen menu system working
-- ✅ Player movement mostly implemented
-- ✅ Major refactor completed (moved from booleans to state machines)
-- ✅ Audio system with menu sound effects
-- ✅ Custom UI components and cursor management
+### Noteworthy Technical Solutions
+- **Fake Cursor System**: Custom cursor that works consistently across all platforms with proper click-through behavior
+- **Immediate Pogo Detection**: Proactive collision checking prevents frame-delay issues in fast-paced combat
+- **Hazard Dual-Layer System**: Terrain that's both solid (world layer) and damaging (hazard layer) for consistent physics
+- **Deferred Scene Changes**: Proper scene transition handling to prevent physics errors
 
-**Next Up:**
-- Fine-tuning player movement mechanics
-- Implementing combat system
-- Arena design and enemy AI
+## Getting Started
 
-## 🛠️ Built With
+1. Clone the repository
+2. Open the project in Godot 4.4+
+3. Run the project - it starts at the title screen
 
-- **Engine:** Godot 4.x
-- **Language:** GDScript
-- **Architecture:** State machines, singletons, and constants
-- **Development:** Code-first approach with AI assistance
+## Controls
 
-## 📁 Project Structure
+- **Movement**: WASD / Arrow Keys
+- **Jump**: Space / X / Period
+- **Attack**: C / Comma / Alt + Shift
+- **Dash**: Z / Slash / Shift + Ctrl
+- **Heal**: Hold Down + Jump while on ground (requires healing charges)
+
+## Project Structure
 
 ```
 src/
-├── arenas/          # Arena layouts and encounter scripts
-├── core/            # Core systems (audio, settings, constants)
-├── entities/        # Player, bosses, and other game entities
-├── projectiles/     # Projectile systems
-├── scenes/          # Main game scenes
-└── ui/              # User interface components and screens
+├── core/           # Singleton systems (audio, settings, etc.)
+├── entities/       # Player and enemy classes
+├── projectiles/    # Bullet and shot behaviors
+├── scenes/         # Main game scenes
+├── ui/             # Menu systems and components
+└── arenas/         # Level data and encounter scripts
 ```
 
-## 🎵 Assets
+This codebase demonstrates how to structure a Godot project for maintainability, extensibility, and professional polish. Every system is designed to be modular, well-documented, and easy to extend.
 
-- **Fonts:** M PLUS Rounded 1c family
-- **Audio:** Custom menu sound effects and background music
-- **UI:** Custom-designed menu graphics and cursors
+## License
 
-## 📄 License
-
-This project is released under CC0 1.0 Universal - feel free to use, modify, and distribute however you'd like!
-
-## 🏃‍♂️ Getting Started
-
-1. Download or clone this repository
-2. Open the project in Godot 4.x
-3. Run the project to experience the current build
-
----
-
-*Developed in College Station, Texas | August 2025*
+This project is released under CC0 1.0 Universal - dedicated to the public domain. Use it however you like!
