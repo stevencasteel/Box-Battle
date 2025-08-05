@@ -1,0 +1,21 @@
+[gd_scene load_steps=3 format=3 uid="uid://cmdkxwvysirh1"]
+
+[ext_resource type="Script" path="res://src/projectiles/player_shot.gd" id="1_4wg7x"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_playershot"]
+size = Vector2(40, 40)
+
+[node name="PlayerShot" type="Area2D"]
+collision_layer = 0
+collision_mask = 22
+script = ExtResource("1_4wg7x")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+color = Color(0.5, 0.8, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_playershot")
