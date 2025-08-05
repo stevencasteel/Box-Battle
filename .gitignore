@@ -1,0 +1,18 @@
+# Godot-specific ignores
+.import/
+export.cfg
+export_presets.cfg
+.mono/
+data_*/
+mono_crash.*.json
+.godot/
+
+# OS/Editor specific
+.DS_Store
+Thumbs.db
+*.tmp
+
+# IDE
+.vscode/
+*.swp
+*.swo
