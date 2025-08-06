@@ -1,11 +1,13 @@
 +---------------------------------+
-|         B O X  B A T T L E        |
+|       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Tue Aug  5 19:29:55 CDT 2025
+Generated on: Wed Aug  6 10:31:29 CDT 2025
+
 
 =====================================
 FILE: ./ASSETS.md
+=====================================
 # ASSETS.md
 **A central registry for all external assets used in the project, including their sources, licenses, and any required attribution. This also outlines the desired artistic style for future assets.**
 
@@ -47,6 +49,7 @@ FILE: ./ASSETS.md
 
 =====================================
 FILE: ./ARCHITECTURE.md
+=====================================
 # ARCHITECTURE.md
 **A high-level overview of the project's technical structure, coding standards, and core design patterns. This document explains *how* the game is built.**
 
@@ -104,6 +107,7 @@ The project follows a clean, feature-based directory structure within the `/src`
 
 =====================================
 FILE: ./CHANGELOG.md
+=====================================
 # Changelog
 All notable changes to this project will be documented in this file.
 
@@ -152,6 +156,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 =====================================
 FILE: ./BUGS.md
+=====================================
 # BUGS.md
 **A tracker for all known issues, their status, and their solutions. This provides a clear overview of the project's health.**
 
@@ -188,6 +193,7 @@ FILE: ./BUGS.md
 
 =====================================
 FILE: ./TODO.md
+=====================================
 # TODO.md
 **Immediate work items and actionable tasks for the current development cycle.**
 
@@ -237,6 +243,7 @@ FILE: ./TODO.md
 
 =====================================
 FILE: ./PLAYTESTING.md
+=====================================
 # PLAYTESTING.md
 **A log of all playtesting sessions. Each entry should use the template below to ensure feedback is structured, consistent, and actionable.**
 
@@ -280,6 +287,7 @@ FILE: ./PLAYTESTING.md
 
 =====================================
 FILE: ./README.md
+=====================================
 # Box Battle
 
 A combat-focused 2D action game built in Godot 4, showcasing clean architecture and comprehensive game systems.
@@ -354,24 +362,12 @@ This project is released under CC0 1.0 Universal - dedicated to the public domai
 
 =====================================
 FILE: ./create_all_godot_source_code_terminal_prompt.txt
-{
-  echo "====================================="
-  echo "        DIRECTORY TREE"
-  echo "====================================="
-  tree
-  echo -e "\n\n"
-  find . -name "*.gd" -o -name "*.tscn" -o -name "project.godot" | sort | while read file; do
-    echo "====================================="
-    echo "FILE: $file"
-    echo "====================================="
-    cat "$file"
-    echo -e "\n\n"
-  done
-} > all_godot_source_code.txt
-
+=====================================
+(echo '+---------------------------------+'; echo '|         B O X  B A T T L E        |'; echo '|  Godot Project Source Context   |'; echo '+---------------------------------+'; echo "Generated on: $(date)"; echo ""; find . -type f \( -name "*.gd" -o -name "*.tscn" -o -name "*.md" -o -name "*.tres" -o -name "project.godot" -o -name "*.txt" \) -not -path "./assets/*" -not -path "./.git/*" -not -name "all_godot_source_code.txt" -print0 | xargs -0 -I {} sh -c 'echo "=====================================\nFILE: {}"; cat {}; echo "\n"') > all_godot_source_code.txt
 
 =====================================
 FILE: ./ROADMAP.md
+=====================================
 # ROADMAP.md
 **The long-term vision and planned features for the project. This document outlines the major milestones, from the initial polished demo to a full game.**
 
@@ -420,6 +416,7 @@ FILE: ./ROADMAP.md
 
 =====================================
 FILE: ./default_bus_layout.tres
+=====================================
 [gd_resource type="AudioBusLayout" format=3 uid="uid://c65ja7dwrkbrc"]
 
 [resource]
@@ -438,6 +435,7 @@ bus/2/send = &"Master"
 
 =====================================
 FILE: ./DESIGN.md
+=====================================
 # DESIGN.md
 **The official documentation for the game's design decisions, mechanics, and core philosophies. This serves as the single source of truth for how the game works and feels.**
 
@@ -491,6 +489,7 @@ FILE: ./DESIGN.md
 
 =====================================
 FILE: ./project.godot
+=====================================
 ; Engine configuration file.
 ; It's best edited using the editor UI and not directly,
 ; since the parameters that go here are not all obvious.
@@ -600,6 +599,7 @@ environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 
 =====================================
 FILE: ./BRAINSTORM.md
+=====================================
 # BRAINSTORM.md
 **A free-form collection of random thoughts, creative ideas, and technical experiments. This is a judgment-free zone for capturing inspiration.**
 
@@ -647,6 +647,7 @@ FILE: ./BRAINSTORM.md
 
 =====================================
 FILE: ./src/ui/global_hud/global_hud.gd
+=====================================
 # src/ui/global_hud/global_hud.gd
 #
 # This autoloaded scene is always present. Its main job is to manage the
@@ -716,6 +717,7 @@ func _update_icon():
 
 =====================================
 FILE: ./src/ui/global_hud/global_hud.tscn
+=====================================
 [gd_scene load_steps=2 format=3 uid="uid://dpcsg3wmlvabm"]
 
 [ext_resource type="Script" path="res://src/ui/global_hud/global_hud.gd" id="1_hud_script"]
@@ -730,6 +732,7 @@ script = ExtResource("1_hud_script")
 
 =====================================
 FILE: ./src/ui/menu_manager/menu_manager.gd
+=====================================
 # src/ui/menu_manager/menu_manager.gd
 #
 # A reusable script for creating keyboard and mouse-navigable menus. An instance
@@ -854,6 +857,7 @@ func _update_cursors():
 
 =====================================
 FILE: ./src/ui/screens/controls_menu/controls_menu.gd
+=====================================
 # src/ui/screens/controls_menu/controls_menu.gd
 #
 # Displays a static list of the game's controls.
@@ -929,6 +933,7 @@ func _on_back_button_pressed():
 
 =====================================
 FILE: ./src/ui/screens/controls_menu/controls_menu.tscn
+=====================================
 [gd_scene load_steps=2 format=3 uid="uid://cghquk5y1qjwg"]
 
 [ext_resource type="Script" path="res://src/ui/screens/controls_menu/controls_menu.gd" id="1_controls_script"]
@@ -945,6 +950,7 @@ script = ExtResource("1_controls_script")
 
 =====================================
 FILE: ./src/ui/screens/credits_menu/credits_menu.gd
+=====================================
 # src/ui/screens/credits_menu/credits_menu.gd
 #
 # Displays game credits using a RichTextLabel to handle formatted text and URLs.
@@ -1012,6 +1018,7 @@ func _on_back_button_pressed():
 
 =====================================
 FILE: ./src/ui/screens/credits_menu/credits_menu.tscn
+=====================================
 [gd_scene load_steps=2 format=3 uid="uid://b8txy2d7jrhwg"]
 
 [ext_resource type="Script" path="res://src/ui/screens/credits_menu/credits_menu.gd" id="1_credits_script"]
@@ -1028,6 +1035,7 @@ script = ExtResource("1_credits_script")
 
 =====================================
 FILE: ./src/ui/screens/options_menu/options_menu.tscn
+=====================================
 [gd_scene load_steps=2 format=3 uid="uid://ddgtf7n0tqvot"]
 
 [ext_resource type="Script" path="res://src/ui/screens/options_menu/options_menu.gd" id="1_options_script"]
@@ -1044,6 +1052,7 @@ script = ExtResource("1_options_script")
 
 =====================================
 FILE: ./src/ui/screens/options_menu/options_menu.gd
+=====================================
 # src/ui/screens/options_menu/options_menu.gd
 #
 # Manages the Options menu, which acts as a hub to navigate to other screens.
@@ -1118,6 +1127,7 @@ func _on_back_button_pressed():
 
 =====================================
 FILE: ./src/ui/screens/sound_menu/sound_menu.gd
+=====================================
 # src/ui/screens/sound_menu/sound_menu.gd
 #
 # Manages the sound settings screen, connecting UI elements to the global
@@ -1234,6 +1244,7 @@ func _on_back_button_pressed():
 
 =====================================
 FILE: ./src/ui/screens/sound_menu/sound_menu.tscn
+=====================================
 [gd_scene load_steps=2 format=3 uid="uid://bapc10ey0j27g"]
 
 [ext_resource type="Script" path="res://src/ui/screens/sound_menu/sound_menu.gd" id="1_sound_script"]
@@ -1250,6 +1261,7 @@ script = ExtResource("1_sound_script")
 
 =====================================
 FILE: ./src/ui/screens/title_screen/title_screen.tscn
+=====================================
 [gd_scene load_steps=2 format=3 uid="uid://cglqfxtqgxwul"]
 
 [ext_resource type="Script" path="res://src/ui/screens/title_screen/title_screen.gd" id="1_title_script"]
@@ -1266,6 +1278,7 @@ script = ExtResource("1_title_script")
 
 =====================================
 FILE: ./src/ui/screens/title_screen/title_screen.gd
+=====================================
 # src/ui/screens/title_screen/title_screen.gd
 #
 # This script controls the main title screen. It displays the game title, menu
@@ -1323,6 +1336,7 @@ func _on_options_button_pressed():
 
 =====================================
 FILE: ./src/ui/components/custom_slider/custom_slider.gd
+=====================================
 # src/ui/components/custom_slider/custom_slider.gd
 #
 # A self-contained, reusable custom slider component. It emits a 'value_changed'
@@ -1409,6 +1423,7 @@ func _on_knob_mouse_exited():
 
 =====================================
 FILE: ./src/scenes/game/game.tscn
+=====================================
 [gd_scene load_steps=2 format=3 uid="uid://game_scene_unique_id"]
 
 [ext_resource type="Script" path="res://src/scenes/game/game.gd" id="1_game_script"]
@@ -1418,6 +1433,7 @@ script = ExtResource("1_game_script")
 
 =====================================
 FILE: ./src/scenes/game/game.gd
+=====================================
 # src/scenes/game/game.gd
 #
 # This script orchestrates the setup of an arena battle. It loads a layout
@@ -1525,6 +1541,7 @@ func _create_hazard_tile(pos: Vector2):
 
 =====================================
 FILE: ./src/scenes/main/main.tscn
+=====================================
 [gd_scene load_steps=2 format=3 uid="uid://bt1c5p8wphc4a"]
 
 [ext_resource type="Script" uid="uid://coxyesem6rn3k" path="res://src/scenes/main/main.gd" id="1_main_script"]
@@ -1535,6 +1552,7 @@ script = ExtResource("1_main_script")
 
 =====================================
 FILE: ./src/scenes/main/main.gd
+=====================================
 # src/scenes/main/main.gd
 # This is the main entry point for the game, as defined in project.godot.
 # Its only job is to immediately load and switch to the first real scene,
@@ -1549,6 +1567,7 @@ func _ready():
 
 =====================================
 FILE: ./src/core/settings.gd
+=====================================
 # src/core/settings.gd
 #
 # This script is a "Singleton" (also known as an "Autoload" in Godot).
@@ -1579,6 +1598,7 @@ extends Node
 
 =====================================
 FILE: ./src/core/audio_manager.gd
+=====================================
 # src/core/audio_manager.gd
 #
 # This singleton is responsible for all audio playback. By centralizing all
@@ -1633,6 +1653,7 @@ func stop_music():
 
 =====================================
 FILE: ./src/core/cursor_manager.gd
+=====================================
 # src/core/cursor_manager.gd
 #
 # This singleton manages the game's custom "fake" cursor, giving us full
@@ -1674,6 +1695,7 @@ func set_pointer_state(is_pointing: bool):
 
 =====================================
 FILE: ./src/core/asset_paths.gd
+=====================================
 # src/core/asset_paths.gd
 #
 # This singleton provides a central registry for all asset file paths.
@@ -1733,6 +1755,7 @@ const SPRITE_ICON_SOUND_OFF = "res://assets/sprites/ui/icons/icon-sound-off.png"
 
 =====================================
 FILE: ./src/core/constants.gd
+=====================================
 # src/core/constants.gd
 #
 # This singleton holds global game design constants. Centralizing these values
@@ -1784,6 +1807,7 @@ const BOSS_HEALTH = 30
 
 =====================================
 FILE: ./src/arenas/arena_00_layout.gd
+=====================================
 # src/arenas/arena_00_layout.gd
 #
 # This file defines the physical terrain for Arena 00.
@@ -1850,6 +1874,7 @@ const TERRAIN_DATA = [
 
 =====================================
 FILE: ./src/arenas/arena_00_encounter.gd
+=====================================
 # src/arenas/arena_00_encounter.gd
 #
 # This file defines the dynamic entities and patterns for Arena 00.
@@ -1867,6 +1892,7 @@ const PLAYER_SPAWN_MARKER = "@"
 
 =====================================
 FILE: ./src/projectiles/player_shot.tscn
+=====================================
 [gd_scene load_steps=3 format=3 uid="uid://cmdkxwvysirh1"]
 
 [ext_resource type="Script" path="res://src/projectiles/player_shot.gd" id="1_4wg7x"]
@@ -1891,6 +1917,7 @@ shape = SubResource("RectangleShape2D_playershot")
 
 =====================================
 FILE: ./src/projectiles/boss_shot.tscn
+=====================================
 [gd_scene load_steps=3 format=3 uid="uid://cxnmr7yrvchve"]
 
 [ext_resource type="Script" path="res://src/projectiles/boss_shot.gd" id="1_4qgog"]
@@ -1915,6 +1942,7 @@ shape = SubResource("RectangleShape2D_bossshot")
 
 =====================================
 FILE: ./src/projectiles/player_shot.gd
+=====================================
 # src/projectiles/player_shot.gd
 #
 # Controls the behavior of the player's charged projectile.
@@ -1953,6 +1981,7 @@ func _on_area_entered(area):
 
 =====================================
 FILE: ./src/projectiles/boss_shot.gd
+=====================================
 # src/projectiles/boss_shot.gd
 #
 # Controls the behavior of the boss's projectile.
@@ -1975,6 +2004,7 @@ func _physics_process(delta):
 
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
+=====================================
 [gd_scene load_steps=3 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
@@ -2005,6 +2035,7 @@ autostart = true
 
 =====================================
 FILE: ./src/entities/boss/base_boss.gd
+=====================================
 # src/entities/boss/base_boss.gd
 #
 # This is the foundational script for all bosses in the game. It handles
@@ -2053,6 +2084,7 @@ func fire_shot():
 
 =====================================
 FILE: ./src/entities/player/player.tscn
+=====================================
 [gd_scene load_steps=4 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
@@ -2104,6 +2136,7 @@ one_shot = true
 
 =====================================
 FILE: ./src/entities/player/player.gd
+=====================================
 # src/entities/player/player.gd
 #
 # This script defines the player's complete behavior using a finite state machine
