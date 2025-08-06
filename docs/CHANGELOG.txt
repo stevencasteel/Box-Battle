@@ -21,17 +21,19 @@
 ║      ░ ■ Created a new `ArenaBuilder` singleton to centralize level creation.║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
-║      ░ ■ Overhauled the level loading process to use a pre-building system,  ║
-║      ░   constructing the entire level behind a loading screen to eliminate   ║
-║      ░   stuttering on arena load.                                           ║
+║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system,║
+║      ░   eliminating stuttering when entering the arena.                     ║
 ║      ░ ■ Refined melee attack's movement pause to a tunable friction system. ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a critical startup crash caused by improper scene changing.║
 ║      ░ ■ Fixed a critical bug where reloading after player death would fail. ║
 ║      ░ ■ Restored ability to drop through one-way platforms.                 ║
 ║      ░ ■ Standard melee attacks (forward/up) now correctly destroy enemy     ║
 ║      ░   projectiles.                                                        ║
 ║      ░ ■ Resolved a GDScript warning for a shadowed global variable.         ║
+║      ░ ■ Removed "corner clipping" from the bug list as it is a planned      ║
+║      ░   feature ("Corner Correction"), not a bug.                           ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║

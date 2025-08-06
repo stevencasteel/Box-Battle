@@ -15,27 +15,20 @@
 ║  ██                             OPEN ISSUES                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▒  [BUG-001] Player can get stuck on tile corners when jumping.            ║
-║      ░  FOUND: 2025-08-05                                                    ║
-║      ░  STATUS: Open                                                         ║
-║      ░  DETAILS: When the player jumps and moves horizontally against a      ║
-║      ░  wall, their top corner can clip the bottom corner of a tile above    ║
-║      ░  them, causing them to "bonk" their head and fall immediately. This   ║
-║      ░  feels jarring and unfair. The cause is likely the perfectly          ║
-║      ░  rectangular shape of the player's `CollisionShape2D`.                ║
-║                                                                              ║
-║   ░  [BUG-005] Minor hitch may still occur on arena load.                    ║
-║      ░  FOUND: 2025-08-06                                                    ║
-║      ░  STATUS: Open (Low Priority)                                          ║
-║      ░  DETAILS: After implementing the pre-building system, the major       ║
-║      ░  load-in stutter is gone. However, a very minor frame drop may still  ║
-║      ░  be present within the first second. This could be due to late shader ║
-║      ░  compilation for future VFX or other first-frame engine processes.    ║
-║      ░  To be investigated during the "Game Juice" and polishing phase.      ║
+║   There are currently no open bugs. All known issues have been resolved.     ║
+║   See TODO.txt for a list of planned features.                               ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                             FIXED ISSUES                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   □  [BUG-F006] Significant stutter/hitch occurred on arena load.            ║
+║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  SOLUTION: Replaced the synchronous, blocking level generation with a ║
+║      ░  new asynchronous system in `ArenaBuilder.gd`. The `build_level_async`║
+║      ░  function now creates the level in batches, using `await` to yield    ║
+║      ░  control back to the engine between batches. This prevents the main   ║
+║      ░  thread from freezing, resulting in a smooth loading sequence.        ║
 ║                                                                              ║
 ║   □  [BUG-F005] Player death caused a black screen instead of reloading.     ║
 ║      ░  FIXED: 2025-08-06                                                    ║

@@ -59,13 +59,13 @@ func _ready():
 # --- Button Press Handlers ---
 
 func _on_sound_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_SOUND_MENU)
+	get_tree().change_scene_to_file(AssetPaths.SCENE_SOUND_MENU)
 
 func _on_controls_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_CONTROLS_MENU)
+	get_tree().change_scene_to_file(AssetPaths.SCENE_CONTROLS_MENU)
 
 func _on_credits_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_CREDITS_MENU)
+	get_tree().change_scene_to_file(AssetPaths.SCENE_CREDITS_MENU)
 
 func _on_back_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_TITLE_SCREEN)
+	get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)

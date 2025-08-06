@@ -42,9 +42,9 @@ func _on_start_button_pressed():
 	# Step 1: Tell the GameManager which level we want to play.
 	GameManager.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
 	
-	# Step 2: Transition to the generic loading screen.
-	# The loading screen will now use the GameManager to figure out what to do.
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_LOADING_SCREEN)
+	# Step 2: Transition to the generic loading screen directly.
+	get_tree().change_scene_to_file(AssetPaths.SCENE_LOADING_SCREEN)
 
 func _on_options_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)
+	# Changed to direct scene change for consistency.
+	get_tree().change_scene_to_file(AssetPaths.SCENE_OPTIONS_MENU)

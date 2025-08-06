@@ -6,6 +6,8 @@ extends Node
 
 func _ready():
 	# Using AssetPaths makes this transition type-safe and easy to manage.
-	# 'call_deferred' waits until the current frame is finished before changing scenes,
-	# which prevents potential physics or node errors during the switch.
+	# CRITICAL FIX: 'call_deferred' is REQUIRED here. The main scene cannot be
+	# replaced immediately in its own _ready function, as the scene tree is
+	# busy being set up. This defers the change to a safe point after the
+	# current frame's processing.
 	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_TITLE_SCREEN)
