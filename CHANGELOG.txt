@@ -21,17 +21,20 @@
 ║                                                                              ║
 ║   █  Changed                                                                 ║
 ║      ░ ■ Overhauled the level loading process to use a pre-building system,  ║
-║      ░   constructing the entire level behind a loading screen to eliminate  ║
+║      ░   constructing the entire level behind a loading screen to eliminate   ║
 ║      ░   stuttering on arena load.                                           ║
+║      ░ ■ Refined melee attack's movement pause to a tunable friction system. ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Fixed a critical bug where reloading after player death would fail. ║
 ║      ░ ■ Restored ability to drop through one-way platforms.                 ║
 ║      ░ ■ Standard melee attacks (forward/up) now correctly destroy enemy     ║
 ║      ░   projectiles.                                                        ║
+║      ░ ■ Resolved a GDScript warning for a shadowed global variable.         ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   This version marks a major architectural overhaul, transforming the        ║
 ║   project from a functional prototype into a robust and scalable foundation. ║

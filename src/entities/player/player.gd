@@ -74,7 +74,7 @@ func _physics_process(delta):
 		State.FALL: state_fall(delta)
 		State.DASH: state_dash()
 		State.WALL_SLIDE: state_wall_slide()
-		State.ATTACK: state_attack()
+		State.ATTACK: state_attack(delta) # <-- MODIFIED LINE
 		State.HURT: state_hurt(delta)
 		State.HEAL: state_heal()
 
@@ -109,25 +109,20 @@ func _handle_input(delta):
 func state_move(delta):
 	# Handle Drop-Through Platforms
 	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
-		# Check if we are standing on something
 		if get_last_slide_collision():
-			var floor = get_last_slide_collision().get_collider()
-			if floor and floor.is_in_group("oneway_platforms"):
-				# Move down slightly to pass through the platform
+			var floor_collider = get_last_slide_collision().get_collider()
+			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
 				position.y += 2
-				# Prevent a jump from happening
 				jump_buffer_timer = 0
-				# Immediately transition to falling
 				change_state(State.FALL)
-				return # Stop processing in the MOVE state
+				return
 
 	coyote_timer = Constants.COYOTE_TIME
 	
-	# Check for healing input
 	var is_holding_heal = Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump")
 	if is_holding_heal and healing_charges > 0:
 		change_state(State.HEAL)
-		return # Stop processing in this state
+		return
 		
 	_apply_horizontal_movement()
 	velocity.y += Constants.GRAVITY * delta
@@ -181,8 +176,10 @@ func state_dash():
 	velocity = _get_dash_direction() * Constants.DASH_SPEED
 	if dash_duration_timer <= 0: velocity = Vector2.ZERO; change_state(State.FALL)
 
-func state_attack():
-	velocity = Vector2.ZERO
+# --- MODIFIED FUNCTION ---
+func state_attack(delta):
+	# Apply friction to smoothly slow the player down instead of an instant stop.
+	velocity = velocity.move_toward(Vector2.ZERO, Constants.PLAYER_ATTACK_FRICTION * delta)
 	if attack_duration_timer <= 0:
 		hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false
 		change_state(State.FALL)
@@ -199,7 +196,7 @@ func state_heal():
 	
 	if not is_holding_heal or moved or not is_on_floor():
 		_cancel_heal()
-		change_state(State.MOVE) # Transition to move after canceling
+		change_state(State.MOVE)
 
 # --- State Change & Helper Functions ---
 
@@ -226,7 +223,7 @@ func change_state(new_state: State):
 			air_jumps_left = Constants.MAX_AIR_JUMPS
 		State.HURT:
 			is_charging = false
-			_cancel_heal() # Cancel heal if you get hurt
+			_cancel_heal()
 			knockback_timer = Constants.KNOCKBACK_DURATION
 		State.HEAL:
 			healing_timer.start(Constants.PLAYER_HEAL_DURATION)
@@ -398,17 +395,12 @@ func _on_hitbox_body_entered(body):
 		_on_damage_dealt()
 		hitbox_shape.call_deferred("set", "disabled", true)
 
-# --- MODIFIED FUNCTION ---
 func _on_hitbox_area_entered(area):
-	# This function now correctly handles projectiles for ALL melee attacks.
 	if area.is_in_group("enemy_projectile"):
 		if is_pogo_attack:
-			# If it's a pogo, trigger the full bounce and destroy logic.
 			_trigger_pogo(area)
 		else:
-			# If it's a normal melee, just destroy the projectile.
 			area.queue_free()
-			# Disable the hitbox so one swing doesn't destroy multiple things.
 			hitbox_shape.call_deferred("set", "disabled", true)
 
 func _on_hurtbox_area_entered(area):

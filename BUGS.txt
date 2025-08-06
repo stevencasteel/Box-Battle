@@ -37,6 +37,12 @@
 ║  ██                             FIXED ISSUES                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
+║   □  [BUG-F005] Player death caused a black screen instead of reloading.     ║
+║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  SOLUTION: The `game.gd` script was made robust to handle both        ║
+║      ░  initial loads (using the pre-built level from `GameManager`) and     ║
+║      ░  reloads (by calling `ArenaBuilder.build_level()` as a fallback).     ║
+║                                                                              ║
 ║   □  [BUG-F004] Standard melee attacks did not destroy enemy projectiles.    ║
 ║      ░  FIXED: 2025-08-06                                                    ║
 ║      ░  SOLUTION: The `_on_hitbox_area_entered` function logic was           ║
