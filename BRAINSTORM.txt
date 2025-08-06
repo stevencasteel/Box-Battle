@@ -1,0 +1,51 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ╚═══════╗
+║    ██████╗ ██████╗  █████╗ ██╗███╗   ██╗███████╗████████╗ ██████╗ ██████╗ ███╗  ███╗ ║
+║   ██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗████╗ ████║ ║
+║   ██████╔╝██████╔╝███████║██║██╔██╗ ██║███████╗   ██║   ██║   ██║██████╔╝██╔████╔██║ ║
+║   ██╔══██╗██╔══██╗██╔══██║██║██║╚██╗██║╚════██║   ██║   ██║   ██║██╔══██╗██║╚██╔╝██║ ║
+║   ██████╔╝██║  ██║██║  ██║██║██║ ╚████║███████║   ██║   ╚██████╔╝██║  ██║██║ ╚═╝ ██║ ║
+║   ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝ ║
+║                                                                              ╔═══════╝
+║              A free-form collection of creative ideas and experiments.       ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                          MECHANICS IDEAS                             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   ▒  Multi-Stage Boss Health: Boss HP is visually represented by "Corner     ║
+║      Armor" plates. When a plate shatters, the boss enters a new, more       ║
+║      difficult phase.                                                        ║
+║                                                                              ║
+║   ▒  "Fizzle" Mechanic for Charged Shot: Releasing the attack button before  ║
+║      the charge is complete causes the charge to dissipate with a minor      ║
+║      sound and visual effect, adding a risk/reward to the attack.            ║
+║                                                                              ║
+║   ▒  Minion Enemies: Introduce simpler, non-boss enemies to populate arenas  ║
+║      and add variety to encounters.                                          ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                       STORY & NARRATIVE THOUGHTS                     ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   ▒  The "Determination" Concept: The core healing mechanic is thematically  ║
+║      tied to the player's resolve. Facing danger head-on builds the          ║
+║      "Determination" needed to survive.                                      ║
+║                                                                              ║
+║   ▒  Lore through a Wiki: The game's world could be expanded upon in an      ║
+║      official GitHub Wiki for engaged players.                               ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                   TECHNICAL EXPERIMENTS & CONCEPTS                   ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   ▒  `Path2D` for Boss Movement: Explore using `Path2D` nodes for highly     ║
+║      scripted and cinematic boss movements (e.g., curved dashes,             ║
+║      teleportation sequences).                                               ║
+║                                                                              ║
+║   ▒  Advanced Debug Modes: Implement hotkey-activated debug overlays for     ║
+║      viewing collision shapes, player state, and performance metrics.        ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

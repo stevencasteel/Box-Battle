@@ -1,0 +1,61 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ██████╗  ██████╗  █████╗ ██████╗ ███╗   ███╗ █████╗ ██████╗                ║
+║   ██╔══██╗██╔═══██╗██╔══██╗██╔══██╗████╗ ████║██╔══██╗██╔══██╗               ║
+║   ██████╔╝██║   ██║███████║██║  ██║██╔████╔██║███████║██████╔╝               ║
+║   ██╔══██╗██║   ██║██╔══██║██║  ██║██║╚██╔╝██║██╔══██║██╔═══╝                ║
+║   ██║  ██║╚██████╔╝██║  ██║██████╔╝██║ ╚═╝ ██║██║  ██║██║                    ║
+║   ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝                    ║
+║                                                                              ║
+║          The long-term vision and planned features for the project.          ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██              VERSION 1.0 GOALS - THE POLISHED SLICE                  ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   The primary objective is to create a single, complete, and highly          ║
+║   polished gameplay loop that serves as a benchmark for the entire game.     ║
+║                                                                              ║
+║   █  A Dynamic Boss: Arena 00 boss is fully functional with multiple,        ║
+║      telegraphed attack patterns and basic AI (patrolling, facing player).   ║
+║                                                                              ║
+║   █  Functional HUD: Clear displays for player health, boss health, and      ║
+║      healing charges.                                                        ║
+║                                                                              ║
+║   █  Satisfying Feedback: All core actions are accompanied by appropriate    ║
+║      SFX, VFX (hit-flash, particles), and screen shake. The game feels good. ║
+║                                                                              ║
+║   █  Complete Flow: Player can go from Title -> Game -> Win/Loss -> Title    ║
+║      with smooth transitions.                                                ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                         FUTURE VERSIONS                              ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   ▓  v1.1 - "The Content Expansion"                                          ║
+║      Focus shifts to expanding content and adding a new dimension to combat. ║
+║      ░  ■ Introduce a Second Arena & Boss (e.g., a flying or agile enemy).   ║
+║      ░  ■ Introduce a "Minion" Enemy Type for more varied encounters.        ║
+║      ░  ■ Refine Player Combat Indicators (Fizzle & Charge Meter).           ║
+║                                                                              ║
+║   ▓  v2.0 - "The Full Game Loop"                                             ║
+║      Transforms the project from encounters into a cohesive game.            ║
+║      ░  ■ Implement a Stage Select Screen.                                   ║
+║      ░  ■ Basic Progression (Defeating a boss unlocks the next stage).       ║
+║      ░  ■ Introduce More Enemy Variety (e.g., a stationary turret).          ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                         DREAM FEATURES                               ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   A "blue sky" list of ideas to explore once the core game is robust.        ║
+║                                                                              ║
+║   ■  Advanced Boss Mechanics (Multi-stage health, cinematic `Path2D` moves). ║
+║   ■  Expanded Player Abilities (Unlockable weapons/skills post-boss fight).  ║
+║   ■  Deeper Lore & Narrative (Expand on "Determination" theme).              ║
+║   ■  Official GitHub Wiki for community documentation.                       ║
+║   ■  Robust Debug Tools (More hotkeys and overlays).                         ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

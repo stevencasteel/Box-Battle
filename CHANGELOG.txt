@@ -1,0 +1,58 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║    ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ██████╗  ██████╗                ║
+║   ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔══██╗██╔════╝                ║
+║   ██║     ███████║███████║██╔██╗ ██║██║  ███╗██████╔╝███████╗                ║
+║   ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══██╗██╔════╝                ║
+║   ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║███████╗                ║
+║    ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝                ║
+║                                                                              ║
+║                  A log of all notable changes to the project.                ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                            [UNRELEASED]                              ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░                                                                       ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░                                                                       ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░                                                                       ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                       [0.1.0] - 2025-08-05                           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version marks a major architectural overhaul, transforming the        ║
+║   project from a functional prototype into a robust and scalable foundation. ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Player Character with rich moveset (dash, wall-jump, etc.).         ║
+║      ░ ■ Combat System with melee, charged shot, and pogo mechanics.         ║
+║      ░ ■ "Determination" healing system.                                     ║
+║      ░ ■ Data-Driven Arena system.                                           ║
+║      ░ ■ Basic Boss entity framework.                                        ║
+║      ░ ■ Reusable, component-based Menu System.                              ║
+║      ░ ■ Full suite of project documentation (.txt files).                   ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Complete Architectural Refactor: Overhauled the project's core      ║
+║      ░   to use professional design patterns.                                ║
+║      ░ ■ Player Logic: Migrated from boolean flags to a formal Finite        ║
+║      ░   State Machine (FSM) for stability and clarity.                      ║
+║      ░ ■ Global Singletons: Centralized all magic numbers and asset paths    ║
+║      ░   into `Constants.gd` and `AssetPaths.gd` for easy tuning and safety. ║
+║      ░ ■ File Organization: Restructured project directories to be more      ║
+║      ░   feature-based and intuitive.                                        ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Restored player contact damage from enemies and hazards.            ║
+║      ░ ■ Fully restored the pogo mechanic, including instant ground pogo     ║
+║      ░   and projectile bouncing.                                            ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

@@ -1,0 +1,109 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ██████╗  ██████╗  ██████╗ ███████╗                                         ║
+║   ██╔══██╗██╔═══██╗██╔════╝ ██╔════╝                                         ║
+║   ██║  ██║██║   ██║██║      ███████╗                                         ║
+║   ██║  ██║██║   ██║██║   ██╗╚════██║                                         ║
+║   ██████╔╝╚██████╔╝╚██████╔╝███████║                                         ║
+║   ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝                                         ║
+║                                                                              ║
+║    ██████╗ ██████╗  ██████╗ ████████╗ ██████╗  ██████╗  ██████╗ ██╗          ║
+║    ██╔══██╗██╔══██╗██╔═══██╗╚══██╔══╝██╔═══██╗██╔════╝ ██╔═══██╗██║          ║
+║    ██████╔╝██████╔╝██║   ██║   ██║   ██║   ██║██║      ██║   ██║██║          ║
+║    ██╔═══╝ ██╔══██╗██║   ██║   ██║   ██║   ██║██║   ██╗██║   ██║██║          ║
+║    ██║     ██║  ██║╚██████╔╝   ██║   ╚██████╔╝╚██████╔╝╚██████╔╝███████╗     ║
+║    ╚═╝     ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝     ║
+║                                                                              ║
+║           Project Documentation & Communication Formatting Standard          ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                       DOCUMENTATION STANDARDS                        ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This document defines the visual and structural standards for all `.txt`   ║
+║   project files. Its purpose is to maintain a cohesive, readable, and        ║
+║   thematically appropriate aesthetic that reflects the game's design.        ║
+║                                                                              ║
+║   █  FILE STRUCTURE                                                          ║
+║      All `.md` files essential for GitHub integration (README.md,            ║
+║      LICENSE.md) will remain as Markdown. All other project documents        ║
+║      (TODO, ROADMAP, DESIGN, etc.) will be `.txt` files following this guide.║
+║                                                                              ║
+║   █  DOCUMENT FRAME                                                          ║
+║      Each document will be enclosed in a double-line box frame.              ║
+║      (Characters: ╔ ╗ ╚ ╝ ║ ═ ╠ ╣)                                           ║
+║                                                                              ║
+║   █  TITLE BLOCK                                                             ║
+║      Each document begins with its custom ASCII art title block, followed    ║
+║      by a one-line subtitle describing its purpose.                          ║
+║                                                                              ║
+║   █  SECTION HEADERS                                                         ║
+║      Major sections are demarcated with a dithered block header. The text    ║
+║      should be centered and padded within the solid blocks.                  ║
+║                                                                              ║
+║        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓    ║
+║        ██                        SECTION TITLE                         ██    ║
+║        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓    ║
+║                                                                              ║
+║   █  BODY TEXT & PARAGRAPHS                                                  ║
+║      Standard body text should be indented by 2 spaces from the main frame.  ║
+║      Paragraphs should have a single blank line between them for spacing.    ║
+║      Text should be manually wrapped to fit within the document frame.       ║
+║                                                                              ║
+║   █  BULLET POINTS & HIERARCHY (PRIORITY GRADIENT)                           ║
+║      Lists will use dithered blocks to indicate importance or sequence.      ║
+║      All bullet points should be indented by 3 spaces. Sub-points should     ║
+║      be indented an additional 2 spaces using the `░` character.             ║
+║                                                                              ║
+║        █  Primary Point / Critical Item / Most Important                     ║
+║        ▓  Secondary Point / High Priority                                    ║
+║        ▒  Tertiary Point / Medium Priority                                   ║
+║        ░  Note, Sub-point, or Low Priority Item                              ║
+║                                                                              ║
+║        ■  Checklist item (incomplete).                                       ║
+║        □  Checklist item (complete).                                         ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                 ARCHIVE OF ADVANCED & ESOTERIC STYLES                ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   The following are alternative formatting ideas. They are archived here for ║
+║   future inspiration but are not part of the current standard to maintain    ║
+║   simplicity and consistency.                                                ║
+║                                                                              ║
+║   ▒  Progress Bars & Status Indicators                                       ║
+║      Use the priority gradient to create visual progress meters.             ║
+║                                                                              ║
+║      ░  LOADING       █████████████▓▓▓▓▒▒▒░░░ 73%                            ║
+║      ░  BOSS HEALTH   ████████▓▓▓▓▒▒▒▒░░░░░░░░ 58%                           ║
+║                                                                              ║
+║   ▒  Circuit Board Style                                                     ║
+║      A highly technical aesthetic for documents like ARCHITECTURE.txt.       ║
+║                                                                              ║
+║      ┌─┬─┬─┬─┬─┬─┬─┬─┬── SECTION ──┬─┬─┬─┬─┬─┬─┬─┬─┐                         ║
+║      │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │ │                         ║
+║      └─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┴─┘                         ║
+║                                                                              ║
+║   ▒  PETSCII-style Graphics                                                  ║
+║      A retro computer aesthetic using block and pattern characters.          ║
+║                                                                              ║
+║      ▗▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▖     ║
+║      ▐ ▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚  SECTION TITLE HERE  ▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚ ▌     ║
+║      ▝▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▘     ║
+║                                                                              ║
+║   ▒  Geometric Separators                                                    ║
+║      Use repeating patterns to divide sections instead of headers.           ║
+║                                                                              ║
+║      ◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇◆◇                    ║
+║      ▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼▲▼            ║
+║                                                                              ║
+║   ▒  Square Density Patterns                                                 ║
+║      An alternative to the priority gradient for status tracking.            ║
+║                                                                              ║
+║      ■■■■■■■■■■ COMPLETE                                                     ║
+║      ■■■■■■■□□□ IN PROGRESS                                                  ║
+║      ■□□□□□□□□□ PLANNED                                                      ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

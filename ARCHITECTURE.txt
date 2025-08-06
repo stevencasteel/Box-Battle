@@ -1,0 +1,77 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║    █████╗ ██████╗  ██████╗██╗  ██╗██╗████████╗███████╗ ██████╗████████╗██╗   ██╗ ║
+║   ██╔══██╗██╔══██╗██╔════╝██║  ██║██║╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██║   ██║ ║
+║   ███████║██████╔╝██║     ███████║██║   ██║   █████╗  ██║        ██║   ██║   ██║ ║
+║   ██╔══██║██╔══██╗██║     ██╔══██║██║   ██║   ██╔══╝  ██║        ██║   ██║   ██║ ║
+║   ██║  ██║██║  ██║╚██████╗██║  ██║██║   ██║   ███████╗╚██████╗   ██║   ╚██████╔╝ ║
+║   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝   ╚═╝   ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝  ║
+║                                                                              ║
+║          The project's technical structure, standards, and patterns.         ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                         PROJECT STRUCTURE                            ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   The project follows a clean, feature-based directory structure within the  ║
+║   `/src` folder to ensure code is organized, scalable, and easy to navigate. ║
+║                                                                              ║
+║   █  /core: Global Autoload Singletons for systems accessible from anywhere. ║
+║   █  /entities: Self-contained entities like the Player and Bosses.          ║
+║   █  /projectiles: Scenes and scripts for all projectiles.                   ║
+║   █  /scenes: Primary game state scenes like the main game level.            ║
+║   █  /ui: All user interface elements, organized by function:                ║
+║      ░  /components: Reusable, self-contained UI widgets (e.g., CustomSlider)║
+║      ░  /global_hud: The autoloaded global HUD.                              ║
+║      ░  /menu_manager: The reusable system for menu navigation.              ║
+║      ░  /screens: The individual scenes for each menu screen.                ║
+║   █  /arenas: Data-only scripts defining level layouts and encounters.       ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                         DESIGN PATTERNS USED                         ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   █  Singleton Pattern (Autoloads): Used for globally accessible systems.    ║
+║      ░  `Settings.gd`: Manages persistent game settings like volume.         ║
+║      ░  `AudioManager.gd`: A central manager for all audio playback.         ║
+║      ░  `CursorManager.gd`: Manages the state of the custom mouse cursor.    ║
+║      ░  `Constants.gd`: A central repository for game design values.         ║
+║      ░  `AssetPaths.gd`: A static registry of asset paths to prevent errors. ║
+║                                                                              ║
+║   █  State Machine: The Player's behavior is managed by a formal, enum-based ║
+║      state machine in `player.gd` to prevent conflicting actions.            ║
+║                                                                              ║
+║   █  Component-Based UI: The UI is built from self-contained, reusable       ║
+║      scenes. `MenuManager.gd` and `CustomSlider.gd` provide complex          ║
+║      functionality without the parent scene needing to know their internal   ║
+║      implementation.                                                         ║
+║                                                                              ║
+║   █  Data-Driven Level Design: `game.gd` reads from data-only scripts like   ║
+║      `arena_00_layout.gd` to procedurally build the level, allowing for      ║
+║      rapid creation of new arenas without duplicating scene files.           ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                         CODING STANDARDS                             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   █  Naming Conventions                                                      ║
+║      ░ `PascalCase` for class names, scene names, and `.gd` script files.    ║
+║      ░ `snake_case` for functions and variables.                             ║
+║      ░ `SCREAMING_SNAKE_CASE` for constants.                                 ║
+║                                                                              ║
+║   █  Asset Management: All file paths loaded in code MUST be referenced      ║
+║      through the `AssetPaths.gd` singleton.                                  ║
+║                                                                              ║
+║   █  Scene Instantiation: Use `const` variables to `preload` scenes that     ║
+║      will be instantiated frequently.                                        ║
+║                                                                              ║
+║   █  Collaboration Workflow (Human-AI)                                       ║
+║      1. Define Goal: The Human defines a small, achievable goal.             ║
+║      2. AI Solution: The AI provides complete, regenerated files and explains changes.║
+║      3. Implement & Test: The Human implements and thoroughly tests.         ║
+║      4. Commit & Push: The Human commits the verified change and pushes.     ║
+║      5. Confirm & Proceed: The Human confirms success and defines the next goal.║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

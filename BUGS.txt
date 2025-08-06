@@ -1,0 +1,53 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ██████╗ ██╗   ██╗ ██████╗ ███████╗                                         ║
+║   ██╔══██╗██║   ██║██╔════╝ ██╔════╝                                         ║
+║   ██████╔╝██║   ██║██║  ███╗███████╗                                         ║
+║   ██╔══██╗██║   ██║██║   ██║╚════██║                                         ║
+║   ██████╔╝╚██████╔╝╚██████╔╝███████║                                         ║
+║   ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝                                         ║
+║                                                                              ║
+║             A tracker for all known issues, their status, and solutions.     ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                             OPEN ISSUES                              ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   ▓  [BUG-003] Drop-through platforms ("-") are not functioning correctly.   ║
+║      ░  FOUND: 2025-08-05                                                    ║
+║      ░  STATUS: Open                                                         ║
+║      ░  DETAILS: The player cannot drop down through one-way platforms by    ║
+║      ░  pressing Down + Jump. The code for this was not implemented in the   ║
+║      ░  new player state machine.                                            ║
+║                                                                              ║
+║   ▒  [BUG-001] Player can get stuck on tile corners when jumping.            ║
+║      ░  FOUND: 2025-08-05                                                    ║
+║      ░  STATUS: Open                                                         ║
+║      ░  DETAILS: When the player jumps and moves horizontally against a      ║
+║      ░  wall, their top corner can clip the bottom corner of a tile above    ║
+║      ░  them, causing them to "bonk" their head and fall immediately. This   ║
+║      ░  feels jarring and unfair. The cause is likely the perfectly          ║
+║      ░  rectangular shape of the player's `CollisionShape2D`.                ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                             FIXED ISSUES                             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   □  [BUG-F002] Player pogo attack was not working correctly on all surfaces.║
+║      ░  FIXED: 2025-08-05                                                    ║
+║      ░  SOLUTION: Re-implemented the `_check_for_immediate_pogo()` physics   ║
+║      ░  query to allow instant bounces on surfaces directly below the        ║
+║      ░  player. Updated the `_trigger_pogo()` function to correctly handle   ║
+║      ░  bouncing on enemy projectiles in addition to standard enemies.       ║
+║                                                                              ║
+║   □  [BUG-F001] Player was not taking contact damage from boss/hazards.      ║
+║      ░  FIXED: 2025-08-05                                                    ║
+║      ░  SOLUTION: During the state machine refactor, the player's            ║
+║      ░  `CharacterBody2D` `collision_mask` was changed to ignore the         ║
+║      ░  "enemy" and "hazard" layers. The mask was updated in `player.tscn`   ║
+║      ░  to correctly detect these layers again, allowing the existing        ║
+║      ░  `_check_for_contact_damage()` function to work as intended.          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

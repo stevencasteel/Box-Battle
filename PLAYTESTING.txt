@@ -1,0 +1,47 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ██████╗ ██╗      █████╗ ██╗   ████   ████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ║
+║   ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ║
+║   ██████╔╝██║     ███████║ ╚████╔╝    ██║   █████╗     ██║   ██║██╔██╗ ██║███████╗ ║
+║   ██╔═══╝ ██║     ██╔══██║  ╚██╔╝     ██║   ██╔══╝     ██║   ██║██║╚██╗██║██╔════╝ ║
+║   ██║     ███████╗██║  ██║   ██║      ██║   ███████╗   ██║   ██║██║ ╚████║███████╗ ║
+║   ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝ ║
+║                                                                              ║
+║           A log of all playtesting sessions and resulting feedback.          ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                       PLAYTEST SESSION LOG                           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   (New playtest session reports should be added here, most recent at top.)   ║
+║                                                                              ║
+║  --------------------------------------------------------------------------  ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                      TEST SESSION TEMPLATE                           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   █  Date: YYYY-MM-DD                                                        ║
+║   █  Tester: [Name or description, e.g., "Developer," "Friend A"]            ║
+║   █  Build Version: [e.g., 0.1.0]                                            ║
+║   █  Session Goal: [e.g., "Test boss fight fairness", "Check menu UI"]       ║
+║                                                                              ║
+║   ▓  General Observations & Player Behavior                                  ║
+║      ░  What did the player do? Did they understand the goals? Where did     ║
+║      ░  they go first? (e.g., "Tester immediately tried to wall-jump.")      ║
+║                                                                              ║
+║   ▓  Issues & Bugs Found                                                     ║
+║      ░  List any bugs, crashes, or moments of confusion. Was anything        ║
+║      ░  frustrating or unfair?                                               ║
+║                                                                              ║
+║   ▓  Positive Feedback                                                       ║
+║      ░  What did the player say they enjoyed? What felt good to them?        ║
+║      ░  (e.g., "Player audibly said 'nice' after a successful pogo.")        ║
+║                                                                              ║
+║   ▓  Suggestions & Ideas                                                     ║
+║      ░  What did the player suggest? Did they have any ideas for new         ║
+║      ░  features or changes?                                                 ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝

@@ -1,0 +1,72 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║   ██████╗ ███████╗███████╗██╗ ██████╗ ███╗   ██╗                              ║
+║   ██╔══██╗██╔════╝██╔════╝██║██╔════╝ ████╗  ██║                              ║
+║   ██║  ██║█████╗  ███████╗██║██║  ███╗██╔██╗ ██║                              ║
+║   ██║  ██║██╔══╝  ╚════██║██║██║   ██║██║╚██╗██║                              ║
+║   ██████╔╝███████╗███████║██║╚██████╔╝██║ ╚████║                              ║
+║   ╚═════╝ ╚══════╝╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝                              ║
+║                                                                              ║
+║      The official documentation for game mechanics and design philosophy.    ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                         DESIGN PHILOSOPHY                            ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   █  Tough but Fair: The game is designed to be challenging. Player failure  ║
+║      should feel like a learning opportunity, not a punishment.              ║
+║                                                                              ║
+║   █  Player Expression: The player is given a rich and responsive moveset.   ║
+║      Mastery of these movement options is the key to success.                ║
+║                                                                              ║
+║   █  Thematic Mechanics: Gameplay systems are tied to narrative concepts.    ║
+║      Aggression is rewarded with the ability to heal via "Determination."    ║
+║                                                                              ║
+║   █  Minimalist Clarity: UI and gameplay indicators provide necessary info   ║
+║      without cluttering the screen.                                          ║
+║                                                                              ║
+║   █  Human-AI Collaborative Design: The level design process is a partnership║
+║      between a human and an AI, facilitated by the human-readable coordinate ║
+║      legend in level layout files.                                           ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                           CORE MECHANICS                             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   ▓  Player Movement                                                         ║
+║      A rich platforming system designed for precision and control.           ║
+║      ░ ■ Coyote Time: Player can jump for a fraction of a second after       ║
+║      ░   walking off a ledge.                                                ║
+║      ░ ■ Jump Buffering: Jump inputs are remembered briefly, executing upon  ║
+║      ░   landing.                                                            ║
+║      ░ ■ Dashing: A quick, fixed-distance burst of speed in 8 directions.   ║
+║      ░ ■ Wall-Sliding & Wall-Jumping: Allows for vertical traversal.        ║
+║      ░ ■ Drop-Through Platforms: Player can press Down + Jump to fall       ║
+║      ░   through one-way platforms.                                          ║
+║                                                                              ║
+║   ▓  Combat System                                                           ║
+║      ░ ■ Primary Attack (Melee): A quick, short-range attack.               ║
+║      ░ ■ Secondary Attack (Charged Shot): Holding attack charges a powerful, ║
+║      ░   long-range projectile.                                              ║
+║      ░ ■ Charge Fizzle: Releasing the charge too early results in a fizzle.   ║
+║      ░ ■ Pogo Attack: A downward melee allows bouncing off targets,          ║
+║      ░   resetting aerial abilities.                                         ║
+║      ░ ■ Hitbox/Hurtbox System: Precise collision system for dealing and     ║
+║      ░   taking damage.                                                      ║
+║                                                                              ║
+║   ▓  Health and Healing: The Determination System                            ║
+║      ░  Philosophy: Healing is earned directly through successful combat,    ║
+║      ░  pushing an offensive playstyle.                                       ║
+║      ░  Mechanic: Dealing damage fills a `determination_counter` to earn a   ║
+║      ░  `healing_charge`. A charge can be consumed to heal, but this takes   ║
+║      ░  time and leaves the player vulnerable.                                ║
+║                                                                              ║
+║   ▓  Boss Design                                                             ║
+║      ░ ■ "Corner Armor" Health System: Boss health is represented by three   ║
+║      ░   destructible corner plates. Each destroyed plate triggers a new      ║
+║      ░   phase with increased difficulty.                                     ║
+║      ░ ■ Pattern-Based AI: Bosses follow strict, learnable attack patterns.   ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
