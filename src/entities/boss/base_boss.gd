@@ -6,20 +6,21 @@
 extends CharacterBody2D
 
 # --- Node References ---
-# We no longer need a direct reference to the ColorRect for flipping.
-@onready var shot_timer: Timer = $ShotTimer
+@onready var cooldown_timer: Timer = $CooldownTimer
+@onready var patrol_timer: Timer = $PatrolTimer
 
 # --- Preloads ---
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
 
 # --- State Machine ---
-enum State { IDLE, ATTACK, COOLDOWN }
+enum State { IDLE, ATTACK, COOLDOWN, PATROL }
 var state: State = State.IDLE
 
 # --- Boss Stats & Properties ---
 var health = Constants.BOSS_HEALTH
 var player: CharacterBody2D = null
-var facing_direction = -1.0 # Start facing left
+var facing_direction = -1.0
+var patrol_speed = 100.0
 
 # --- Attack Definitions ---
 enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
@@ -30,10 +31,8 @@ var current_attack: AttackPattern
 func _ready():
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
-	# We now use the timer as a general-purpose cooldown timer.
-	shot_timer.wait_time = 1.5 # Cooldown duration after an attack.
-	shot_timer.one_shot = true # It should only fire once per cooldown cycle.
-	change_state(State.COOLDOWN) # Start with an initial cooldown.
+	# Start with an initial cooldown to give the player a moment to orient.
+	change_state(State.COOLDOWN)
 
 func _physics_process(delta):
 	if not is_on_floor():
@@ -48,13 +47,21 @@ func _physics_process(delta):
 			state_attack(delta)
 		State.COOLDOWN:
 			state_cooldown(delta)
+		State.PATROL:
+			state_patrol(delta)
 
 	move_and_slide()
+	
+	# If patrolling and a wall is hit, reverse direction.
+	if state == State.PATROL and is_on_wall():
+		facing_direction *= -1.0
+
 
 # --- State Functions ---
 
 func state_idle(_delta):
-	# From IDLE, we immediately decide on an attack and execute it.
+	# The IDLE state is now just a transition point to decide on an attack.
+	velocity.x = 0
 	change_state(State.ATTACK)
 
 func state_attack(_delta):
@@ -63,7 +70,6 @@ func state_attack(_delta):
 		AttackPattern.SINGLE_SHOT:
 			fire_shot_at_player()
 		AttackPattern.VOLLEY_SHOT:
-			# Use a SceneTreeTween to fire 3 shots with a small delay between them.
 			var tween = get_tree().create_tween()
 			tween.tween_callback(fire_shot_at_player)
 			tween.tween_interval(0.2)
@@ -75,24 +81,26 @@ func state_attack(_delta):
 	change_state(State.COOLDOWN)
 
 func state_cooldown(_delta):
-	# The boss does nothing during cooldown. The timer's timeout signal
-	# will be responsible for transitioning out of this state.
+	# The boss stops moving during cooldown.
+	velocity.x = 0
 	pass
+
+func state_patrol(_delta):
+	# Move in the current facing direction.
+	velocity.x = facing_direction * patrol_speed
 
 
 # --- Core Logic ---
 
 func _update_player_tracking():
-	if not is_instance_valid(player):
-		return
-		
-	# Determine direction based on player's position.
-	var direction_to_player = player.global_position.x - global_position.x
-	if not is_zero_approx(direction_to_player):
-		facing_direction = sign(direction_to_player)
+	# During an attack, face the player. While patrolling, face the move direction.
+	if state == State.ATTACK:
+		if is_instance_valid(player):
+			var direction_to_player = player.global_position.x - global_position.x
+			if not is_zero_approx(direction_to_player):
+				facing_direction = sign(direction_to_player)
 	
-	# THE FIX: Flip the entire boss node. This ensures all children,
-	# including the collision shape, flip together.
+	# Flip the entire boss node.
 	self.scale.x = facing_direction
 
 func fire_shot_at_player():
@@ -123,22 +131,25 @@ func change_state(new_state: State):
 	state = new_state
 	print("Boss entering state: ", State.keys()[new_state])
 
-	# "On Enter" logic for each state
 	match new_state:
 		State.ATTACK:
-			# Randomly select an attack pattern when entering the ATTACK state.
 			var attack_keys = AttackPattern.keys()
 			var chosen_attack_name = attack_keys[randi() % attack_keys.size()]
 			current_attack = AttackPattern[chosen_attack_name]
 			print("Boss chose attack: ", chosen_attack_name)
 		State.COOLDOWN:
-			# When entering COOLDOWN, start the timer.
-			shot_timer.start()
-
+			cooldown_timer.start()
+		State.PATROL:
+			patrol_timer.start()
 
 # --- Signal Callbacks ---
 
-func _on_shot_timer_timeout():
-	# When the cooldown timer finishes, the boss becomes idle and ready to attack.
+func _on_cooldown_timer_timeout():
+	# When the cooldown timer finishes, the boss starts patrolling.
 	if state == State.COOLDOWN:
+		change_state(State.PATROL)
+
+func _on_patrol_timer_timeout():
+	# When the patrol timer finishes, the boss becomes idle and ready to attack.
+	if state == State.PATROL:
 		change_state(State.IDLE)
