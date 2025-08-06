@@ -12,44 +12,72 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                  HIGH PRIORITY - CORE GAMEPLAY LOOP                  ██  ║
+║  ██                   CRITICAL - CORE GAMEPLAY LOOP                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Evolve Boss AI (State Machine)                                          ║
-║      ░  ■ Implement a basic state machine (IDLE, PATROL, ATTACK, COOLDOWN).  ║
-║      ░  ■ Implement platform-based patrol movement.                          ║
-║      ░  ■ Create a "volley" attack and a telegraphed lunge/dash attack.      ║
+║   These are the essential features required to make a complete game loop.    ║
 ║                                                                              ║
-║   █  Implement "Game Juice" (Player & Combat Feedback)                       ║
-║      ░  ■ Hit Pause: A brief (0.05s) global time freeze on successful hits.  ║
-║      ░  ■ Screen Shake: On taking damage and landing critical hits.          ║
-║      ░  ■ Hit Flash: Tint entity white for a few frames on taking damage.    ║
-║      ░  ■ Particle Effects: Add simple particles for landing (dust), hits    ║
-║      ░    (sparks), and dashing (trail).                                     ║
-║      ░  ■ Sound Effects: Add placeholder SFX for all core player and combat actions.║
+║   █  Evolve Boss AI (State Machine)                                          ║
+║      ░  ■ Implement a basic state machine (e.g., IDLE, PATROL, ATTACK).      ║
+║      ░  ■ Add logic for the boss to face the player.                         ║
+║      ░  ■ Design and implement 2-3 distinct, telegraphed attack patterns.    ║
 ║                                                                              ║
 ║   █  Build In-Game HUD                                                       ║
 ║      ░  ■ Create a new scene `GameHUD.tscn`.                                 ║
-║      ░  ■ Display player health, boss health, and healing charges.           ║
+║      ░  ■ Connect it to the player to display current/max health.            ║
+║      ░  ■ Connect it to the boss to display a health bar.                    ║
+║      ░  ■ Add an indicator for available `healing_charges`.                  ║
 ║                                                                              ║
 ║   █  Implement Win/Loss States                                               ║
-║      ░  ■ Create "Game Over" and "Victory" screens with transitions.         ║
-║      ░  ■ Add a "Freeze Frame" effect just before the boss's death explosion.║
+║      ░  ■ Create a "Victory" screen/event when the boss's health reaches zero.║
+║      ░  ■ Create a "Game Over" screen/event when the player's health reaches zero.║
+║      ░  ■ Add clean transitions from the game scene to these new states.     ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              MEDIUM PRIORITY - POLISH & REFINEMENTS                  ██  ║
+║  ██              HIGH - ESSENTIAL FEEDBACK & "GAME JUICE"                ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▓  Implement Advanced Movement Techniques                                  ║
-║      ░  □ Fast-Fall: Increase gravity when holding 'Down' in the air.        ║
+║   These features make the game feel responsive, satisfying, and alive.       ║
+║                                                                              ║
+║   ▓  Implement Visual Feedback                                               ║
+║      ░  ■ Hit Flash: Tint entities white for a few frames on taking damage.  ║
+║      ░  ■ Screen Shake: On player taking damage and on boss death.           ║
+║      ░  ■ Hit Pause: A brief (e.g., 0.05s) global time freeze on hit.        ║
+║      ░  ■ Particle Effects: For player landing (dust), hits (sparks), etc.   ║
+║      ░  ■ Dash Cooldown UI: A visual indicator on the HUD for dash readiness.║
+║                                                                              ║
+║   ▓  Implement Audio Feedback                                                ║
+║      ░  ■ Implement placeholder SFX for all core actions: player jump, dash, ║
+║      ░    attack, take damage, heal, and pogo bounce.                        ║
+║      ░  ■ Add SFX for boss taking damage and attacking.                      ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██              MEDIUM - PLAYER & SYSTEM REFINEMENTS                    ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Improvements to existing systems to enhance game feel and fairness.        ║
+║                                                                              ║
+║   ▒  Implement Advanced Movement                                             ║
 ║      ░  ■ Corner Correction: Nudge the player over sharp corners.            ║
 ║      ░  ■ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
 ║                                                                              ║
-║   ▓  Implement Input Buffering for Actions                                   ║
-║      ░  ■ Buffer attack and dash inputs just like the jump input.            ║
+║   ▒  Implement Input Buffering                                               ║
+║      ░  ■ Buffer attack and dash inputs just like the jump input is.         ║
 ║                                                                              ║
-║   ▓  Implement Debug Hotkeys (Y, U, I, O)                                    ║
+║   ▒  Refine Charged Shot                                                     ║
+║      ░  ■ Add a visual indicator while the player is charging.               ║
+║      ░  ■ Create a "fizzle" effect/sound if the charge is released too early.║
 ║                                                                              ║
-║   ▓  Implement Charge Shot Fizzle & Visual Indicator                         ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                    LOW - DEBUGGING & TOOLS                           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Features to accelerate development and testing.                            ║
+║                                                                              ║
+║   ░  Implement Debug Hotkeys                                                 ║
+║      ░  ■ Y: Toggle Player Invincibility.                                    ║
+║      ░  ■ U: Damage Boss by 5 HP.                                            ║
+║      ░  ■ I: Instantly gain 1 Healing Charge.                                ║
+║      ░  ■ O: Toggle Debug Overlay (player state, boss state, timers).        ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
