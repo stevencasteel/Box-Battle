@@ -2,29 +2,29 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug  6 12:52:23 CDT 2025
+Generated on: Wed Aug  6 16:03:46 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
-├── ARCHITECTURE.txt
-├── ARENA_CONCEPTS.txt
-├── ASSETS.txt
-├── BRAINSTORM.txt
-├── BUGS.txt
-├── CHANGELOG.txt
-├── DESIGN.txt
-├── DOCS_PROTOCOL.txt
-├── LICENSE
-├── PLAYTESTING.txt
 ├── README.md
-├── ROADMAP.txt
-├── TODO.txt
-├── all_godot_source_code.txt
-├── create_all_godot_source_code_terminal_prompt.txt
-├── create_all_godot_source_code_txt.sh
 ├── default_bus_layout.tres
+├── docs
+│   ├── ARCHITECTURE.txt
+│   ├── ARENA_CONCEPTS.txt
+│   ├── ASSETS.txt
+│   ├── BRAINSTORM.txt
+│   ├── BUGS.txt
+│   ├── CHANGELOG.txt
+│   ├── DESIGN.txt
+│   ├── DOCS_PROTOCOL.txt
+│   ├── LICENSE
+│   ├── PLAYTESTING.txt
+│   ├── ROADMAP.txt
+│   ├── TODO.txt
+│   ├── all_godot_source_code.txt
+│   └── create_all_godot_source_code_txt.sh
 ├── icon.svg
 ├── progess
 │   └── progress_001-1.jpg
@@ -34,10 +34,12 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── arena_00_encounter.gd
     │   └── arena_00_layout.gd
     ├── core
+    │   ├── arena_builder.gd
     │   ├── asset_paths.gd
     │   ├── audio_manager.gd
     │   ├── constants.gd
     │   ├── cursor_manager.gd
+    │   ├── game_manager.gd
     │   └── settings.gd
     ├── entities
     │   ├── boss
@@ -55,6 +57,9 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── game
     │   │   ├── game.gd
     │   │   └── game.tscn
+    │   ├── loading
+    │   │   ├── loading_screen.gd
+    │   │   └── loading_screen.tscn
     │   └── main
     │       ├── main.gd
     │       └── main.tscn
@@ -84,11 +89,11 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── title_screen.gd
                 └── title_screen.tscn
 
-23 directories, 53 files
+25 directories, 56 files
 
 
 =====================================
-FILE: ./TODO.txt
+FILE: ./docs/TODO.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -124,7 +129,7 @@ FILE: ./TODO.txt
 ║      ░  ■ Create a new scene `GameHUD.tscn`.                                 ║
 ║      ░  ■ Display player health, boss health, and healing charges.           ║
 ║                                                                              ║
-║   █  Implement Win/Loss States                                              ║
+║   █  Implement Win/Loss States                                               ║
 ║      ░  ■ Create "Game Over" and "Victory" screens with transitions.         ║
 ║      ░  ■ Add a "Freeze Frame" effect just before the boss's death explosion.║
 ║                                                                              ║
@@ -133,7 +138,7 @@ FILE: ./TODO.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   ▓  Implement Advanced Movement Techniques                                  ║
-║      ░  ■ Fast-Fall: Increase gravity when holding 'Down' in the air.        ║
+║      ░  □ Fast-Fall: Increase gravity when holding 'Down' in the air.        ║
 ║      ░  ■ Corner Correction: Nudge the player over sharp corners.            ║
 ║      ░  ■ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
 ║                                                                              ║
@@ -147,7 +152,7 @@ FILE: ./TODO.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./DESIGN.txt
+FILE: ./docs/DESIGN.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -192,14 +197,13 @@ FILE: ./DESIGN.txt
 ║      ░ ■ 8-directional Dash with a cooldown.                                 ║
 ║      ░ ■ Wall-Sliding and Wall-Jumping for verticality.                      ║
 ║      ░ ■ Drop-Through Platforms via Down + Jump input.                       ║
+║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity.             ║
 ║                                                                              ║
 ║   ▓  Advanced Movement Techniques (To Be Implemented)                        ║
 ║      ░ ■ Corner Correction: The game engine will subtly nudge the player up  ║
 ║      ░   and over sharp corners to prevent frustrating "bonks."              ║
 ║      ░ ■ Dash-Jump Cancel: Allows the player to interrupt a dash with a jump,║
 ║      ░   preserving some momentum for advanced precision movement.           ║
-║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity, giving the  ║
-║      ░   player more control over their airtime.                             ║
 ║                                                                              ║
 ║   ▓  Combat System                                                           ║
 ║      ░ ■ Primary Attack (Melee), Secondary Attack (Charged Shot), Pogo Attack.║
@@ -256,7 +260,7 @@ FILE: ./DESIGN.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./ROADMAP.txt
+FILE: ./docs/ROADMAP.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -321,7 +325,7 @@ FILE: ./ROADMAP.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./PLAYTESTING.txt
+FILE: ./docs/PLAYTESTING.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -372,7 +376,7 @@ FILE: ./PLAYTESTING.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./BUGS.txt
+FILE: ./docs/BUGS.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -391,13 +395,6 @@ FILE: ./BUGS.txt
 ║  ██                             OPEN ISSUES                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▓  [BUG-003] Drop-through platforms ("-") are not functioning correctly.   ║
-║      ░  FOUND: 2025-08-05                                                    ║
-║      ░  STATUS: Open                                                         ║
-║      ░  DETAILS: The player cannot drop down through one-way platforms by    ║
-║      ░  pressing Down + Jump. The code for this was not implemented in the   ║
-║      ░  new player state machine.                                            ║
-║                                                                              ║
 ║   ▒  [BUG-001] Player can get stuck on tile corners when jumping.            ║
 ║      ░  FOUND: 2025-08-05                                                    ║
 ║      ░  STATUS: Open                                                         ║
@@ -407,9 +404,36 @@ FILE: ./BUGS.txt
 ║      ░  feels jarring and unfair. The cause is likely the perfectly          ║
 ║      ░  rectangular shape of the player's `CollisionShape2D`.                ║
 ║                                                                              ║
+║   ░  [BUG-005] Minor hitch may still occur on arena load.                    ║
+║      ░  FOUND: 2025-08-06                                                    ║
+║      ░  STATUS: Open (Low Priority)                                          ║
+║      ░  DETAILS: After implementing the pre-building system, the major       ║
+║      ░  load-in stutter is gone. However, a very minor frame drop may still  ║
+║      ░  be present within the first second. This could be due to late shader ║
+║      ░  compilation for future VFX or other first-frame engine processes.    ║
+║      ░  To be investigated during the "Game Juice" and polishing phase.      ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                             FIXED ISSUES                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   □  [BUG-F005] Player death caused a black screen instead of reloading.     ║
+║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  SOLUTION: The `game.gd` script was made robust to handle both        ║
+║      ░  initial loads (using the pre-built level from `GameManager`) and     ║
+║      ░  reloads (by calling `ArenaBuilder.build_level()` as a fallback).     ║
+║                                                                              ║
+║   □  [BUG-F004] Standard melee attacks did not destroy enemy projectiles.    ║
+║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  SOLUTION: The `_on_hitbox_area_entered` function logic was           ║
+║      ░  corrected to handle non-pogo attack collisions with projectiles,     ║
+║      ░  allowing forward and upward swings to destroy them.                  ║
+║                                                                              ║
+║   □  [BUG-F003] Drop-through platforms ("-") were not functioning.           ║
+║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  SOLUTION: Re-implemented the Down+Jump logic in the player's         ║
+║      ░  `state_move` function. Corrected the platform's collision shape      ║
+║      ░  position and group assignment in `game.gd`.                          ║
 ║                                                                              ║
 ║   □  [BUG-F002] Player pogo attack was not working correctly on all surfaces.║
 ║      ░  FIXED: 2025-08-05                                                    ║
@@ -429,96 +453,7 @@ FILE: ./BUGS.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./README.md
-=====================================
-# Box Battle
-
-```
-██████╗  ██████╗ ██╗  ██╗    ██████╗  █████╗ ████████╗████████╗██╗     ███████╗
-██╔══██╗██╔═══██╗╗██╗██╔╝    ██╔══██╗██╔══██╗╚══██╔══╝╚══██╔══╝██║     ██╔════╝
-██████╔╝██║   ██║╚███╔╝      ██████╔╝███████║   ██║      ██║   ██║     █████╗  
-██╔══██╗██║   ██║██╔██╗      ██╔══██╗██╔══██║   ██║      ██║   ██║     ██╔══╝  
-██████╔╝╚██████╔╝██╔╝ ██╗    ██████╔╝██║  ██║   ██║      ██║   ███████╗███████╗
-╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝╚══════╝
-```
-
-A combat-focused 2D action game built in Godot 4, showcasing clean architecture and comprehensive game systems.
-
-## What Makes This Code Notable
-
-### Architectural Excellence
-- **Centralized Asset Management**: All file paths are managed through a single `AssetPaths` singleton, eliminating broken references and making refactoring trivial
-- **Singleton-Based Core Systems**: Audio, settings, cursor management, and constants are globally accessible without tight coupling
-- **Modular Arena System**: Level layouts and encounters are separated into data-only scripts, making level creation declarative and maintainable
-
-### Advanced Player Controller
-- **Robust State Machine**: Clean finite state machine handling movement, combat, dashing, wall-sliding, and healing states
-- **Physics-Driven Design**: Implements coyote time, jump buffering, wall jumping, and variable jump height for responsive controls
-- **Pogo Mechanics**: Sophisticated downward attack system with instant collision detection and momentum preservation
-- **Determination System**: Risk/reward mechanics where dealing damage builds healing charges
-
-### Production-Quality UI
-- **Custom Menu Navigation**: Unified system supporting both keyboard and mouse input with audio feedback
-- **Global HUD Management**: Context-aware UI elements that appear/disappear based on current scene
-- **Real-time Settings Sync**: Audio sliders and checkboxes update immediately without save/load cycles
-- **Custom Slider Component**: Self-contained, reusable UI widget with proper mouse interaction
-
-### Smart Audio Architecture
-- **Pooled SFX Players**: Multiple AudioStreamPlayer instances prevent sound cutoff during rapid-fire events
-- **Context-Aware Sounds**: Different menu actions trigger appropriate audio cues (back vs select vs error)
-- **Robust Music Management**: Prevents music restarts when switching between menu screens
-
-### Clean Code Practices
-- **Extensive Documentation**: Every script explains its purpose and key design decisions
-- **Consistent Naming**: Clear, descriptive variable and function names throughout
-- **Proper Signal Usage**: Decoupled communication between components using Godot's signal system
-- **Layer-Based Physics**: Thoughtful collision layer setup for different object types and interactions
-
-### Noteworthy Technical Solutions
-- **Fake Cursor System**: Custom cursor that works consistently across all platforms with proper click-through behavior
-- **Immediate Pogo Detection**: Proactive collision checking prevents frame-delay issues in fast-paced combat
-- **Hazard Dual-Layer System**: Terrain that's both solid (world layer) and damaging (hazard layer) for consistent physics
-- **Deferred Scene Changes**: Proper scene transition handling to prevent physics errors
-
-## Getting Started
-
-1. Clone the repository
-2. Open the project in Godot 4.4+
-3. Run the project - it starts at the title screen
-
-## Controls
-
-- **Movement**: WASD / Arrow Keys
-- **Jump**: Space / X / Period
-- **Attack**: C / Comma / Alt + Shift
-- **Dash**: Z / Slash / Shift + Ctrl
-- **Heal**: Hold Down + Jump while on ground (requires healing charges)
-
-## Project Structure
-
-```
-src/
-├── core/           # Singleton systems (audio, settings, etc.)
-├── entities/       # Player and enemy classes
-├── projectiles/    # Bullet and shot behaviors
-├── scenes/         # Main game scenes
-├── ui/             # Menu systems and components
-└── arenas/         # Level data and encounter scripts
-```
-
-This codebase demonstrates how to structure a Godot project for maintainability, extensibility, and professional polish. Every system is designed to be modular, well-documented, and easy to extend.
-
-## License
-
-This project is released under CC0 1.0 Universal - dedicated to the public domain. Use it however you like!
-
-=====================================
-FILE: ./create_all_godot_source_code_terminal_prompt.txt
-=====================================
-(echo '+---------------------------------+'; echo '|         B O X  B A T T L E        |'; echo '|  Godot Project Source Context   |'; echo '+---------------------------------+'; echo "Generated on: $(date)"; echo ""; find . -type f \( -name "*.gd" -o -name "*.tscn" -o -name "*.md" -o -name "*.tres" -o -name "project.godot" -o -name "*.txt" \) -not -path "./assets/*" -not -path "./.git/*" -not -name "all_godot_source_code.txt" -print0 | xargs -0 -I {} sh -c 'echo "=====================================\nFILE: {}"; cat {}; echo "\n"') > all_godot_source_code.txt
-
-=====================================
-FILE: ./DOCS_PROTOCOL.txt
+FILE: ./docs/DOCS_PROTOCOL.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -631,26 +566,7 @@ FILE: ./DOCS_PROTOCOL.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./default_bus_layout.tres
-=====================================
-[gd_resource type="AudioBusLayout" format=3 uid="uid://c65ja7dwrkbrc"]
-
-[resource]
-bus/1/name = &"Music"
-bus/1/solo = false
-bus/1/mute = false
-bus/1/bypass_fx = false
-bus/1/volume_db = 0.0
-bus/1/send = &"Master"
-bus/2/name = &"SFX"
-bus/2/solo = false
-bus/2/mute = false
-bus/2/bypass_fx = false
-bus/2/volume_db = 0.0
-bus/2/send = &"Master"
-
-=====================================
-FILE: ./ARCHITECTURE.txt
+FILE: ./docs/ARCHITECTURE.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -731,7 +647,7 @@ FILE: ./ARCHITECTURE.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./ASSETS.txt
+FILE: ./docs/ASSETS.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -790,7 +706,7 @@ FILE: ./ASSETS.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./CHANGELOG.txt
+FILE: ./docs/CHANGELOG.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -810,13 +726,22 @@ FILE: ./CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
-║      ░                                                                       ║
+║      ░ ■ Implemented a fast-fall mechanic (Hold Down in air).                ║
+║      ░ ■ Created a new `GameManager` singleton to manage game state.         ║
+║      ░ ■ Created a new `ArenaBuilder` singleton to centralize level creation.║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
-║      ░                                                                       ║
+║      ░ ■ Overhauled the level loading process to use a pre-building system,  ║
+║      ░   constructing the entire level behind a loading screen to eliminate   ║
+║      ░   stuttering on arena load.                                           ║
+║      ░ ■ Refined melee attack's movement pause to a tunable friction system. ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
-║      ░                                                                       ║
+║      ░ ■ Fixed a critical bug where reloading after player death would fail. ║
+║      ░ ■ Restored ability to drop through one-way platforms.                 ║
+║      ░ ■ Standard melee attacks (forward/up) now correctly destroy enemy     ║
+║      ░   projectiles.                                                        ║
+║      ░ ■ Resolved a GDScript warning for a shadowed global variable.         ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║
@@ -852,7 +777,7 @@ FILE: ./CHANGELOG.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./BRAINSTORM.txt
+FILE: ./docs/BRAINSTORM.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ╚═══════╗
@@ -935,7 +860,7 @@ FILE: ./BRAINSTORM.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
-FILE: ./ARENA_CONCEPTS.txt
+FILE: ./docs/ARENA_CONCEPTS.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                              ║
@@ -1077,6 +1002,109 @@ FILE: ./ARENA_CONCEPTS.txt
 
 
 =====================================
+FILE: ./README.md
+=====================================
+# Box Battle
+
+```
+██████╗  ██████╗ ██╗  ██╗    ██████╗  █████╗ ████████╗████████╗██╗     ███████╗
+██╔══██╗██╔═══██╗╗██╗██╔╝    ██╔══██╗██╔══██╗╚══██╔══╝╚══██╔══╝██║     ██╔════╝
+██████╔╝██║   ██║╚███╔╝      ██████╔╝███████║   ██║      ██║   ██║     █████╗  
+██╔══██╗██║   ██║██╔██╗      ██╔══██╗██╔══██║   ██║      ██║   ██║     ██╔══╝  
+██████╔╝╚██████╔╝██╔╝ ██╗    ██████╔╝██║  ██║   ██║      ██║   ███████╗███████╗
+╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝╚══════╝
+```
+
+A combat-focused 2D action game built in Godot 4, showcasing clean architecture and comprehensive game systems.
+
+## What Makes This Code Notable
+
+### Architectural Excellence
+- **Centralized Asset Management**: All file paths are managed through a single `AssetPaths` singleton, eliminating broken references and making refactoring trivial
+- **Singleton-Based Core Systems**: Audio, settings, cursor management, and constants are globally accessible without tight coupling
+- **Modular Arena System**: Level layouts and encounters are separated into data-only scripts, making level creation declarative and maintainable
+
+### Advanced Player Controller
+- **Robust State Machine**: Clean finite state machine handling movement, combat, dashing, wall-sliding, and healing states
+- **Physics-Driven Design**: Implements coyote time, jump buffering, wall jumping, and variable jump height for responsive controls
+- **Pogo Mechanics**: Sophisticated downward attack system with instant collision detection and momentum preservation
+- **Determination System**: Risk/reward mechanics where dealing damage builds healing charges
+
+### Production-Quality UI
+- **Custom Menu Navigation**: Unified system supporting both keyboard and mouse input with audio feedback
+- **Global HUD Management**: Context-aware UI elements that appear/disappear based on current scene
+- **Real-time Settings Sync**: Audio sliders and checkboxes update immediately without save/load cycles
+- **Custom Slider Component**: Self-contained, reusable UI widget with proper mouse interaction
+
+### Smart Audio Architecture
+- **Pooled SFX Players**: Multiple AudioStreamPlayer instances prevent sound cutoff during rapid-fire events
+- **Context-Aware Sounds**: Different menu actions trigger appropriate audio cues (back vs select vs error)
+- **Robust Music Management**: Prevents music restarts when switching between menu screens
+
+### Clean Code Practices
+- **Extensive Documentation**: Every script explains its purpose and key design decisions
+- **Consistent Naming**: Clear, descriptive variable and function names throughout
+- **Proper Signal Usage**: Decoupled communication between components using Godot's signal system
+- **Layer-Based Physics**: Thoughtful collision layer setup for different object types and interactions
+
+### Noteworthy Technical Solutions
+- **Fake Cursor System**: Custom cursor that works consistently across all platforms with proper click-through behavior
+- **Immediate Pogo Detection**: Proactive collision checking prevents frame-delay issues in fast-paced combat
+- **Hazard Dual-Layer System**: Terrain that's both solid (world layer) and damaging (hazard layer) for consistent physics
+- **Deferred Scene Changes**: Proper scene transition handling to prevent physics errors
+
+## Getting Started
+
+1. Clone the repository
+2. Open the project in Godot 4.4+
+3. Run the project - it starts at the title screen
+
+## Controls
+
+- **Movement**: WASD / Arrow Keys
+- **Jump**: Space / X / Period
+- **Attack**: C / Comma / Alt + Shift
+- **Dash**: Z / Slash / Shift + Ctrl
+- **Heal**: Hold Down + Jump while on ground (requires healing charges)
+
+## Project Structure
+
+```
+src/
+├── core/           # Singleton systems (audio, settings, etc.)
+├── entities/       # Player and enemy classes
+├── projectiles/    # Bullet and shot behaviors
+├── scenes/         # Main game scenes
+├── ui/             # Menu systems and components
+└── arenas/         # Level data and encounter scripts
+```
+
+This codebase demonstrates how to structure a Godot project for maintainability, extensibility, and professional polish. Every system is designed to be modular, well-documented, and easy to extend.
+
+## License
+
+This project is released under CC0 1.0 Universal - dedicated to the public domain. Use it however you like!
+
+=====================================
+FILE: ./default_bus_layout.tres
+=====================================
+[gd_resource type="AudioBusLayout" format=3 uid="uid://c65ja7dwrkbrc"]
+
+[resource]
+bus/1/name = &"Music"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = 0.0
+bus/1/send = &"Master"
+bus/2/name = &"SFX"
+bus/2/solo = false
+bus/2/mute = false
+bus/2/bypass_fx = false
+bus/2/volume_db = 0.0
+bus/2/send = &"Master"
+
+=====================================
 FILE: ./project.godot
 =====================================
 ; Engine configuration file.
@@ -1104,6 +1132,8 @@ CursorManager="*res://src/core/cursor_manager.gd"
 Constants="*res://src/core/constants.gd"
 AssetPaths="*res://src/core/asset_paths.gd"
 GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
+GameManager="*res://src/core/game_manager.gd"
+ArenaBuilder="*res://src/core/arena_builder.gd"
 
 [display]
 
@@ -1826,19 +1856,15 @@ FILE: ./src/ui/screens/title_screen/title_screen.gd
 # buttons, plays the title music, and sets up menu navigation.
 extends Control
 
-# Preload the MenuManager script using the safe path from AssetPaths.
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
-	# Wait one frame to ensure singletons like AudioManager are fully ready.
 	await get_tree().process_frame
 	AudioManager.play_music(AssetPaths.AUDIO_MUSIC_TITLE)
 
-	# --- Create UI Elements ---
 	var title_graphic = TextureRect.new()
 	title_graphic.texture = load(AssetPaths.SPRITE_TITLE)
 	add_child(title_graphic)
-	# Center the graphic horizontally.
 	title_graphic.position = Vector2((get_viewport_rect().size.x - title_graphic.size.x) / 2, 220)
 
 	var start_button = TextureButton.new()
@@ -1851,11 +1877,9 @@ func _ready():
 	add_child(options_button)
 	options_button.position = Vector2((get_viewport_rect().size.x - options_button.size.x) / 2, 600)
 
-	# --- Connect Signals ---
 	start_button.pressed.connect(_on_start_button_pressed)
 	options_button.pressed.connect(_on_options_button_pressed)
 
-	# --- Initialize Menu Navigation ---
 	var menu = MenuManager.new()
 	add_child(menu)
 	
@@ -1865,15 +1889,18 @@ func _ready():
 	]
 	menu.setup_menu(menu_items)
 
-# --- Signal Handler Functions ---
-
+# --- MODIFIED FUNCTION ---
 func _on_start_button_pressed():
-	# Use AssetPaths to safely change to the gameplay scene.
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_GAME)
+	# Step 1: Tell the GameManager which level we want to play.
+	GameManager.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
+	
+	# Step 2: Transition to the generic loading screen.
+	# The loading screen will now use the GameManager to figure out what to do.
+	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_LOADING_SCREEN)
 
 func _on_options_button_pressed():
-	# Use AssetPaths to safely change to the options menu.
 	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)
+
 
 =====================================
 FILE: ./src/ui/components/custom_slider/custom_slider.gd
@@ -1963,6 +1990,76 @@ func _on_knob_mouse_exited():
 		CursorManager.set_pointer_state(false)
 
 =====================================
+FILE: ./src/scenes/loading/loading_screen.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://loading_screen_scene_id"]
+
+[ext_resource type="Script" path="res://src/scenes/loading/loading_screen.gd" id="1_loading_script"]
+
+[node name="LoadingScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_loading_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.0
+offset_top = -16.5
+offset_right = 75.0
+offset_bottom = 16.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 30
+text = "Loading..."
+horizontal_alignment = 1
+vertical_alignment = 1
+
+=====================================
+FILE: ./src/scenes/loading/loading_screen.gd
+=====================================
+# src/scenes/loading/loading_screen.gd
+#
+# This script handles the pre-building of the entire game level to prevent
+# stuttering. It calls the ArenaBuilder to construct the level in memory.
+extends Control
+
+func _ready():
+	# Ensure GameManager has a valid path before proceeding.
+	if GameManager.current_encounter_script_path.is_empty():
+		print("ERROR: No encounter script specified in GameManager. Returning to title.")
+		get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
+		return
+
+	# Tell the ArenaBuilder to construct the entire level. This is the
+	# "heavy lifting" that will now happen behind the loading screen.
+	GameManager.prebuilt_level = ArenaBuilder.build_level()
+	
+	# Wait for a single frame to ensure all creation processes are finalized.
+	await get_tree().process_frame
+	
+	# Proceed to the main game scene.
+	get_tree().change_scene_to_file(AssetPaths.SCENE_GAME)
+
+
+=====================================
 FILE: ./src/scenes/game/game.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://game_scene_unique_id"]
@@ -1977,108 +2074,36 @@ FILE: ./src/scenes/game/game.gd
 =====================================
 # src/scenes/game/game.gd
 #
-# This script orchestrates the setup of an arena battle. It loads a layout
-# and an encounter file, builds the terrain from that data, and spawns the
-# required entities like the player and boss.
+# This script orchestrates the setup of an arena battle. It handles both
+# the initial smooth load from a pre-built level and in-place reloads for retries.
 extends Node
 
-# --- Preloads ---
-# Preload all required scenes and scripts via the AssetPaths singleton.
-const PlayerScene = preload(AssetPaths.SCENE_PLAYER)
-const ArenaLayout = preload(AssetPaths.SCRIPT_ARENA_00_LAYOUT)
-const ArenaEncounter = preload(AssetPaths.SCRIPT_ARENA_00_ENCOUNTER)
-
+# --- MODIFIED FUNCTION ---
 func _ready():
-	# Instantiate our data-only scripts to access their constants.
-	var layout = ArenaLayout.new()
-	var encounter = ArenaEncounter.new()
+	# PATH 1: Initial Load (Fast and Smooth)
+	# Check if a level was pre-built by the loading screen.
+	if GameManager.prebuilt_level:
+		# Add the entire pre-built level to the scene tree in one fast operation.
+		add_child(GameManager.prebuilt_level)
+		# Clear the reference so it doesn't hold onto memory.
+		GameManager.prebuilt_level = null
+		return # We're done.
 
-	var player_spawn_pos = Vector2.ZERO
-	var boss_spawn_pos = Vector2.ZERO
-
-	# --- Build Terrain and Find Spawns ---
-	# Read the layout data and build the physical world tile by tile.
-	for y in range(layout.TERRAIN_DATA.size()):
-		var row_string = layout.TERRAIN_DATA[y]
-		for x in range(row_string.length()):
-			var tile_char = row_string[x]
-			# Use the TILE_SIZE from our Constants singleton for positioning.
-			var tile_pos = Vector2(x * Constants.TILE_SIZE, y * Constants.TILE_SIZE) + Vector2(Constants.TILE_SIZE / 2.0, Constants.TILE_SIZE / 2.0)
-
-			match tile_char:
-				'#':
-					_create_solid_tile(tile_pos)
-				'-':
-					_create_oneway_platform(tile_pos)
-				'^':
-					_create_hazard_tile(tile_pos)
-				# Check for entity markers defined in the encounter script.
-				encounter.PLAYER_SPAWN_MARKER:
-					player_spawn_pos = tile_pos
-				encounter.BOSS_SPAWN_MARKER:
-					boss_spawn_pos = tile_pos
-
-	# --- Spawn Entities ---
-	_spawn_player(player_spawn_pos)
-	_spawn_boss(boss_spawn_pos, encounter.BOSS_SCENE)
-
-
-# --- Helper Functions for Spawning and Building ---
-
-func _spawn_player(pos: Vector2):
-	var player_instance = PlayerScene.instantiate()
-	player_instance.global_position = pos
-	add_child(player_instance)
-
-func _spawn_boss(pos: Vector2, scene: PackedScene):
-	if scene == null: return
-	var boss_instance = scene.instantiate()
-	boss_instance.global_position = pos
-	add_child(boss_instance)
-
-func _create_solid_tile(pos: Vector2):
-	var static_body = StaticBody2D.new()
-	static_body.position = pos
-	static_body.collision_layer = 2 # Corresponds to "world" layer
-	static_body.add_to_group("world")
-	var collision_shape = CollisionShape2D.new()
-	var rectangle_shape = RectangleShape2D.new()
-	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
-	collision_shape.shape = rectangle_shape
-	static_body.add_child(collision_shape)
-	add_child(static_body)
-
-func _create_oneway_platform(pos: Vector2):
-	var static_body = StaticBody2D.new()
-	static_body.position = pos
-	static_body.collision_layer = 2 # Corresponds to "world" layer
-	static_body.add_to_group("world")
-	var collision_shape = CollisionShape2D.new()
-	collision_shape.one_way_collision = true
-	var rectangle_shape = RectangleShape2D.new()
-	# Make the platform thin for one-way collision to work best
-	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
-	collision_shape.shape = rectangle_shape
-	static_body.add_child(collision_shape)
-	add_child(static_body)
-
-# --- THIS IS THE FIX ---
-# A hazard is now both a "world" object (layer 2) and a "hazard" object (layer 8).
-# The player's body collides with layer 2, making it solid.
-# The player's hurtbox detects layer 8, making it deal damage.
-func _create_hazard_tile(pos: Vector2):
-	var static_body = StaticBody2D.new()
-	static_body.position = pos
-	# Set the layer to be the sum of the world layer (2) and the hazard layer (8).
-	static_body.collision_layer = 10
-	static_body.add_to_group("world")
-	static_body.add_to_group("hazard")
-	var collision_shape = CollisionShape2D.new()
-	var rectangle_shape = RectangleShape2D.new()
-	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
-	collision_shape.shape = rectangle_shape
-	static_body.add_child(collision_shape)
-	add_child(static_body)
+	# PATH 2: Reload / Retry
+	# If there's no pre-built level, we assume we're reloading the scene.
+	# We check if we still know WHICH level to build.
+	if not GameManager.current_encounter_script_path.is_empty():
+		print("No pre-built level found. Assuming retry. Rebuilding arena...")
+		# Tell the ArenaBuilder to construct the level directly.
+		# This will cause a brief hitch, which is acceptable for a retry.
+		var level_container = ArenaBuilder.build_level()
+		add_child(level_container)
+	
+	# PATH 3: Critical Error
+	# If we have no pre-built level AND no path, something is wrong.
+	else:
+		print("ERROR: Game scene loaded without a pre-built level or encounter path. Returning to title.")
+		get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
 
 =====================================
 FILE: ./src/scenes/main/main.tscn
@@ -2136,6 +2161,133 @@ extends Node
 @export var master_muted: bool = false
 @export var music_muted: bool = true # Start with music muted by default.
 @export var sfx_muted: bool = false
+
+=====================================
+FILE: ./src/core/game_manager.gd
+=====================================
+# src/core/game_manager.gd
+#
+# A simple singleton to manage the state of the game session, such as
+# which level is currently being loaded or played.
+extends Node
+
+# This variable will hold the resource path to the encounter script for the
+# level that the player has chosen to play.
+var current_encounter_script_path: String = ""
+
+# --- NEW VARIABLE ---
+# This will hold the fully constructed, but currently hidden, level node.
+var prebuilt_level: Node = null
+
+=====================================
+FILE: ./src/core/arena_builder.gd
+=====================================
+# src/core/arena_builder.gd
+#
+# This singleton is responsible for all procedural level construction.
+# It contains the logic for creating terrain tiles and spawning entities.
+extends Node
+
+const PlayerScene = preload(AssetPaths.SCENE_PLAYER)
+
+# --- MODIFIED FUNCTION ---
+# This function now returns a fully constructed level scene in a container node.
+func build_level() -> Node:
+	# Create the container "box" that will hold the entire level.
+	var level_container = Node.new()
+	level_container.name = "LevelContainer"
+
+	var encounter_path = GameManager.current_encounter_script_path
+	var layout_path = encounter_path.replace("encounter.gd", "layout.gd")
+	
+	var ArenaLayout = load(layout_path)
+	var ArenaEncounter = load(encounter_path)
+
+	var layout = ArenaLayout.new()
+	var encounter = ArenaEncounter.new()
+
+	var player_spawn_pos = Vector2.ZERO
+	var boss_spawn_pos = Vector2.ZERO
+
+	for y in range(layout.TERRAIN_DATA.size()):
+		var row_string = layout.TERRAIN_DATA[y]
+		for x in range(row_string.length()):
+			var tile_char = row_string[x]
+			var tile_pos = Vector2(x * Constants.TILE_SIZE, y * Constants.TILE_SIZE) + Vector2(Constants.TILE_SIZE / 2.0, Constants.TILE_SIZE / 2.0)
+
+			match tile_char:
+				'#':
+					_create_solid_tile(level_container, tile_pos)
+				'-':
+					_create_oneway_platform(level_container, tile_pos)
+				'^':
+					_create_hazard_tile(level_container, tile_pos)
+				encounter.PLAYER_SPAWN_MARKER:
+					player_spawn_pos = tile_pos
+				encounter.BOSS_SPAWN_MARKER:
+					boss_spawn_pos = tile_pos
+
+	_spawn_player(level_container, player_spawn_pos)
+	_spawn_boss(level_container, boss_spawn_pos, encounter.BOSS_SCENE)
+	
+	# Return the finished, self-contained level.
+	return level_container
+
+# The prewarm function is no longer needed, as build_level now serves this purpose.
+# func prewarm_assets(): ...
+
+# --- Private Helper Functions are unchanged ---
+
+func _spawn_player(parent_node: Node, pos: Vector2):
+	var player_instance = PlayerScene.instantiate()
+	player_instance.global_position = pos
+	parent_node.add_child(player_instance)
+
+func _spawn_boss(parent_node: Node, pos: Vector2, scene: PackedScene):
+	if scene == null: return
+	var boss_instance = scene.instantiate()
+	boss_instance.global_position = pos
+	parent_node.add_child(boss_instance)
+
+func _create_solid_tile(parent_node: Node, pos: Vector2):
+	var static_body = StaticBody2D.new()
+	static_body.position = pos
+	static_body.collision_layer = 2
+	static_body.add_to_group("world")
+	var collision_shape = CollisionShape2D.new()
+	var rectangle_shape = RectangleShape2D.new()
+	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
+	collision_shape.shape = rectangle_shape
+	static_body.add_child(collision_shape)
+	parent_node.add_child(static_body)
+
+func _create_oneway_platform(parent_node: Node, pos: Vector2):
+	var static_body = StaticBody2D.new()
+	static_body.position = pos
+	static_body.collision_layer = 2
+	static_body.add_to_group("world")
+	static_body.add_to_group("oneway_platforms")
+	var collision_shape = CollisionShape2D.new()
+	collision_shape.one_way_collision = true
+	collision_shape.position.y = -20
+	var rectangle_shape = RectangleShape2D.new()
+	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
+	collision_shape.shape = rectangle_shape
+	static_body.add_child(collision_shape)
+	parent_node.add_child(static_body)
+
+func _create_hazard_tile(parent_node: Node, pos: Vector2):
+	var static_body = StaticBody2D.new()
+	static_body.position = pos
+	static_body.collision_layer = 10
+	static_body.add_to_group("world")
+	static_body.add_to_group("hazard")
+	var collision_shape = CollisionShape2D.new()
+	var rectangle_shape = RectangleShape2D.new()
+	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
+	collision_shape.shape = rectangle_shape
+	static_body.add_child(collision_shape)
+	parent_node.add_child(static_body)
 
 =====================================
 FILE: ./src/core/audio_manager.gd
@@ -2247,6 +2399,7 @@ extends Node
 # --- Scenes ---
 const SCENE_MAIN = "res://src/scenes/main/main.tscn"
 const SCENE_GAME = "res://src/scenes/game/game.tscn"
+const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn" # <-- ADD THIS LINE
 const SCENE_TITLE_SCREEN = "res://src/ui/screens/title_screen/title_screen.tscn"
 const SCENE_OPTIONS_MENU = "res://src/ui/screens/options_menu/options_menu.tscn"
 const SCENE_SOUND_MENU = "res://src/ui/screens/sound_menu/sound_menu.tscn"
@@ -2321,6 +2474,7 @@ const COYOTE_TIME = 0.1
 const JUMP_BUFFER = 0.1
 const JUMP_RELEASE_DAMPENER = 0.4
 const WALL_COYOTE_TIME = 0.05
+const FAST_FALL_GRAVITY_MULTIPLIER = 1.4
 # Set to 0 to disable double jump for testing. Set back to 1 to re-enable.
 const MAX_AIR_JUMPS = 0
 const DASH_SPEED = 1400.0
@@ -2337,6 +2491,7 @@ const PLAYER_MAX_HEALING_CHARGES = 1 # The maximum number of heal charges the pl
 const ATTACK_COOLDOWN = 0.12
 const CHARGE_TIME = 0.35
 const ATTACK_DURATION = 0.1
+const PLAYER_ATTACK_FRICTION = 2000.0
 const KNOCKBACK_SPEED = 700.0
 const KNOCKBACK_DURATION = 0.1
 const HAZARD_KNOCKBACK_SPEED = 400.0
@@ -2731,9 +2886,6 @@ func _ready():
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	# The body_entered signal for the hurtbox is no longer needed.
-	# If it's still connected in the editor, it will now point to a non-existent function,
-	# which is harmless but can be disconnected in the editor for ultimate cleanliness.
 
 
 func _physics_process(delta):
@@ -2757,7 +2909,7 @@ func _physics_process(delta):
 		State.FALL: state_fall(delta)
 		State.DASH: state_dash()
 		State.WALL_SLIDE: state_wall_slide()
-		State.ATTACK: state_attack()
+		State.ATTACK: state_attack(delta)
 		State.HURT: state_hurt(delta)
 		State.HEAL: state_heal()
 
@@ -2790,13 +2942,22 @@ func _handle_input(delta):
 # --- State Functions ---
 
 func state_move(delta):
+	# Handle Drop-Through Platforms
+	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
+		if get_last_slide_collision():
+			var floor_collider = get_last_slide_collision().get_collider()
+			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
+				position.y += 2
+				jump_buffer_timer = 0
+				change_state(State.FALL)
+				return
+
 	coyote_timer = Constants.COYOTE_TIME
 	
-	# Check for healing input
 	var is_holding_heal = Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump")
 	if is_holding_heal and healing_charges > 0:
 		change_state(State.HEAL)
-		return # Stop processing in this state
+		return
 		
 	_apply_horizontal_movement()
 	velocity.y += Constants.GRAVITY * delta
@@ -2850,8 +3011,8 @@ func state_dash():
 	velocity = _get_dash_direction() * Constants.DASH_SPEED
 	if dash_duration_timer <= 0: velocity = Vector2.ZERO; change_state(State.FALL)
 
-func state_attack():
-	velocity = Vector2.ZERO
+func state_attack(delta):
+	velocity = velocity.move_toward(Vector2.ZERO, Constants.PLAYER_ATTACK_FRICTION * delta)
 	if attack_duration_timer <= 0:
 		hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false
 		change_state(State.FALL)
@@ -2860,7 +3021,6 @@ func state_hurt(delta):
 	velocity.y += Constants.GRAVITY * delta
 	if knockback_timer <= 0: change_state(State.FALL)
 
-# --- NEW: Healing State Logic ---
 func state_heal():
 	velocity = Vector2.ZERO
 	
@@ -2869,7 +3029,7 @@ func state_heal():
 	
 	if not is_holding_heal or moved or not is_on_floor():
 		_cancel_heal()
-		change_state(State.MOVE) # Transition to move after canceling
+		change_state(State.MOVE)
 
 # --- State Change & Helper Functions ---
 
@@ -2896,7 +3056,7 @@ func change_state(new_state: State):
 			air_jumps_left = Constants.MAX_AIR_JUMPS
 		State.HURT:
 			is_charging = false
-			_cancel_heal() # Cancel heal if you get hurt
+			_cancel_heal()
 			knockback_timer = Constants.KNOCKBACK_DURATION
 		State.HEAL:
 			healing_timer.start(Constants.PLAYER_HEAL_DURATION)
@@ -2909,10 +3069,20 @@ func _apply_horizontal_movement():
 	velocity.x = input_direction * Constants.PLAYER_SPEED
 	if input_direction != 0: facing_direction = sign(input_direction)
 
+# --- MODIFIED FUNCTION ---
 func _apply_gravity(delta):
+	# Apply variable jump height
 	if velocity.y < 0 and Input.is_action_just_released("ui_jump"):
 		velocity.y *= Constants.JUMP_RELEASE_DAMPENER
-	velocity.y += Constants.GRAVITY * delta
+	
+	# Apply fast-fall gravity
+	var gravity_multiplier = 1.0
+	if Input.is_action_pressed("ui_down"):
+		gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
+	
+	velocity.y += Constants.GRAVITY * gravity_multiplier * delta
+	
+	# Transition from JUMP to FALL state
 	if state == State.JUMP and velocity.y > 0.0:
 		change_state(State.FALL)
 
@@ -2960,9 +3130,8 @@ func _perform_melee_attack():
 	is_pogo_attack = false
 	if Input.is_action_pressed("ui_down"):
 		is_pogo_attack = true; hitbox.position = Vector2(0, 60)
-		# Call the new check. If it succeeds, the pogo is handled instantly.
 		if _check_for_immediate_pogo():
-			return # Stop here, the pogo was triggered.
+			return 
 	elif Input.is_action_pressed("ui_up"):
 		hitbox.position = Vector2(0, -60)
 	else:
@@ -2979,43 +3148,36 @@ func _fire_shot():
 	get_parent().add_child(shot_instance)
 
 func _check_for_immediate_pogo() -> bool:
-	# Proactively checks if the pogo hitbox is already overlapping a valid surface.
 	var space_state = get_world_2d().direct_space_state
 	var hitbox_shape_res = hitbox_shape.shape
 	
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = hitbox_shape_res
 	query.transform = hitbox.global_transform
-	# Check against world (2), enemy (4), and hazard (8) layers.
 	query.collision_mask = 14
 	
 	var results = space_state.intersect_shape(query)
 	
 	if not results.is_empty():
 		_trigger_pogo(results[0].collider)
-		return true # Signal success
+		return true 
 	
-	return false # Signal failure
+	return false 
 
 func _trigger_pogo(pogo_target):
-	# This is now the single source of truth for all pogo actions.
-	hitbox_shape.call_deferred("set", "disabled", true) # Disable hitbox after one hit.
-	is_pogo_attack = false # Ensure we don't pogo twice.
+	hitbox_shape.call_deferred("set", "disabled", true) 
+	is_pogo_attack = false 
 	
 	can_dash = true
 	velocity.y = -Constants.POGO_FORCE
 	air_jumps_left = Constants.MAX_AIR_JUMPS
 	dash_duration_timer = 0
-	change_state(State.FALL) # Force state to FALL to re-evaluate logic.
+	change_state(State.FALL) 
 	
-	# --- POGO TARGET LOGIC ---
-	# Check if we hit a valid pogo target.
 	if pogo_target:
-		# If it's an enemy, deal damage and gain determination.
 		if pogo_target.has_method("take_damage"):
 			pogo_target.take_damage(1)
 			_on_damage_dealt()
-		# If it's a projectile, destroy it.
 		elif pogo_target.is_in_group("enemy_projectile"):
 			pogo_target.queue_free()
 
@@ -3070,7 +3232,6 @@ func _cancel_heal():
 
 func _on_hitbox_body_entered(body):
 	if is_pogo_attack: 
-		# Let the centralized pogo function handle all the logic.
 		_trigger_pogo(body)
 	elif body.is_in_group("enemy"):
 		body.take_damage(1)
@@ -3078,7 +3239,12 @@ func _on_hitbox_body_entered(body):
 		hitbox_shape.call_deferred("set", "disabled", true)
 
 func _on_hitbox_area_entered(area):
-	if is_pogo_attack and area.is_in_group("enemy_projectile"): _trigger_pogo(area)
+	if area.is_in_group("enemy_projectile"):
+		if is_pogo_attack:
+			_trigger_pogo(area)
+		else:
+			area.queue_free()
+			hitbox_shape.call_deferred("set", "disabled", true)
 
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):

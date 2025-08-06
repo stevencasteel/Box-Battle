@@ -1,13 +1,16 @@
 #!/bin/sh
 # This script finds all relevant project text files and combines them into a single context txt file,
 # complete with a descriptive header and directory tree structure.
-#   Typing this in terminal makes it so you can run the shell script
-# chmod +x create_all_godot_source_code_txt.sh
-#   Then paste this in terminal from the root directory 
-# ./create_all_godot_source_code_txt.sh
+#
+# USAGE INSTRUCTIONS:
+# 1. Right-click on your PROJECT ROOT folder (Box Battle) → "New Terminal at Folder"
+# 2. Make the script executable by typing:
+#    chmod +x docs/create_all_godot_source_code_txt.sh
+# 3. Run the script by typing:
+#    ./docs/create_all_godot_source_code_txt.sh
 
 
-OUTPUT_FILE="all_godot_source_code.txt"
+OUTPUT_FILE="docs/all_godot_source_code.txt"
 
 # Step 1: Create the file and write the header. The '>' overwrites the old file.
 echo "+---------------------------------+" > "$OUTPUT_FILE"
@@ -50,7 +53,7 @@ find . -type f \( \
 -not -path "./assets/*" \
 -not -path "./.git/*" \
 -not -path "./.godot/*" \
--not -name "$OUTPUT_FILE" \
+-not -path "./$OUTPUT_FILE" \
 -not -name "*.uid" \
 -not -name "*.import" \
 -print0 | xargs -0 -I {} sh -c '
