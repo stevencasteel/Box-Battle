@@ -71,13 +71,21 @@ func _create_solid_tile(pos: Vector2):
 	static_body.add_child(collision_shape)
 	add_child(static_body)
 
+# --- MODIFIED FUNCTION ---
 func _create_oneway_platform(pos: Vector2):
 	var static_body = StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = 2 # Corresponds to "world" layer
+	# Add to both groups so it acts as world geometry AND can be identified as a special platform.
 	static_body.add_to_group("world")
+	static_body.add_to_group("oneway_platforms") 
+	
 	var collision_shape = CollisionShape2D.new()
 	collision_shape.one_way_collision = true
+	# Position the collision shape at the top of the tile.
+	# TILE_SIZE/2 is 25. The shape's height is 10, so its center is 5 from its top. 25-5=20.
+	collision_shape.position.y = -20 
+	
 	var rectangle_shape = RectangleShape2D.new()
 	# Make the platform thin for one-way collision to work best
 	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
@@ -85,14 +93,9 @@ func _create_oneway_platform(pos: Vector2):
 	static_body.add_child(collision_shape)
 	add_child(static_body)
 
-# --- THIS IS THE FIX ---
-# A hazard is now both a "world" object (layer 2) and a "hazard" object (layer 8).
-# The player's body collides with layer 2, making it solid.
-# The player's hurtbox detects layer 8, making it deal damage.
 func _create_hazard_tile(pos: Vector2):
 	var static_body = StaticBody2D.new()
 	static_body.position = pos
-	# Set the layer to be the sum of the world layer (2) and the hazard layer (8).
 	static_body.collision_layer = 10
 	static_body.add_to_group("world")
 	static_body.add_to_group("hazard")

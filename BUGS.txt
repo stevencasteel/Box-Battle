@@ -15,13 +15,6 @@
 ║  ██                             OPEN ISSUES                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▓  [BUG-003] Drop-through platforms ("-") are not functioning correctly.   ║
-║      ░  FOUND: 2025-08-05                                                    ║
-║      ░  STATUS: Open                                                         ║
-║      ░  DETAILS: The player cannot drop down through one-way platforms by    ║
-║      ░  pressing Down + Jump. The code for this was not implemented in the   ║
-║      ░  new player state machine.                                            ║
-║                                                                              ║
 ║   ▒  [BUG-001] Player can get stuck on tile corners when jumping.            ║
 ║      ░  FOUND: 2025-08-05                                                    ║
 ║      ░  STATUS: Open                                                         ║
@@ -34,6 +27,18 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                             FIXED ISSUES                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   □  [BUG-F004] Standard melee attacks did not destroy enemy projectiles.    ║
+║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  SOLUTION: The `_on_hitbox_area_entered` function logic was           ║
+║      ░  corrected to handle non-pogo attack collisions with projectiles,     ║
+║      ░  allowing forward and upward swings to destroy them.                  ║
+║                                                                              ║
+║   □  [BUG-F003] Drop-through platforms ("-") were not functioning.           ║
+║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  SOLUTION: Re-implemented the Down+Jump logic in the player's         ║
+║      ░  `state_move` function. Corrected the platform's collision shape      ║
+║      ░  position and group assignment in `game.gd`.                          ║
 ║                                                                              ║
 ║   □  [BUG-F002] Player pogo attack was not working correctly on all surfaces.║
 ║      ░  FIXED: 2025-08-05                                                    ║

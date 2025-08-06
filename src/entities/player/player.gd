@@ -51,9 +51,6 @@ func _ready():
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	# The body_entered signal for the hurtbox is no longer needed.
-	# If it's still connected in the editor, it will now point to a non-existent function,
-	# which is harmless but can be disconnected in the editor for ultimate cleanliness.
 
 
 func _physics_process(delta):
@@ -110,6 +107,20 @@ func _handle_input(delta):
 # --- State Functions ---
 
 func state_move(delta):
+	# Handle Drop-Through Platforms
+	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
+		# Check if we are standing on something
+		if get_last_slide_collision():
+			var floor = get_last_slide_collision().get_collider()
+			if floor and floor.is_in_group("oneway_platforms"):
+				# Move down slightly to pass through the platform
+				position.y += 2
+				# Prevent a jump from happening
+				jump_buffer_timer = 0
+				# Immediately transition to falling
+				change_state(State.FALL)
+				return # Stop processing in the MOVE state
+
 	coyote_timer = Constants.COYOTE_TIME
 	
 	# Check for healing input
@@ -180,7 +191,6 @@ func state_hurt(delta):
 	velocity.y += Constants.GRAVITY * delta
 	if knockback_timer <= 0: change_state(State.FALL)
 
-# --- NEW: Healing State Logic ---
 func state_heal():
 	velocity = Vector2.ZERO
 	
@@ -280,9 +290,8 @@ func _perform_melee_attack():
 	is_pogo_attack = false
 	if Input.is_action_pressed("ui_down"):
 		is_pogo_attack = true; hitbox.position = Vector2(0, 60)
-		# Call the new check. If it succeeds, the pogo is handled instantly.
 		if _check_for_immediate_pogo():
-			return # Stop here, the pogo was triggered.
+			return 
 	elif Input.is_action_pressed("ui_up"):
 		hitbox.position = Vector2(0, -60)
 	else:
@@ -299,43 +308,36 @@ func _fire_shot():
 	get_parent().add_child(shot_instance)
 
 func _check_for_immediate_pogo() -> bool:
-	# Proactively checks if the pogo hitbox is already overlapping a valid surface.
 	var space_state = get_world_2d().direct_space_state
 	var hitbox_shape_res = hitbox_shape.shape
 	
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = hitbox_shape_res
 	query.transform = hitbox.global_transform
-	# Check against world (2), enemy (4), and hazard (8) layers.
 	query.collision_mask = 14
 	
 	var results = space_state.intersect_shape(query)
 	
 	if not results.is_empty():
 		_trigger_pogo(results[0].collider)
-		return true # Signal success
+		return true 
 	
-	return false # Signal failure
+	return false 
 
 func _trigger_pogo(pogo_target):
-	# This is now the single source of truth for all pogo actions.
-	hitbox_shape.call_deferred("set", "disabled", true) # Disable hitbox after one hit.
-	is_pogo_attack = false # Ensure we don't pogo twice.
+	hitbox_shape.call_deferred("set", "disabled", true) 
+	is_pogo_attack = false 
 	
 	can_dash = true
 	velocity.y = -Constants.POGO_FORCE
 	air_jumps_left = Constants.MAX_AIR_JUMPS
 	dash_duration_timer = 0
-	change_state(State.FALL) # Force state to FALL to re-evaluate logic.
+	change_state(State.FALL) 
 	
-	# --- POGO TARGET LOGIC ---
-	# Check if we hit a valid pogo target.
 	if pogo_target:
-		# If it's an enemy, deal damage and gain determination.
 		if pogo_target.has_method("take_damage"):
 			pogo_target.take_damage(1)
 			_on_damage_dealt()
-		# If it's a projectile, destroy it.
 		elif pogo_target.is_in_group("enemy_projectile"):
 			pogo_target.queue_free()
 
@@ -390,15 +392,24 @@ func _cancel_heal():
 
 func _on_hitbox_body_entered(body):
 	if is_pogo_attack: 
-		# Let the centralized pogo function handle all the logic.
 		_trigger_pogo(body)
 	elif body.is_in_group("enemy"):
 		body.take_damage(1)
 		_on_damage_dealt()
 		hitbox_shape.call_deferred("set", "disabled", true)
 
+# --- MODIFIED FUNCTION ---
 func _on_hitbox_area_entered(area):
-	if is_pogo_attack and area.is_in_group("enemy_projectile"): _trigger_pogo(area)
+	# This function now correctly handles projectiles for ALL melee attacks.
+	if area.is_in_group("enemy_projectile"):
+		if is_pogo_attack:
+			# If it's a pogo, trigger the full bounce and destroy logic.
+			_trigger_pogo(area)
+		else:
+			# If it's a normal melee, just destroy the projectile.
+			area.queue_free()
+			# Disable the hitbox so one swing doesn't destroy multiple things.
+			hitbox_shape.call_deferred("set", "disabled", true)
 
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):

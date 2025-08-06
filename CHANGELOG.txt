@@ -22,7 +22,9 @@
 ║      ░                                                                       ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
-║      ░                                                                       ║
+║      ░ ■ Restored ability to drop through one-way platforms.                 ║
+║      ░ ■ Standard melee attacks (forward/up) now correctly destroy enemy     ║
+║      ░   projectiles.                                                        ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║
