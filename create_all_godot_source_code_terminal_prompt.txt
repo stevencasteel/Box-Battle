@@ -1,14 +1,1 @@
-{
-  echo "====================================="
-  echo "        DIRECTORY TREE"
-  echo "====================================="
-  tree
-  echo -e "\n\n"
-  find . -name "*.gd" -o -name "*.tscn" -o -name "project.godot" | sort | while read file; do
-    echo "====================================="
-    echo "FILE: $file"
-    echo "====================================="
-    cat "$file"
-    echo -e "\n\n"
-  done
-} > all_godot_source_code.txt
+(echo '+---------------------------------+'; echo '|         B O X  B A T T L E        |'; echo '|  Godot Project Source Context   |'; echo '+---------------------------------+'; echo "Generated on: $(date)"; echo ""; find . -type f \( -name "*.gd" -o -name "*.tscn" -o -name "*.md" -o -name "*.tres" -o -name "project.godot" -o -name "*.txt" \) -not -path "./assets/*" -not -path "./.git/*" -not -name "all_godot_source_code.txt" -print0 | xargs -0 -I {} sh -c 'echo "=====================================\nFILE: {}"; cat {}; echo "\n"') > all_godot_source_code.txt
