@@ -41,7 +41,7 @@ The project follows a clean, feature-based directory structure within the `/src`
 - **Scene Instantiation:** Use `const` variables to `preload` scenes that will be instantiated frequently (e.g., projectiles).
 - **Collaboration Workflow (Human-AI):**
     1.  **Define Goal:** The Human defines a clear, small, and achievable goal for the next step.
-    2.  **AI Solution:** The AI provides a code solution to achieve that goal.
+    2.  **AI Solution:** The AI provides a code solution, **always regenerating complete files**. The AI must also clearly explain the reasoning behind the changes.
     3.  **Implement & Test:** The Human implements the code and performs thorough testing to ensure the feature works perfectly and has not caused any regressions.
     4.  **Commit & Push:** Once verified, the Human commits the changes with a descriptive message (e.g., via the VS Code Source Control panel) and **pushes the commit** to the remote Git repository.
     5.  **Confirm & Proceed:** The Human confirms the successful push and that the task is complete, then defines the next goal. This iterative "commit-and-confirm" loop ensures stability and creates a reliable project history.

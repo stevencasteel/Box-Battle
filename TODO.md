@@ -26,10 +26,14 @@
 ## Medium Priority - Polish and Core Feature Refinements
 *Important tasks to tackle once the High Priority items are complete.*
 
+- [ ] **Implement Debug Hotkeys:** Create a system toggled by the `Y, U, I, O` keys.
+    - [ ] `Y`: Toggle Physics Shape visibility.
+    - [ ] `U`: Toggle on-screen entity state display (e.g., player's current FSM state).
+    - [ ] `I`: Toggle performance metrics (FPS counter).
+    - [ ] `O`: (Future-proofed) Toggle AI visualization.
 - [ ] **Fix "Head Bonk":** Investigate and fix player getting stuck on the corners of tiles when jumping.
 - [ ] **Implement Charge Shot Fizzle:** If the attack button is released before a shot is fully charged, play a "fizzle" sound and a minor visual effect.
 - [ ] **Add Charge Indicator:** Create a visual effect on the player sprite that appears and grows while the attack button is held down, indicating charge progress.
-- [ ] **Implement Debug Hotkey:** Create a simple debug overlay (toggled by F1) that shows player state, coordinates, and other useful info.
 
 ## Low Priority - "Nice-to-Have" Polish
 *Tasks to work on once the vertical slice feels complete.*

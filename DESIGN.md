@@ -8,7 +8,7 @@
 - **Player Expression:** The player is given a rich and responsive moveset (jump, dash, wall-slide, pogo, charged shot). Mastery of these movement options is key to success.
 - **Thematic Mechanics:** Core gameplay systems are tied to the game's narrative concepts. For example, aggression is rewarded with the ability to heal via "Determination."
 - **Minimalist Clarity:** The UI and gameplay indicators should provide necessary information without cluttering the screen.
-- **Human-AI Collaborative Design:** The level design process is intended to be collaborative between a human designer and an AI assistant. The human-readable coordinate system in the level layout files facilitates this workflow.
+- **Human-AI Collaborative Design:** The level design process is intended to be a partnership between a human designer and an AI assistant. The human-readable coordinate legend (`# --- COORDINATE LEGEND ---`) in the level layout files is a core part of this workflow, allowing for clear, grid-based communication about entity placement and level structure without relying on a GUI.
 
 ---
 
