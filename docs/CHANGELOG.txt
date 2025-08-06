@@ -16,6 +16,8 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
+║      ░ ■ Implemented a signal-driven, in-game HUD (`GameHUD.tscn`) to display║
+║      ░   real-time player health, healing charges, and boss health.          ║
 ║      ░ ■ Implemented a complete Boss AI with a state machine (Patrol, Attack,║
 ║      ░   Cooldown), player tracking, and multiple attack patterns.           ║
 ║      ░ ■ Implemented a fast-fall mechanic (Hold Down in air).                ║
@@ -23,6 +25,7 @@
 ║      ░ ■ Created a new `ArenaBuilder` singleton to centralize level creation.║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Player and Boss scripts now emit signals when their health/stats change.║
 ║      ░ ■ Migrated boss logic from a simple timer to a formal Finite State Machine.║
 ║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system,║
 ║      ░   eliminating stuttering when entering the arena.                     ║

@@ -8,7 +8,8 @@ extends Node
 # --- Scenes ---
 const SCENE_MAIN = "res://src/scenes/main/main.tscn"
 const SCENE_GAME = "res://src/scenes/game/game.tscn"
-const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn" # <-- ADD THIS LINE
+const SCENE_GAME_HUD = "res://src/ui/game_hud/game_hud.tscn" # <-- NEW
+const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn"
 const SCENE_TITLE_SCREEN = "res://src/ui/screens/title_screen/title_screen.tscn"
 const SCENE_OPTIONS_MENU = "res://src/ui/screens/options_menu/options_menu.tscn"
 const SCENE_SOUND_MENU = "res://src/ui/screens/sound_menu/sound_menu.tscn"

@@ -5,6 +5,9 @@
 # cycle managed by a state machine.
 extends CharacterBody2D
 
+# --- Signals ---
+signal health_changed(current_health, max_health)
+
 # --- Node References ---
 @onready var cooldown_timer: Timer = $CooldownTimer
 @onready var patrol_timer: Timer = $PatrolTimer
@@ -31,6 +34,8 @@ var current_attack: AttackPattern
 func _ready():
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
+	# Emit signal on startup to initialize the HUD.
+	health_changed.emit(health, Constants.BOSS_HEALTH)
 	# Start with an initial cooldown to give the player a moment to orient.
 	change_state(State.COOLDOWN)
 
@@ -116,6 +121,7 @@ func fire_shot_at_player():
 
 func take_damage(damage_amount: int):
 	health -= damage_amount
+	health_changed.emit(health, Constants.BOSS_HEALTH)
 	print("Boss took ", damage_amount, " damage! Health remaining: ", health)
 	if health <= 0:
 		die()

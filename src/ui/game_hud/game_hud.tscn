@@ -1,0 +1,63 @@
+[gd_scene load_steps=4 format=3 uid="uid://c1qkhw0snj226"]
+
+[ext_resource type="Script" path="res://src/ui/game_hud/game_hud.gd" id="1_3f8wa"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+bg_color = Color(0.262745, 0.262745, 0.262745, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+bg_color = Color(0.8, 0.2, 0.2, 1)
+
+[node name="GameHUD" type="CanvasLayer"]
+script = ExtResource("1_3f8wa")
+
+[node name="PlayerInfo" type="VBoxContainer" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -100.0
+offset_right = 220.0
+offset_bottom = -20.0
+grow_vertical = 0
+
+[node name="PlayerHealthHBox" type="HBoxContainer" parent="PlayerInfo"]
+layout_mode = 2
+
+[node name="PlayerHealthLabel" type="Label" parent="PlayerInfo/PlayerHealthHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Health:"
+
+[node name="PlayerHealthValue" type="Label" parent="PlayerInfo/PlayerHealthHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "5 / 5"
+
+[node name="PlayerHealChargesHBox" type="HBoxContainer" parent="PlayerInfo"]
+layout_mode = 2
+
+[node name="PlayerHealChargesLabel" type="Label" parent="PlayerInfo/PlayerHealChargesHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Heal Charges:"
+
+[node name="PlayerHealChargesValue" type="Label" parent="PlayerInfo/PlayerHealChargesHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "0"
+
+[node name="BossHealthBar" type="ProgressBar" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 250.0
+offset_top = 20.0
+offset_right = -250.0
+offset_bottom = 50.0
+grow_horizontal = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_1")
+theme_override_styles/fill = SubResource("StyleBoxFlat_2")
+max_value = 30.0
+step = 1.0
+value = 30.0
+show_percentage = false

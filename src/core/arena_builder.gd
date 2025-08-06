@@ -5,6 +5,7 @@
 extends Node
 
 const PlayerScene = preload(AssetPaths.SCENE_PLAYER)
+const GameHUDScene = preload(AssetPaths.SCENE_GAME_HUD) # <-- NEW
 
 # --- NEW ASYNC FUNCTION ---
 # This function builds the level asynchronously to prevent frame drops
@@ -75,6 +76,10 @@ func build_level_async() -> Node:
 	await _spawn_player_async(level_container, player_spawn_pos)
 	await _spawn_boss_async(level_container, boss_spawn_pos, encounter.BOSS_SCENE)
 	
+	# Instantiate the HUD
+	var hud_instance = GameHUDScene.instantiate()
+	level_container.add_child(hud_instance)
+
 	await get_tree().process_frame
 	
 	# Return the finished, self-contained level.
@@ -82,8 +87,6 @@ func build_level_async() -> Node:
 
 # --- MODIFIED FUNCTION (kept for compatibility but now calls async version) ---
 func build_level() -> Node:
-	# This function is now just a wrapper for the async version.
-	# Using 'await' here makes sure this function doesn't return until the async one is done.
 	return await build_level_async()
 
 # --- Async Entity Spawning Functions ---

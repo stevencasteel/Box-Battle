@@ -4,6 +4,10 @@
 # to manage its actions like moving, jumping, dashing, and attacking.
 extends CharacterBody2D
 
+# --- Signals ---
+signal health_changed(current_health, max_health)
+signal healing_charges_changed(current_charges)
+
 # --- Node References ---
 @onready var hitbox: Area2D = $Hitbox
 @onready var hurtbox: Area2D = $Hurtbox
@@ -29,7 +33,7 @@ var is_invincible = false
 var facing_direction = 1
 var last_wall_normal = Vector2.ZERO
 
-# --- NEW: Healing & Determination ---
+# --- Healing & Determination ---
 var determination_counter = 0
 var healing_charges = 0
 
@@ -51,7 +55,9 @@ func _ready():
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-
+	# Emit signals on startup to initialize the HUD.
+	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
+	healing_charges_changed.emit(healing_charges)
 
 func _physics_process(delta):
 	# --- Update Timers ---
@@ -234,20 +240,16 @@ func _apply_horizontal_movement():
 	velocity.x = input_direction * Constants.PLAYER_SPEED
 	if input_direction != 0: facing_direction = sign(input_direction)
 
-# --- MODIFIED FUNCTION ---
 func _apply_gravity(delta):
-	# Apply variable jump height
 	if velocity.y < 0 and Input.is_action_just_released("ui_jump"):
 		velocity.y *= Constants.JUMP_RELEASE_DAMPENER
 	
-	# Apply fast-fall gravity
 	var gravity_multiplier = 1.0
 	if Input.is_action_pressed("ui_down"):
 		gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
 	
 	velocity.y += Constants.GRAVITY * gravity_multiplier * delta
 	
-	# Transition from JUMP to FALL state
 	if state == State.JUMP and velocity.y > 0.0:
 		change_state(State.FALL)
 
@@ -349,6 +351,7 @@ func _trigger_pogo(pogo_target):
 func take_damage(damage_amount: int, damage_source = null):
 	if is_invincible: return
 	health -= damage_amount
+	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
 	print("Player took %s damage! Health: %s" % [damage_amount, health])
 	is_invincible = true
 	invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION)
@@ -385,6 +388,7 @@ func _on_damage_dealt():
 	if determination_counter >= Constants.DETERMINATION_PER_CHARGE:
 		determination_counter = 0
 		healing_charges += 1
+		healing_charges_changed.emit(healing_charges)
 		print("Healing charge gained! Total charges: %d" % healing_charges)
 
 func _cancel_heal():
@@ -422,5 +426,7 @@ func _on_healing_timer_timeout():
 	if state == State.HEAL:
 		health = min(health + 1, Constants.PLAYER_MAX_HEALTH)
 		healing_charges -= 1
+		health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
+		healing_charges_changed.emit(healing_charges)
 		print("Healing successful! Health: %d. Charges left: %d" % [health, healing_charges])
 		change_state(State.MOVE)
