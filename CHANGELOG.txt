@@ -16,10 +16,13 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
-║      ░                                                                       ║
+║      ░ ■ Created a new `GameManager` singleton to manage game state.         ║
+║      ░ ■ Created a new `ArenaBuilder` singleton to centralize level creation.║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
-║      ░                                                                       ║
+║      ░ ■ Overhauled the level loading process to use a pre-building system,  ║
+║      ░   constructing the entire level behind a loading screen to eliminate  ║
+║      ░   stuttering on arena load.                                           ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
 ║      ░ ■ Restored ability to drop through one-way platforms.                 ║

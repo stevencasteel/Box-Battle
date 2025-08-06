@@ -23,6 +23,8 @@ CursorManager="*res://src/core/cursor_manager.gd"
 Constants="*res://src/core/constants.gd"
 AssetPaths="*res://src/core/asset_paths.gd"
 GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
+GameManager="*res://src/core/game_manager.gd"
+ArenaBuilder="*res://src/core/arena_builder.gd"
 
 [display]
 

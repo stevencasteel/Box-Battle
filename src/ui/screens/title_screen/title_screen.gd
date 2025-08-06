@@ -4,19 +4,15 @@
 # buttons, plays the title music, and sets up menu navigation.
 extends Control
 
-# Preload the MenuManager script using the safe path from AssetPaths.
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
-	# Wait one frame to ensure singletons like AudioManager are fully ready.
 	await get_tree().process_frame
 	AudioManager.play_music(AssetPaths.AUDIO_MUSIC_TITLE)
 
-	# --- Create UI Elements ---
 	var title_graphic = TextureRect.new()
 	title_graphic.texture = load(AssetPaths.SPRITE_TITLE)
 	add_child(title_graphic)
-	# Center the graphic horizontally.
 	title_graphic.position = Vector2((get_viewport_rect().size.x - title_graphic.size.x) / 2, 220)
 
 	var start_button = TextureButton.new()
@@ -29,11 +25,9 @@ func _ready():
 	add_child(options_button)
 	options_button.position = Vector2((get_viewport_rect().size.x - options_button.size.x) / 2, 600)
 
-	# --- Connect Signals ---
 	start_button.pressed.connect(_on_start_button_pressed)
 	options_button.pressed.connect(_on_options_button_pressed)
 
-	# --- Initialize Menu Navigation ---
 	var menu = MenuManager.new()
 	add_child(menu)
 	
@@ -43,12 +37,14 @@ func _ready():
 	]
 	menu.setup_menu(menu_items)
 
-# --- Signal Handler Functions ---
-
+# --- MODIFIED FUNCTION ---
 func _on_start_button_pressed():
-	# Use AssetPaths to safely change to the gameplay scene.
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_GAME)
+	# Step 1: Tell the GameManager which level we want to play.
+	GameManager.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
+	
+	# Step 2: Transition to the generic loading screen.
+	# The loading screen will now use the GameManager to figure out what to do.
+	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_LOADING_SCREEN)
 
 func _on_options_button_pressed():
-	# Use AssetPaths to safely change to the options menu.
 	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)

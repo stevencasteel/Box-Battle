@@ -24,6 +24,15 @@
 ║      ░  feels jarring and unfair. The cause is likely the perfectly          ║
 ║      ░  rectangular shape of the player's `CollisionShape2D`.                ║
 ║                                                                              ║
+║   ░  [BUG-005] Minor hitch may still occur on arena load.                    ║
+║      ░  FOUND: 2025-08-06                                                    ║
+║      ░  STATUS: Open (Low Priority)                                          ║
+║      ░  DETAILS: After implementing the pre-building system, the major       ║
+║      ░  load-in stutter is gone. However, a very minor frame drop may still  ║
+║      ░  be present within the first second. This could be due to late shader ║
+║      ░  compilation for future VFX or other first-frame engine processes.    ║
+║      ░  To be investigated during the "Game Juice" and polishing phase.      ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                             FIXED ISSUES                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
