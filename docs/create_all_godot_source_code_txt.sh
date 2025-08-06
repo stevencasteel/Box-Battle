@@ -4,11 +4,10 @@
 #
 # USAGE INSTRUCTIONS:
 # 1. Right-click on your PROJECT ROOT folder (Box Battle) → "New Terminal at Folder"
-# 2. Make the script executable by typing:
+# 2. One time step → Make the script executable by typing:
 #    chmod +x docs/create_all_godot_source_code_txt.sh
 # 3. Run the script by typing:
 #    ./docs/create_all_godot_source_code_txt.sh
-
 
 OUTPUT_FILE="docs/all_godot_source_code.txt"
 
