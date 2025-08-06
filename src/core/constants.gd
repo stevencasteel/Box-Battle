@@ -22,6 +22,7 @@ const COYOTE_TIME = 0.1
 const JUMP_BUFFER = 0.1
 const JUMP_RELEASE_DAMPENER = 0.4
 const WALL_COYOTE_TIME = 0.05
+const FAST_FALL_GRAVITY_MULTIPLIER = 1.4
 # Set to 0 to disable double jump for testing. Set back to 1 to re-enable.
 const MAX_AIR_JUMPS = 0
 const DASH_SPEED = 1400.0
@@ -38,7 +39,7 @@ const PLAYER_MAX_HEALING_CHARGES = 1 # The maximum number of heal charges the pl
 const ATTACK_COOLDOWN = 0.12
 const CHARGE_TIME = 0.35
 const ATTACK_DURATION = 0.1
-const PLAYER_ATTACK_FRICTION = 2000.0 # <-- ADD THIS LINE
+const PLAYER_ATTACK_FRICTION = 2000.0
 const KNOCKBACK_SPEED = 700.0
 const KNOCKBACK_DURATION = 0.1
 const HAZARD_KNOCKBACK_SPEED = 400.0

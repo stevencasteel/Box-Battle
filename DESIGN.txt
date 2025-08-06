@@ -41,14 +41,13 @@
 ║      ░ ■ 8-directional Dash with a cooldown.                                 ║
 ║      ░ ■ Wall-Sliding and Wall-Jumping for verticality.                      ║
 ║      ░ ■ Drop-Through Platforms via Down + Jump input.                       ║
+║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity.             ║
 ║                                                                              ║
 ║   ▓  Advanced Movement Techniques (To Be Implemented)                        ║
 ║      ░ ■ Corner Correction: The game engine will subtly nudge the player up  ║
 ║      ░   and over sharp corners to prevent frustrating "bonks."              ║
 ║      ░ ■ Dash-Jump Cancel: Allows the player to interrupt a dash with a jump,║
 ║      ░   preserving some momentum for advanced precision movement.           ║
-║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity, giving the  ║
-║      ░   player more control over their airtime.                             ║
 ║                                                                              ║
 ║   ▓  Combat System                                                           ║
 ║      ░ ■ Primary Attack (Melee), Secondary Attack (Charged Shot), Pogo Attack.║

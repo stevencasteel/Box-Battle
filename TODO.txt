@@ -32,7 +32,7 @@
 ║      ░  ■ Create a new scene `GameHUD.tscn`.                                 ║
 ║      ░  ■ Display player health, boss health, and healing charges.           ║
 ║                                                                              ║
-║   █  Implement Win/Loss States                                              ║
+║   █  Implement Win/Loss States                                               ║
 ║      ░  ■ Create "Game Over" and "Victory" screens with transitions.         ║
 ║      ░  ■ Add a "Freeze Frame" effect just before the boss's death explosion.║
 ║                                                                              ║
@@ -41,7 +41,7 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   ▓  Implement Advanced Movement Techniques                                  ║
-║      ░  ■ Fast-Fall: Increase gravity when holding 'Down' in the air.        ║
+║      ░  □ Fast-Fall: Increase gravity when holding 'Down' in the air.        ║
 ║      ░  ■ Corner Correction: Nudge the player over sharp corners.            ║
 ║      ░  ■ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
 ║                                                                              ║

@@ -74,7 +74,7 @@ func _physics_process(delta):
 		State.FALL: state_fall(delta)
 		State.DASH: state_dash()
 		State.WALL_SLIDE: state_wall_slide()
-		State.ATTACK: state_attack(delta) # <-- MODIFIED LINE
+		State.ATTACK: state_attack(delta)
 		State.HURT: state_hurt(delta)
 		State.HEAL: state_heal()
 
@@ -176,9 +176,7 @@ func state_dash():
 	velocity = _get_dash_direction() * Constants.DASH_SPEED
 	if dash_duration_timer <= 0: velocity = Vector2.ZERO; change_state(State.FALL)
 
-# --- MODIFIED FUNCTION ---
 func state_attack(delta):
-	# Apply friction to smoothly slow the player down instead of an instant stop.
 	velocity = velocity.move_toward(Vector2.ZERO, Constants.PLAYER_ATTACK_FRICTION * delta)
 	if attack_duration_timer <= 0:
 		hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false
@@ -236,10 +234,20 @@ func _apply_horizontal_movement():
 	velocity.x = input_direction * Constants.PLAYER_SPEED
 	if input_direction != 0: facing_direction = sign(input_direction)
 
+# --- MODIFIED FUNCTION ---
 func _apply_gravity(delta):
+	# Apply variable jump height
 	if velocity.y < 0 and Input.is_action_just_released("ui_jump"):
 		velocity.y *= Constants.JUMP_RELEASE_DAMPENER
-	velocity.y += Constants.GRAVITY * delta
+	
+	# Apply fast-fall gravity
+	var gravity_multiplier = 1.0
+	if Input.is_action_pressed("ui_down"):
+		gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
+	
+	velocity.y += Constants.GRAVITY * gravity_multiplier * delta
+	
+	# Transition from JUMP to FALL state
 	if state == State.JUMP and velocity.y > 0.0:
 		change_state(State.FALL)
 
