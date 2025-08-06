@@ -16,16 +16,22 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
+║      ░ ■ Implemented a foundational state machine for the boss AI, including ║
+║      ░   IDLE, ATTACK, and COOLDOWN states.                                  ║
+║      ░ ■ Added multiple boss attack patterns (Single Shot, Volley Shot).     ║
 ║      ░ ■ Implemented a fast-fall mechanic (Hold Down in air).                ║
 ║      ░ ■ Created a new `GameManager` singleton to manage game state.         ║
 ║      ░ ■ Created a new `ArenaBuilder` singleton to centralize level creation.║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Migrated boss logic from a simple timer to a formal Finite State Machine.║
 ║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system,║
 ║      ░   eliminating stuttering when entering the arena.                     ║
 ║      ░ ■ Refined melee attack's movement pause to a tunable friction system. ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Corrected an issue where the boss's sprite would flip independently ║
+║      ░   of its collision shape, causing a visual desync.                    ║
 ║      ░ ■ Resolved a critical startup crash caused by improper scene changing.║
 ║      ░ ■ Fixed a critical bug where reloading after player death would fail. ║
 ║      ░ ■ Restored ability to drop through one-way platforms.                 ║

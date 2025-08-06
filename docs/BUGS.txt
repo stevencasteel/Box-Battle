@@ -15,8 +15,15 @@
 ║  ██                             OPEN ISSUES                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   There are currently no open bugs. All known issues have been resolved.     ║
-║   See TODO.txt for a list of planned features.                               ║
+║   ▒  [BUG-007] Intermittent major hitch on first run or debug mode toggle.   ║
+║      ░  FOUND: 2025-08-06                                                    ║
+║      ░  STATUS: Open (Low Priority)                                          ║
+║      ░  DETAILS: A major, one-time hitch can occasionally occur. It has been ║
+║      ░  observed after first opening the editor and after toggling 'Visible  ║
+║      ░  Collision Shapes'. The issue is not consistently reproducible. This  ║
+║      ░  may be related to first-time shader compilation or another engine    ║
+║      ░  process that is not covered by the current asynchronous loading system.║
+║      ░  To be investigated further during the project's polishing phase.     ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                             FIXED ISSUES                             ██  ║
