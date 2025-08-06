@@ -11,41 +11,69 @@
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                          MECHANICS IDEAS                             ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   ▒  Multi-Stage Boss Health: Boss HP is visually represented by "Corner     ║
-║      Armor" plates. When a plate shatters, the boss enters a new, more       ║
-║      difficult phase.                                                        ║
-║                                                                              ║
-║   ▒  "Fizzle" Mechanic for Charged Shot: Releasing the attack button before  ║
-║      the charge is complete causes the charge to dissipate with a minor      ║
-║      sound and visual effect, adding a risk/reward to the attack.            ║
-║                                                                              ║
-║   ▒  Minion Enemies: Introduce simpler, non-boss enemies to populate arenas  ║
-║      and add variety to encounters.                                          ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                       STORY & NARRATIVE THOUGHTS                     ██  ║
+║  ▓▓▓-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                       BOX BATTLE BOSS CONCEPTS                       ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▒  The "Determination" Concept: The core healing mechanic is thematically  ║
-║      tied to the player's resolve. Facing danger head-on builds the          ║
-║      "Determination" needed to survive.                                      ║
+║   A categorized list of all potential boss ideas for the game. Each concept  ║
+║   includes ideas for its theme, mechanics, and unique shader effects.        ║
 ║                                                                              ║
-║   ▒  Lore through a Wiki: The game's world could be expanded upon in an      ║
-║      official GitHub Wiki for engaged players.                               ║
+║   █  PUN-BASED CONCEPTS                                                      ║
+║      ░ ■ Beat Box: Rhythm-based boss. Platforms and attacks sync to a beat.  ║
+║      ░ ■ Sandbox: Deforms terrain, uses momentum-stealing attacks.           ║
+║      ░ ■ Matchbox: Fire-themed, tight vertical arena, limited dash.          ║
+║      ░ ■ Toolbox: Utility-themed, projectile-only combat.                    ║
+║      ░ ■ Gearbox: Mechanical theme with rotating platforms and gravity shifts.║
+║      ░ ■ Strongbox: Defense-themed, tries to corner player.                  ║
+║      ░ ■ Icebox: Slippery physics, reduced friction.                         ║
+║      ░ ■ Shoebox: Cramped arena, precise movement required.                  ║
+║      ░ ■ Jukebox: Different songs change the environmental physics.          ║
+║      ░ ■ Mailbox: Arena is filled with flying "letters" as platforms.        ║
+║      ░ ■ Puzzle Box: Arena rearranges itself as movement puzzles are solved. ║
+║      ░ ■ Shadow Box: Past movements leave shadow trails that become platforms.║
+║      ░ ■ Cardboard Box: Platforms are fragile and break after use.           ║
+║      ░ ■ Pandora's Box: Randomly opens to release temporary chaos effects.   ║
+║      ░ ■ Rubik's Box: Arena rotates in 90-degree chunks.                     ║
+║                                                                              ║
+║   █  MEGA MAN-INSPIRED CONCEPTS                                              ║
+║      ░ ■ Flame Box (Heat Man): Teleports in fire bursts, leaves flame trails.║
+║      ░ ■ Ice Box (Ice Man): Slides with momentum, freezes platforms.         ║
+║      ░ ■ Electric Box (Elec Man): Zips in straight lines at high speed.      ║
+║      ░ ■ Wind Box (Air Man): Constant wind pushes player, affects jumps.     ║
+║      ░ ■ Gravity Box (Gravity Man): Gravity flips, ceiling becomes floor.    ║
+║      ░ ■ Time Box (Flash Man): Slow-motion bursts, delayed attacks.          ║
+║      ░ ■ Plant Box (Wood Man): Platforms grow and shrink, sticky surfaces.   ║
+║      ░ ■ Slash Box (Zero/Harpuia): Fast strikes cut through platforms.       ║
+║      ░ ■ Phantom Box (Phantom): Stealth/clone attacks, false reflections.    ║
+║                                                                              ║
+║   █  LOOP-THEMED CONCEPTS                                                    ║
+║      ░ ■ Infinite Box: Arena wraps around (left edge connects to right).     ║
+║      ░ ■ Möbius Box: Twisted space; jumping up can make you fall down.       ║
+║      ░ ■ Pendulum Box: Gravity shifts left/right in a rhythmic swing.        ║
+║      ░ ■ Echo Box: Player inputs are repeated after a short delay.           ║
+║      ░ ■ Ouroboros Box: The room slowly "eats" itself from the edges inward. ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                   TECHNICAL EXPERIMENTS & CONCEPTS                   ██  ║
+║  ██                        SHADER & VFX BRAINSTORM                       ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▒  `Path2D` for Boss Movement: Explore using `Path2D` nodes for highly     ║
-║      scripted and cinematic boss movements (e.g., curved dashes,             ║
-║      teleportation sequences).                                               ║
+║   A list of potential shader and visual effect ideas.                        ║
 ║                                                                              ║
-║   ▒  Advanced Debug Modes: Implement hotkey-activated debug overlays for     ║
-║      viewing collision shapes, player state, and performance metrics.        ║
+║   ▒  Prism Box: Chromatic aberration effect, splits attacks into RGB channels.║
+║   ▒  Void Box: Black hole distortion that pulls the player and projectiles.  ║
+║   ▒  Static Box: Digital noise/glitch effects that can corrupt controls.     ║
+║   ▒  Mirror Box: Kaleidoscope/reflection effects, duplicates player attacks. ║
+║   ▒  Pulse Box: Rhythmic, concentric shockwave rings.                        ║
+║   ▒  Phase Box: Flickers in and out of existence, unpredictable collision.   ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                   ADVANCED MOVEMENT & MECHANICS                      ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   ▒  Parrying System: A simple parry could stun the boss or grant the player ║
+║      a momentum boost, rewarding precise timing.                             ║
+║                                                                              ║
+║   ▒  Ledge Grab: A brief pause/slowdown when hitting the top edge of a wall  ║
+║      to create a more forgiving window for wall-jumping.                     ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

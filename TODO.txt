@@ -17,40 +17,39 @@
 ║                                                                              ║
 ║   █  Evolve Boss AI (State Machine)                                          ║
 ║      ░  ■ Implement a basic state machine (IDLE, PATROL, ATTACK, COOLDOWN).  ║
-║      ░  ■ Implement platform-based patrol (walks until ledge/wall, then turns).║
-║      ░  ■ Create a "volley" attack (fires 3 shots in a row).                 ║
-║      ░  ■ Create a telegraphed lunge/dash attack.                            ║
+║      ░  ■ Implement platform-based patrol movement.                          ║
+║      ░  ■ Create a "volley" attack and a telegraphed lunge/dash attack.      ║
 ║                                                                              ║
-║   █  Implement "Game Juice" (Feedback)                                       ║
-║      ░  ■ Add a hit-flash effect for player and boss (modulate to white).    ║
-║      ░  ■ Implement a subtle screen shake function.                          ║
-║      ░  ■ Add placeholder SFX for player actions (jump, dash, melee, pogo).  ║
-║      ░  ■ Add placeholder SFX for combat events (damage, impact).            ║
+║   █  Implement "Game Juice" (Player & Combat Feedback)                       ║
+║      ░  ■ Hit Pause: A brief (0.05s) global time freeze on successful hits.  ║
+║      ░  ■ Screen Shake: On taking damage and landing critical hits.          ║
+║      ░  ■ Hit Flash: Tint entity white for a few frames on taking damage.    ║
+║      ░  ■ Particle Effects: Add simple particles for landing (dust), hits    ║
+║      ░    (sparks), and dashing (trail).                                     ║
+║      ░  ■ Sound Effects: Add placeholder SFX for all core player and combat actions.║
 ║                                                                              ║
 ║   █  Build In-Game HUD                                                       ║
 ║      ░  ■ Create a new scene `GameHUD.tscn`.                                 ║
-║      ░  ■ Display player health (e.g., 5 squares).                           ║
-║      ░  ■ Display a prominent boss health bar.                               ║
-║      ░  ■ Display available healing charges.                                 ║
+║      ░  ■ Display player health, boss health, and healing charges.           ║
 ║                                                                              ║
-║   █  Implement Win/Loss States                                               ║
-║      ░  ■ On player death, fade to "Game Over" screen with Retry/Quit options.║
-║      ░  ■ On boss death, trigger death sequence and show "Victory!" screen.  ║
+║   █  Implement Win/Loss States                                              ║
+║      ░  ■ Create "Game Over" and "Victory" screens with transitions.         ║
+║      ░  ■ Add a "Freeze Frame" effect just before the boss's death explosion.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██              MEDIUM PRIORITY - POLISH & REFINEMENTS                  ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▓  Implement Debug Hotkeys                                                 ║
-║      ░  ■ `Y`: Toggle Physics Shape visibility.                              ║
-║      ░  ■ `U`: Toggle on-screen entity state display.                        ║
-║      ░  ■ `I`: Toggle performance metrics (FPS counter).                     ║
-║      ░  ■ `O`: (Future-proofed) Toggle AI visualization.                     ║
+║   ▓  Implement Advanced Movement Techniques                                  ║
+║      ░  ■ Fast-Fall: Increase gravity when holding 'Down' in the air.        ║
+║      ░  ■ Corner Correction: Nudge the player over sharp corners.            ║
+║      ░  ■ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
 ║                                                                              ║
-║   ▓  Fix "Head Bonk" on tile corners.                                        ║
+║   ▓  Implement Input Buffering for Actions                                   ║
+║      ░  ■ Buffer attack and dash inputs just like the jump input.            ║
 ║                                                                              ║
-║   ▓  Implement Charge Shot Fizzle mechanic.                                  ║
+║   ▓  Implement Debug Hotkeys (Y, U, I, O)                                    ║
 ║                                                                              ║
-║   ▓  Add visual indicator for fully charged shot.                            ║
+║   ▓  Implement Charge Shot Fizzle & Visual Indicator                         ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
