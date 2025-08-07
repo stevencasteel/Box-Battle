@@ -38,7 +38,7 @@
 ║                                                                              ║
 ║   ▓  Player Movement                                                         ║
 ║      ░ ■ Coyote Time & Jump Buffering for forgiving platforming.             ║
-║      ░ ■ 8-directional Dash with a cooldown.                                 ║
+║      ░ ■ 4-directional Dash (Up, Down, Left, Right) with a cooldown.         ║
 ║      ░ ■ Wall-Sliding and Wall-Jumping for verticality.                      ║
 ║      ░ ■ Drop-Through Platforms via Down + Jump input.                       ║
 ║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity.             ║
@@ -51,6 +51,7 @@
 ║                                                                              ║
 ║   ▓  Combat System                                                           ║
 ║      ░ ■ Primary Attack (Melee), Secondary Attack (Charged Shot), Pogo Attack.║
+║      ░ ■ Dash Invincibility: The player cannot take damage during a dash.    ║
 ║                                                                              ║
 ║   ▓  Health and Healing: The Determination System                            ║
 ║      ░  Healing is a resource earned through combat. A `healing_charge` is   ║

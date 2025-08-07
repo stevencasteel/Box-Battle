@@ -33,6 +33,7 @@ var jump_buffer_timer = 0.0
 var wall_coyote_timer = 0.0
 var knockback_timer = 0.0
 var is_invincible = false
+var is_dash_invincible = false # NEW: Invincibility specific to the dash state.
 var facing_direction = 1
 var last_wall_normal = Vector2.ZERO
 var determination_counter = 0
@@ -51,7 +52,7 @@ var original_color: Color
 
 func _ready():
 	add_to_group("player")
-	original_color = visual_sprite.color # Store the starting color
+	original_color = visual_sprite.color
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
@@ -67,9 +68,7 @@ func _physics_process(delta):
 	attack_cooldown_timer = max(0.0, attack_cooldown_timer - delta)
 	knockback_timer = max(0.0, knockback_timer - delta)
 	wall_coyote_timer = max(0.0, wall_coyote_timer - delta)
-
 	_handle_input(delta)
-
 	match state:
 		State.MOVE: state_move(delta)
 		State.JUMP: state_jump(delta)
@@ -79,11 +78,8 @@ func _physics_process(delta):
 		State.ATTACK: state_attack(delta)
 		State.HURT: state_hurt(delta)
 		State.HEAL: state_heal()
-
 	move_and_slide()
-	
 	_check_for_contact_damage()
-	
 	if is_on_wall():
 		wall_coyote_timer = Constants.WALL_COYOTE_TIME
 		last_wall_normal = get_wall_normal()
@@ -91,9 +87,7 @@ func _physics_process(delta):
 func _handle_input(delta):
 	if Input.is_action_just_pressed("ui_jump"):
 		jump_buffer_timer = Constants.JUMP_BUFFER
-
 	if state in [State.ATTACK, State.HURT, State.HEAL]: return
-	
 	if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
 		is_charging = true; charge_timer = 0.0
 	if is_charging and Input.is_action_pressed("ui_attack"):
@@ -111,65 +105,47 @@ func state_move(delta):
 		if get_last_slide_collision():
 			var floor_collider = get_last_slide_collision().get_collider()
 			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
-				position.y += 2
-				jump_buffer_timer = 0
-				change_state(State.FALL)
-				return
+				position.y += 2; jump_buffer_timer = 0; change_state(State.FALL); return
 	coyote_timer = Constants.COYOTE_TIME
-	var is_holding_heal = Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump")
-	if is_holding_heal and healing_charges > 0:
-		change_state(State.HEAL)
-		return
+	if Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and healing_charges > 0:
+		change_state(State.HEAL); return
 	_apply_horizontal_movement()
 	velocity.y += Constants.GRAVITY * delta
 	if not is_on_floor(): change_state(State.FALL)
 	if jump_buffer_timer > 0: _perform_jump()
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
-		change_state(State.DASH)
+	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0: change_state(State.DASH)
 
 func state_jump(delta):
-	_apply_horizontal_movement()
-	_apply_gravity(delta)
-	_check_for_landing()
-	_check_for_wall_slide()
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
-		change_state(State.DASH)
-	if jump_buffer_timer > 0 and air_jumps_left > 0:
-		_perform_air_jump()
+	_apply_horizontal_movement(); _apply_gravity(delta); _check_for_landing(); _check_for_wall_slide()
+	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0: change_state(State.DASH)
+	if jump_buffer_timer > 0 and air_jumps_left > 0: _perform_air_jump()
 
 func state_fall(delta):
-	_apply_horizontal_movement()
-	_apply_gravity(delta)
-	_check_for_landing()
-	_check_for_wall_slide()
+	_apply_horizontal_movement(); _apply_gravity(delta); _check_for_landing(); _check_for_wall_slide()
 	if jump_buffer_timer > 0:
 		if wall_coyote_timer > 0: _perform_wall_jump()
 		elif coyote_timer > 0: _perform_jump()
 		elif air_jumps_left > 0: _perform_air_jump()
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
-		change_state(State.DASH)
+	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0: change_state(State.DASH)
 
 func state_wall_slide():
 	velocity.y = min(velocity.y + Constants.GRAVITY * get_physics_process_delta_time(), Constants.WALL_SLIDE_SPEED)
 	facing_direction = -last_wall_normal.x
-	if jump_buffer_timer > 0:
-		_perform_wall_jump(); return
-	if Input.get_axis("ui_left", "ui_right") * -last_wall_normal.x < 0.8:
-		change_state(State.FALL)
-	if wall_coyote_timer <= 0:
-		change_state(State.FALL)
-	if is_on_floor():
-		change_state(State.MOVE)
+	if jump_buffer_timer > 0: _perform_wall_jump(); return
+	if Input.get_axis("ui_left", "ui_right") * -last_wall_normal.x < 0.8: change_state(State.FALL)
+	if wall_coyote_timer <= 0: change_state(State.FALL)
+	if is_on_floor(): change_state(State.MOVE)
 
 func state_dash():
 	velocity = _get_dash_direction() * Constants.DASH_SPEED
-	if dash_duration_timer <= 0: velocity = Vector2.ZERO; change_state(State.FALL)
+	if dash_duration_timer <= 0:
+		is_dash_invincible = false # Turn off invincibility when dash ends.
+		velocity = Vector2.ZERO
+		change_state(State.FALL)
 
 func state_attack(delta):
 	velocity = velocity.move_toward(Vector2.ZERO, Constants.PLAYER_ATTACK_FRICTION * delta)
-	if attack_duration_timer <= 0:
-		hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false
-		change_state(State.FALL)
+	if attack_duration_timer <= 0: hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false; change_state(State.FALL)
 
 func state_hurt(delta):
 	velocity.y += Constants.GRAVITY * delta
@@ -177,69 +153,49 @@ func state_hurt(delta):
 
 func state_heal():
 	velocity = Vector2.ZERO
-	var is_holding_heal = Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump")
-	var moved = not is_zero_approx(Input.get_axis("ui_left", "ui_right"))
-	if not is_holding_heal or moved or not is_on_floor():
-		_cancel_heal()
-		change_state(State.MOVE)
+	if not Input.is_action_pressed("ui_down") or not Input.is_action_pressed("ui_jump") or not is_zero_approx(Input.get_axis("ui_left", "ui_right")) or not is_on_floor():
+		_cancel_heal(); change_state(State.MOVE)
 
 # --- State Change & Helper Functions ---
 
 func change_state(new_state: State):
 	if state == new_state: return
-	if state == State.WALL_SLIDE:
-		if last_wall_normal != Vector2.ZERO:
-			facing_direction = last_wall_normal.x
+	if state == State.WALL_SLIDE and last_wall_normal != Vector2.ZERO: facing_direction = last_wall_normal.x
 	state = new_state
 	match state:
 		State.JUMP:
 			jump_buffer_timer = 0; coyote_timer = 0
 			velocity.y = -Constants.PLAYER_JUMP_FORCE
 		State.DASH:
+			is_dash_invincible = true # Turn on invincibility when dash begins.
 			can_dash = false
 			dash_duration_timer = Constants.DASH_DURATION
 			dash_cooldown_timer = Constants.DASH_COOLDOWN
-		State.ATTACK:
-			_perform_melee_attack()
-		State.WALL_SLIDE:
-			can_dash = true
-			air_jumps_left = Constants.MAX_AIR_JUMPS
+		State.ATTACK: _perform_melee_attack()
+		State.WALL_SLIDE: can_dash = true; air_jumps_left = Constants.MAX_AIR_JUMPS
 		State.HURT:
-			is_charging = false
-			_cancel_heal()
+			is_charging = false; _cancel_heal()
 			knockback_timer = Constants.KNOCKBACK_DURATION
-		State.HEAL:
-			healing_timer.start(Constants.PLAYER_HEAL_DURATION)
-			print("Healing started...")
+		State.HEAL: healing_timer.start(Constants.PLAYER_HEAL_DURATION); print("Healing started...")
 
 func _apply_horizontal_movement():
 	if state in [State.DASH, State.HURT, State.ATTACK, State.WALL_SLIDE, State.HEAL]: return
-	var input_direction = Input.get_axis("ui_left", "ui_right")
-	velocity.x = input_direction * Constants.PLAYER_SPEED
-	if input_direction != 0: facing_direction = sign(input_direction)
+	velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
+	if Input.get_axis("ui_left", "ui_right") != 0: facing_direction = sign(Input.get_axis("ui_left", "ui_right"))
 
 func _apply_gravity(delta):
-	if velocity.y < 0 and Input.is_action_just_released("ui_jump"):
-		velocity.y *= Constants.JUMP_RELEASE_DAMPENER
+	if velocity.y < 0 and Input.is_action_just_released("ui_jump"): velocity.y *= Constants.JUMP_RELEASE_DAMPENER
 	var gravity_multiplier = 1.0
-	if Input.is_action_pressed("ui_down"):
-		gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
+	if Input.is_action_pressed("ui_down"): gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
 	velocity.y += Constants.GRAVITY * gravity_multiplier * delta
-	if state == State.JUMP and velocity.y > 0.0:
-		change_state(State.FALL)
+	if state == State.JUMP and velocity.y > 0.0: change_state(State.FALL)
 
 func _check_for_landing():
-	if is_on_floor() and state in [State.FALL, State.JUMP]:
-		can_dash = true
-		air_jumps_left = Constants.MAX_AIR_JUMPS
-		change_state(State.MOVE)
+	if is_on_floor() and state in [State.FALL, State.JUMP]: can_dash = true; air_jumps_left = Constants.MAX_AIR_JUMPS; change_state(State.MOVE)
 
 func _check_for_wall_slide():
-	if state != State.JUMP and state != State.FALL:
-		return
-	var input_dir = Input.get_axis("ui_left", "ui_right")
-	if wall_coyote_timer > 0 and not is_on_floor() and input_dir != 0 and sign(input_dir) == -last_wall_normal.x:
-		change_state(State.WALL_SLIDE)
+	if state != State.JUMP and state != State.FALL: return
+	if wall_coyote_timer > 0 and not is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -last_wall_normal.x: change_state(State.WALL_SLIDE)
 
 func _get_dash_direction():
 	if Input.is_action_pressed("ui_up"): return Vector2.UP
@@ -248,120 +204,67 @@ func _get_dash_direction():
 
 # --- Action Functions ---
 
-func _perform_jump():
-	change_state(State.JUMP)
+func _perform_jump(): change_state(State.JUMP)
 
-func _perform_air_jump():
-	velocity.y = -Constants.PLAYER_JUMP_FORCE
-	air_jumps_left -= 1
-	jump_buffer_timer = 0
+func _perform_air_jump(): velocity.y = -Constants.PLAYER_JUMP_FORCE; air_jumps_left -= 1; jump_buffer_timer = 0
 
-func _perform_wall_jump():
-	velocity.y = -Constants.WALL_JUMP_FORCE_Y
-	velocity.x = last_wall_normal.x * Constants.WALL_JUMP_FORCE_X
-	state = State.JUMP
-	jump_buffer_timer = 0
-	coyote_timer = 0
-	wall_coyote_timer = 0
+func _perform_wall_jump(): velocity.y = -Constants.WALL_JUMP_FORCE_Y; velocity.x = last_wall_normal.x * Constants.WALL_JUMP_FORCE_X; state = State.JUMP; jump_buffer_timer = 0; coyote_timer = 0; wall_coyote_timer = 0
 
 func _perform_melee_attack():
-	attack_duration_timer = Constants.ATTACK_DURATION
-	attack_cooldown_timer = Constants.ATTACK_COOLDOWN
-	hitbox_shape.disabled = false
-	is_pogo_attack = false
+	attack_duration_timer = Constants.ATTACK_DURATION; attack_cooldown_timer = Constants.ATTACK_COOLDOWN; hitbox_shape.disabled = false; is_pogo_attack = false
 	if Input.is_action_pressed("ui_down"):
 		is_pogo_attack = true; hitbox.position = Vector2(0, 60)
-		if _check_for_immediate_pogo():
-			return 
-	elif Input.is_action_pressed("ui_up"):
-		hitbox.position = Vector2(0, -60)
-	else:
-		hitbox.position = Vector2(facing_direction * 60, 0)
+		if _check_for_immediate_pogo(): return 
+	elif Input.is_action_pressed("ui_up"): hitbox.position = Vector2(0, -60)
+	else: hitbox.position = Vector2(facing_direction * 60, 0)
 
 func _fire_shot():
-	attack_cooldown_timer = Constants.ATTACK_COOLDOWN
-	var shot_direction = Vector2(facing_direction, 0)
+	attack_cooldown_timer = Constants.ATTACK_COOLDOWN; var shot_direction = Vector2(facing_direction, 0)
 	if Input.is_action_pressed("ui_up"): shot_direction = Vector2.UP
 	elif Input.is_action_pressed("ui_down"): shot_direction = Vector2.DOWN
-	var shot_instance = PlayerShotScene.instantiate()
-	shot_instance.direction = shot_direction
-	shot_instance.position = global_position + (shot_direction * 60)
-	get_parent().add_child(shot_instance)
+	var shot_instance = PlayerShotScene.instantiate(); shot_instance.direction = shot_direction; shot_instance.position = global_position + (shot_direction * 60); get_parent().add_child(shot_instance)
 
 func _check_for_immediate_pogo() -> bool:
-	var space_state = get_world_2d().direct_space_state
-	var hitbox_shape_res = hitbox_shape.shape
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = hitbox_shape_res
-	query.transform = hitbox.global_transform
-	query.collision_mask = 14
-	var results = space_state.intersect_shape(query)
-	if not results.is_empty():
-		_trigger_pogo(results[0].collider)
-		return true 
+	var query = PhysicsShapeQueryParameters2D.new(); query.shape = hitbox_shape.shape; query.transform = hitbox.global_transform; query.collision_mask = 14
+	var results = get_world_2d().direct_space_state.intersect_shape(query)
+	if not results.is_empty(): _trigger_pogo(results[0].collider); return true 
 	return false 
 
 func _trigger_pogo(pogo_target):
-	hitbox_shape.call_deferred("set", "disabled", true) 
-	is_pogo_attack = false 
-	can_dash = true
-	velocity.y = -Constants.POGO_FORCE
-	air_jumps_left = Constants.MAX_AIR_JUMPS
-	dash_duration_timer = 0
-	change_state(State.FALL) 
+	hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false; can_dash = true; velocity.y = -Constants.POGO_FORCE; air_jumps_left = Constants.MAX_AIR_JUMPS; dash_duration_timer = 0; change_state(State.FALL) 
 	if pogo_target:
-		if pogo_target.has_method("take_damage"):
-			pogo_target.take_damage(1)
-			_on_damage_dealt()
-		elif pogo_target.is_in_group("enemy_projectile"):
-			pogo_target.queue_free()
+		if pogo_target.has_method("take_damage"): pogo_target.take_damage(1); _on_damage_dealt()
+		elif pogo_target.is_in_group("enemy_projectile"): pogo_target.queue_free()
 
 func take_damage(damage_amount: int, damage_source = null):
-	if is_invincible: return
-	health -= damage_amount
-	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
-	_trigger_hit_flash()
+	if is_invincible or is_dash_invincible: return
+	health -= damage_amount; health_changed.emit(health, Constants.PLAYER_MAX_HEALTH); _trigger_hit_flash()
 	print("Player took %s damage! Health: %s" % [damage_amount, health])
-	is_invincible = true
-	invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION)
-	change_state(State.HURT)
+	is_invincible = true; invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION); change_state(State.HURT)
 	if damage_source:
 		var knockback_direction = (global_position - damage_source.global_position).normalized()
 		var knockback_strength = Constants.KNOCKBACK_SPEED
 		if damage_source.is_in_group("hazard"): knockback_strength = Constants.HAZARD_KNOCKBACK_SPEED
 		velocity = (knockback_direction + Vector2.UP * 0.5).normalized() * knockback_strength
-	if health <= 0:
-		die()
+	if health <= 0: die()
 
-func die():
-	print("Player has been defeated!")
-	died.emit()
+func die(): print("Player has been defeated!"); died.emit()
 	
 func _check_for_contact_damage():
 	for i in range(get_slide_collision_count()):
-		var collision = get_slide_collision(i)
-		if not collision: continue
-		var body_hit = collision.get_collider()
-		if not body_hit: continue
-		if body_hit.is_in_group("enemy") or body_hit.is_in_group("hazard"):
-			take_damage(1, body_hit)
-			break
+		var collision = get_slide_collision(i); if not collision: continue
+		var body_hit = collision.get_collider(); if not body_hit: continue
+		if body_hit.is_in_group("enemy") or body_hit.is_in_group("hazard"): take_damage(1, body_hit); break
 
 func _on_damage_dealt():
-	if healing_charges >= Constants.PLAYER_MAX_HEALING_CHARGES:
-		return
-	determination_counter += 1
-	print("Determination: %d/%d" % [determination_counter, Constants.DETERMINATION_PER_CHARGE])
+	if healing_charges >= Constants.PLAYER_MAX_HEALING_CHARGES: return
+	determination_counter += 1; print("Determination: %d/%d" % [determination_counter, Constants.DETERMINATION_PER_CHARGE])
 	if determination_counter >= Constants.DETERMINATION_PER_CHARGE:
-		determination_counter = 0
-		healing_charges += 1
-		healing_charges_changed.emit(healing_charges)
-		print("Healing charge gained! Total charges: %d" % healing_charges)
+		determination_counter = 0; healing_charges += 1; healing_charges_changed.emit(healing_charges); print("Healing charge gained! Total charges: %d" % healing_charges)
 
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
-	healing_timer.stop()
-	print("Healing canceled.")
+	healing_timer.stop(); print("Healing canceled.")
 	
 func _trigger_hit_flash():
 	visual_sprite.color = Color.DODGER_BLUE
@@ -369,38 +272,23 @@ func _trigger_hit_flash():
 
 # --- Signal Callbacks ---
 
-func _on_hit_flash_timer_timeout():
-	visual_sprite.color = original_color
+func _on_hit_flash_timer_timeout(): visual_sprite.color = original_color
 
 func _on_hitbox_body_entered(body):
-	if is_pogo_attack: 
-		_trigger_pogo(body)
-	elif body.is_in_group("enemy"):
-		body.take_damage(1)
-		_on_damage_dealt()
-		hitbox_shape.call_deferred("set", "disabled", true)
+	if is_pogo_attack: _trigger_pogo(body)
+	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt(); hitbox_shape.call_deferred("set", "disabled", true)
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		if is_pogo_attack:
-			_trigger_pogo(area)
-		else:
-			area.queue_free()
-			hitbox_shape.call_deferred("set", "disabled", true)
+		if is_pogo_attack: _trigger_pogo(area)
+		else: area.queue_free(); hitbox_shape.call_deferred("set", "disabled", true)
 
 func _on_hurtbox_area_entered(area):
-	if area.is_in_group("enemy_projectile"):
-		take_damage(1, area)
-		area.queue_free()
+	if area.is_in_group("enemy_projectile"): take_damage(1, area); area.queue_free()
 
-func _on_invincibility_timer_timeout():
-	is_invincible = false
+func _on_invincibility_timer_timeout(): is_invincible = false
 
 func _on_healing_timer_timeout():
 	if state == State.HEAL:
-		health = min(health + 1, Constants.PLAYER_MAX_HEALTH)
-		healing_charges -= 1
-		health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
-		healing_charges_changed.emit(healing_charges)
-		print("Healing successful! Health: %d. Charges left: %d" % [health, healing_charges])
-		change_state(State.MOVE)
+		health = min(health + 1, Constants.PLAYER_MAX_HEALTH); healing_charges -= 1; health_changed.emit(health, Constants.PLAYER_MAX_HEALTH); healing_charges_changed.emit(healing_charges)
+		print("Healing successful! Health: %d. Charges left: %d" % [health, healing_charges]); change_state(State.MOVE)

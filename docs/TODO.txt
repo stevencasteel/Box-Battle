@@ -12,36 +12,12 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                   CRITICAL - CORE GAMEPLAY LOOP                      ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   These are the essential features required to make a complete game loop.    ║
-║                                                                              ║
-║   █  Evolve Boss AI (State Machine)                                          ║
-║      ░  ■ Implement a basic state machine (e.g., IDLE, PATROL, ATTACK).      ║
-║      ░  ■ Add logic for the boss to face the player.                         ║
-║      ░  ■ Design and implement 2-3 distinct, telegraphed attack patterns.    ║
-║                                                                              ║
-║   █  Build In-Game HUD                                                       ║
-║      ░  ■ Create a new scene `GameHUD.tscn`.                                 ║
-║      ░  ■ Connect it to the player to display current/max health.            ║
-║      ░  ■ Connect it to the boss to display a health bar.                    ║
-║      ░  ■ Add an indicator for available `healing_charges`.                  ║
-║                                                                              ║
-║   █  Implement Win/Loss States                                               ║
-║      ░  ■ Create a "Victory" screen/event when the boss's health reaches zero.║
-║      ░  ■ Create a "Game Over" screen/event when the player's health reaches zero.║
-║      ░  ■ Add clean transitions from the game scene to these new states.     ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██              HIGH - ESSENTIAL FEEDBACK & "GAME JUICE"                ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   These features make the game feel responsive, satisfying, and alive.       ║
 ║                                                                              ║
 ║   ▓  Implement Visual Feedback                                               ║
-║      ░  ■ Hit Flash: Tint entities white for a few frames on taking damage.  ║
-║      ░  □ Screen Shake: On player taking damage and on boss death.           ║
 ║      ░  □ Hit Pause: A brief (e.g., 0.05s) global time freeze on hit.        ║
 ║      ░  □ Particle Effects: For player landing (dust), hits (sparks), etc.   ║
 ║      ░  □ Dash Cooldown UI: A visual indicator on the HUD for dash readiness.║
@@ -68,6 +44,10 @@
 ║      ░  □ Add a visual indicator while the player is charging.               ║
 ║      ░  □ Create a "fizzle" effect/sound if the charge is released too early.║
 ║                                                                              ║
+║   ▒  Refine Pogo-Attack Interaction                                          ║
+║      ░  □ Temporarily disable fast-fall gravity for a brief window after a   ║
+║      ░    successful pogo to prevent accidental, unwanted fast-falls.        ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                    LOW - DEBUGGING & TOOLS                           ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
@@ -79,5 +59,9 @@
 ║      ░  □ U: Damage Boss by 5 HP.                                            ║
 ║      ░  □ I: Instantly gain 1 Healing Charge.                                ║
 ║      ░  □ O: Toggle Debug Overlay (player state, boss state, timers).        ║
+║                                                                              ║
+║   ░  Implement Screen Shake (Deferred)                                       ║
+║      ░  □ On player taking damage and on boss death. (Deferred to avoid      ║
+║      ░    visual noise during foundational debugging).                        ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
