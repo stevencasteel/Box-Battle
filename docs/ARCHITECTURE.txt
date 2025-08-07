@@ -3,7 +3,7 @@
 ║    █████╗ ██████╗  ██████╗██╗  ██╗██╗████████╗███████╗ ██████╗████████╗██╗   ██╗ ║
 ║   ██╔══██╗██╔══██╗██╔════╝██║  ██║██║╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██║   ██║ ║
 ║   ███████║██████╔╝██║     ███████║██║   ██║   █████╗  ██║        ██║   ██║   ██║ ║
-║   ██╔══██╗██╔══██╗██║     ██╔══██║██║   ██║   ██╔══╝  ██║        ██║   ██║   ██║ ║
+║   ██╔══██║██╔══██╗██║     ██╔══██║██║   ██║   ██╔══╝  ██║        ██║   ██║   ██║ ║
 ║   ██║  ██║██║  ██║╚██████╗██║  ██║██║   ██║   ███████╗╚██████╗   ██║   ╚██████╔╝ ║
 ║   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝   ╚═╝   ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝  ║
 ║                                                                              ║
@@ -12,69 +12,66 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                         PROJECT STRUCTURE                            ██  ║
+║  ██                       GUIDING DESIGN PRINCIPLES                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   The project follows a clean, feature-based directory structure within the  ║
-║   `/src` folder to ensure code is organized, scalable, and easy to navigate. ║
+║   This project's development is guided by the SOLID principles to ensure the ║
+║   codebase remains clean, maintainable, and scalable.                        ║
 ║                                                                              ║
-║   █  /core: Global Autoload Singletons for systems accessible from anywhere. ║
-║   █  /entities: Self-contained entities like the Player and Bosses.          ║
-║   █  /projectiles: Scenes and scripts for all projectiles.                   ║
-║   █  /scenes: Primary game state scenes like the main game level.            ║
-║   █  /ui: All user interface elements, organized by function:                ║
-║      ░  /components: Reusable, self-contained UI widgets (e.g., CustomSlider)║
-║      ░  /global_hud: The autoloaded global HUD.                              ║
-║      ░  /menu_manager: The reusable system for menu navigation.              ║
-║      ░  /screens: The individual scenes for each menu screen.                ║
-║   █  /arenas: Data-only scripts defining level layouts and encounters.       ║
+║   █  Single Responsibility Principle (SRP): Every script should have one,    ║
+║      and only one, reason to change. This is why we separate level building  ║
+║      from entity spawning, and UI appearance from UI logic.                  ║
 ║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                         DESIGN PATTERNS USED                         ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║   █  Open/Closed Principle: Code should be open for extension, but closed for║
+║      modification. We achieve this with patterns like the State Pattern,     ║
+║      where adding a new player ability means adding a new file, not changing ║
+║      existing, stable code.                                                  ║
 ║                                                                              ║
-║   █  Singleton Pattern (Autoloads): Used for globally accessible systems.    ║
-║      ░  `Settings.gd`: Manages persistent game settings like volume.         ║
-║      ░  `AudioManager.gd`: A central manager for all audio playback.         ║
-║      ░  `CursorManager.gd`: Manages the state of the custom mouse cursor.    ║
-║      ░  `Constants.gd`: A central repository for game design values.         ║
-║      ░  `AssetPaths.gd`: A static registry of asset paths to prevent errors. ║
+║   █  Liskov Substitution Principle: Subclasses must be substitutable for their║
+║      base classes. A `FireBoss` must be able to do everything a `BaseBoss` can.║
 ║                                                                              ║
-║   █  State Machine: The Player's behavior is managed by a formal, enum-based ║
-║      state machine in `player.gd` to prevent conflicting actions.            ║
+║   █  Interface Segregation Principle: We avoid creating "fat" classes that   ║
+║      are forced to have functions they don't need.                           ║
 ║                                                                              ║
-║   █  Asynchronous Loading & Shader Pre-warming: To prevent hitches, a        ║
-║      `LoadingScreen` orchestrates all pre-game setup. It uses two key patterns:║
-║      ░  Shader Pre-warming: Key scenes (Player, Boss, etc.) are instantiated ║
-║      ░  in an off-screen viewport for one frame to force shader compilation. ║
-║      ░  Async Level Generation: `ArenaBuilder` builds the level in batches,  ║
-║      ░  yielding between them to avoid blocking the main thread.             ║
-║                                                                              ║
-║   █  Component-Based UI: The UI is built from self-contained, reusable       ║
-║      scenes. `MenuManager.gd` and `CustomSlider.gd` provide complex          ║
-║      functionality without the parent scene needing to know their internal   ║
-║      implementation.                                                         ║
+║   █  Dependency Inversion Principle: High-level code (like `game.gd`) should ║
+║      not depend on the specific implementation of low-level code (like the   ║
+║      `ArenaBuilder`). It should depend on an abstraction (the `build_level()`║
+║      function contract). Signals are a key tool for this.                    ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                         CODING STANDARDS                             ██  ║
+║  ██                       KEY ARCHITECTURAL PATTERNS                     ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Naming Conventions                                                      ║
-║      ░ `PascalCase` for class names, scene names, and `.gd` script files.    ║
-║      ░ `snake_case` for functions and variables.                             ║
-║      ░ `SCREAMING_SNAKE_CASE` for constants.                                 ║
+║   █  The State Pattern: This is the primary pattern for managing complex     ║
+║      entities. The logic for each state (e.g., `Move`, `Attack`, `Dash`) is  ║
+║      encapsulated in its own class file. The entity (`Player`, `BaseBoss`)   ║
+║      then acts as a "Context", holding a reference to the current state and  ║
+║      delegating all processing to it. This keeps the entity's main script    ║
+║      clean and makes adding or changing abilities highly modular.            ║
 ║                                                                              ║
-║   █  Asset Management: All file paths loaded in code MUST be referenced      ║
-║      through the `AssetPaths.gd` singleton.                                  ║
+║   █  Singleton-Driven Core: Global systems are managed by Autoload singletons.║
+║      ░  `Palette.gd`: Manages all game colors for a cohesive aesthetic.      ║
+║      ░  `AssetPaths.gd`: A central, pre-loading registry for all assets.     ║
+║      ░  Other singletons (`AudioManager`, `Constants`, etc.) serve dedicated roles.║
 ║                                                                              ║
-║   █  Scene Instantiation: Use `const` variables to `preload` scenes that     ║
-║      will be instantiated frequently.                                        ║
+║   █  Asynchronous Loading with Pre-warming: To ensure smooth transitions, a  ║
+║      `LoadingScreen` orchestrates all setup. It pre-warms shaders by         ║
+║      flashing entities in an off-screen viewport and calls the               ║
+║      `ArenaBuilder` to construct the level in non-blocking batches.          ║
 ║                                                                              ║
-║   █  Collaboration Workflow (Human-AI)                                       ║
-║      1. Define Goal: The Human defines a small, achievable goal.             ║
-║      2. AI Solution: The AI provides complete, regenerated files and explains changes.║
-║      3. Implement & Test: The Human implements and thoroughly tests.         ║
-║      4. Commit & Push: The Human commits the verified change and pushes.     ║
-║      5. Confirm & Proceed: The Human confirms success and defines the next goal.║
+║   █  Component-Based and Procedural UI: The UI is built from self-contained, ║
+║      reusable scenes (`StyledMenuItem`). These components will draw          ║
+║      themselves procedurally using shaders, allowing for a highly polished   ║
+║      and animatable interface without relying on static images.              ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                         COLLABORATION WORKFLOW                       ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   1. Define Goal: The Human defines a small, achievable goal based on the TODO.║
+║   2. AI Solution: The AI provides complete, regenerated files and explains changes.║
+║   3. Implement & Test: The Human implements and thoroughly tests the changes.║
+║   4. Document & Commit: The Human updates documentation, then the AI provides a commit message.║
+║   5. Confirm & Proceed: The Human confirms success and defines the next goal.║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

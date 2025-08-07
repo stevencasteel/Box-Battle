@@ -12,75 +12,63 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                       [UNRELEASED] - 2025-08-07                      ██  ║
+║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Implemented a shader pre-warming system in the `LoadingScreen`.     ║
-║      ░ ■ Implemented a `LoadingScreen` to manage asynchronous scene loading. ║
-║      ░ ■ Implemented a "Hit Flash" visual effect for player and boss.        ║
-║      ░ ■ Implemented Win/Loss states with `VictoryScreen` and `GameOverScreen`.║
-║      ░ ■ Implemented a signal-driven, in-game HUD (`GameHUD.tscn`) to display║
-║      ░   real-time player health, healing charges, and boss health.          ║
-║      ░ ■ Implemented a complete Boss AI with a state machine (Patrol, Attack,║
-║      ░   Cooldown), player tracking, and multiple attack patterns.           ║
-║      ░ ■ Implemented a fast-fall mechanic (Hold Down in air).                ║
-║      ░ ■ Created a new `GameManager` singleton to manage game state.         ║
-║      ░ ■ Created a new `ArenaBuilder` singleton to centralize level creation.║
+║   (This section is for work that has been committed but not yet part of a    ║
+║    versioned release. See the new TODO.txt for the upcoming features.)       ║
 ║                                                                              ║
-║   █  Changed                                                                 ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version represents a foundational overhaul of the project's technical ║
+║   architecture. The focus was on implementing professional design patterns   ║
+║   (SOLID, State Pattern) and eliminating performance issues to prepare for   ║
+║   future content and feature development.                                    ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
 ║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system ║
 ║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
-║      ░ ■ Refactored Player and Boss death logic to be signal-based,          ║
-║      ░   decoupling entities from the main `game.gd` scene manager.          ║
-║      ░ ■ Player and Boss scripts now emit signals when their health/stats change.║
-║      ░ ■ Migrated boss logic from a simple timer to a formal Finite State Machine.║
-║      ░ ■ Refined melee attack's movement pause to a tunable friction system. ║
+║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
+║      ░   prevent any "first-appearance" hitches for entities.                ║
+║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
+║      ░   the official documentation.                                         ║
 ║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
+║   █  Bug Fixes                                                               ║
 ║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
+║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
 ║      ░ ■ Resolved a physics crash on entity death by using `call_deferred`   ║
 ║      ░   for scene transitions.                                              ║
 ║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
-║      ░ ■ Implemented a robust, timer-based hit flash after debugging issues with Tween.║
-║      ░ ■ Fixed a logic bug where player death incorrectly led to the Victory screen.║
-║      ░ ■ Corrected a bug where the boss's sprite would flip independently    ║
-║      ░   of its collision shape, causing a visual desync.                    ║
-║      ░ ■ Resolved a critical startup crash caused by improper scene changing.║
-║      ░ ■ Restored ability to drop through one-way platforms.                 ║
-║      ░ ■ Standard melee attacks (forward/up) now correctly destroy enemy     ║
-║      ░   projectiles.                                                        ║
+║                                                                              ║
+║   █  Documentation                                                           ║
+║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
+║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
+║      ░   design philosophies, patterns, and planned features.                ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   This version marks a major architectural overhaul, transforming the        ║
+║   This version marks the initial architectural overhaul, transforming the    ║
 ║   project from a functional prototype into a robust and scalable foundation. ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
 ║      ░ ■ Player Character with rich moveset (dash, wall-jump, etc.).         ║
 ║      ░ ■ Combat System with melee, charged shot, and pogo mechanics.         ║
-║      ░ ■ "Determination" healing system.                                     ║
-║      ░ ■ Data-Driven Arena system.                                           ║
-║      ░ ■ Basic Boss entity framework.                                        ║
-║      ░ ■ Reusable, component-based Menu System.                              ║
-║      ░ ■ Full suite of project documentation (.txt files).                   ║
+║      ░ ■ "Determination" healing system & Data-Driven Arena system.          ║
+║      ░ ■ Basic Boss entity framework & Reusable Menu System.                 ║
+║      ░ ■ Full suite of initial project documentation (.txt files).           ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
-║      ░ ■ Complete Architectural Refactor: Overhauled the project's core      ║
-║      ░   to use professional design patterns.                                ║
-║      ░ ■ Player Logic: Migrated from boolean flags to a formal Finite        ║
-║      ░   State Machine (FSM) for stability and clarity.                      ║
-║      ░ ■ Global Singletons: Centralized all magic numbers and asset paths    ║
-║      ░   into `Constants.gd` and `AssetPaths.gd` for easy tuning and safety. ║
-║      ░ ■ File Organization: Restructured project directories to be more      ║
-║      ░   feature-based and intuitive.                                        ║
+║      ░ ■ Complete Architectural Refactor to use professional design patterns.║
+║      ░ ■ Player Logic: Migrated from boolean flags to a formal FSM.          ║
+║      ░ ■ Global Singletons: Centralized constants and asset paths.           ║
+║      ░ ■ File Organization: Restructured project directories.                ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
 ║      ░ ■ Restored player contact damage from enemies and hazards.            ║
-║      ░ ■ Fully restored the pogo mechanic, including instant ground pogo     ║
-║      ░   and projectile bouncing.                                            ║
+║      ░ ■ Fully restored the pogo mechanic.                                   ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

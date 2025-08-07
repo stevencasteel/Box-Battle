@@ -12,56 +12,156 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              HIGH - ESSENTIAL FEEDBACK & "GAME JUICE"                ██  ║
+║  ██              PHASE 1: THE GREAT ARCHITECTURAL REFACTOR               ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   These features make the game feel responsive, satisfying, and alive.       ║
+║   This phase is our highest priority. We will refactor the existing code to  ║
+║   align with professional design principles (SOLID, DRY). This is like       ║
+║   cleaning and organizing our workshop before building new things. It will   ║
+║   make all future development faster, safer, and more enjoyable.             ║
 ║                                                                              ║
-║   ▓  Implement Visual Feedback                                               ║
-║      ░  □ Hit Pause: A brief (e.g., 0.05s) global time freeze on hit.        ║
-║      ░  □ Particle Effects: For player landing (dust), hits (sparks), etc.   ║
-║      ░  □ Dash Cooldown UI: A visual indicator on the HUD for dash readiness.║
+║   █  Refactor Player to use the State Pattern                                ║
+║      ░  WHY: `player.gd` is becoming large and hard to manage. The State     ║
+║      ░  Pattern will decouple the logic for each state (Move, Fall, Dash)    ║
+║      ░  into its own separate script, making the system incredibly clean,    ║
+║      ░  stable, and easy to extend with new abilities like parrying.         ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a new directory: `src/entities/player/states/`.          ║
+║      ░    2. Create `state_base.gd`: This will be the parent class for all   ║
+║      ░       player states, defining the "contract" functions they must have:║
+║      ░       `enter()`, `exit()`, `process_physics(delta)`, `process_input(event)`.║
+║      ░    3. Create individual state scripts (e.g., `state_move.gd`,         ║
+║      ░       `state_fall.gd`) that extend `state_base.gd`.                  ║
+║      ░    4. Move the logic from `player.gd`'s `state_move` function into    ║
+║      ░       the `process_physics` function of `state_move.gd`, and so on for each state.║
+║      ░    5. Modify `player.gd` to act as a "Context". It will hold a        ║
+║      ░       dictionary of all state objects and a variable for the         ║
+║      ░       `current_state`. Its `_physics_process` will simplify to just one║
+║      ░       line: `current_state.process_physics(delta)`.                  ║
 ║                                                                              ║
-║   ▓  Implement Audio Feedback                                                ║
-║      ░  □ Implement placeholder SFX for all core actions: player jump, dash, ║
-║      ░    attack, take damage, heal, and pogo bounce.                         ║
-║      ░  □ Add SFX for boss taking damage and attacking.                      ║
+║   █  Refactor Base Boss to use the State Pattern                             ║
+║      ░  WHY: For the exact same reasons as the Player. As we add our "kitchen║
+║      ░  sink" of advanced boss mechanics, this pattern is essential to       ║
+║      ░  prevent `base_boss.gd` from becoming unmanageable.                   ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create `src/entities/boss/states/`.                             ║
+║      ░    2. Create `state_boss_base.gd` and individual state scripts like   ║
+║      ░       `state_boss_patrol.gd` and `state_boss_attack.gd`.             ║
+║      ░    3. Refactor `base_boss.gd` into a "Context" that manages its       ║
+║      ░       states, just like the player. This will make adding new attack ║
+║      ░       patterns or defensive phases as simple as adding a new state file.║
+║                                                                              ║
+║   ▓  Refactor ArenaBuilder using the Single Responsibility Principle (SRP)   ║
+║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs (parsing, building║
+║      ░  terrain, spawning entities). SRP dictates that a script should have  ║
+║      ░  one reason to change. Separating these roles makes the code more     ║
+║      ░  robust and easier to maintain.                                       ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a new `TerrainBuilder.gd` class. Its only job will be to ║
+║      ░       read layout data and create the physical tiles (`#`, `-`, `^`).║
+║      ░    2. Create a new `EncounterDirector.gd` class. Its only job will be ║
+║      ░       to read encounter data and spawn the player, boss, and any     ║
+║      ░       future minions or entities.                                     ║
+║      ░    3. `ArenaBuilder.gd` will become a simple coordinator that uses    ║
+║      ░       instances of the new classes to do the heavy lifting.          ║
+║                                                                              ║
+║   ▓  Implement the Global Palette System                                     ║
+║      ░  WHY: To achieve a cohesive, professional aesthetic, all colors must  ║
+║      ░  be managed from a central location. This makes theme changes instant.║
+║      ░  This is a prerequisite for the visual overhaul in Phase 2.           ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a new autoload singleton: `Palette.gd`.                  ║
+║      ░    2. In `Palette.gd`, define the 32-step grayscale array.            ║
+║      ░    3. Define semantic color names as constants, e.g.,                 ║
+║      ░       `const COLOR_PLAYER = GRAYS[31]`, `const COLOR_ENEMY = GRAYS[24]`.║
+║      ░    4. Go through existing scripts (Player, Boss, UI) and replace all  ║
+║      ░       hard-coded `ColorRect` colors with references to the new `Palette`.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              MEDIUM - PLAYER & SYSTEM REFINEMENTS                    ██  ║
+║  ██            PHASE 2: CORE GAMEPLAY & "FRAMER" AESTHETICS              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   Improvements to existing systems to enhance game feel and fairness.        ║
+║   With a clean foundation, we can now build new features and implement the   ║
+║   target visual style. The priority is on game-feel and visual polish.       ║
 ║                                                                              ║
-║   ▒  Implement Advanced Movement                                             ║
-║      ░  □ Corner Correction: Nudge the player over sharp corners.            ║
-║      ░  □ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
+║   █  UI Aesthetic Overhaul                                                   ║
+║      ░  WHY: To match the "expensive Framer website" aesthetic, we must move ║
+║      ░  away from static PNGs for UI and towards a procedural, shader-driven ║
+║      ░  approach. This will provide a crisp, scalable, and animatable UI.    ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a reusable `StyledMenuItem` scene that extends `Control`.║
+║      ░    2. This scene will use the `_draw()` function and shaders to render║
+║      ░       itself procedurally: a thin border, a main body, and a glow effect.║
+║      ░    3. The main body will use a "frosted glass" shader that samples the║
+║      ░       `SCREEN_TEXTURE` to blur what's behind it.                      ║
+║      ░    4. All colors will be pulled from `Palette.gd`.                    ║
+║      ░    5. Replace the `TextureButton`s in all menu screens with this new  ║
+║      ░       `StyledMenuItem` scene.                                        ║
 ║                                                                              ║
-║   ▒  Implement Input Buffering                                               ║
-║      ░  □ Buffer attack and dash inputs just like the jump input is.         ║
+║   ▓  Refine Player Combat Mechanics ("Game Juice")                           ║
+║      ░  □ Melee Hitbox Enhancement:                                          ║
+║      ░      WHY: To reward skillful spacing and make melee feel better.      ║
+║      ░      HOW: The player's melee attack will use two `Area2D` hitboxes.   ║
+║      ░      The inner box (closer to player) will deal 1.5x damage. The outer║
+║      ░      box will deal 1.0x damage.                                       ║
+║      ░  □ Input Buffering for Attack & Dash:                                 ║
+║      ░      WHY: The jump is already buffered. Applying this to attacks and  ║
+║      ░      dashes will make the controls feel significantly more responsive.║
+║      ░      HOW: In `player.gd`, create `attack_buffer_timer` and            ║
+║      ░      `dash_buffer_timer`. When the action is pressed, start the timer.║
+║      ░      The state logic will then execute the action if the timer is > 0.║
+║      ░  □ Pogo-Attack Fast-Fall Prevention:                                  ║
+║      ░      WHY: To prevent the frustrating experience of accidentally       ║
+║      ░      fast-falling immediately after a successful pogo.                ║
+║      ░      HOW: After a `_trigger_pogo()`, have a short timer or boolean flag║
+║      ░      that temporarily ignores the "Down" input for gravity calculation.║
 ║                                                                              ║
-║   ▒  Refine Charged Shot                                                     ║
-║      ░  □ Add a visual indicator while the player is charging.               ║
-║      ░  □ Create a "fizzle" effect/sound if the charge is released too early.║
-║                                                                              ║
-║   ▒  Refine Pogo-Attack Interaction                                          ║
-║      ░  □ Temporarily disable fast-fall gravity for a brief window after a   ║
-║      ░    successful pogo to prevent accidental, unwanted fast-falls.        ║
+║   ▒  Implement "Kitchen Sink" Base Boss Features                             ║
+║      ░  WHY: To create a robust template for all future bosses, equipping it ║
+║      ░  with a library of professional boss mechanics.                       ║
+║      ░  HOW: These will be implemented as new states or variables in the     ║
+║      ░  refactored Boss State Machine.                                       ║
+║      ░    □ Health-Based Phases: In `take_damage()`, check if health has     ║
+║      ░      crossed a threshold (e.g., 50%) and trigger a `change_state` to  ║
+║      ░      a more aggressive `Phase2Attack` state.                          ║
+║      ░    □ Armor/Weak Points: Add an `is_armored` boolean. Create an        ║
+║      ░      `Armored` state where the boss takes no damage. Certain attack   ║
+║      ░      states will temporarily set `is_armored` to false.               ║
+║      ░    □ Clear Attack Telegraphing: Create a dedicated `Telegraph` state  ║
+║      ░      that plays a visual effect (e.g., a shader flash) before         ║
+║      ░      transitioning to the `Attack` state.                             ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                    LOW - DEBUGGING & TOOLS                           ██  ║
+║  ██                     PHASE 3: CONTENT EXPANSION                       ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   Features to accelerate development and testing.                            ║
+║   Once our systems are robust and polished, we can begin adding more content.║
 ║                                                                              ║
-║   ░  Implement Debug Hotkeys                                                 ║
-║      ░  □ Y: Toggle Player Invincibility.                                    ║
-║      ░  □ U: Damage Boss by 5 HP.                                            ║
-║      ░  □ I: Instantly gain 1 Healing Charge.                                ║
-║      ░  □ O: Toggle Debug Overlay (player state, boss state, timers).        ║
+║   ░  Implement a "Minion" Enemy Type                                         ║
+║      ░  WHY: To add variety to combat encounters and test the player's skills║
+║      ░  in more diverse scenarios than just a 1v1 boss fight.                ║
+║      ░  HOW: Create a simple "Turret" enemy scene. It will not move, but will║
+║      ░  periodically fire a projectile at the player. We will add it to the  ║
+║      ░  `arena_00_encounter.gd` script using our new `EncounterDirector`.    ║
 ║                                                                              ║
-║   ░  Implement Screen Shake (Deferred)                                       ║
-║      ░  □ On player taking damage and on boss death. (Deferred to avoid      ║
-║      ░    visual noise during foundational debugging).                        ║
+║   ░  Create a Second Boss & Arena                                            ║
+║      ░  WHY: This is the ultimate test of our modular, data-driven architecture.║
+║      ░  If our systems are truly well-designed, creating a new boss should be║
+║      ░  a matter of configuration and new state creation, not rewriting core logic.║
+║      ░  HOW: We will choose a concept from `DESIGN.txt` (e.g., "Garden Box").║
+║      ░  We will create a new layout file, a new encounter file, and a new boss║
+║      ░  scene that inherits from `base_boss.gd` but uses new attack states.  ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██               PHASE 4: LOW PRIORITY & DEFERRED TASKS                 ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Features that are pure "juice" or non-essential. These are deferred to     ║
+║   prevent them from interfering with foundational development and debugging. ║
+║                                                                              ║
+║   ░  Implement Screen Shake                                                  ║
+║      ░  WHY: Adds satisfying impact to events like taking damage or boss death.║
+║      ░  STATUS: Deferred. We will not implement this until the core mechanics║
+║      ░  and visual debugging are complete, as it adds visual noise.          ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

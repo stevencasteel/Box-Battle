@@ -15,22 +15,19 @@
 ║  ██                         DESIGN PHILOSOPHY                            ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Sublime Movement by Default: The player is given a complete,            ║
-║      perfected, and expressive moveset from the very beginning. There is no  ║
-║      gating of core movement abilities behind progression. The joy of the    ║
-║      game comes from mastering these tools, not from unlocking them.         ║
+║   █  Sublime Movement by Default: The player is given a complete, perfected, ║
+║      and expressive moveset from the beginning. The joy of the game comes    ║
+║      from mastering these tools, not from unlocking them.                    ║
 ║                                                                              ║
-║   █  Arcade Game as a Boss: Each boss battle is a unique mechanical          ║
-║      challenge inspired by a classic arcade game loop (e.g., Tempest,        ║
-║      Centipede). The player's sublime moveset is the constant tool used to   ║
-║      solve these varied combat puzzles.                                      ║
+║   █  Aesthetic Minimalism, Technical Maximalism: The visual style will be    ║
+║      clean, minimalist, and beautiful, inspired by high-end web design       ║
+║      (e.g., Framer websites). We will use advanced shaders, procedural       ║
+║      generation, and particle effects to create a polished, "expensive"      ║
+║      look with elements like frosted glass, backlighting, and subtle gradients.║
 ║                                                                              ║
-║   █  Tough but Fair: The game is designed to be challenging. Player failure  ║
-║      should feel like a learning opportunity, not a punishment.              ║
-║                                                                              ║
-║   █  Human-AI Collaborative Design: The level design process is a partnership║
-║      between a human and an AI, facilitated by the human-readable coordinate ║
-║      legend in level layout files.                                           ║
+║   █  Robust, Maintainable Code: Development will adhere to the SOLID principles║
+║      (Single Responsibility, Open/Closed, etc.) to ensure the codebase is    ║
+║      scalable, easy to debug, and a pleasure to work on. We refactor first.  ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                           CORE MECHANICS                             ██  ║
@@ -38,68 +35,51 @@
 ║                                                                              ║
 ║   ▓  Player Movement                                                         ║
 ║      ░ ■ Coyote Time & Jump Buffering for forgiving platforming.             ║
-║      ░ ■ 4-directional Dash (Up, Down, Left, Right) with a cooldown.         ║
+║      ░ ■ 4-directional Dash with a cooldown.                                 ║
 ║      ░ ■ Wall-Sliding and Wall-Jumping for verticality.                      ║
-║      ░ ■ Drop-Through Platforms via Down + Jump input.                       ║
 ║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity.             ║
 ║                                                                              ║
-║   ▓  Advanced Movement Techniques (To Be Implemented)                        ║
-║      ░ ■ Corner Correction: The game engine will subtly nudge the player up  ║
-║      ░   and over sharp corners to prevent frustrating "bonks."              ║
-║      ░ ■ Dash-Jump Cancel: Allows the player to interrupt a dash with a jump,║
-║      ░   preserving some momentum for advanced precision movement.           ║
-║                                                                              ║
 ║   ▓  Combat System                                                           ║
-║      ░ ■ Primary Attack (Melee), Secondary Attack (Charged Shot), Pogo Attack.║
+║      ░ ■ Primary Melee: A fast, close-range attack.                          ║
+║      ░ ■ Charged Shot: A long-range projectile attack.                       ║
+║      ░ ■ Pogo Attack: A downward aerial attack that bounces on enemies.      ║
 ║      ░ ■ Dash Invincibility: The player cannot take damage during a dash.    ║
 ║                                                                              ║
-║   ▓  Health and Healing: The Determination System                            ║
-║      ░  Healing is a resource earned through combat. A `healing_charge` is   ║
-║      ░  earned by filling a `determination_counter` by dealing damage.       ║
+║   ▓  Planned Combat Refinements                                              ║
+║      ░ ■ Enhanced Melee Hitbox: The melee swing will have two hitboxes. The  ║
+║      ░   inner box (close to the player) will deal 1.5x damage, rewarding    ║
+║      ░   risky positioning. The outer box will deal 1.0x damage.             ║
+║      ░ ■ Input Buffering: Attack and dash inputs will be buffered just like  ║
+║      ░   the jump input, making the controls feel more responsive.           ║
+║      ░ ■ Pogo-Fall Prevention: A brief window after a pogo will prevent      ║
+║      ░   accidental fast-falling.                                            ║
 ║                                                                              ║
-║   ▓  Boss Design                                                             ║
-║      ░ ■ "Corner Armor" Health System with distinct phases.                  ║
-║      ░ ■ All bosses are "Box" puns with thematic arenas and mechanics.       ║
+║   ▓  Health and Healing: The Determination System                            ║
+║      ░  Healing is a resource earned by dealing damage. Landing hits fills a ║
+║      ░  `determination_counter` to grant a `healing_charge`.                 ║
+║                                                                              ║
+║   ▓  Boss Design Template (The "Kitchen Sink")                               ║
+║      ░  Our `base_boss` will be a template with a library of toggleable mechanics:║
+║      ░  ■ Health Phases: Boss behavior and attacks change at health thresholds.║
+║      ░  ■ Armor / Weak Points: Boss can enter armored states where it takes  ║
+║      ░    no damage, punctuated by moments of vulnerability.                 ║
+║      ░  ■ Clear Telegraphing: All attacks will be preceded by clear visual/audio║
+║      ░    cues, ensuring tough but fair encounters.                          ║
+║      ░  ■ Modular Movement: Bosses can be configured to fly, dash, jump, etc.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                 ARENA & BOSS BATTLE CONCEPTS                         ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   A list of potential designs for future boss battles.                       ║
+║   Each boss battle is a unique mechanical challenge inspired by a classic    ║
+║   arcade game loop. The player's sublime moveset is the constant tool used to║
+║   solve these varied combat puzzles.                                         ║
 ║                                                                              ║
-║   ▒  Beat Box (Rhythm Game)                                                  ║
-║      ░  ARENA: A pulsing, speaker-like room.                                 ║
-║      ░  MECHANIC: Platforms appear/disappear on a musical beat. Player can   ║
-║      ░  only move or jump on the beat. Missing the rhythm freezes the player.║
-║      ░  SHADER: Visualizes audio waveforms and bass drops.                   ║
-║                                                                              ║
-║   ▒  Sandbox (Momentum Vampirism)                                            ║
-║      ░  ARENA: Filled with destructible sand blocks.                         ║
-║      ░  MECHANIC: Boss steals player momentum on hit, getting faster while   ║
-║      ░  the player gets slower. Player's abilities may be restricted (e.g., no wall-jump).║
-║      ░  SHADER: Granular shaders, particle effects that look like sand.      ║
-║                                                                              ║
-║   ▒  Circuit Box (Tempest-like)                                              ║
-║      ░  ARENA: A central core protected by rotating concentric walls with gaps.║
-║      ░  MECHANIC: Player circles the outer ring and must shoot through the   ║
-║      ░  gaps to hit the core. Small drones spawn from the walls.             ║
-║      ░  SHADER: Glowing, circuit-board-like patterns.                        ║
-║                                                                              ║
-║   ▒  Garden Box (Centipede-like)                                             ║
-║      ░  ARENA: Filled with mushroom-like platform obstacles.                 ║
-║      ░  MECHANIC: Boss is a long, segmented entity that weaves through       ║
-║      ░  obstacles. Destroying middle segments creates multiple smaller bosses.║
-║      ░  SHADER: Growing vine and plant patterns.                             ║
-║                                                                              ║
-║   ▒  Traffic Box (Frogger-like)                                              ║
-║      ░  ARENA: Horizontal "lanes" of projectiles and moving platforms.       ║
-║      ░  MECHANIC: Player must time dashes and jumps to cross the "traffic"   ║
-║      ░  to reach the boss at the far end.                                    ║
-║      ░  SHADER: Blurring and light-streak effects to simulate speed.         ║
-║                                                                              ║
-║   ▒  Gravity Box (Gravity Man-inspired)                                      ║
-║      ░  ARENA: Symmetrical with platforms on both floor and ceiling.         ║
-║      ░  MECHANIC: Gravity reverses periodically, forcing the player to adapt.║
-║      ░  SHADER: Gravitational lensing/distortion effects.                    ║
+║   ▒  Beat Box (Rhythm Game): Platforms appear/disappear on a musical beat.   ║
+║   ▒  Sandbox (Momentum Vampirism): Boss steals player momentum on hit.       ║
+║   ▒  Circuit Box (Tempest-like): Central core protected by rotating shields. ║
+║   ▒  Garden Box (Centipede-like): Segmented boss weaves through obstacles.   ║
+║   ▒  Traffic Box (Frogger-like): Cross "lanes" of projectiles to reach boss. ║
+║   ▒  Gravity Box (Gravity Man-inspired): Gravity reverses periodically.      ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
