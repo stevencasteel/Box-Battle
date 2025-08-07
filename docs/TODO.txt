@@ -20,7 +20,7 @@
 ║   cleaning and organizing our workshop before building new things. It will   ║
 ║   make all future development faster, safer, and more enjoyable.             ║
 ║                                                                              ║
-║   █  Refactor Player to use the State Pattern                                ║
+║   ■  Refactor Player to use the State Pattern                                ║
 ║      ░  WHY: `player.gd` is becoming large and hard to manage. The State     ║
 ║      ░  Pattern will decouple the logic for each state (Move, Fall, Dash)    ║
 ║      ░  into its own separate script, making the system incredibly clean,    ║
@@ -31,27 +31,27 @@
 ║      ░       player states, defining the "contract" functions they must have:║
 ║      ░       `enter()`, `exit()`, `process_physics(delta)`, `process_input(event)`.║
 ║      ░    3. Create individual state scripts (e.g., `state_move.gd`,         ║
-║      ░       `state_fall.gd`) that extend `state_base.gd`.                  ║
+║      ░       `state_fall.gd`) that extend `state_base.gd`.                   ║
 ║      ░    4. Move the logic from `player.gd`'s `state_move` function into    ║
 ║      ░       the `process_physics` function of `state_move.gd`, and so on for each state.║
 ║      ░    5. Modify `player.gd` to act as a "Context". It will hold a        ║
-║      ░       dictionary of all state objects and a variable for the         ║
+║      ░       dictionary of all state objects and a variable for the          ║
 ║      ░       `current_state`. Its `_physics_process` will simplify to just one║
-║      ░       line: `current_state.process_physics(delta)`.                  ║
+║      ░       line: `current_state.process_physics(delta)`.                   ║
 ║                                                                              ║
-║   █  Refactor Base Boss to use the State Pattern                             ║
+║   □  Refactor Base Boss to use the State Pattern                             ║
 ║      ░  WHY: For the exact same reasons as the Player. As we add our "kitchen║
 ║      ░  sink" of advanced boss mechanics, this pattern is essential to       ║
 ║      ░  prevent `base_boss.gd` from becoming unmanageable.                   ║
 ║      ░  HOW:                                                                 ║
 ║      ░    1. Create `src/entities/boss/states/`.                             ║
 ║      ░    2. Create `state_boss_base.gd` and individual state scripts like   ║
-║      ░       `state_boss_patrol.gd` and `state_boss_attack.gd`.             ║
+║      ░       `state_boss_patrol.gd` and `state_boss_attack.gd`.              ║
 ║      ░    3. Refactor `base_boss.gd` into a "Context" that manages its       ║
-║      ░       states, just like the player. This will make adding new attack ║
+║      ░       states, just like the player. This will make adding new attack  ║
 ║      ░       patterns or defensive phases as simple as adding a new state file.║
 ║                                                                              ║
-║   ▓  Refactor ArenaBuilder using the Single Responsibility Principle (SRP)   ║
+║   □  Refactor ArenaBuilder using the Single Responsibility Principle (SRP)   ║
 ║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs (parsing, building║
 ║      ░  terrain, spawning entities). SRP dictates that a script should have  ║
 ║      ░  one reason to change. Separating these roles makes the code more     ║
@@ -60,12 +60,12 @@
 ║      ░    1. Create a new `TerrainBuilder.gd` class. Its only job will be to ║
 ║      ░       read layout data and create the physical tiles (`#`, `-`, `^`).║
 ║      ░    2. Create a new `EncounterDirector.gd` class. Its only job will be ║
-║      ░       to read encounter data and spawn the player, boss, and any     ║
+║      ░       to read encounter data and spawn the player, boss, and any      ║
 ║      ░       future minions or entities.                                     ║
 ║      ░    3. `ArenaBuilder.gd` will become a simple coordinator that uses    ║
-║      ░       instances of the new classes to do the heavy lifting.          ║
+║      ░       instances of the new classes to do the heavy lifting.           ║
 ║                                                                              ║
-║   ▓  Implement the Global Palette System                                     ║
+║   □  Implement the Global Palette System                                     ║
 ║      ░  WHY: To achieve a cohesive, professional aesthetic, all colors must  ║
 ║      ░  be managed from a central location. This makes theme changes instant.║
 ║      ░  This is a prerequisite for the visual overhaul in Phase 2.           ║
@@ -84,7 +84,7 @@
 ║   With a clean foundation, we can now build new features and implement the   ║
 ║   target visual style. The priority is on game-feel and visual polish.       ║
 ║                                                                              ║
-║   █  UI Aesthetic Overhaul                                                   ║
+║   □  UI Aesthetic Overhaul                                                   ║
 ║      ░  WHY: To match the "expensive Framer website" aesthetic, we must move ║
 ║      ░  away from static PNGs for UI and towards a procedural, shader-driven ║
 ║      ░  approach. This will provide a crisp, scalable, and animatable UI.    ║
@@ -96,9 +96,9 @@
 ║      ░       `SCREEN_TEXTURE` to blur what's behind it.                      ║
 ║      ░    4. All colors will be pulled from `Palette.gd`.                    ║
 ║      ░    5. Replace the `TextureButton`s in all menu screens with this new  ║
-║      ░       `StyledMenuItem` scene.                                        ║
+║      ░       `StyledMenuItem` scene.                                         ║
 ║                                                                              ║
-║   ▓  Refine Player Combat Mechanics ("Game Juice")                           ║
+║   □  Refine Player Combat Mechanics ("Game Juice")                           ║
 ║      ░  □ Melee Hitbox Enhancement:                                          ║
 ║      ░      WHY: To reward skillful spacing and make melee feel better.      ║
 ║      ░      HOW: The player's melee attack will use two `Area2D` hitboxes.   ║
@@ -116,7 +116,7 @@
 ║      ░      HOW: After a `_trigger_pogo()`, have a short timer or boolean flag║
 ║      ░      that temporarily ignores the "Down" input for gravity calculation.║
 ║                                                                              ║
-║   ▒  Implement "Kitchen Sink" Base Boss Features                             ║
+║   □  Implement "Kitchen Sink" Base Boss Features                             ║
 ║      ░  WHY: To create a robust template for all future bosses, equipping it ║
 ║      ░  with a library of professional boss mechanics.                       ║
 ║      ░  HOW: These will be implemented as new states or variables in the     ║

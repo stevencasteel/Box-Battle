@@ -15,8 +15,11 @@
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   (This section is for work that has been committed but not yet part of a    ║
-║    versioned release. See the new TODO.txt for the upcoming features.)       ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored the Player node to use the State Pattern. All state logic║
+║      ░   (Move, Fall, Dash, etc.) has been decoupled into individual classes ║
+║      ░   in `src/entities/player/states/` for improved scalability and      ║
+║      ░   maintainability, adhering to SOLID principles.                      ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
@@ -32,8 +35,8 @@
 ║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
 ║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
 ║      ░   prevent any "first-appearance" hitches for entities.                ║
-║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
-║      ░   the official documentation.                                         ║
+║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in  ║
+║      ░   the official documentation.                                        ║
 ║                                                                              ║
 ║   █  Bug Fixes                                                               ║
 ║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
@@ -43,9 +46,9 @@
 ║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
 ║                                                                              ║
 ║   █  Documentation                                                           ║
-║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
-║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
-║      ░   design philosophies, patterns, and planned features.                ║
+║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap. ║
+║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new     ║
+║      ░   design philosophies, patterns, and planned features.               ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║

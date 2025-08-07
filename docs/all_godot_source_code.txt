@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Thu Aug  7 13:34:04 CDT 2025
+Generated on: Thu Aug  7 18:08:56 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -47,7 +47,17 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   └── base_boss.tscn
     │   └── player
     │       ├── player.gd
-    │       └── player.tscn
+    │       ├── player.tscn
+    │       └── states
+    │           ├── state_attack.gd
+    │           ├── state_base.gd
+    │           ├── state_dash.gd
+    │           ├── state_fall.gd
+    │           ├── state_heal.gd
+    │           ├── state_hurt.gd
+    │           ├── state_jump.gd
+    │           ├── state_move.gd
+    │           └── state_wall_slide.gd
     ├── projectiles
     │   ├── boss_shot.gd
     │   ├── boss_shot.tscn
@@ -98,7 +108,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-28 directories, 62 files
+29 directories, 71 files
 
 
 =====================================
@@ -118,57 +128,157 @@ FILE: ./docs/TODO.txt
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              HIGH - ESSENTIAL FEEDBACK & "GAME JUICE"                ██  ║
+║  ██              PHASE 1: THE GREAT ARCHITECTURAL REFACTOR               ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   These features make the game feel responsive, satisfying, and alive.       ║
+║   This phase is our highest priority. We will refactor the existing code to  ║
+║   align with professional design principles (SOLID, DRY). This is like       ║
+║   cleaning and organizing our workshop before building new things. It will   ║
+║   make all future development faster, safer, and more enjoyable.             ║
 ║                                                                              ║
-║   ▓  Implement Visual Feedback                                               ║
-║      ░  □ Hit Pause: A brief (e.g., 0.05s) global time freeze on hit.        ║
-║      ░  □ Particle Effects: For player landing (dust), hits (sparks), etc.   ║
-║      ░  □ Dash Cooldown UI: A visual indicator on the HUD for dash readiness.║
+║   █  Refactor Player to use the State Pattern                                ║
+║      ░  WHY: `player.gd` is becoming large and hard to manage. The State     ║
+║      ░  Pattern will decouple the logic for each state (Move, Fall, Dash)    ║
+║      ░  into its own separate script, making the system incredibly clean,    ║
+║      ░  stable, and easy to extend with new abilities like parrying.         ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a new directory: `src/entities/player/states/`.          ║
+║      ░    2. Create `state_base.gd`: This will be the parent class for all   ║
+║      ░       player states, defining the "contract" functions they must have:║
+║      ░       `enter()`, `exit()`, `process_physics(delta)`, `process_input(event)`.║
+║      ░    3. Create individual state scripts (e.g., `state_move.gd`,         ║
+║      ░       `state_fall.gd`) that extend `state_base.gd`.                   ║
+║      ░    4. Move the logic from `player.gd`'s `state_move` function into    ║
+║      ░       the `process_physics` function of `state_move.gd`, and so on for each state.║
+║      ░    5. Modify `player.gd` to act as a "Context". It will hold a        ║
+║      ░       dictionary of all state objects and a variable for the          ║
+║      ░       `current_state`. Its `_physics_process` will simplify to just one║
+║      ░       line: `current_state.process_physics(delta)`.                   ║
 ║                                                                              ║
-║   ▓  Implement Audio Feedback                                                ║
-║      ░  □ Implement placeholder SFX for all core actions: player jump, dash, ║
-║      ░    attack, take damage, heal, and pogo bounce.                         ║
-║      ░  □ Add SFX for boss taking damage and attacking.                      ║
+║   █  Refactor Base Boss to use the State Pattern                             ║
+║      ░  WHY: For the exact same reasons as the Player. As we add our "kitchen║
+║      ░  sink" of advanced boss mechanics, this pattern is essential to       ║
+║      ░  prevent `base_boss.gd` from becoming unmanageable.                   ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create `src/entities/boss/states/`.                             ║
+║      ░    2. Create `state_boss_base.gd` and individual state scripts like   ║
+║      ░       `state_boss_patrol.gd` and `state_boss_attack.gd`.              ║
+║      ░    3. Refactor `base_boss.gd` into a "Context" that manages its       ║
+║      ░       states, just like the player. This will make adding new attack  ║
+║      ░       patterns or defensive phases as simple as adding a new state file.║
+║                                                                              ║
+║   ▓  Refactor ArenaBuilder using the Single Responsibility Principle (SRP)   ║
+║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs (parsing, building║
+║      ░  terrain, spawning entities). SRP dictates that a script should have  ║
+║      ░  one reason to change. Separating these roles makes the code more     ║
+║      ░  robust and easier to maintain.                                       ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a new `TerrainBuilder.gd` class. Its only job will be to ║
+║      ░       read layout data and create the physical tiles (`#`, `-`, `^`).║
+║      ░    2. Create a new `EncounterDirector.gd` class. Its only job will be ║
+║      ░       to read encounter data and spawn the player, boss, and any      ║
+║      ░       future minions or entities.                                     ║
+║      ░    3. `ArenaBuilder.gd` will become a simple coordinator that uses    ║
+║      ░       instances of the new classes to do the heavy lifting.           ║
+║                                                                              ║
+║   ▓  Implement the Global Palette System                                     ║
+║      ░  WHY: To achieve a cohesive, professional aesthetic, all colors must  ║
+║      ░  be managed from a central location. This makes theme changes instant.║
+║      ░  This is a prerequisite for the visual overhaul in Phase 2.           ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a new autoload singleton: `Palette.gd`.                  ║
+║      ░    2. In `Palette.gd`, define the 32-step grayscale array.            ║
+║      ░    3. Define semantic color names as constants, e.g.,                 ║
+║      ░       `const COLOR_PLAYER = GRAYS[31]`, `const COLOR_ENEMY = GRAYS[24]`.║
+║      ░    4. Go through existing scripts (Player, Boss, UI) and replace all  ║
+║      ░       hard-coded `ColorRect` colors with references to the new `Palette`.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              MEDIUM - PLAYER & SYSTEM REFINEMENTS                    ██  ║
+║  ██            PHASE 2: CORE GAMEPLAY & "FRAMER" AESTHETICS              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   Improvements to existing systems to enhance game feel and fairness.        ║
+║   With a clean foundation, we can now build new features and implement the   ║
+║   target visual style. The priority is on game-feel and visual polish.       ║
 ║                                                                              ║
-║   ▒  Implement Advanced Movement                                             ║
-║      ░  □ Corner Correction: Nudge the player over sharp corners.            ║
-║      ░  □ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
+║   █  UI Aesthetic Overhaul                                                   ║
+║      ░  WHY: To match the "expensive Framer website" aesthetic, we must move ║
+║      ░  away from static PNGs for UI and towards a procedural, shader-driven ║
+║      ░  approach. This will provide a crisp, scalable, and animatable UI.    ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a reusable `StyledMenuItem` scene that extends `Control`.║
+║      ░    2. This scene will use the `_draw()` function and shaders to render║
+║      ░       itself procedurally: a thin border, a main body, and a glow effect.║
+║      ░    3. The main body will use a "frosted glass" shader that samples the║
+║      ░       `SCREEN_TEXTURE` to blur what's behind it.                      ║
+║      ░    4. All colors will be pulled from `Palette.gd`.                    ║
+║      ░    5. Replace the `TextureButton`s in all menu screens with this new  ║
+║      ░       `StyledMenuItem` scene.                                         ║
 ║                                                                              ║
-║   ▒  Implement Input Buffering                                               ║
-║      ░  □ Buffer attack and dash inputs just like the jump input is.         ║
+║   ▓  Refine Player Combat Mechanics ("Game Juice")                           ║
+║      ░  □ Melee Hitbox Enhancement:                                          ║
+║      ░      WHY: To reward skillful spacing and make melee feel better.      ║
+║      ░      HOW: The player's melee attack will use two `Area2D` hitboxes.   ║
+║      ░      The inner box (closer to player) will deal 1.5x damage. The outer║
+║      ░      box will deal 1.0x damage.                                       ║
+║      ░  □ Input Buffering for Attack & Dash:                                 ║
+║      ░      WHY: The jump is already buffered. Applying this to attacks and  ║
+║      ░      dashes will make the controls feel significantly more responsive.║
+║      ░      HOW: In `player.gd`, create `attack_buffer_timer` and            ║
+║      ░      `dash_buffer_timer`. When the action is pressed, start the timer.║
+║      ░      The state logic will then execute the action if the timer is > 0.║
+║      ░  □ Pogo-Attack Fast-Fall Prevention:                                  ║
+║      ░      WHY: To prevent the frustrating experience of accidentally       ║
+║      ░      fast-falling immediately after a successful pogo.                ║
+║      ░      HOW: After a `_trigger_pogo()`, have a short timer or boolean flag║
+║      ░      that temporarily ignores the "Down" input for gravity calculation.║
 ║                                                                              ║
-║   ▒  Refine Charged Shot                                                     ║
-║      ░  □ Add a visual indicator while the player is charging.               ║
-║      ░  □ Create a "fizzle" effect/sound if the charge is released too early.║
-║                                                                              ║
-║   ▒  Refine Pogo-Attack Interaction                                          ║
-║      ░  □ Temporarily disable fast-fall gravity for a brief window after a   ║
-║      ░    successful pogo to prevent accidental, unwanted fast-falls.        ║
+║   ▒  Implement "Kitchen Sink" Base Boss Features                             ║
+║      ░  WHY: To create a robust template for all future bosses, equipping it ║
+║      ░  with a library of professional boss mechanics.                       ║
+║      ░  HOW: These will be implemented as new states or variables in the     ║
+║      ░  refactored Boss State Machine.                                       ║
+║      ░    □ Health-Based Phases: In `take_damage()`, check if health has     ║
+║      ░      crossed a threshold (e.g., 50%) and trigger a `change_state` to  ║
+║      ░      a more aggressive `Phase2Attack` state.                          ║
+║      ░    □ Armor/Weak Points: Add an `is_armored` boolean. Create an        ║
+║      ░      `Armored` state where the boss takes no damage. Certain attack   ║
+║      ░      states will temporarily set `is_armored` to false.               ║
+║      ░    □ Clear Attack Telegraphing: Create a dedicated `Telegraph` state  ║
+║      ░      that plays a visual effect (e.g., a shader flash) before         ║
+║      ░      transitioning to the `Attack` state.                             ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                    LOW - DEBUGGING & TOOLS                           ██  ║
+║  ██                     PHASE 3: CONTENT EXPANSION                       ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   Features to accelerate development and testing.                            ║
+║   Once our systems are robust and polished, we can begin adding more content.║
 ║                                                                              ║
-║   ░  Implement Debug Hotkeys                                                 ║
-║      ░  □ Y: Toggle Player Invincibility.                                    ║
-║      ░  □ U: Damage Boss by 5 HP.                                            ║
-║      ░  □ I: Instantly gain 1 Healing Charge.                                ║
-║      ░  □ O: Toggle Debug Overlay (player state, boss state, timers).        ║
+║   ░  Implement a "Minion" Enemy Type                                         ║
+║      ░  WHY: To add variety to combat encounters and test the player's skills║
+║      ░  in more diverse scenarios than just a 1v1 boss fight.                ║
+║      ░  HOW: Create a simple "Turret" enemy scene. It will not move, but will║
+║      ░  periodically fire a projectile at the player. We will add it to the  ║
+║      ░  `arena_00_encounter.gd` script using our new `EncounterDirector`.    ║
 ║                                                                              ║
-║   ░  Implement Screen Shake (Deferred)                                       ║
-║      ░  □ On player taking damage and on boss death. (Deferred to avoid      ║
-║      ░    visual noise during foundational debugging).                        ║
+║   ░  Create a Second Boss & Arena                                            ║
+║      ░  WHY: This is the ultimate test of our modular, data-driven architecture.║
+║      ░  If our systems are truly well-designed, creating a new boss should be║
+║      ░  a matter of configuration and new state creation, not rewriting core logic.║
+║      ░  HOW: We will choose a concept from `DESIGN.txt` (e.g., "Garden Box").║
+║      ░  We will create a new layout file, a new encounter file, and a new boss║
+║      ░  scene that inherits from `base_boss.gd` but uses new attack states.  ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██               PHASE 4: LOW PRIORITY & DEFERRED TASKS                 ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Features that are pure "juice" or non-essential. These are deferred to     ║
+║   prevent them from interfering with foundational development and debugging. ║
+║                                                                              ║
+║   ░  Implement Screen Shake                                                  ║
+║      ░  WHY: Adds satisfying impact to events like taking damage or boss death.║
+║      ░  STATUS: Deferred. We will not implement this until the core mechanics║
+║      ░  and visual debugging are complete, as it adds visual noise.          ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -192,22 +302,19 @@ FILE: ./docs/DESIGN.txt
 ║  ██                         DESIGN PHILOSOPHY                            ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Sublime Movement by Default: The player is given a complete,            ║
-║      perfected, and expressive moveset from the very beginning. There is no  ║
-║      gating of core movement abilities behind progression. The joy of the    ║
-║      game comes from mastering these tools, not from unlocking them.         ║
+║   █  Sublime Movement by Default: The player is given a complete, perfected, ║
+║      and expressive moveset from the beginning. The joy of the game comes    ║
+║      from mastering these tools, not from unlocking them.                    ║
 ║                                                                              ║
-║   █  Arcade Game as a Boss: Each boss battle is a unique mechanical          ║
-║      challenge inspired by a classic arcade game loop (e.g., Tempest,        ║
-║      Centipede). The player's sublime moveset is the constant tool used to   ║
-║      solve these varied combat puzzles.                                      ║
+║   █  Aesthetic Minimalism, Technical Maximalism: The visual style will be    ║
+║      clean, minimalist, and beautiful, inspired by high-end web design       ║
+║      (e.g., Framer websites). We will use advanced shaders, procedural       ║
+║      generation, and particle effects to create a polished, "expensive"      ║
+║      look with elements like frosted glass, backlighting, and subtle gradients.║
 ║                                                                              ║
-║   █  Tough but Fair: The game is designed to be challenging. Player failure  ║
-║      should feel like a learning opportunity, not a punishment.              ║
-║                                                                              ║
-║   █  Human-AI Collaborative Design: The level design process is a partnership║
-║      between a human and an AI, facilitated by the human-readable coordinate ║
-║      legend in level layout files.                                           ║
+║   █  Robust, Maintainable Code: Development will adhere to the SOLID principles║
+║      (Single Responsibility, Open/Closed, etc.) to ensure the codebase is    ║
+║      scalable, easy to debug, and a pleasure to work on. We refactor first.  ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                           CORE MECHANICS                             ██  ║
@@ -215,69 +322,52 @@ FILE: ./docs/DESIGN.txt
 ║                                                                              ║
 ║   ▓  Player Movement                                                         ║
 ║      ░ ■ Coyote Time & Jump Buffering for forgiving platforming.             ║
-║      ░ ■ 4-directional Dash (Up, Down, Left, Right) with a cooldown.         ║
+║      ░ ■ 4-directional Dash with a cooldown.                                 ║
 ║      ░ ■ Wall-Sliding and Wall-Jumping for verticality.                      ║
-║      ░ ■ Drop-Through Platforms via Down + Jump input.                       ║
 ║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity.             ║
 ║                                                                              ║
-║   ▓  Advanced Movement Techniques (To Be Implemented)                        ║
-║      ░ ■ Corner Correction: The game engine will subtly nudge the player up  ║
-║      ░   and over sharp corners to prevent frustrating "bonks."              ║
-║      ░ ■ Dash-Jump Cancel: Allows the player to interrupt a dash with a jump,║
-║      ░   preserving some momentum for advanced precision movement.           ║
-║                                                                              ║
 ║   ▓  Combat System                                                           ║
-║      ░ ■ Primary Attack (Melee), Secondary Attack (Charged Shot), Pogo Attack.║
+║      ░ ■ Primary Melee: A fast, close-range attack.                          ║
+║      ░ ■ Charged Shot: A long-range projectile attack.                       ║
+║      ░ ■ Pogo Attack: A downward aerial attack that bounces on enemies.      ║
 ║      ░ ■ Dash Invincibility: The player cannot take damage during a dash.    ║
 ║                                                                              ║
-║   ▓  Health and Healing: The Determination System                            ║
-║      ░  Healing is a resource earned through combat. A `healing_charge` is   ║
-║      ░  earned by filling a `determination_counter` by dealing damage.       ║
+║   ▓  Planned Combat Refinements                                              ║
+║      ░ ■ Enhanced Melee Hitbox: The melee swing will have two hitboxes. The  ║
+║      ░   inner box (close to the player) will deal 1.5x damage, rewarding    ║
+║      ░   risky positioning. The outer box will deal 1.0x damage.             ║
+║      ░ ■ Input Buffering: Attack and dash inputs will be buffered just like  ║
+║      ░   the jump input, making the controls feel more responsive.           ║
+║      ░ ■ Pogo-Fall Prevention: A brief window after a pogo will prevent      ║
+║      ░   accidental fast-falling.                                            ║
 ║                                                                              ║
-║   ▓  Boss Design                                                             ║
-║      ░ ■ "Corner Armor" Health System with distinct phases.                  ║
-║      ░ ■ All bosses are "Box" puns with thematic arenas and mechanics.       ║
+║   ▓  Health and Healing: The Determination System                            ║
+║      ░  Healing is a resource earned by dealing damage. Landing hits fills a ║
+║      ░  `determination_counter` to grant a `healing_charge`.                 ║
+║                                                                              ║
+║   ▓  Boss Design Template (The "Kitchen Sink")                               ║
+║      ░  Our `base_boss` will be a template with a library of toggleable mechanics:║
+║      ░  ■ Health Phases: Boss behavior and attacks change at health thresholds.║
+║      ░  ■ Armor / Weak Points: Boss can enter armored states where it takes  ║
+║      ░    no damage, punctuated by moments of vulnerability.                 ║
+║      ░  ■ Clear Telegraphing: All attacks will be preceded by clear visual/audio║
+║      ░    cues, ensuring tough but fair encounters.                          ║
+║      ░  ■ Modular Movement: Bosses can be configured to fly, dash, jump, etc.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                 ARENA & BOSS BATTLE CONCEPTS                         ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   A list of potential designs for future boss battles.                       ║
+║   Each boss battle is a unique mechanical challenge inspired by a classic    ║
+║   arcade game loop. The player's sublime moveset is the constant tool used to║
+║   solve these varied combat puzzles.                                         ║
 ║                                                                              ║
-║   ▒  Beat Box (Rhythm Game)                                                  ║
-║      ░  ARENA: A pulsing, speaker-like room.                                 ║
-║      ░  MECHANIC: Platforms appear/disappear on a musical beat. Player can   ║
-║      ░  only move or jump on the beat. Missing the rhythm freezes the player.║
-║      ░  SHADER: Visualizes audio waveforms and bass drops.                   ║
-║                                                                              ║
-║   ▒  Sandbox (Momentum Vampirism)                                            ║
-║      ░  ARENA: Filled with destructible sand blocks.                         ║
-║      ░  MECHANIC: Boss steals player momentum on hit, getting faster while   ║
-║      ░  the player gets slower. Player's abilities may be restricted (e.g., no wall-jump).║
-║      ░  SHADER: Granular shaders, particle effects that look like sand.      ║
-║                                                                              ║
-║   ▒  Circuit Box (Tempest-like)                                              ║
-║      ░  ARENA: A central core protected by rotating concentric walls with gaps.║
-║      ░  MECHANIC: Player circles the outer ring and must shoot through the   ║
-║      ░  gaps to hit the core. Small drones spawn from the walls.             ║
-║      ░  SHADER: Glowing, circuit-board-like patterns.                        ║
-║                                                                              ║
-║   ▒  Garden Box (Centipede-like)                                             ║
-║      ░  ARENA: Filled with mushroom-like platform obstacles.                 ║
-║      ░  MECHANIC: Boss is a long, segmented entity that weaves through       ║
-║      ░  obstacles. Destroying middle segments creates multiple smaller bosses.║
-║      ░  SHADER: Growing vine and plant patterns.                             ║
-║                                                                              ║
-║   ▒  Traffic Box (Frogger-like)                                              ║
-║      ░  ARENA: Horizontal "lanes" of projectiles and moving platforms.       ║
-║      ░  MECHANIC: Player must time dashes and jumps to cross the "traffic"   ║
-║      ░  to reach the boss at the far end.                                    ║
-║      ░  SHADER: Blurring and light-streak effects to simulate speed.         ║
-║                                                                              ║
-║   ▒  Gravity Box (Gravity Man-inspired)                                      ║
-║      ░  ARENA: Symmetrical with platforms on both floor and ceiling.         ║
-║      ░  MECHANIC: Gravity reverses periodically, forcing the player to adapt.║
-║      ░  SHADER: Gravitational lensing/distortion effects.                    ║
+║   ▒  Beat Box (Rhythm Game): Platforms appear/disappear on a musical beat.   ║
+║   ▒  Sandbox (Momentum Vampirism): Boss steals player momentum on hit.       ║
+║   ▒  Circuit Box (Tempest-like): Central core protected by rotating shields. ║
+║   ▒  Garden Box (Centipede-like): Segmented boss weaves through obstacles.   ║
+║   ▒  Traffic Box (Frogger-like): Cross "lanes" of projectiles to reach boss. ║
+║   ▒  Gravity Box (Gravity Man-inspired): Gravity reverses periodically.      ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -417,39 +507,42 @@ FILE: ./docs/BUGS.txt
 ║  ██                             OPEN ISSUES                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▒  [BUG-007] Intermittent major hitch on first run or debug mode toggle.   ║
-║      ░  FOUND: 2025-08-06                                                    ║
-║      ░  STATUS: Open (Low Priority)                                          ║
-║      ░  DETAILS: A major, one-time hitch can occasionally occur. It has been ║
-║      ░  observed after first opening the editor and after toggling 'Visible  ║
-║      ░  Collision Shapes'. The issue is not consistently reproducible. This  ║
-║      ░  may be related to first-time shader compilation or another engine    ║
-║      ░  process that is not covered by the current asynchronous loading system.║
-║      ░  To be investigated further during the project's polishing phase.     ║
+║   (All known bugs have been resolved.)                                       ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                             FIXED ISSUES                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
+║   □  [BUG-F007] Intermittent major hitch on first run or debug mode toggle.  ║
+║      ░  FIXED: 2025-08-07                                                    ║
+║      ░  SOLUTION: Implemented a shader pre-warming system in `LoadingScreen`.║
+║      ░  An off-screen `SubViewport` is used to instantiate key entities      ║
+║      ░  (Player, Boss, Projectiles) for a single frame, which forces the     ║
+║      ░  engine to compile their shaders before they are needed in the main   ║
+║      ░  game scene. This eliminates the first-appearance stutter.            ║
+║                                                                              ║
 ║   □  [BUG-F006] Significant stutter/hitch occurred on arena load.            ║
-║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  FIXED: 2025-08-07                                                    ║
 ║      ░  SOLUTION: Replaced the synchronous, blocking level generation with a ║
 ║      ░  new asynchronous system in `ArenaBuilder.gd`. The `build_level_async`║
 ║      ░  function now creates the level in batches, using `await` to yield    ║
 ║      ░  control back to the engine between batches. This prevents the main   ║
-║      ░  thread from freezing, resulting in a smooth loading sequence.        ║
+║      ░  thread from freezing, resulting in a smooth loading sequence managed ║
+║      ░  by a new `LoadingScreen`.                                            ║
 ║                                                                              ║
-║   □  [BUG-F005] Player death caused a black screen instead of reloading.     ║
-║      ░  FIXED: 2025-08-06                                                    ║
-║      ░  SOLUTION: The `game.gd` script was made robust to handle both        ║
-║      ░  initial loads (using the pre-built level from `GameManager`) and     ║
-║      ░  reloads (by calling `ArenaBuilder.build_level()` as a fallback).     ║
+║   □  [BUG-F005] Player death caused a physics crash.                         ║
+║      ░  FIXED: 2025-08-07                                                    ║
+║      ░  SOLUTION: Scene changes in `game.gd`'s `_on_player_died` and         ║
+║      ░  `_on_boss_died` functions were changed to `get_tree().call_deferred()`.║
+║      ░  This prevents the engine from trying to delete a physics body while  ║
+║      ░  it is still processing a physics callback.                           ║
 ║                                                                              ║
-║   □  [BUG-F004] Standard melee attacks did not destroy enemy projectiles.    ║
-║      ░  FIXED: 2025-08-06                                                    ║
-║      ░  SOLUTION: The `_on_hitbox_area_entered` function logic was           ║
-║      ░  corrected to handle non-pogo attack collisions with projectiles,     ║
-║      ░  allowing forward and upward swings to destroy them.                  ║
+║   □  [BUG-F004] Hazard tiles did not deal contact damage.                    ║
+║      ░  FIXED: 2025-08-07                                                    ║
+║      ░  SOLUTION: Corrected the implementation in `ArenaBuilder.gd`. The     ║
+║      ░  `_create_hazard_tile` function now creates a single `StaticBody2D`   ║
+║      ░  that exists on both the "world" and "hazard" collision layers and is ║
+║      ░  part of both corresponding groups, ensuring it's both solid and damaging.║
 ║                                                                              ║
 ║   □  [BUG-F003] Drop-through platforms ("-") were not functioning.           ║
 ║      ░  FIXED: 2025-08-06                                                    ║
@@ -604,67 +697,67 @@ FILE: ./docs/ARCHITECTURE.txt
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                         PROJECT STRUCTURE                            ██  ║
+║  ██                       GUIDING DESIGN PRINCIPLES                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   The project follows a clean, feature-based directory structure within the  ║
-║   `/src` folder to ensure code is organized, scalable, and easy to navigate. ║
+║   This project's development is guided by the SOLID principles to ensure the ║
+║   codebase remains clean, maintainable, and scalable.                        ║
 ║                                                                              ║
-║   █  /core: Global Autoload Singletons for systems accessible from anywhere. ║
-║   █  /entities: Self-contained entities like the Player and Bosses.          ║
-║   █  /projectiles: Scenes and scripts for all projectiles.                   ║
-║   █  /scenes: Primary game state scenes like the main game level.            ║
-║   █  /ui: All user interface elements, organized by function:                ║
-║      ░  /components: Reusable, self-contained UI widgets (e.g., CustomSlider)║
-║      ░  /global_hud: The autoloaded global HUD.                              ║
-║      ░  /menu_manager: The reusable system for menu navigation.              ║
-║      ░  /screens: The individual scenes for each menu screen.                ║
-║   █  /arenas: Data-only scripts defining level layouts and encounters.       ║
+║   █  Single Responsibility Principle (SRP): Every script should have one,    ║
+║      and only one, reason to change. This is why we separate level building  ║
+║      from entity spawning, and UI appearance from UI logic.                  ║
 ║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                         DESIGN PATTERNS USED                         ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║   █  Open/Closed Principle: Code should be open for extension, but closed for║
+║      modification. We achieve this with patterns like the State Pattern,     ║
+║      where adding a new player ability means adding a new file, not changing ║
+║      existing, stable code.                                                  ║
 ║                                                                              ║
-║   █  Singleton Pattern (Autoloads): Used for globally accessible systems.    ║
-║      ░  `Settings.gd`: Manages persistent game settings like volume.         ║
-║      ░  `AudioManager.gd`: A central manager for all audio playback.         ║
-║      ░  `CursorManager.gd`: Manages the state of the custom mouse cursor.    ║
-║      ░  `Constants.gd`: A central repository for game design values.         ║
-║      ░  `AssetPaths.gd`: A static registry of asset paths to prevent errors. ║
+║   █  Liskov Substitution Principle: Subclasses must be substitutable for their║
+║      base classes. A `FireBoss` must be able to do everything a `BaseBoss` can.║
 ║                                                                              ║
-║   █  State Machine: The Player's behavior is managed by a formal, enum-based ║
-║      state machine in `player.gd` to prevent conflicting actions.            ║
+║   █  Interface Segregation Principle: We avoid creating "fat" classes that   ║
+║      are forced to have functions they don't need.                           ║
 ║                                                                              ║
-║   █  Component-Based UI: The UI is built from self-contained, reusable       ║
-║      scenes. `MenuManager.gd` and `CustomSlider.gd` provide complex          ║
-║      functionality without the parent scene needing to know their internal   ║
-║      implementation.                                                         ║
-║                                                                              ║
-║   █  Data-Driven Level Design: `game.gd` reads from data-only scripts like   ║
-║      `arena_00_layout.gd` to procedurally build the level, allowing for      ║
-║      rapid creation of new arenas without duplicating scene files.           ║
+║   █  Dependency Inversion Principle: High-level code (like `game.gd`) should ║
+║      not depend on the specific implementation of low-level code (like the   ║
+║      `ArenaBuilder`). It should depend on an abstraction (the `build_level()`║
+║      function contract). Signals are a key tool for this.                    ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                         CODING STANDARDS                             ██  ║
+║  ██                       KEY ARCHITECTURAL PATTERNS                     ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Naming Conventions                                                      ║
-║      ░ `PascalCase` for class names, scene names, and `.gd` script files.    ║
-║      ░ `snake_case` for functions and variables.                             ║
-║      ░ `SCREAMING_SNAKE_CASE` for constants.                                 ║
+║   █  The State Pattern: This is the primary pattern for managing complex     ║
+║      entities. The logic for each state (e.g., `Move`, `Attack`, `Dash`) is  ║
+║      encapsulated in its own class file. The entity (`Player`, `BaseBoss`)   ║
+║      then acts as a "Context", holding a reference to the current state and  ║
+║      delegating all processing to it. This keeps the entity's main script    ║
+║      clean and makes adding or changing abilities highly modular.            ║
 ║                                                                              ║
-║   █  Asset Management: All file paths loaded in code MUST be referenced      ║
-║      through the `AssetPaths.gd` singleton.                                  ║
+║   █  Singleton-Driven Core: Global systems are managed by Autoload singletons.║
+║      ░  `Palette.gd`: Manages all game colors for a cohesive aesthetic.      ║
+║      ░  `AssetPaths.gd`: A central, pre-loading registry for all assets.     ║
+║      ░  Other singletons (`AudioManager`, `Constants`, etc.) serve dedicated roles.║
 ║                                                                              ║
-║   █  Scene Instantiation: Use `const` variables to `preload` scenes that     ║
-║      will be instantiated frequently.                                        ║
+║   █  Asynchronous Loading with Pre-warming: To ensure smooth transitions, a  ║
+║      `LoadingScreen` orchestrates all setup. It pre-warms shaders by         ║
+║      flashing entities in an off-screen viewport and calls the               ║
+║      `ArenaBuilder` to construct the level in non-blocking batches.          ║
 ║                                                                              ║
-║   █  Collaboration Workflow (Human-AI)                                       ║
-║      1. Define Goal: The Human defines a small, achievable goal.             ║
-║      2. AI Solution: The AI provides complete, regenerated files and explains changes.║
-║      3. Implement & Test: The Human implements and thoroughly tests.         ║
-║      4. Commit & Push: The Human commits the verified change and pushes.     ║
-║      5. Confirm & Proceed: The Human confirms success and defines the next goal.║
+║   █  Component-Based and Procedural UI: The UI is built from self-contained, ║
+║      reusable scenes (`StyledMenuItem`). These components will draw          ║
+║      themselves procedurally using shaders, allowing for a highly polished   ║
+║      and animatable interface without relying on static images.              ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                         COLLABORATION WORKFLOW                       ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   1. Define Goal: The Human defines a small, achievable goal based on the TODO.║
+║   2. AI Solution: The AI provides complete, regenerated files and explains changes.║
+║   3. Implement & Test: The Human implements and thoroughly tests the changes.║
+║   4. Document & Commit: The Human updates documentation, then the AI provides a commit message.║
+║   5. Confirm & Proceed: The Human confirms success and defines the next goal.║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -747,71 +840,61 @@ FILE: ./docs/CHANGELOG.txt
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Implemented a "Hit Flash" visual effect for player and boss.       ║
-║      ░ ■ Implemented Win/Loss states with `VictoryScreen` and `GameOverScreen`.║
-║      ░ ■ Implemented a signal-driven, in-game HUD (`GameHUD.tscn`) to display║
-║      ░   real-time player health, healing charges, and boss health.          ║
-║      ░ ■ Implemented a complete Boss AI with a state machine (Patrol, Attack,║
-║      ░   Cooldown), player tracking, and multiple attack patterns.           ║
-║      ░ ■ Implemented a fast-fall mechanic (Hold Down in air).                ║
-║      ░ ■ Created a new `GameManager` singleton to manage game state.         ║
-║      ░ ■ Created a new `ArenaBuilder` singleton to centralize level creation.║
+║   (This section is for work that has been committed but not yet part of a    ║
+║    versioned release. See the new TODO.txt for the upcoming features.)       ║
 ║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Refactored Player and Boss death logic to be signal-based,          ║
-║      ░   decoupling entities from the main `game.gd` scene manager.          ║
-║      ░ ■ Player and Boss scripts now emit signals when their health/stats change.║
-║      ░ ■ Migrated boss logic from a simple timer to a formal Finite State Machine.║
-║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system,║
-║      ░   eliminating stuttering when entering the arena.                     ║
-║      ░ ■ Refined melee attack's movement pause to a tunable friction system. ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Implemented a robust, timer-based hit flash after debugging issues with Tween.║
-║      ░ ■ Fixed a logic bug where player death incorrectly led to the Victory screen.║
-║      ░ ■ Resolved a physics crash on entity death by centralizing cleanup in `game.gd`.║
-║      ░ ■ Corrected a bug where the boss's sprite would flip independently    ║
-║      ░   of its collision shape, causing a visual desync.                    ║
-║      ░ ■ Resolved a critical startup crash caused by improper scene changing.║
-║      ░ ■ Fixed a critical bug where reloading after player death would fail. ║
-║      ░ ■ Restored ability to drop through one-way platforms.                 ║
-║      ░ ■ Standard melee attacks (forward/up) now correctly destroy enemy     ║
-║      ░   projectiles.                                                        ║
-║      ░ ■ Resolved a GDScript warning for a shadowed global variable.         ║
-║      ░ ■ Removed "corner clipping" from the bug list as it is a planned      ║
-║      ░   feature ("Corner Correction"), not a bug.                           ║
+║   This version represents a foundational overhaul of the project's technical ║
+║   architecture. The focus was on implementing professional design patterns   ║
+║   (SOLID, State Pattern) and eliminating performance issues to prepare for   ║
+║   future content and feature development.                                    ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system ║
+║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
+║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
+║      ░   prevent any "first-appearance" hitches for entities.                ║
+║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
+║      ░   the official documentation.                                         ║
+║                                                                              ║
+║   █  Bug Fixes                                                               ║
+║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
+║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
+║      ░ ■ Resolved a physics crash on entity death by using `call_deferred`   ║
+║      ░   for scene transitions.                                              ║
+║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
+║                                                                              ║
+║   █  Documentation                                                           ║
+║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
+║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
+║      ░   design philosophies, patterns, and planned features.                ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   This version marks a major architectural overhaul, transforming the        ║
+║   This version marks the initial architectural overhaul, transforming the    ║
 ║   project from a functional prototype into a robust and scalable foundation. ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
 ║      ░ ■ Player Character with rich moveset (dash, wall-jump, etc.).         ║
 ║      ░ ■ Combat System with melee, charged shot, and pogo mechanics.         ║
-║      ░ ■ "Determination" healing system.                                     ║
-║      ░ ■ Data-Driven Arena system.                                           ║
-║      ░ ■ Basic Boss entity framework.                                        ║
-║      ░ ■ Reusable, component-based Menu System.                              ║
-║      ░ ■ Full suite of project documentation (.txt files).                   ║
+║      ░ ■ "Determination" healing system & Data-Driven Arena system.          ║
+║      ░ ■ Basic Boss entity framework & Reusable Menu System.                 ║
+║      ░ ■ Full suite of initial project documentation (.txt files).           ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
-║      ░ ■ Complete Architectural Refactor: Overhauled the project's core      ║
-║      ░   to use professional design patterns.                                ║
-║      ░ ■ Player Logic: Migrated from boolean flags to a formal Finite        ║
-║      ░   State Machine (FSM) for stability and clarity.                      ║
-║      ░ ■ Global Singletons: Centralized all magic numbers and asset paths    ║
-║      ░   into `Constants.gd` and `AssetPaths.gd` for easy tuning and safety. ║
-║      ░ ■ File Organization: Restructured project directories to be more      ║
-║      ░   feature-based and intuitive.                                        ║
+║      ░ ■ Complete Architectural Refactor to use professional design patterns.║
+║      ░ ■ Player Logic: Migrated from boolean flags to a formal FSM.          ║
+║      ░ ■ Global Singletons: Centralized constants and asset paths.           ║
+║      ░ ■ File Organization: Restructured project directories.                ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
 ║      ░ ■ Restored player contact damage from enemies and hazards.            ║
-║      ░ ■ Fully restored the pogo mechanic, including instant ground pogo     ║
-║      ░   and projectile bouncing.                                            ║
+║      ░ ■ Fully restored the pogo mechanic.                                   ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -2322,43 +2405,87 @@ text = "Loading..."
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="ShaderPrewarmViewport" type="SubViewportContainer" parent="."]
+custom_minimum_size = Vector2(1, 1)
+layout_mode = 0
+offset_left = -10.0
+offset_top = -10.0
+offset_right = -9.0
+offset_bottom = -9.0
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="ShaderPrewarmViewport"]
+handle_input_locally = false
+size = Vector2i(1, 1)
+render_target_update_mode = 4
+
 =====================================
 FILE: ./src/scenes/loading/loading_screen.gd
 =====================================
 # src/scenes/loading/loading_screen.gd
 #
-# This script handles the pre-building of the entire game level to prevent
-# stuttering. It calls the ArenaBuilder to construct the level in memory and
-# ensures proper frame yielding during the process.
+# This script handles the pre-building of the level AND pre-warming shaders
+# to prevent stuttering. It calls the ArenaBuilder to construct the level
+# in memory and flashes key entities in an off-screen viewport.
 extends Control
 
+# --- Node References ---
+@onready var prewarm_viewport: SubViewport = $ShaderPrewarmViewport/SubViewport
+
+# An array of scenes with unique shaders we want to pre-compile.
+# This makes it easy to add new enemies or effects in the future.
+const SHADER_PREWARM_SCENES = [
+	AssetPaths.SCENE_PLAYER,
+	AssetPaths.SCENE_BASE_BOSS,
+	AssetPaths.SCENE_PLAYER_SHOT,
+	AssetPaths.SCENE_BOSS_SHOT
+]
+
 func _ready():
-	# Ensure GameManager has a valid path before proceeding.
 	if GameManager.current_encounter_script_path.is_empty():
 		print("ERROR: No encounter script specified in GameManager. Returning to title.")
 		get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
 		return
 
-	# Start the asynchronous loading process
+	# Start the full asynchronous loading process.
 	_load_level()
 
 func _load_level():
-	# Yield a couple of frames to ensure the "Loading..." text is rendered
-	# and visible before we start the heavy work.
+	# Yield to make sure the "Loading..." text renders before we start heavy work.
 	await get_tree().process_frame
-	await get_tree().process_frame
+	
+	# --- NEW: Pre-warm shaders ---
+	await _prewarm_shaders()
 	
 	# Tell the ArenaBuilder to construct the level asynchronously.
-	# The 'await' keyword pauses this function until build_level_async is complete.
 	GameManager.prebuilt_level = await ArenaBuilder.build_level_async()
 	
-	# Yield another couple of frames to ensure all creation processes are finalized
-	# before we switch scenes.
-	await get_tree().process_frame
+	# Yield to ensure all creation processes are finalized before we switch.
 	await get_tree().process_frame
 	
-	# Proceed to the main game scene using a direct change instead of deferred.
+	# Proceed to the main game scene.
 	get_tree().change_scene_to_file(AssetPaths.SCENE_GAME)
+
+# --- NEW FUNCTION ---
+# This function forces the compilation of shaders by briefly instantiating
+# and rendering key game objects in an invisible, off-screen viewport.
+func _prewarm_shaders() -> void:
+	print("Starting shader pre-warming...")
+	for scene_path in SHADER_PREWARM_SCENES:
+		var instance = load(scene_path).instantiate()
+		
+		# Add the object to our off-screen viewport.
+		prewarm_viewport.add_child(instance)
+		
+		# CRITICAL STEP: Wait for the next frame. This gives the rendering server
+		# time to process the new object and compile its shader if it hasn't already.
+		await get_tree().process_frame
+		
+		# Now that the shader is compiled and cached by the engine,
+		# we can safely remove the temporary instance.
+		instance.queue_free()
+	
+	print("Shader pre-warming complete.")
 
 
 =====================================
@@ -2400,8 +2527,7 @@ func _ready():
 	player_node = get_tree().get_first_node_in_group("player")
 	boss_node = get_tree().get_first_node_in_group("enemy")
 
-	# --- LOGIC & WIRING FIX ---
-	# Ensure the correct signals are connected to the correct handler functions.
+	# --- Connect signals to the correct handler functions ---
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
 	if is_instance_valid(boss_node):
@@ -2411,11 +2537,13 @@ func _ready():
 
 func _on_player_died():
 	print("Game Manager: Player death detected. Initiating Game Over.")
-	get_tree().change_scene_to_file(AssetPaths.SCENE_GAME_OVER_SCREEN)
+	# FIX: Defer the scene change to prevent physics crash.
+	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_GAME_OVER_SCREEN)
 
 func _on_boss_died():
 	print("Game Manager: Boss death detected. Initiating Victory.")
-	get_tree().change_scene_to_file(AssetPaths.SCENE_VICTORY_SCREEN)
+	# FIX: Defer the scene change to prevent physics crash.
+	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_VICTORY_SCREEN)
 
 
 func _exit_tree():
@@ -2510,7 +2638,7 @@ FILE: ./src/core/arena_builder.gd
 extends Node
 
 const PlayerScene = preload(AssetPaths.SCENE_PLAYER)
-const GameHUDScene = preload(AssetPaths.SCENE_GAME_HUD) # <-- NEW
+const GameHUDScene = preload(AssetPaths.SCENE_GAME_HUD)
 
 # --- NEW ASYNC FUNCTION ---
 # This function builds the level asynchronously to prevent frame drops
@@ -2553,7 +2681,6 @@ func build_level_async() -> Node:
 				encounter.BOSS_SPAWN_MARKER:
 					boss_spawn_pos = tile_pos
 	
-	# Yield every few iterations to prevent frame drops
 	await get_tree().process_frame
 	
 	# Create terrain tiles in batches
@@ -2627,7 +2754,7 @@ func _spawn_boss(parent_node: Node, pos: Vector2, scene: PackedScene):
 func _create_solid_tile(parent_node: Node, pos: Vector2):
 	var static_body = StaticBody2D.new()
 	static_body.position = pos
-	static_body.collision_layer = 2
+	static_body.collision_layer = 2 # 'world' layer
 	static_body.add_to_group("world")
 	
 	var collision_shape = CollisionShape2D.new()
@@ -2641,13 +2768,14 @@ func _create_solid_tile(parent_node: Node, pos: Vector2):
 func _create_oneway_platform(parent_node: Node, pos: Vector2):
 	var static_body = StaticBody2D.new()
 	static_body.position = pos
-	static_body.collision_layer = 2
+	static_body.collision_layer = 2 # 'world' layer
 	static_body.add_to_group("world")
-	static_body.add_to_group("oneway_platforms")
+	static_body.add_to_group("oneway_platforms") # For player logic
 	
 	var collision_shape = CollisionShape2D.new()
 	collision_shape.one_way_collision = true
-	collision_shape.position.y = -20
+	# Position the thin collision shape at the very top of the tile's space
+	collision_shape.position.y = - (Constants.TILE_SIZE / 2.0) + 5
 	var rectangle_shape = RectangleShape2D.new()
 	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
 	collision_shape.shape = rectangle_shape
@@ -2655,10 +2783,14 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2):
 	static_body.add_child(collision_shape)
 	parent_node.add_child(static_body)
 
+# --- CORRECTED HAZARD FUNCTION ---
 func _create_hazard_tile(parent_node: Node, pos: Vector2):
 	var static_body = StaticBody2D.new()
 	static_body.position = pos
+	# FIX: Set its layer to be BOTH "world" (layer 2) and "hazard" (layer 4).
+	# The bitwise OR operation ( | ) combines them. 2 | 8 = 10.
 	static_body.collision_layer = 10
+	# FIX: Add it to BOTH groups so it behaves as both solid ground and a hazard.
 	static_body.add_to_group("world")
 	static_body.add_to_group("hazard")
 	
@@ -3093,7 +3225,7 @@ FILE: ./src/entities/boss/base_boss.tscn
 size = Vector2(60, 60)
 
 [node name="BaseBoss" type="CharacterBody2D"]
-collision_layer = 4
+collision_layer = 12
 collision_mask = 3
 script = ExtResource("1_26qjf")
 
@@ -3342,9 +3474,10 @@ one_shot = true
 FILE: ./src/entities/player/player.gd
 =====================================
 # src/entities/player/player.gd
-#
-# This script defines the player's complete behavior using a finite state machine
-# to manage its actions like moving, jumping, dashing, and attacking.
+# This script is the "Context" for the State Machine. Its primary jobs are to:
+# 1. Hold all shared player data (health, velocity, timers, etc.).
+# 2. Manage the transitions between states.
+# 3. Centralize input polling that can occur in multiple states.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -3363,12 +3496,22 @@ signal died
 
 # --- Preloads ---
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
+const MoveState = preload("res://src/entities/player/states/state_move.gd")
+const FallState = preload("res://src/entities/player/states/state_fall.gd")
+const JumpState = preload("res://src/entities/player/states/state_jump.gd")
+const DashState = preload("res://src/entities/player/states/state_dash.gd")
+const WallSlideState = preload("res://src/entities/player/states/state_wall_slide.gd")
+const AttackState = preload("res://src/entities/player/states/state_attack.gd")
+const HurtState = preload("res://src/entities/player/states/state_hurt.gd")
+const HealState = preload("res://src/entities/player/states/state_heal.gd")
 
 # --- State Machine ---
 enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
-var state: State = State.FALL
+var states: Dictionary
+var current_state: PlayerState
+const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 
-# --- Player Stats & Timers ---
+# --- Player Stats & Timers (Shared Data) ---
 var health = Constants.PLAYER_MAX_HEALTH
 var air_jumps_left = 0
 var coyote_timer = 0.0
@@ -3376,7 +3519,7 @@ var jump_buffer_timer = 0.0
 var wall_coyote_timer = 0.0
 var knockback_timer = 0.0
 var is_invincible = false
-var is_dash_invincible = false # NEW: Invincibility specific to the dash state.
+var is_dash_invincible = false
 var facing_direction = 1
 var last_wall_normal = Vector2.ZERO
 var determination_counter = 0
@@ -3392,17 +3535,40 @@ var can_dash = true
 var original_color: Color
 
 # --- Engine Functions ---
-
 func _ready():
 	add_to_group("player")
 	original_color = visual_sprite.color
+	# Connect signals...
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
 	healing_charges_changed.emit(healing_charges)
+	# Initialize states...
+	states = {
+		State.MOVE: MoveState.new(self), State.FALL: FallState.new(self),
+		State.JUMP: JumpState.new(self), State.DASH: DashState.new(self),
+		State.WALL_SLIDE: WallSlideState.new(self), State.ATTACK: AttackState.new(self),
+		State.HURT: HurtState.new(self), State.HEAL: HealState.new(self),
+	}
+	current_state = states[State.FALL]
+	current_state.enter()
 
 func _physics_process(delta):
+	_update_timers(delta)
+	_poll_global_inputs()
+	current_state.process_physics(delta)
+	move_and_slide()
+	_check_for_contact_damage()
+	if is_on_wall() and not is_on_floor():
+		wall_coyote_timer = Constants.WALL_COYOTE_TIME
+		last_wall_normal = get_wall_normal()
+
+func _unhandled_input(event: InputEvent):
+	# Only pass events to the state if it has state-specific input logic.
+	current_state.process_input(event)
+
+func _update_timers(delta):
 	coyote_timer = max(0.0, coyote_timer - delta)
 	jump_buffer_timer = max(0.0, jump_buffer_timer - delta)
 	dash_cooldown_timer = max(0.0, dash_cooldown_timer - delta)
@@ -3411,220 +3577,109 @@ func _physics_process(delta):
 	attack_cooldown_timer = max(0.0, attack_cooldown_timer - delta)
 	knockback_timer = max(0.0, knockback_timer - delta)
 	wall_coyote_timer = max(0.0, wall_coyote_timer - delta)
-	_handle_input(delta)
-	match state:
-		State.MOVE: state_move(delta)
-		State.JUMP: state_jump(delta)
-		State.FALL: state_fall(delta)
-		State.DASH: state_dash()
-		State.WALL_SLIDE: state_wall_slide()
-		State.ATTACK: state_attack(delta)
-		State.HURT: state_hurt(delta)
-		State.HEAL: state_heal()
-	move_and_slide()
-	_check_for_contact_damage()
-	if is_on_wall():
-		wall_coyote_timer = Constants.WALL_COYOTE_TIME
-		last_wall_normal = get_wall_normal()
-
-func _handle_input(delta):
-	if Input.is_action_just_pressed("ui_jump"):
-		jump_buffer_timer = Constants.JUMP_BUFFER
-	if state in [State.ATTACK, State.HURT, State.HEAL]: return
-	if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
-		is_charging = true; charge_timer = 0.0
 	if is_charging and Input.is_action_pressed("ui_attack"):
 		charge_timer += delta
-	if Input.is_action_just_released("ui_attack"):
-		if is_charging:
-			if charge_timer >= Constants.CHARGE_TIME: _fire_shot()
-			else: change_state(State.ATTACK)
-			is_charging = false
 
-# --- State Functions ---
+# --- REFACTOR: Centralized Input Polling ---
+func _poll_global_inputs():
+	if Input.is_action_just_pressed("ui_jump"):
+		jump_buffer_timer = Constants.JUMP_BUFFER
 
-func state_move(delta):
-	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
-		if get_last_slide_collision():
-			var floor_collider = get_last_slide_collision().get_collider()
-			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
-				position.y += 2; jump_buffer_timer = 0; change_state(State.FALL); return
-	coyote_timer = Constants.COYOTE_TIME
-	if Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and healing_charges > 0:
-		change_state(State.HEAL); return
-	_apply_horizontal_movement()
-	velocity.y += Constants.GRAVITY * delta
-	if not is_on_floor(): change_state(State.FALL)
-	if jump_buffer_timer > 0: _perform_jump()
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0: change_state(State.DASH)
+	var current_state_key = states.find_key(current_state)
+	if current_state_key in ACTION_ALLOWED_STATES:
+		if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
+			is_charging = true; charge_timer = 0.0
+		
+		if Input.is_action_just_released("ui_attack"):
+			if is_charging:
+				if charge_timer >= Constants.CHARGE_TIME: _fire_shot()
+				else: change_state(State.ATTACK)
+				is_charging = false
+		
+		if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
+			change_state(State.DASH)
+			
+		if is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and healing_charges > 0 and is_zero_approx(velocity.x):
+			change_state(State.HEAL)
 
-func state_jump(delta):
-	_apply_horizontal_movement(); _apply_gravity(delta); _check_for_landing(); _check_for_wall_slide()
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0: change_state(State.DASH)
-	if jump_buffer_timer > 0 and air_jumps_left > 0: _perform_air_jump()
+func change_state(new_state_key: State):
+	if not states.has(new_state_key) or current_state == states[new_state_key]: return
+	current_state.exit()
+	current_state = states[new_state_key]
+	current_state.enter()
 
-func state_fall(delta):
-	_apply_horizontal_movement(); _apply_gravity(delta); _check_for_landing(); _check_for_wall_slide()
-	if jump_buffer_timer > 0:
-		if wall_coyote_timer > 0: _perform_wall_jump()
-		elif coyote_timer > 0: _perform_jump()
-		elif air_jumps_left > 0: _perform_air_jump()
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0: change_state(State.DASH)
-
-func state_wall_slide():
-	velocity.y = min(velocity.y + Constants.GRAVITY * get_physics_process_delta_time(), Constants.WALL_SLIDE_SPEED)
-	facing_direction = -last_wall_normal.x
-	if jump_buffer_timer > 0: _perform_wall_jump(); return
-	if Input.get_axis("ui_left", "ui_right") * -last_wall_normal.x < 0.8: change_state(State.FALL)
-	if wall_coyote_timer <= 0: change_state(State.FALL)
-	if is_on_floor(): change_state(State.MOVE)
-
-func state_dash():
-	velocity = _get_dash_direction() * Constants.DASH_SPEED
-	if dash_duration_timer <= 0:
-		is_dash_invincible = false # Turn off invincibility when dash ends.
-		velocity = Vector2.ZERO
-		change_state(State.FALL)
-
-func state_attack(delta):
-	velocity = velocity.move_toward(Vector2.ZERO, Constants.PLAYER_ATTACK_FRICTION * delta)
-	if attack_duration_timer <= 0: hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false; change_state(State.FALL)
-
-func state_hurt(delta):
-	velocity.y += Constants.GRAVITY * delta
-	if knockback_timer <= 0: change_state(State.FALL)
-
-func state_heal():
-	velocity = Vector2.ZERO
-	if not Input.is_action_pressed("ui_down") or not Input.is_action_pressed("ui_jump") or not is_zero_approx(Input.get_axis("ui_left", "ui_right")) or not is_on_floor():
-		_cancel_heal(); change_state(State.MOVE)
-
-# --- State Change & Helper Functions ---
-
-func change_state(new_state: State):
-	if state == new_state: return
-	if state == State.WALL_SLIDE and last_wall_normal != Vector2.ZERO: facing_direction = last_wall_normal.x
-	state = new_state
-	match state:
-		State.JUMP:
-			jump_buffer_timer = 0; coyote_timer = 0
-			velocity.y = -Constants.PLAYER_JUMP_FORCE
-		State.DASH:
-			is_dash_invincible = true # Turn on invincibility when dash begins.
-			can_dash = false
-			dash_duration_timer = Constants.DASH_DURATION
-			dash_cooldown_timer = Constants.DASH_COOLDOWN
-		State.ATTACK: _perform_melee_attack()
-		State.WALL_SLIDE: can_dash = true; air_jumps_left = Constants.MAX_AIR_JUMPS
-		State.HURT:
-			is_charging = false; _cancel_heal()
-			knockback_timer = Constants.KNOCKBACK_DURATION
-		State.HEAL: healing_timer.start(Constants.PLAYER_HEAL_DURATION); print("Healing started...")
-
-func _apply_horizontal_movement():
-	if state in [State.DASH, State.HURT, State.ATTACK, State.WALL_SLIDE, State.HEAL]: return
-	velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
-	if Input.get_axis("ui_left", "ui_right") != 0: facing_direction = sign(Input.get_axis("ui_left", "ui_right"))
-
-func _apply_gravity(delta):
-	if velocity.y < 0 and Input.is_action_just_released("ui_jump"): velocity.y *= Constants.JUMP_RELEASE_DAMPENER
-	var gravity_multiplier = 1.0
-	if Input.is_action_pressed("ui_down"): gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
-	velocity.y += Constants.GRAVITY * gravity_multiplier * delta
-	if state == State.JUMP and velocity.y > 0.0: change_state(State.FALL)
-
-func _check_for_landing():
-	if is_on_floor() and state in [State.FALL, State.JUMP]: can_dash = true; air_jumps_left = Constants.MAX_AIR_JUMPS; change_state(State.MOVE)
-
-func _check_for_wall_slide():
-	if state != State.JUMP and state != State.FALL: return
-	if wall_coyote_timer > 0 and not is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -last_wall_normal.x: change_state(State.WALL_SLIDE)
-
-func _get_dash_direction():
-	if Input.is_action_pressed("ui_up"): return Vector2.UP
-	if Input.is_action_pressed("ui_down"): return Vector2.DOWN
-	return Vector2(facing_direction, 0)
-
-# --- Action Functions ---
-
-func _perform_jump(): change_state(State.JUMP)
-
-func _perform_air_jump(): velocity.y = -Constants.PLAYER_JUMP_FORCE; air_jumps_left -= 1; jump_buffer_timer = 0
-
-func _perform_wall_jump(): velocity.y = -Constants.WALL_JUMP_FORCE_Y; velocity.x = last_wall_normal.x * Constants.WALL_JUMP_FORCE_X; state = State.JUMP; jump_buffer_timer = 0; coyote_timer = 0; wall_coyote_timer = 0
-
-func _perform_melee_attack():
-	attack_duration_timer = Constants.ATTACK_DURATION; attack_cooldown_timer = Constants.ATTACK_COOLDOWN; hitbox_shape.disabled = false; is_pogo_attack = false
-	if Input.is_action_pressed("ui_down"):
-		is_pogo_attack = true; hitbox.position = Vector2(0, 60)
-		if _check_for_immediate_pogo(): return 
-	elif Input.is_action_pressed("ui_up"): hitbox.position = Vector2(0, -60)
-	else: hitbox.position = Vector2(facing_direction * 60, 0)
-
-func _fire_shot():
-	attack_cooldown_timer = Constants.ATTACK_COOLDOWN; var shot_direction = Vector2(facing_direction, 0)
-	if Input.is_action_pressed("ui_up"): shot_direction = Vector2.UP
-	elif Input.is_action_pressed("ui_down"): shot_direction = Vector2.DOWN
-	var shot_instance = PlayerShotScene.instantiate(); shot_instance.direction = shot_direction; shot_instance.position = global_position + (shot_direction * 60); get_parent().add_child(shot_instance)
-
-func _check_for_immediate_pogo() -> bool:
-	var query = PhysicsShapeQueryParameters2D.new(); query.shape = hitbox_shape.shape; query.transform = hitbox.global_transform; query.collision_mask = 14
-	var results = get_world_2d().direct_space_state.intersect_shape(query)
-	if not results.is_empty(): _trigger_pogo(results[0].collider); return true 
-	return false 
-
-func _trigger_pogo(pogo_target):
-	hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false; can_dash = true; velocity.y = -Constants.POGO_FORCE; air_jumps_left = Constants.MAX_AIR_JUMPS; dash_duration_timer = 0; change_state(State.FALL) 
-	if pogo_target:
-		if pogo_target.has_method("take_damage"): pogo_target.take_damage(1); _on_damage_dealt()
-		elif pogo_target.is_in_group("enemy_projectile"): pogo_target.queue_free()
+# --- Public Action & Helper Functions (Unchanged) ---
+# ... (all functions from take_damage down to _on_healing_timer_timeout remain the same) ...
 
 func take_damage(damage_amount: int, damage_source = null):
 	if is_invincible or is_dash_invincible: return
-	health -= damage_amount; health_changed.emit(health, Constants.PLAYER_MAX_HEALTH); _trigger_hit_flash()
-	print("Player took %s damage! Health: %s" % [damage_amount, health])
-	is_invincible = true; invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION); change_state(State.HURT)
+	health -= damage_amount
+	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
+	_trigger_hit_flash()
+	is_invincible = true
+	invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION)
 	if damage_source:
-		var knockback_direction = (global_position - damage_source.global_position).normalized()
-		var knockback_strength = Constants.KNOCKBACK_SPEED
-		if damage_source.is_in_group("hazard"): knockback_strength = Constants.HAZARD_KNOCKBACK_SPEED
-		velocity = (knockback_direction + Vector2.UP * 0.5).normalized() * knockback_strength
+		var knockback_dir = (global_position - damage_source.global_position).normalized()
+		var knockback_str = Constants.KNOCKBACK_SPEED
+		if damage_source.is_in_group("hazard"): knockback_str = Constants.HAZARD_KNOCKBACK_SPEED
+		velocity = (knockback_dir + Vector2.UP * 0.5).normalized() * knockback_str
+	change_state(State.HURT)
 	if health <= 0: die()
 
-func die(): print("Player has been defeated!"); died.emit()
-	
+func die(): died.emit()
+
 func _check_for_contact_damage():
 	for i in range(get_slide_collision_count()):
-		var collision = get_slide_collision(i); if not collision: continue
-		var body_hit = collision.get_collider(); if not body_hit: continue
-		if body_hit.is_in_group("enemy") or body_hit.is_in_group("hazard"): take_damage(1, body_hit); break
+		var col = get_slide_collision(i)
+		if col and (col.get_collider().is_in_group("enemy") or col.get_collider().is_in_group("hazard")):
+			take_damage(1, col.get_collider()); break
 
 func _on_damage_dealt():
 	if healing_charges >= Constants.PLAYER_MAX_HEALING_CHARGES: return
-	determination_counter += 1; print("Determination: %d/%d" % [determination_counter, Constants.DETERMINATION_PER_CHARGE])
+	determination_counter += 1
 	if determination_counter >= Constants.DETERMINATION_PER_CHARGE:
-		determination_counter = 0; healing_charges += 1; healing_charges_changed.emit(healing_charges); print("Healing charge gained! Total charges: %d" % healing_charges)
+		determination_counter = 0; healing_charges += 1
+		healing_charges_changed.emit(healing_charges)
 
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop(); print("Healing canceled.")
 	
-func _trigger_hit_flash():
-	visual_sprite.color = Color.DODGER_BLUE
-	hit_flash_timer.start()
+func _trigger_hit_flash(): visual_sprite.color = Color.DODGER_BLUE
+
+func _fire_shot():
+	attack_cooldown_timer = Constants.ATTACK_COOLDOWN
+	var shot_dir = Vector2(facing_direction, 0)
+	if Input.is_action_pressed("ui_up"): shot_dir = Vector2.UP
+	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
+	var shot = PlayerShotScene.instantiate(); shot.direction = shot_dir
+	shot.position = global_position + (shot_dir * 60)
+	get_parent().add_child(shot)
+
+func _trigger_pogo(pogo_target):
+	velocity.y = -Constants.POGO_FORCE
+	position.y -= 1
+	# Reset abilities on pogo
+	can_dash = true
+	air_jumps_left = Constants.MAX_AIR_JUMPS
+	change_state(State.FALL)
+	if pogo_target:
+		if pogo_target.has_method("take_damage"):
+			pogo_target.take_damage(1); _on_damage_dealt()
+		elif pogo_target.is_in_group("enemy_projectile"):
+			pogo_target.queue_free()
 
 # --- Signal Callbacks ---
-
 func _on_hit_flash_timer_timeout(): visual_sprite.color = original_color
 
 func _on_hitbox_body_entered(body):
 	if is_pogo_attack: _trigger_pogo(body)
-	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt(); hitbox_shape.call_deferred("set", "disabled", true)
+	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		if is_pogo_attack: _trigger_pogo(area)
-		else: area.queue_free(); hitbox_shape.call_deferred("set", "disabled", true)
+		else: area.queue_free()
 
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"): take_damage(1, area); area.queue_free()
@@ -3632,7 +3687,351 @@ func _on_hurtbox_area_entered(area):
 func _on_invincibility_timer_timeout(): is_invincible = false
 
 func _on_healing_timer_timeout():
-	if state == State.HEAL:
-		health = min(health + 1, Constants.PLAYER_MAX_HEALTH); healing_charges -= 1; health_changed.emit(health, Constants.PLAYER_MAX_HEALTH); healing_charges_changed.emit(healing_charges)
-		print("Healing successful! Health: %d. Charges left: %d" % [health, healing_charges]); change_state(State.MOVE)
+	if current_state == states[State.HEAL]:
+		health = min(health + 1, Constants.PLAYER_MAX_HEALTH); healing_charges -= 1
+		health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
+		healing_charges_changed.emit(healing_charges)
+		change_state(State.MOVE)
+
+
+=====================================
+FILE: ./src/entities/player/states/state_jump.gd
+=====================================
+# src/entities/player/states/state_jump.gd
+# Handles the player's upward movement (jump).
+extends PlayerState
+
+func enter():
+	player.velocity.y = -Constants.PLAYER_JUMP_FORCE
+	player.coyote_timer = 0
+	player.jump_buffer_timer = 0
+
+func process_physics(delta: float):
+	_apply_horizontal_movement()
+	
+	# --- JUMP DAMPENING FIX ---
+	# This logic is now correctly placed in _physics_process and calls the
+	# global Input singleton, which has the is_action_just_released method.
+	if Input.is_action_just_released("ui_jump") and player.velocity.y < 0:
+		player.velocity.y *= Constants.JUMP_RELEASE_DAMPENER
+
+	_apply_gravity(delta)
+	
+	if player.is_on_floor():
+		player.change_state(player.State.MOVE)
+		return
+
+	_check_for_wall_slide()
+
+func _apply_horizontal_movement():
+	player.velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
+	if Input.get_axis("ui_left", "ui_right") != 0:
+		player.facing_direction = sign(Input.get_axis("ui_left", "ui_right"))
+
+func _apply_gravity(delta):
+	player.velocity.y += Constants.GRAVITY * delta
+	if player.velocity.y > 0.0:
+		player.change_state(player.State.FALL)
+
+func _check_for_wall_slide():
+	if player.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -player.last_wall_normal.x:
+		player.change_state(player.State.WALL_SLIDE)
+
+
+=====================================
+FILE: ./src/entities/player/states/state_dash.gd
+=====================================
+# src/entities/player/states/state_dash.gd
+# Handles the player's dashing state.
+extends PlayerState
+
+func enter():
+	player.is_dash_invincible = true
+	player.can_dash = false
+	player.dash_duration_timer = Constants.DASH_DURATION
+	player.dash_cooldown_timer = Constants.DASH_COOLDOWN
+	player.velocity = _get_dash_direction() * Constants.DASH_SPEED
+
+func exit():
+	player.is_dash_invincible = false
+	# A small safety check to ensure player doesn't stick to walls after a dash.
+	player.velocity = player.velocity * 0.5 
+
+func process_physics(_delta: float):
+	if player.dash_duration_timer <= 0:
+		player.change_state(player.State.FALL)
+
+func _get_dash_direction():
+	if Input.is_action_pressed("ui_up"): return Vector2.UP
+	if Input.is_action_pressed("ui_down"): return Vector2.DOWN
+	return Vector2(player.facing_direction, 0)
+
+
+=====================================
+FILE: ./src/entities/player/states/state_heal.gd
+=====================================
+# src/entities/player/states/state_heal.gd
+# Handles the player's healing state.
+extends PlayerState
+
+func enter():
+	player.velocity = Vector2.ZERO
+	player.healing_timer.start(Constants.PLAYER_HEAL_DURATION)
+	print("Healing started...")
+
+func exit():
+	player._cancel_heal()
+
+func process_physics(_delta: float):
+	# Cancel healing if conditions are broken (e.g., player moves or is no longer grounded)
+	if not Input.is_action_pressed("ui_down") or not Input.is_action_pressed("ui_jump") or not is_zero_approx(player.velocity.x) or not player.is_on_floor():
+		player.change_state(player.State.MOVE)
+
+
+=====================================
+FILE: ./src/entities/player/states/state_base.gd
+=====================================
+# src/entities/player/states/state_base.gd
+# This is the parent class for all Player states. It defines the "contract"
+# that every state must adhere to. It ensures that every state has the necessary
+# functions, even if they don't do anything in a particular state.
+class_name PlayerState
+
+var player: CharacterBody2D
+
+func _init(player_node: CharacterBody2D):
+	self.player = player_node
+
+func enter():
+	pass
+
+func exit():
+	pass
+
+func process_physics(_delta: float):
+	pass
+
+# This function is now used for state-specific input that isn't global,
+# like checking for jump release to dampen jump height.
+func process_input(_event: InputEvent):
+	pass
+
+
+=====================================
+FILE: ./src/entities/player/states/state_wall_slide.gd
+=====================================
+# src/entities/player/states/state_wall_slide.gd
+# Handles the player's wall sliding state.
+extends PlayerState
+
+func enter():
+	player.can_dash = true
+	player.air_jumps_left = Constants.MAX_AIR_JUMPS
+
+func exit():
+	if player.last_wall_normal != Vector2.ZERO:
+		player.facing_direction = player.last_wall_normal.x
+
+func process_physics(delta: float):
+	player.velocity.y = min(player.velocity.y + Constants.GRAVITY * delta, Constants.WALL_SLIDE_SPEED)
+	player.facing_direction = -player.last_wall_normal.x
+	
+	if player.jump_buffer_timer > 0:
+		_perform_wall_jump()
+		return
+	
+	# Check if player is no longer holding into the wall
+	if Input.get_axis("ui_left", "ui_right") * -player.last_wall_normal.x < 0.8:
+		player.change_state(player.State.FALL)
+		return
+		
+	# Check if wall coyote time has run out
+	if player.wall_coyote_timer <= 0:
+		player.change_state(player.State.FALL)
+		return
+
+	if player.is_on_floor():
+		player.change_state(player.State.MOVE)
+		return
+
+func _perform_wall_jump():
+	player.velocity.y = -Constants.WALL_JUMP_FORCE_Y
+	player.velocity.x = player.last_wall_normal.x * Constants.WALL_JUMP_FORCE_X
+	player.jump_buffer_timer = 0
+	player.coyote_timer = 0
+	player.wall_coyote_timer = 0
+	player.change_state(player.State.JUMP)
+
+=====================================
+FILE: ./src/entities/player/states/state_attack.gd
+=====================================
+# src/entities/player/states/state_attack.gd
+# Handles the player's melee attack.
+extends PlayerState
+
+func enter():
+	player.attack_duration_timer = Constants.ATTACK_DURATION
+	player.attack_cooldown_timer = Constants.ATTACK_COOLDOWN
+	player.hitbox_shape.disabled = false
+	player.is_pogo_attack = false
+	
+	if Input.is_action_pressed("ui_down"):
+		player.is_pogo_attack = true
+		player.hitbox.position = Vector2(0, 60)
+		
+		# If we're on the floor, we know the ground is there, so just trigger the bounce.
+		if player.is_on_floor():
+			player._trigger_pogo(null) # Pass null because the floor isn't a damageable target.
+			return
+		
+		# If we're in the air, do the physics check for enemies/projectiles.
+		if _check_for_immediate_pogo():
+			return
+			
+	elif Input.is_action_pressed("ui_up"):
+		player.hitbox.position = Vector2(0, -60)
+	else:
+		player.hitbox.position = Vector2(player.facing_direction * 60, 0)
+
+func exit():
+	player.hitbox_shape.call_deferred("set", "disabled", true)
+	player.is_pogo_attack = false
+
+func process_physics(delta: float):
+	# Apply friction only if not pogoing. A pogo attack should preserve momentum.
+	if not player.is_pogo_attack:
+		player.velocity = player.velocity.move_toward(Vector2.ZERO, Constants.PLAYER_ATTACK_FRICTION * delta)
+	
+	if player.attack_duration_timer <= 0:
+		player.change_state(player.State.FALL)
+
+func _check_for_immediate_pogo() -> bool:
+	var query = PhysicsShapeQueryParameters2D.new()
+	query.shape = player.hitbox_shape.shape
+	query.transform = player.global_transform * player.hitbox.transform
+	query.collision_mask = 2 | 4 | 8 | 16 # World, Enemy, Hazard, Enemy Projectile
+	query.exclude = [player]
+	
+	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
+	
+	if not results.is_empty():
+		player._trigger_pogo(results[0].collider)
+		return true
+		
+	return false
+
+
+=====================================
+FILE: ./src/entities/player/states/state_hurt.gd
+=====================================
+# src/entities/player/states/state_hurt.gd
+# Handles player knockback and invincibility.
+extends PlayerState
+
+func enter():
+	player.is_charging = false
+	player._cancel_heal()
+	player.knockback_timer = Constants.KNOCKBACK_DURATION
+
+func process_physics(delta):
+	player.velocity.y += Constants.GRAVITY * delta
+	
+	if player.knockback_timer <= 0:
+		player.change_state(player.State.FALL)
+
+=====================================
+FILE: ./src/entities/player/states/state_fall.gd
+=====================================
+# src/entities/player/states/state_fall.gd
+# Handles the player's falling state.
+extends PlayerState
+
+func process_physics(delta: float):
+	_apply_horizontal_movement()
+	_apply_gravity(delta)
+
+	if player.is_on_floor():
+		player.change_state(player.State.MOVE)
+		return
+
+	_check_for_wall_slide()
+
+	# This logic is now cleaner and more robust.
+	if player.jump_buffer_timer > 0:
+		if player.wall_coyote_timer > 0:
+			_perform_wall_jump()
+		elif player.coyote_timer > 0:
+			player.change_state(player.State.JUMP)
+		elif player.air_jumps_left > 0:
+			_perform_air_jump()
+
+func _apply_horizontal_movement():
+	player.velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
+	if Input.get_axis("ui_left", "ui_right") != 0:
+		player.facing_direction = sign(Input.get_axis("ui_left", "ui_right"))
+
+func _apply_gravity(delta):
+	var gravity_multiplier = 1.0
+	if Input.is_action_pressed("ui_down"):
+		gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
+	player.velocity.y += Constants.GRAVITY * gravity_multiplier * delta
+
+func _check_for_wall_slide():
+	if player.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -player.last_wall_normal.x:
+		player.change_state(player.State.WALL_SLIDE)
+
+func _perform_air_jump():
+	player.air_jumps_left -= 1
+	player.change_state(player.State.JUMP)
+	
+func _perform_wall_jump():
+	player.velocity.x = player.last_wall_normal.x * Constants.WALL_JUMP_FORCE_X
+	player.coyote_timer = 0
+	player.wall_coyote_timer = 0
+	player.change_state(player.State.JUMP)
+
+
+=====================================
+FILE: ./src/entities/player/states/state_move.gd
+=====================================
+# src/entities/player/states/state_move.gd
+# Handles the player's grounded movement state.
+extends PlayerState
+
+func enter():
+	player.air_jumps_left = Constants.MAX_AIR_JUMPS
+	player.can_dash = true
+
+func process_physics(delta: float):
+	player.coyote_timer = Constants.COYOTE_TIME
+	
+	# Apply gravity to ensure the player sticks to slopes.
+	player.velocity.y += Constants.GRAVITY * delta
+	_apply_horizontal_movement()
+
+	if not player.is_on_floor():
+		player.change_state(player.State.FALL)
+		return
+	
+	# Check for dropping through a platform.
+	# Note: We check for jump input specifically here because it's a compound action (Down + Jump).
+	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
+		if player.get_last_slide_collision():
+			var floor_collider = player.get_last_slide_collision().get_collider()
+			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
+				player.position.y += 2 # Nudge the player down to clear the platform.
+				player.jump_buffer_timer = 0
+				player.change_state(player.State.FALL)
+				return
+	
+	# Check for a buffered jump.
+	if player.jump_buffer_timer > 0:
+		player.change_state(player.State.JUMP)
+		return
+
+func _apply_horizontal_movement():
+	player.velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
+	if Input.get_axis("ui_left", "ui_right") != 0:
+		player.facing_direction = sign(Input.get_axis("ui_left", "ui_right"))
+
 

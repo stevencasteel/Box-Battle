@@ -6,7 +6,7 @@
 size = Vector2(60, 60)
 
 [node name="BaseBoss" type="CharacterBody2D"]
-collision_layer = 4
+collision_layer = 12
 collision_mask = 3
 script = ExtResource("1_26qjf")
 
