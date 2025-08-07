@@ -39,7 +39,7 @@
 ║      ░       `current_state`. Its `_physics_process` will simplify to just one║
 ║      ░       line: `current_state.process_physics(delta)`.                   ║
 ║                                                                              ║
-║   □  Refactor Base Boss to use the State Pattern                             ║
+║   ■  Refactor Base Boss to use the State Pattern                             ║
 ║      ░  WHY: For the exact same reasons as the Player. As we add our "kitchen║
 ║      ░  sink" of advanced boss mechanics, this pattern is essential to       ║
 ║      ░  prevent `base_boss.gd` from becoming unmanageable.                   ║

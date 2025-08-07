@@ -16,6 +16,8 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored the BaseBoss node to use the State Pattern, mirroring the║
+║      ░   Player's architecture for improved scalability and maintainability. ║
 ║      ░ ■ Refactored the Player node to use the State Pattern. All state logic║
 ║      ░   (Move, Fall, Dash, etc.) has been decoupled into individual classes ║
 ║      ░   in `src/entities/player/states/` for improved scalability and      ║

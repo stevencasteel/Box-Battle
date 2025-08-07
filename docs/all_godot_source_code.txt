@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Thu Aug  7 18:08:56 CDT 2025
+Generated on: Thu Aug  7 18:37:53 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -44,7 +44,13 @@ PROJECT DIRECTORY STRUCTURE:
     ├── entities
     │   ├── boss
     │   │   ├── base_boss.gd
-    │   │   └── base_boss.tscn
+    │   │   ├── base_boss.tscn
+    │   │   └── states
+    │   │       ├── state_boss_attack.gd
+    │   │       ├── state_boss_base.gd
+    │   │       ├── state_boss_cooldown.gd
+    │   │       ├── state_boss_idle.gd
+    │   │       └── state_boss_patrol.gd
     │   └── player
     │       ├── player.gd
     │       ├── player.tscn
@@ -108,7 +114,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-29 directories, 71 files
+30 directories, 76 files
 
 
 =====================================
@@ -136,7 +142,7 @@ FILE: ./docs/TODO.txt
 ║   cleaning and organizing our workshop before building new things. It will   ║
 ║   make all future development faster, safer, and more enjoyable.             ║
 ║                                                                              ║
-║   █  Refactor Player to use the State Pattern                                ║
+║   ■  Refactor Player to use the State Pattern                                ║
 ║      ░  WHY: `player.gd` is becoming large and hard to manage. The State     ║
 ║      ░  Pattern will decouple the logic for each state (Move, Fall, Dash)    ║
 ║      ░  into its own separate script, making the system incredibly clean,    ║
@@ -155,7 +161,7 @@ FILE: ./docs/TODO.txt
 ║      ░       `current_state`. Its `_physics_process` will simplify to just one║
 ║      ░       line: `current_state.process_physics(delta)`.                   ║
 ║                                                                              ║
-║   █  Refactor Base Boss to use the State Pattern                             ║
+║   □  Refactor Base Boss to use the State Pattern                             ║
 ║      ░  WHY: For the exact same reasons as the Player. As we add our "kitchen║
 ║      ░  sink" of advanced boss mechanics, this pattern is essential to       ║
 ║      ░  prevent `base_boss.gd` from becoming unmanageable.                   ║
@@ -167,7 +173,7 @@ FILE: ./docs/TODO.txt
 ║      ░       states, just like the player. This will make adding new attack  ║
 ║      ░       patterns or defensive phases as simple as adding a new state file.║
 ║                                                                              ║
-║   ▓  Refactor ArenaBuilder using the Single Responsibility Principle (SRP)   ║
+║   □  Refactor ArenaBuilder using the Single Responsibility Principle (SRP)   ║
 ║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs (parsing, building║
 ║      ░  terrain, spawning entities). SRP dictates that a script should have  ║
 ║      ░  one reason to change. Separating these roles makes the code more     ║
@@ -181,7 +187,7 @@ FILE: ./docs/TODO.txt
 ║      ░    3. `ArenaBuilder.gd` will become a simple coordinator that uses    ║
 ║      ░       instances of the new classes to do the heavy lifting.           ║
 ║                                                                              ║
-║   ▓  Implement the Global Palette System                                     ║
+║   □  Implement the Global Palette System                                     ║
 ║      ░  WHY: To achieve a cohesive, professional aesthetic, all colors must  ║
 ║      ░  be managed from a central location. This makes theme changes instant.║
 ║      ░  This is a prerequisite for the visual overhaul in Phase 2.           ║
@@ -200,7 +206,7 @@ FILE: ./docs/TODO.txt
 ║   With a clean foundation, we can now build new features and implement the   ║
 ║   target visual style. The priority is on game-feel and visual polish.       ║
 ║                                                                              ║
-║   █  UI Aesthetic Overhaul                                                   ║
+║   □  UI Aesthetic Overhaul                                                   ║
 ║      ░  WHY: To match the "expensive Framer website" aesthetic, we must move ║
 ║      ░  away from static PNGs for UI and towards a procedural, shader-driven ║
 ║      ░  approach. This will provide a crisp, scalable, and animatable UI.    ║
@@ -214,7 +220,7 @@ FILE: ./docs/TODO.txt
 ║      ░    5. Replace the `TextureButton`s in all menu screens with this new  ║
 ║      ░       `StyledMenuItem` scene.                                         ║
 ║                                                                              ║
-║   ▓  Refine Player Combat Mechanics ("Game Juice")                           ║
+║   □  Refine Player Combat Mechanics ("Game Juice")                           ║
 ║      ░  □ Melee Hitbox Enhancement:                                          ║
 ║      ░      WHY: To reward skillful spacing and make melee feel better.      ║
 ║      ░      HOW: The player's melee attack will use two `Area2D` hitboxes.   ║
@@ -232,7 +238,7 @@ FILE: ./docs/TODO.txt
 ║      ░      HOW: After a `_trigger_pogo()`, have a short timer or boolean flag║
 ║      ░      that temporarily ignores the "Down" input for gravity calculation.║
 ║                                                                              ║
-║   ▒  Implement "Kitchen Sink" Base Boss Features                             ║
+║   □  Implement "Kitchen Sink" Base Boss Features                             ║
 ║      ░  WHY: To create a robust template for all future bosses, equipping it ║
 ║      ░  with a library of professional boss mechanics.                       ║
 ║      ░  HOW: These will be implemented as new states or variables in the     ║
@@ -840,8 +846,11 @@ FILE: ./docs/CHANGELOG.txt
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   (This section is for work that has been committed but not yet part of a    ║
-║    versioned release. See the new TODO.txt for the upcoming features.)       ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored the Player node to use the State Pattern. All state logic║
+║      ░   (Move, Fall, Dash, etc.) has been decoupled into individual classes ║
+║      ░   in `src/entities/player/states/` for improved scalability and      ║
+║      ░   maintainability, adhering to SOLID principles.                      ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
@@ -857,8 +866,8 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
 ║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
 ║      ░   prevent any "first-appearance" hitches for entities.                ║
-║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
-║      ░   the official documentation.                                         ║
+║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in  ║
+║      ░   the official documentation.                                        ║
 ║                                                                              ║
 ║   █  Bug Fixes                                                               ║
 ║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
@@ -868,9 +877,9 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
 ║                                                                              ║
 ║   █  Documentation                                                           ║
-║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
-║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
-║      ░   design philosophies, patterns, and planned features.                ║
+║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap. ║
+║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new     ║
+║      ░   design philosophies, patterns, and planned features.               ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║
@@ -3256,162 +3265,219 @@ one_shot = true
 [connection signal="timeout" from="HitFlashTimer" to="." method="_on_hit_flash_timer_timeout"]
 
 =====================================
+FILE: ./src/entities/boss/states/state_boss_idle.gd
+=====================================
+# src/entities/boss/states/state_boss_idle.gd
+extends "res://src/entities/boss/states/state_boss_base.gd"
+
+class_name BossStateIdle
+
+func enter(msg := {}) -> void:
+	boss.velocity = Vector2.ZERO
+	if boss.has_method("play_idle_animation"):
+		boss.play_idle_animation()
+
+func process_physics(delta: float) -> void:
+	# Original IDLE logic from old base_boss.gd:
+	# Boss waits and checks if player is in range to start attacking
+	if boss.can_see_player():
+		boss.change_state("attack")
+	else:
+		# Optionally start patrolling after some idle time
+		if boss.should_patrol():
+			boss.change_state("patrol")
+
+
+=====================================
+FILE: ./src/entities/boss/states/state_boss_base.gd
+=====================================
+# src/entities/boss/states/state_boss_base.gd
+# Base class / contract for all Boss states.
+# Modeled after src/entities/player/states/state_base.gd
+
+class_name BossState
+
+var boss: CharacterBody2D
+
+func _init(boss_node: CharacterBody2D) -> void:
+	# Each state receives the boss instance (the "Context") on construction.
+	self.boss = boss_node
+
+# Called when this state becomes active. Optional message (e.g., reason/params).
+func enter(msg := {}) -> void:
+	pass
+
+# Called when this state is being replaced by another state.
+func exit() -> void:
+	pass
+
+# Main per-physics-frame update for the state.
+func process_physics(delta: float) -> void:
+	pass
+
+# Optional input handling for state-specific input semantics.
+func process_input(event: InputEvent) -> void:
+	pass
+
+
+=====================================
+FILE: ./src/entities/boss/states/state_boss_cooldown.gd
+=====================================
+# src/entities/boss/states/state_boss_cooldown.gd
+extends "res://src/entities/boss/states/state_boss_base.gd"
+
+class_name BossStateCooldown
+
+var cooldown_timer := 0.0
+
+func enter(msg := {}) -> void:
+	# Set cooldown duration (from message or default)
+	cooldown_timer = msg.get("duration", boss.attack_cooldown_time)
+	if boss.has_method("play_cooldown_animation"):
+		boss.play_cooldown_animation()
+	boss.velocity = Vector2.ZERO
+
+func process_physics(delta: float) -> void:
+	cooldown_timer -= delta
+	if cooldown_timer <= 0.0:
+		# Return to patrol or idle after cooldown
+		if boss.should_patrol():
+			boss.change_state("patrol")
+		else:
+			boss.change_state("idle")
+
+
+=====================================
+FILE: ./src/entities/boss/states/state_boss_attack.gd
+=====================================
+# src/entities/boss/states/state_boss_attack.gd
+extends "res://src/entities/boss/states/state_boss_base.gd"
+
+class_name BossStateAttack
+
+var attack_timer := 0.0
+
+func enter(msg := {}) -> void:
+	# Reset attack timer and play animation
+	attack_timer = 0.0
+	if boss.has_method("play_attack_animation"):
+		boss.play_attack_animation()
+	# Windup if applicable
+	if boss.has_method("start_attack_windup"):
+		boss.start_attack_windup()
+
+func process_physics(delta: float) -> void:
+	attack_timer += delta
+
+	# Fire projectile / perform attack at right moment
+	if boss.has_method("perform_attack_action"):
+		boss.perform_attack_action(delta)
+
+	# When attack finished, switch to cooldown
+	if boss.is_attack_finished():
+		boss.change_state("cooldown", {"duration": boss.attack_cooldown_time})
+
+
+=====================================
+FILE: ./src/entities/boss/states/state_boss_patrol.gd
+=====================================
+# src/entities/boss/states/state_boss_patrol.gd
+extends "res://src/entities/boss/states/state_boss_base.gd"
+
+class_name BossStatePatrol
+
+func enter(msg := {}) -> void:
+	# Optional: set patrol path or animation
+	if boss.has_method("play_patrol_animation"):
+		boss.play_patrol_animation()
+
+func process_physics(delta: float) -> void:
+	# --- Original PATROL logic from base_boss.gd goes here ---
+	# Example placeholder:
+	boss.move_along_patrol_path(delta)
+
+	# Transition to attack if player spotted
+	if boss.can_see_player():
+		boss.change_state("attack")
+
+
+=====================================
 FILE: ./src/entities/boss/base_boss.gd
 =====================================
 # src/entities/boss/base_boss.gd
-#
-# This is the foundational script for all bosses in the game. It handles
-# shared logic like health, taking damage, gravity, and a basic attack
-# cycle managed by a state machine.
 extends CharacterBody2D
 
-# --- Signals ---
-signal health_changed(current_health, max_health)
-signal died
+# State machine
+var states: Dictionary = {}
+var current_state: BossState
 
-# --- Node References ---
-@onready var visual_sprite: ColorRect = $ColorRect
-@onready var cooldown_timer: Timer = $CooldownTimer
-@onready var patrol_timer: Timer = $PatrolTimer
-@onready var hit_flash_timer: Timer = $HitFlashTimer
+# Boss properties (replace with your existing variables)
+var health := 100
+var speed := 100
 
-# --- Preloads ---
-const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
+func _ready() -> void:
+	# Load states and pass self as context
+	states = {
+		"idle": BossStateIdle.new(self),
+		"attack": BossStateAttack.new(self),
+		"cooldown": BossStateCooldown.new(self),
+		"patrol": BossStatePatrol.new(self)
+	}
 
-# --- State Machine ---
-enum State { IDLE, ATTACK, COOLDOWN, PATROL }
-var state: State = State.IDLE
+	change_state("idle")
 
-# --- Boss Stats & Properties ---
-var health = Constants.BOSS_HEALTH
-var player: CharacterBody2D = null
-var facing_direction = -1.0
-var patrol_speed = 100.0
-var original_color: Color
+func change_state(new_state_name: String, msg := {}) -> void:
+	if current_state:
+		current_state.exit()
+	current_state = states.get(new_state_name)
+	if not current_state:
+		push_error("Boss state '%s' not found!" % new_state_name)
+		return
+	current_state.enter(msg)
 
-# --- Attack Definitions ---
-enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
-var current_attack: AttackPattern
+func _physics_process(delta: float) -> void:
+	if current_state:
+		current_state.process_physics(delta)
 
-# --- Engine Functions ---
+func _unhandled_input(event: InputEvent) -> void:
+	if current_state:
+		current_state.process_input(event)
 
-func _ready():
-	add_to_group("enemy")
-	original_color = visual_sprite.color # Store the starting color
-	player = get_tree().get_first_node_in_group("player")
-	health_changed.emit(health, Constants.BOSS_HEALTH)
-	change_state(State.COOLDOWN)
+# ------------------------------------------------------------------
+# Methods used by states (stub these with your existing logic)
+# ------------------------------------------------------------------
 
-func _physics_process(delta):
-	if not is_on_floor():
-		velocity.y += Constants.GRAVITY * delta
+func can_see_player() -> bool:
+	# Replace with detection logic from original match case
+	return false
 
-	_update_player_tracking()
+func is_attack_finished() -> bool:
+	# Replace with original attack completion logic
+	return true
 
-	match state:
-		State.IDLE:
-			state_idle(delta)
-		State.ATTACK:
-			state_attack(delta)
-		State.COOLDOWN:
-			state_cooldown(delta)
-		State.PATROL:
-			state_patrol(delta)
+func should_patrol() -> bool:
+	# Replace with whatever decides if patrol happens
+	return true
 
-	move_and_slide()
-	
-	if state == State.PATROL and is_on_wall():
-		facing_direction *= -1.0
-
-# --- State Functions ---
-
-func state_idle(_delta):
-	velocity.x = 0
-	change_state(State.ATTACK)
-
-func state_attack(_delta):
-	match current_attack:
-		AttackPattern.SINGLE_SHOT:
-			fire_shot_at_player()
-		AttackPattern.VOLLEY_SHOT:
-			var tween = get_tree().create_tween()
-			tween.tween_callback(fire_shot_at_player)
-			tween.tween_interval(0.2)
-			tween.tween_callback(fire_shot_at_player)
-			tween.tween_interval(0.2)
-			tween.tween_callback(fire_shot_at_player)
-	change_state(State.COOLDOWN)
-
-func state_cooldown(_delta):
-	velocity.x = 0
+func move_along_patrol_path(delta: float) -> void:
+	# Replace with your patrol movement code
 	pass
 
-func state_patrol(_delta):
-	velocity.x = facing_direction * patrol_speed
+func play_idle_animation() -> void:
+	pass
 
-# --- Core Logic ---
+func play_attack_animation() -> void:
+	pass
 
-func _update_player_tracking():
-	if state == State.ATTACK:
-		if is_instance_valid(player):
-			var direction_to_player = player.global_position.x - global_position.x
-			if not is_zero_approx(direction_to_player):
-				facing_direction = sign(direction_to_player)
-	
-	self.scale.x = facing_direction
-	
-func fire_shot_at_player():
-	if not is_instance_valid(player): return
-	var shot_instance = BossShotScene.instantiate()
-	get_parent().add_child(shot_instance)
-	shot_instance.global_position = global_position
-	var direction_to_player = (player.global_position - global_position).normalized()
-	shot_instance.direction = direction_to_player
-	
-func take_damage(damage_amount: int):
-	health -= damage_amount
-	health_changed.emit(health, Constants.BOSS_HEALTH)
-	_trigger_hit_flash()
-	print("Boss took ", damage_amount, " damage! Health remaining: ", health)
-	if health <= 0:
-		die()
+func start_attack_windup() -> void:
+	pass
 
-func die():
-	print("Boss has been defeated!")
-	died.emit()
+func play_cooldown_animation() -> void:
+	pass
 
-func _trigger_hit_flash():
-	visual_sprite.color = Color.DODGER_BLUE
-	hit_flash_timer.start()
+func play_patrol_animation() -> void:
+	pass
 
-func change_state(new_state: State):
-	if state == new_state:
-		return
-	state = new_state
-	print("Boss entering state: ", State.keys()[new_state])
-	match new_state:
-		State.ATTACK:
-			var attack_keys = AttackPattern.keys()
-			var chosen_attack_name = attack_keys[randi() % attack_keys.size()]
-			current_attack = AttackPattern[chosen_attack_name]
-			print("Boss chose attack: ", chosen_attack_name)
-		State.COOLDOWN:
-			cooldown_timer.start()
-		State.PATROL:
-			patrol_timer.start()
-
-# --- Signal Callbacks ---
-
-func _on_hit_flash_timer_timeout():
-	visual_sprite.color = original_color
-
-func _on_cooldown_timer_timeout():
-	if state == State.COOLDOWN:
-		change_state(State.PATROL)
-
-func _on_patrol_timer_timeout():
-	if state == State.PATROL:
-		change_state(State.IDLE)
 
 =====================================
 FILE: ./src/entities/player/player.tscn
@@ -3477,13 +3543,16 @@ FILE: ./src/entities/player/player.gd
 # This script is the "Context" for the State Machine. Its primary jobs are to:
 # 1. Hold all shared player data (health, velocity, timers, etc.).
 # 2. Manage the transitions between states.
-# 3. Centralize input polling that can occur in multiple states.
+# 3. Provide centralized helper functions for states to use (DRY principle).
 extends CharacterBody2D
 
 # --- Signals ---
 signal health_changed(current_health, max_health)
 signal healing_charges_changed(current_charges)
 signal died
+
+# --- REFINEMENT: The State enum is now globally accessible via Player.State ---
+enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -3506,7 +3575,6 @@ const HurtState = preload("res://src/entities/player/states/state_hurt.gd")
 const HealState = preload("res://src/entities/player/states/state_heal.gd")
 
 # --- State Machine ---
-enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 var states: Dictionary
 var current_state: PlayerState
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
@@ -3538,13 +3606,11 @@ var original_color: Color
 func _ready():
 	add_to_group("player")
 	original_color = visual_sprite.color
-	# Connect signals...
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
 	healing_charges_changed.emit(healing_charges)
-	# Initialize states...
 	states = {
 		State.MOVE: MoveState.new(self), State.FALL: FallState.new(self),
 		State.JUMP: JumpState.new(self), State.DASH: DashState.new(self),
@@ -3565,7 +3631,6 @@ func _physics_process(delta):
 		last_wall_normal = get_wall_normal()
 
 func _unhandled_input(event: InputEvent):
-	# Only pass events to the state if it has state-specific input logic.
 	current_state.process_input(event)
 
 func _update_timers(delta):
@@ -3580,27 +3645,27 @@ func _update_timers(delta):
 	if is_charging and Input.is_action_pressed("ui_attack"):
 		charge_timer += delta
 
-# --- REFACTOR: Centralized Input Polling ---
 func _poll_global_inputs():
 	if Input.is_action_just_pressed("ui_jump"):
 		jump_buffer_timer = Constants.JUMP_BUFFER
 
-	var current_state_key = states.find_key(current_state)
-	if current_state_key in ACTION_ALLOWED_STATES:
-		if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
-			is_charging = true; charge_timer = 0.0
+	if not states.find_key(current_state) in ACTION_ALLOWED_STATES:
+		return
+
+	if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
+		is_charging = true; charge_timer = 0.0
+	
+	if Input.is_action_just_released("ui_attack"):
+		if is_charging:
+			if charge_timer >= Constants.CHARGE_TIME: _fire_shot()
+			else: change_state(State.ATTACK)
+			is_charging = false
+	
+	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
+		change_state(State.DASH)
 		
-		if Input.is_action_just_released("ui_attack"):
-			if is_charging:
-				if charge_timer >= Constants.CHARGE_TIME: _fire_shot()
-				else: change_state(State.ATTACK)
-				is_charging = false
-		
-		if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
-			change_state(State.DASH)
-			
-		if is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and healing_charges > 0 and is_zero_approx(velocity.x):
-			change_state(State.HEAL)
+	if is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and healing_charges > 0 and is_zero_approx(velocity.x):
+		change_state(State.HEAL)
 
 func change_state(new_state_key: State):
 	if not states.has(new_state_key) or current_state == states[new_state_key]: return
@@ -3608,9 +3673,13 @@ func change_state(new_state_key: State):
 	current_state = states[new_state_key]
 	current_state.enter()
 
-# --- Public Action & Helper Functions (Unchanged) ---
-# ... (all functions from take_damage down to _on_healing_timer_timeout remain the same) ...
+# --- REFINEMENT: Centralized helper function for states (DRY Principle) ---
+func apply_horizontal_movement():
+	velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
+	if not is_zero_approx(velocity.x):
+		facing_direction = sign(velocity.x)
 
+# --- Public Action & Helper Functions (Unchanged) ---
 func take_damage(damage_amount: int, damage_source = null):
 	if is_invincible or is_dash_invincible: return
 	health -= damage_amount
@@ -3659,7 +3728,6 @@ func _fire_shot():
 func _trigger_pogo(pogo_target):
 	velocity.y = -Constants.POGO_FORCE
 	position.y -= 1
-	# Reset abilities on pogo
 	can_dash = true
 	air_jumps_left = Constants.MAX_AIR_JUMPS
 	change_state(State.FALL)
@@ -3687,7 +3755,7 @@ func _on_hurtbox_area_entered(area):
 func _on_invincibility_timer_timeout(): is_invincible = false
 
 func _on_healing_timer_timeout():
-	if current_state == states[State.HEAL]:
+	if states.find_key(current_state) == State.HEAL:
 		health = min(health + 1, Constants.PLAYER_MAX_HEALTH); healing_charges -= 1
 		health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
 		healing_charges_changed.emit(healing_charges)
@@ -3707,11 +3775,9 @@ func enter():
 	player.jump_buffer_timer = 0
 
 func process_physics(delta: float):
-	_apply_horizontal_movement()
+	# REFINEMENT: Call the centralized movement function.
+	player.apply_horizontal_movement()
 	
-	# --- JUMP DAMPENING FIX ---
-	# This logic is now correctly placed in _physics_process and calls the
-	# global Input singleton, which has the is_action_just_released method.
 	if Input.is_action_just_released("ui_jump") and player.velocity.y < 0:
 		player.velocity.y *= Constants.JUMP_RELEASE_DAMPENER
 
@@ -3722,11 +3788,6 @@ func process_physics(delta: float):
 		return
 
 	_check_for_wall_slide()
-
-func _apply_horizontal_movement():
-	player.velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
-	if Input.get_axis("ui_left", "ui_right") != 0:
-		player.facing_direction = sign(Input.get_axis("ui_left", "ui_right"))
 
 func _apply_gravity(delta):
 	player.velocity.y += Constants.GRAVITY * delta
@@ -3947,7 +4008,8 @@ FILE: ./src/entities/player/states/state_fall.gd
 extends PlayerState
 
 func process_physics(delta: float):
-	_apply_horizontal_movement()
+	# REFINEMENT: Call the centralized movement function.
+	player.apply_horizontal_movement()
 	_apply_gravity(delta)
 
 	if player.is_on_floor():
@@ -3956,7 +4018,6 @@ func process_physics(delta: float):
 
 	_check_for_wall_slide()
 
-	# This logic is now cleaner and more robust.
 	if player.jump_buffer_timer > 0:
 		if player.wall_coyote_timer > 0:
 			_perform_wall_jump()
@@ -3964,11 +4025,6 @@ func process_physics(delta: float):
 			player.change_state(player.State.JUMP)
 		elif player.air_jumps_left > 0:
 			_perform_air_jump()
-
-func _apply_horizontal_movement():
-	player.velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
-	if Input.get_axis("ui_left", "ui_right") != 0:
-		player.facing_direction = sign(Input.get_axis("ui_left", "ui_right"))
 
 func _apply_gravity(delta):
 	var gravity_multiplier = 1.0
@@ -4005,33 +4061,26 @@ func enter():
 func process_physics(delta: float):
 	player.coyote_timer = Constants.COYOTE_TIME
 	
-	# Apply gravity to ensure the player sticks to slopes.
 	player.velocity.y += Constants.GRAVITY * delta
-	_apply_horizontal_movement()
+	# REFINEMENT: Call the centralized movement function.
+	player.apply_horizontal_movement()
 
 	if not player.is_on_floor():
+		# REFINEMENT: Use global enum syntax for clarity.
 		player.change_state(player.State.FALL)
 		return
 	
-	# Check for dropping through a platform.
-	# Note: We check for jump input specifically here because it's a compound action (Down + Jump).
 	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
 		if player.get_last_slide_collision():
 			var floor_collider = player.get_last_slide_collision().get_collider()
 			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
-				player.position.y += 2 # Nudge the player down to clear the platform.
+				player.position.y += 2
 				player.jump_buffer_timer = 0
 				player.change_state(player.State.FALL)
 				return
 	
-	# Check for a buffered jump.
 	if player.jump_buffer_timer > 0:
 		player.change_state(player.State.JUMP)
 		return
-
-func _apply_horizontal_movement():
-	player.velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
-	if Input.get_axis("ui_left", "ui_right") != 0:
-		player.facing_direction = sign(Input.get_axis("ui_left", "ui_right"))
 
 

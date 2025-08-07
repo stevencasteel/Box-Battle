@@ -1,13 +1,15 @@
 # src/entities/boss/base_boss.gd
-#
-# This is the foundational script for all bosses in the game. It handles
-# shared logic like health, taking damage, gravity, and a basic attack
-# cycle managed by a state machine.
+# This is the "Context" script for the Boss State Machine. It holds all
+# shared data and delegates all per-frame logic to its current state object.
 extends CharacterBody2D
 
 # --- Signals ---
 signal health_changed(current_health, max_health)
 signal died
+
+# --- State Machine Enum (Globally Accessible as BaseBoss.State) ---
+enum State { IDLE, ATTACK, COOLDOWN, PATROL }
+enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -17,91 +19,75 @@ signal died
 
 # --- Preloads ---
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
+# REFINEMENT: Removed preload constants for states as they are now global classes.
 
 # --- State Machine ---
-enum State { IDLE, ATTACK, COOLDOWN, PATROL }
-var state: State = State.IDLE
+var states: Dictionary
+var current_state: BossState
 
-# --- Boss Stats & Properties ---
+# --- Boss Stats & Properties (Shared Data) ---
 var health = Constants.BOSS_HEALTH
 var player: CharacterBody2D = null
 var facing_direction = -1.0
 var patrol_speed = 100.0
 var original_color: Color
-
-# --- Attack Definitions ---
-enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 var current_attack: AttackPattern
 
 # --- Engine Functions ---
-
 func _ready():
 	add_to_group("enemy")
-	original_color = visual_sprite.color # Store the starting color
+	original_color = visual_sprite.color
 	player = get_tree().get_first_node_in_group("player")
-	health_changed.emit(health, Constants.BOSS_HEALTH)
+	
+	# REFINEMENT: Initialize states using their global class names.
+	states = {
+		State.IDLE: BossStateIdle.new(self),
+		State.ATTACK: BossStateAttack.new(self),
+		State.COOLDOWN: BossStateCooldown.new(self),
+		State.PATROL: BossStatePatrol.new(self),
+	}
+	
 	change_state(State.COOLDOWN)
+	health_changed.emit(health, Constants.BOSS_HEALTH)
 
 func _physics_process(delta):
 	if not is_on_floor():
 		velocity.y += Constants.GRAVITY * delta
 
-	_update_player_tracking()
-
-	match state:
-		State.IDLE:
-			state_idle(delta)
-		State.ATTACK:
-			state_attack(delta)
-		State.COOLDOWN:
-			state_cooldown(delta)
-		State.PATROL:
-			state_patrol(delta)
-
+	if current_state:
+		current_state.process_physics(delta)
+	
 	move_and_slide()
 	
-	if state == State.PATROL and is_on_wall():
+	if states.find_key(current_state) == State.PATROL and is_on_wall():
 		facing_direction *= -1.0
 
-# --- State Functions ---
-
-func state_idle(_delta):
-	velocity.x = 0
-	change_state(State.ATTACK)
-
-func state_attack(_delta):
-	match current_attack:
-		AttackPattern.SINGLE_SHOT:
-			fire_shot_at_player()
-		AttackPattern.VOLLEY_SHOT:
-			var tween = get_tree().create_tween()
-			tween.tween_callback(fire_shot_at_player)
-			tween.tween_interval(0.2)
-			tween.tween_callback(fire_shot_at_player)
-			tween.tween_interval(0.2)
-			tween.tween_callback(fire_shot_at_player)
-	change_state(State.COOLDOWN)
-
-func state_cooldown(_delta):
-	velocity.x = 0
-	pass
-
-func state_patrol(_delta):
-	velocity.x = facing_direction * patrol_speed
-
-# --- Core Logic ---
-
-func _update_player_tracking():
-	if state == State.ATTACK:
-		if is_instance_valid(player):
-			var direction_to_player = player.global_position.x - global_position.x
-			if not is_zero_approx(direction_to_player):
-				facing_direction = sign(direction_to_player)
+# --- State Management ---
+func change_state(new_state_key: State):
+	if not states.has(new_state_key):
+		print("Boss state key not found: ", new_state_key)
+		return
+	if current_state == states[new_state_key]:
+		return
+		
+	if current_state:
+		current_state.exit()
 	
+	current_state = states[new_state_key]
+	print("Boss entering state: ", State.keys()[new_state_key])
+	current_state.enter()
+
+# --- Helper Functions (used by states) ---
+func _update_player_tracking():
+	if is_instance_valid(player):
+		var direction_to_player = player.global_position.x - global_position.x
+		if not is_zero_approx(direction_to_player):
+			facing_direction = sign(direction_to_player)
 	self.scale.x = facing_direction
 	
 func fire_shot_at_player():
 	if not is_instance_valid(player): return
+	_update_player_tracking()
 	var shot_instance = BossShotScene.instantiate()
 	get_parent().add_child(shot_instance)
 	shot_instance.global_position = global_position
@@ -119,36 +105,20 @@ func take_damage(damage_amount: int):
 func die():
 	print("Boss has been defeated!")
 	died.emit()
+	queue_free()
 
 func _trigger_hit_flash():
 	visual_sprite.color = Color.DODGER_BLUE
 	hit_flash_timer.start()
 
-func change_state(new_state: State):
-	if state == new_state:
-		return
-	state = new_state
-	print("Boss entering state: ", State.keys()[new_state])
-	match new_state:
-		State.ATTACK:
-			var attack_keys = AttackPattern.keys()
-			var chosen_attack_name = attack_keys[randi() % attack_keys.size()]
-			current_attack = AttackPattern[chosen_attack_name]
-			print("Boss chose attack: ", chosen_attack_name)
-		State.COOLDOWN:
-			cooldown_timer.start()
-		State.PATROL:
-			patrol_timer.start()
-
-# --- Signal Callbacks ---
-
+# --- Signal Callbacks (handle state transitions) ---
 func _on_hit_flash_timer_timeout():
 	visual_sprite.color = original_color
 
 func _on_cooldown_timer_timeout():
-	if state == State.COOLDOWN:
+	if states.find_key(current_state) == State.COOLDOWN:
 		change_state(State.PATROL)
 
 func _on_patrol_timer_timeout():
-	if state == State.PATROL:
+	if states.find_key(current_state) == State.PATROL:
 		change_state(State.IDLE)
