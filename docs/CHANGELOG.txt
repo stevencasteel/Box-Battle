@@ -16,6 +16,7 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
+║      ░ ■ Implemented Win/Loss states with `VictoryScreen` and `GameOverScreen`.║
 ║      ░ ■ Implemented a signal-driven, in-game HUD (`GameHUD.tscn`) to display║
 ║      ░   real-time player health, healing charges, and boss health.          ║
 ║      ░ ■ Implemented a complete Boss AI with a state machine (Patrol, Attack,║
@@ -25,6 +26,8 @@
 ║      ░ ■ Created a new `ArenaBuilder` singleton to centralize level creation.║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored Player and Boss death logic to be signal-based,          ║
+║      ░   decoupling entities from the main `game.gd` scene manager.          ║
 ║      ░ ■ Player and Boss scripts now emit signals when their health/stats change.║
 ║      ░ ■ Migrated boss logic from a simple timer to a formal Finite State Machine.║
 ║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system,║
@@ -32,6 +35,8 @@
 ║      ░ ■ Refined melee attack's movement pause to a tunable friction system. ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Fixed a logic bug where player death incorrectly led to the Victory screen.║
+║      ░ ■ Resolved a physics crash on entity death by centralizing cleanup in `game.gd`.║
 ║      ░ ■ Corrected a bug where the boss's sprite would flip independently    ║
 ║      ░   of its collision shape, causing a visual desync.                    ║
 ║      ░ ■ Resolved a critical startup crash caused by improper scene changing.║

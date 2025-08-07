@@ -29,9 +29,9 @@
 ║      ░  ■ Add an indicator for available `healing_charges`.                  ║
 ║                                                                              ║
 ║   █  Implement Win/Loss States                                               ║
-║      ░  ■ Create a "Victory" screen/event when the boss's health reaches zero.║
-║      ░  ■ Create a "Game Over" screen/event when the player's health reaches zero.║
-║      ░  ■ Add clean transitions from the game scene to these new states.     ║
+║      ░  □ Create a "Victory" screen/event when the boss's health reaches zero.║
+║      ░  □ Create a "Game Over" screen/event when the player's health reaches zero.║
+║      ░  □ Add clean transitions from the game scene to these new states.     ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██              HIGH - ESSENTIAL FEEDBACK & "GAME JUICE"                ██  ║
@@ -48,7 +48,7 @@
 ║                                                                              ║
 ║   ▓  Implement Audio Feedback                                                ║
 ║      ░  ■ Implement placeholder SFX for all core actions: player jump, dash, ║
-║      ░    attack, take damage, heal, and pogo bounce.                        ║
+║      ░    attack, take damage, heal, and pogo bounce.                         ║
 ║      ░  ■ Add SFX for boss taking damage and attacking.                      ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
