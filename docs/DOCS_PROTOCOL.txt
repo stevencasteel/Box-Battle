@@ -62,8 +62,8 @@
 ║        ▒  Tertiary Point / Medium Priority                                   ║
 ║        ░  Note, Sub-point, or Low Priority Item                              ║
 ║                                                                              ║
-║        ■  Checklist item (incomplete).                                       ║
-║        □  Checklist item (complete).                                         ║
+║        ■  Checklist item (complete).                                         ║
+║        □  Checklist item (incomplete).                                       ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                 ARCHIVE OF ADVANCED & ESOTERIC STYLES                ██  ║

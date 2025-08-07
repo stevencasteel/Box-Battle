@@ -29,9 +29,9 @@
 ║      ░  ■ Add an indicator for available `healing_charges`.                  ║
 ║                                                                              ║
 ║   █  Implement Win/Loss States                                               ║
-║      ░  □ Create a "Victory" screen/event when the boss's health reaches zero.║
-║      ░  □ Create a "Game Over" screen/event when the player's health reaches zero.║
-║      ░  □ Add clean transitions from the game scene to these new states.     ║
+║      ░  ■ Create a "Victory" screen/event when the boss's health reaches zero.║
+║      ░  ■ Create a "Game Over" screen/event when the player's health reaches zero.║
+║      ░  ■ Add clean transitions from the game scene to these new states.     ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██              HIGH - ESSENTIAL FEEDBACK & "GAME JUICE"                ██  ║
@@ -41,15 +41,15 @@
 ║                                                                              ║
 ║   ▓  Implement Visual Feedback                                               ║
 ║      ░  ■ Hit Flash: Tint entities white for a few frames on taking damage.  ║
-║      ░  ■ Screen Shake: On player taking damage and on boss death.           ║
-║      ░  ■ Hit Pause: A brief (e.g., 0.05s) global time freeze on hit.        ║
-║      ░  ■ Particle Effects: For player landing (dust), hits (sparks), etc.   ║
-║      ░  ■ Dash Cooldown UI: A visual indicator on the HUD for dash readiness.║
+║      ░  □ Screen Shake: On player taking damage and on boss death.           ║
+║      ░  □ Hit Pause: A brief (e.g., 0.05s) global time freeze on hit.        ║
+║      ░  □ Particle Effects: For player landing (dust), hits (sparks), etc.   ║
+║      ░  □ Dash Cooldown UI: A visual indicator on the HUD for dash readiness.║
 ║                                                                              ║
 ║   ▓  Implement Audio Feedback                                                ║
-║      ░  ■ Implement placeholder SFX for all core actions: player jump, dash, ║
+║      ░  □ Implement placeholder SFX for all core actions: player jump, dash, ║
 ║      ░    attack, take damage, heal, and pogo bounce.                         ║
-║      ░  ■ Add SFX for boss taking damage and attacking.                      ║
+║      ░  □ Add SFX for boss taking damage and attacking.                      ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██              MEDIUM - PLAYER & SYSTEM REFINEMENTS                    ██  ║
@@ -58,15 +58,15 @@
 ║   Improvements to existing systems to enhance game feel and fairness.        ║
 ║                                                                              ║
 ║   ▒  Implement Advanced Movement                                             ║
-║      ░  ■ Corner Correction: Nudge the player over sharp corners.            ║
-║      ░  ■ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
+║      ░  □ Corner Correction: Nudge the player over sharp corners.            ║
+║      ░  □ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
 ║                                                                              ║
 ║   ▒  Implement Input Buffering                                               ║
-║      ░  ■ Buffer attack and dash inputs just like the jump input is.         ║
+║      ░  □ Buffer attack and dash inputs just like the jump input is.         ║
 ║                                                                              ║
 ║   ▒  Refine Charged Shot                                                     ║
-║      ░  ■ Add a visual indicator while the player is charging.               ║
-║      ░  ■ Create a "fizzle" effect/sound if the charge is released too early.║
+║      ░  □ Add a visual indicator while the player is charging.               ║
+║      ░  □ Create a "fizzle" effect/sound if the charge is released too early.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                    LOW - DEBUGGING & TOOLS                           ██  ║
@@ -75,9 +75,9 @@
 ║   Features to accelerate development and testing.                            ║
 ║                                                                              ║
 ║   ░  Implement Debug Hotkeys                                                 ║
-║      ░  ■ Y: Toggle Player Invincibility.                                    ║
-║      ░  ■ U: Damage Boss by 5 HP.                                            ║
-║      ░  ■ I: Instantly gain 1 Healing Charge.                                ║
-║      ░  ■ O: Toggle Debug Overlay (player state, boss state, timers).        ║
+║      ░  □ Y: Toggle Player Invincibility.                                    ║
+║      ░  □ U: Damage Boss by 5 HP.                                            ║
+║      ░  □ I: Instantly gain 1 Healing Charge.                                ║
+║      ░  □ O: Toggle Debug Overlay (player state, boss state, timers).        ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

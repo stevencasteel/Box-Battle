@@ -10,10 +10,12 @@ signal healing_charges_changed(current_charges)
 signal died
 
 # --- Node References ---
+@onready var visual_sprite: ColorRect = $ColorRect
 @onready var hitbox: Area2D = $Hitbox
 @onready var hurtbox: Area2D = $Hurtbox
 @onready var invincibility_timer: Timer = $InvincibilityTimer
 @onready var healing_timer: Timer = $HealingTimer
+@onready var hit_flash_timer: Timer = $HitFlashTimer
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 
 # --- Preloads ---
@@ -43,12 +45,13 @@ var is_charging = false
 var charge_timer = 0.0
 var is_pogo_attack = false
 var can_dash = true
-
+var original_color: Color
 
 # --- Engine Functions ---
 
 func _ready():
 	add_to_group("player")
+	original_color = visual_sprite.color # Store the starting color
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
@@ -84,7 +87,6 @@ func _physics_process(delta):
 	if is_on_wall():
 		wall_coyote_timer = Constants.WALL_COYOTE_TIME
 		last_wall_normal = get_wall_normal()
-
 
 func _handle_input(delta):
 	if Input.is_action_just_pressed("ui_jump"):
@@ -210,7 +212,6 @@ func change_state(new_state: State):
 			healing_timer.start(Constants.PLAYER_HEAL_DURATION)
 			print("Healing started...")
 
-
 func _apply_horizontal_movement():
 	if state in [State.DASH, State.HURT, State.ATTACK, State.WALL_SLIDE, State.HEAL]: return
 	var input_direction = Input.get_axis("ui_left", "ui_right")
@@ -319,6 +320,7 @@ func take_damage(damage_amount: int, damage_source = null):
 	if is_invincible: return
 	health -= damage_amount
 	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
+	_trigger_hit_flash()
 	print("Player took %s damage! Health: %s" % [damage_amount, health])
 	is_invincible = true
 	invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION)
@@ -331,13 +333,10 @@ func take_damage(damage_amount: int, damage_source = null):
 	if health <= 0:
 		die()
 
-# --- PHYSICS FIX ---
 func die():
 	print("Player has been defeated!")
 	died.emit()
-	# The entity no longer removes itself. The scene manager is now responsible.
-	# This prevents the physics error.
-
+	
 func _check_for_contact_damage():
 	for i in range(get_slide_collision_count()):
 		var collision = get_slide_collision(i)
@@ -363,9 +362,15 @@ func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 	print("Healing canceled.")
-
+	
+func _trigger_hit_flash():
+	visual_sprite.color = Color.DODGER_BLUE
+	hit_flash_timer.start()
 
 # --- Signal Callbacks ---
+
+func _on_hit_flash_timer_timeout():
+	visual_sprite.color = original_color
 
 func _on_hitbox_body_entered(body):
 	if is_pogo_attack: 
