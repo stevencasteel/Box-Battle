@@ -16,6 +16,7 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
+║      ░ ■ Implemented a shader pre-warming system in the `LoadingScreen`.     ║
 ║      ░ ■ Implemented a `LoadingScreen` to manage asynchronous scene loading. ║
 ║      ░ ■ Implemented a "Hit Flash" visual effect for player and boss.        ║
 ║      ░ ■ Implemented Win/Loss states with `VictoryScreen` and `GameOverScreen`.║
@@ -37,6 +38,7 @@
 ║      ░ ■ Refined melee attack's movement pause to a tunable friction system. ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
 ║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
 ║      ░ ■ Resolved a physics crash on entity death by using `call_deferred`   ║
 ║      ░   for scene transitions.                                              ║

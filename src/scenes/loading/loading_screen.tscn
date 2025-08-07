@@ -37,3 +37,17 @@ theme_override_font_sizes/font_size = 30
 text = "Loading..."
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="ShaderPrewarmViewport" type="SubViewportContainer" parent="."]
+custom_minimum_size = Vector2(1, 1)
+layout_mode = 0
+offset_left = -10.0
+offset_top = -10.0
+offset_right = -9.0
+offset_bottom = -9.0
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="ShaderPrewarmViewport"]
+handle_input_locally = false
+size = Vector2i(1, 1)
+render_target_update_mode = 4

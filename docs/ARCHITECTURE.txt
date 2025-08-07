@@ -3,7 +3,7 @@
 ║    █████╗ ██████╗  ██████╗██╗  ██╗██╗████████╗███████╗ ██████╗████████╗██╗   ██╗ ║
 ║   ██╔══██╗██╔══██╗██╔════╝██║  ██║██║╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██║   ██║ ║
 ║   ███████║██████╔╝██║     ███████║██║   ██║   █████╗  ██║        ██║   ██║   ██║ ║
-║   ██╔══██║██╔══██╗██║     ██╔══██║██║   ██║   ██╔══╝  ██║        ██║   ██║   ██║ ║
+║   ██╔══██╗██╔══██╗██║     ██╔══██║██║   ██║   ██╔══╝  ██║        ██║   ██║   ██║ ║
 ║   ██║  ██║██║  ██║╚██████╗██║  ██║██║   ██║   ███████╗╚██████╗   ██║   ╚██████╔╝ ║
 ║   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝   ╚═╝   ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝  ║
 ║                                                                              ║
@@ -43,15 +43,17 @@
 ║   █  State Machine: The Player's behavior is managed by a formal, enum-based ║
 ║      state machine in `player.gd` to prevent conflicting actions.            ║
 ║                                                                              ║
+║   █  Asynchronous Loading & Shader Pre-warming: To prevent hitches, a        ║
+║      `LoadingScreen` orchestrates all pre-game setup. It uses two key patterns:║
+║      ░  Shader Pre-warming: Key scenes (Player, Boss, etc.) are instantiated ║
+║      ░  in an off-screen viewport for one frame to force shader compilation. ║
+║      ░  Async Level Generation: `ArenaBuilder` builds the level in batches,  ║
+║      ░  yielding between them to avoid blocking the main thread.             ║
+║                                                                              ║
 ║   █  Component-Based UI: The UI is built from self-contained, reusable       ║
 ║      scenes. `MenuManager.gd` and `CustomSlider.gd` provide complex          ║
 ║      functionality without the parent scene needing to know their internal   ║
 ║      implementation.                                                         ║
-║                                                                              ║
-║   █  Asynchronous Level Generation: The `game.gd` scene no longer builds     ║
-║      the level directly. Instead, a `LoadingScreen` calls `ArenaBuilder` to  ║
-║      construct the level across multiple frames, preventing a hitch. The     ║
-║      `GameManager` holds the pre-built level to pass it to the game scene.   ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                         CODING STANDARDS                             ██  ║
