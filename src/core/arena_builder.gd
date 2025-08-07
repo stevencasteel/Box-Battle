@@ -5,7 +5,7 @@
 extends Node
 
 const PlayerScene = preload(AssetPaths.SCENE_PLAYER)
-const GameHUDScene = preload(AssetPaths.SCENE_GAME_HUD) # <-- NEW
+const GameHUDScene = preload(AssetPaths.SCENE_GAME_HUD)
 
 # --- NEW ASYNC FUNCTION ---
 # This function builds the level asynchronously to prevent frame drops
@@ -48,7 +48,6 @@ func build_level_async() -> Node:
 				encounter.BOSS_SPAWN_MARKER:
 					boss_spawn_pos = tile_pos
 	
-	# Yield every few iterations to prevent frame drops
 	await get_tree().process_frame
 	
 	# Create terrain tiles in batches
@@ -122,7 +121,7 @@ func _spawn_boss(parent_node: Node, pos: Vector2, scene: PackedScene):
 func _create_solid_tile(parent_node: Node, pos: Vector2):
 	var static_body = StaticBody2D.new()
 	static_body.position = pos
-	static_body.collision_layer = 2
+	static_body.collision_layer = 2 # 'world' layer
 	static_body.add_to_group("world")
 	
 	var collision_shape = CollisionShape2D.new()
@@ -136,13 +135,14 @@ func _create_solid_tile(parent_node: Node, pos: Vector2):
 func _create_oneway_platform(parent_node: Node, pos: Vector2):
 	var static_body = StaticBody2D.new()
 	static_body.position = pos
-	static_body.collision_layer = 2
+	static_body.collision_layer = 2 # 'world' layer
 	static_body.add_to_group("world")
-	static_body.add_to_group("oneway_platforms")
+	static_body.add_to_group("oneway_platforms") # For player logic
 	
 	var collision_shape = CollisionShape2D.new()
 	collision_shape.one_way_collision = true
-	collision_shape.position.y = -20
+	# Position the thin collision shape at the very top of the tile's space
+	collision_shape.position.y = - (Constants.TILE_SIZE / 2.0) + 5
 	var rectangle_shape = RectangleShape2D.new()
 	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
 	collision_shape.shape = rectangle_shape
@@ -150,10 +150,14 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2):
 	static_body.add_child(collision_shape)
 	parent_node.add_child(static_body)
 
+# --- CORRECTED HAZARD FUNCTION ---
 func _create_hazard_tile(parent_node: Node, pos: Vector2):
 	var static_body = StaticBody2D.new()
 	static_body.position = pos
+	# FIX: Set its layer to be BOTH "world" (layer 2) and "hazard" (layer 4).
+	# The bitwise OR operation ( | ) combines them. 2 | 8 = 10.
 	static_body.collision_layer = 10
+	# FIX: Add it to BOTH groups so it behaves as both solid ground and a hazard.
 	static_body.add_to_group("world")
 	static_body.add_to_group("hazard")
 	

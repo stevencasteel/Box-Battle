@@ -48,9 +48,10 @@
 ║      functionality without the parent scene needing to know their internal   ║
 ║      implementation.                                                         ║
 ║                                                                              ║
-║   █  Data-Driven Level Design: `game.gd` reads from data-only scripts like   ║
-║      `arena_00_layout.gd` to procedurally build the level, allowing for      ║
-║      rapid creation of new arenas without duplicating scene files.           ║
+║   █  Asynchronous Level Generation: The `game.gd` scene no longer builds     ║
+║      the level directly. Instead, a `LoadingScreen` calls `ArenaBuilder` to  ║
+║      construct the level across multiple frames, preventing a hitch. The     ║
+║      `GameManager` holds the pre-built level to pass it to the game scene.   ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                         CODING STANDARDS                             ██  ║

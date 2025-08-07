@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug  6 16:03:46 CDT 2025
+Generated on: Thu Aug  7 13:34:04 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -67,6 +67,9 @@ PROJECT DIRECTORY STRUCTURE:
         ├── components
         │   └── custom_slider
         │       └── custom_slider.gd
+        ├── game_hud
+        │   ├── game_hud.gd
+        │   └── game_hud.tscn
         ├── global_hud
         │   ├── global_hud.gd
         │   └── global_hud.tscn
@@ -79,17 +82,23 @@ PROJECT DIRECTORY STRUCTURE:
             ├── credits_menu
             │   ├── credits_menu.gd
             │   └── credits_menu.tscn
+            ├── game_over_screen
+            │   ├── game_over_screen.gd
+            │   └── game_over_screen.tscn
             ├── options_menu
             │   ├── options_menu.gd
             │   └── options_menu.tscn
             ├── sound_menu
             │   ├── sound_menu.gd
             │   └── sound_menu.tscn
-            └── title_screen
-                ├── title_screen.gd
-                └── title_screen.tscn
+            ├── title_screen
+            │   ├── title_screen.gd
+            │   └── title_screen.tscn
+            └── victory_screen
+                ├── victory_screen.gd
+                └── victory_screen.tscn
 
-25 directories, 56 files
+28 directories, 62 files
 
 
 =====================================
@@ -109,45 +118,57 @@ FILE: ./docs/TODO.txt
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                  HIGH PRIORITY - CORE GAMEPLAY LOOP                  ██  ║
+║  ██              HIGH - ESSENTIAL FEEDBACK & "GAME JUICE"                ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Evolve Boss AI (State Machine)                                          ║
-║      ░  ■ Implement a basic state machine (IDLE, PATROL, ATTACK, COOLDOWN).  ║
-║      ░  ■ Implement platform-based patrol movement.                          ║
-║      ░  ■ Create a "volley" attack and a telegraphed lunge/dash attack.      ║
+║   These features make the game feel responsive, satisfying, and alive.       ║
 ║                                                                              ║
-║   █  Implement "Game Juice" (Player & Combat Feedback)                       ║
-║      ░  ■ Hit Pause: A brief (0.05s) global time freeze on successful hits.  ║
-║      ░  ■ Screen Shake: On taking damage and landing critical hits.          ║
-║      ░  ■ Hit Flash: Tint entity white for a few frames on taking damage.    ║
-║      ░  ■ Particle Effects: Add simple particles for landing (dust), hits    ║
-║      ░    (sparks), and dashing (trail).                                     ║
-║      ░  ■ Sound Effects: Add placeholder SFX for all core player and combat actions.║
+║   ▓  Implement Visual Feedback                                               ║
+║      ░  □ Hit Pause: A brief (e.g., 0.05s) global time freeze on hit.        ║
+║      ░  □ Particle Effects: For player landing (dust), hits (sparks), etc.   ║
+║      ░  □ Dash Cooldown UI: A visual indicator on the HUD for dash readiness.║
 ║                                                                              ║
-║   █  Build In-Game HUD                                                       ║
-║      ░  ■ Create a new scene `GameHUD.tscn`.                                 ║
-║      ░  ■ Display player health, boss health, and healing charges.           ║
-║                                                                              ║
-║   █  Implement Win/Loss States                                               ║
-║      ░  ■ Create "Game Over" and "Victory" screens with transitions.         ║
-║      ░  ■ Add a "Freeze Frame" effect just before the boss's death explosion.║
+║   ▓  Implement Audio Feedback                                                ║
+║      ░  □ Implement placeholder SFX for all core actions: player jump, dash, ║
+║      ░    attack, take damage, heal, and pogo bounce.                         ║
+║      ░  □ Add SFX for boss taking damage and attacking.                      ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              MEDIUM PRIORITY - POLISH & REFINEMENTS                  ██  ║
+║  ██              MEDIUM - PLAYER & SYSTEM REFINEMENTS                    ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▓  Implement Advanced Movement Techniques                                  ║
-║      ░  □ Fast-Fall: Increase gravity when holding 'Down' in the air.        ║
-║      ░  ■ Corner Correction: Nudge the player over sharp corners.            ║
-║      ░  ■ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
+║   Improvements to existing systems to enhance game feel and fairness.        ║
 ║                                                                              ║
-║   ▓  Implement Input Buffering for Actions                                   ║
-║      ░  ■ Buffer attack and dash inputs just like the jump input.            ║
+║   ▒  Implement Advanced Movement                                             ║
+║      ░  □ Corner Correction: Nudge the player over sharp corners.            ║
+║      ░  □ Dash-Jump Cancel: Allow a dash to be interrupted by a jump.        ║
 ║                                                                              ║
-║   ▓  Implement Debug Hotkeys (Y, U, I, O)                                    ║
+║   ▒  Implement Input Buffering                                               ║
+║      ░  □ Buffer attack and dash inputs just like the jump input is.         ║
 ║                                                                              ║
-║   ▓  Implement Charge Shot Fizzle & Visual Indicator                         ║
+║   ▒  Refine Charged Shot                                                     ║
+║      ░  □ Add a visual indicator while the player is charging.               ║
+║      ░  □ Create a "fizzle" effect/sound if the charge is released too early.║
+║                                                                              ║
+║   ▒  Refine Pogo-Attack Interaction                                          ║
+║      ░  □ Temporarily disable fast-fall gravity for a brief window after a   ║
+║      ░    successful pogo to prevent accidental, unwanted fast-falls.        ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                    LOW - DEBUGGING & TOOLS                           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Features to accelerate development and testing.                            ║
+║                                                                              ║
+║   ░  Implement Debug Hotkeys                                                 ║
+║      ░  □ Y: Toggle Player Invincibility.                                    ║
+║      ░  □ U: Damage Boss by 5 HP.                                            ║
+║      ░  □ I: Instantly gain 1 Healing Charge.                                ║
+║      ░  □ O: Toggle Debug Overlay (player state, boss state, timers).        ║
+║                                                                              ║
+║   ░  Implement Screen Shake (Deferred)                                       ║
+║      ░  □ On player taking damage and on boss death. (Deferred to avoid      ║
+║      ░    visual noise during foundational debugging).                        ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -194,7 +215,7 @@ FILE: ./docs/DESIGN.txt
 ║                                                                              ║
 ║   ▓  Player Movement                                                         ║
 ║      ░ ■ Coyote Time & Jump Buffering for forgiving platforming.             ║
-║      ░ ■ 8-directional Dash with a cooldown.                                 ║
+║      ░ ■ 4-directional Dash (Up, Down, Left, Right) with a cooldown.         ║
 ║      ░ ■ Wall-Sliding and Wall-Jumping for verticality.                      ║
 ║      ░ ■ Drop-Through Platforms via Down + Jump input.                       ║
 ║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity.             ║
@@ -207,6 +228,7 @@ FILE: ./docs/DESIGN.txt
 ║                                                                              ║
 ║   ▓  Combat System                                                           ║
 ║      ░ ■ Primary Attack (Melee), Secondary Attack (Charged Shot), Pogo Attack.║
+║      ░ ■ Dash Invincibility: The player cannot take damage during a dash.    ║
 ║                                                                              ║
 ║   ▓  Health and Healing: The Determination System                            ║
 ║      ░  Healing is a resource earned through combat. A `healing_charge` is   ║
@@ -395,27 +417,27 @@ FILE: ./docs/BUGS.txt
 ║  ██                             OPEN ISSUES                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   ▒  [BUG-001] Player can get stuck on tile corners when jumping.            ║
-║      ░  FOUND: 2025-08-05                                                    ║
-║      ░  STATUS: Open                                                         ║
-║      ░  DETAILS: When the player jumps and moves horizontally against a      ║
-║      ░  wall, their top corner can clip the bottom corner of a tile above    ║
-║      ░  them, causing them to "bonk" their head and fall immediately. This   ║
-║      ░  feels jarring and unfair. The cause is likely the perfectly          ║
-║      ░  rectangular shape of the player's `CollisionShape2D`.                ║
-║                                                                              ║
-║   ░  [BUG-005] Minor hitch may still occur on arena load.                    ║
+║   ▒  [BUG-007] Intermittent major hitch on first run or debug mode toggle.   ║
 ║      ░  FOUND: 2025-08-06                                                    ║
 ║      ░  STATUS: Open (Low Priority)                                          ║
-║      ░  DETAILS: After implementing the pre-building system, the major       ║
-║      ░  load-in stutter is gone. However, a very minor frame drop may still  ║
-║      ░  be present within the first second. This could be due to late shader ║
-║      ░  compilation for future VFX or other first-frame engine processes.    ║
-║      ░  To be investigated during the "Game Juice" and polishing phase.      ║
+║      ░  DETAILS: A major, one-time hitch can occasionally occur. It has been ║
+║      ░  observed after first opening the editor and after toggling 'Visible  ║
+║      ░  Collision Shapes'. The issue is not consistently reproducible. This  ║
+║      ░  may be related to first-time shader compilation or another engine    ║
+║      ░  process that is not covered by the current asynchronous loading system.║
+║      ░  To be investigated further during the project's polishing phase.     ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                             FIXED ISSUES                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   □  [BUG-F006] Significant stutter/hitch occurred on arena load.            ║
+║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  SOLUTION: Replaced the synchronous, blocking level generation with a ║
+║      ░  new asynchronous system in `ArenaBuilder.gd`. The `build_level_async`║
+║      ░  function now creates the level in batches, using `await` to yield    ║
+║      ░  control back to the engine between batches. This prevents the main   ║
+║      ░  thread from freezing, resulting in a smooth loading sequence.        ║
 ║                                                                              ║
 ║   □  [BUG-F005] Player death caused a black screen instead of reloading.     ║
 ║      ░  FIXED: 2025-08-06                                                    ║
@@ -519,8 +541,8 @@ FILE: ./docs/DOCS_PROTOCOL.txt
 ║        ▒  Tertiary Point / Medium Priority                                   ║
 ║        ░  Note, Sub-point, or Low Priority Item                              ║
 ║                                                                              ║
-║        ■  Checklist item (incomplete).                                       ║
-║        □  Checklist item (complete).                                         ║
+║        ■  Checklist item (complete).                                         ║
+║        □  Checklist item (incomplete).                                       ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                 ARCHIVE OF ADVANCED & ESOTERIC STYLES                ██  ║
@@ -726,22 +748,39 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
+║      ░ ■ Implemented a "Hit Flash" visual effect for player and boss.       ║
+║      ░ ■ Implemented Win/Loss states with `VictoryScreen` and `GameOverScreen`.║
+║      ░ ■ Implemented a signal-driven, in-game HUD (`GameHUD.tscn`) to display║
+║      ░   real-time player health, healing charges, and boss health.          ║
+║      ░ ■ Implemented a complete Boss AI with a state machine (Patrol, Attack,║
+║      ░   Cooldown), player tracking, and multiple attack patterns.           ║
 ║      ░ ■ Implemented a fast-fall mechanic (Hold Down in air).                ║
 ║      ░ ■ Created a new `GameManager` singleton to manage game state.         ║
 ║      ░ ■ Created a new `ArenaBuilder` singleton to centralize level creation.║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
-║      ░ ■ Overhauled the level loading process to use a pre-building system,  ║
-║      ░   constructing the entire level behind a loading screen to eliminate   ║
-║      ░   stuttering on arena load.                                           ║
+║      ░ ■ Refactored Player and Boss death logic to be signal-based,          ║
+║      ░   decoupling entities from the main `game.gd` scene manager.          ║
+║      ░ ■ Player and Boss scripts now emit signals when their health/stats change.║
+║      ░ ■ Migrated boss logic from a simple timer to a formal Finite State Machine.║
+║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system,║
+║      ░   eliminating stuttering when entering the arena.                     ║
 ║      ░ ■ Refined melee attack's movement pause to a tunable friction system. ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Implemented a robust, timer-based hit flash after debugging issues with Tween.║
+║      ░ ■ Fixed a logic bug where player death incorrectly led to the Victory screen.║
+║      ░ ■ Resolved a physics crash on entity death by centralizing cleanup in `game.gd`.║
+║      ░ ■ Corrected a bug where the boss's sprite would flip independently    ║
+║      ░   of its collision shape, causing a visual desync.                    ║
+║      ░ ■ Resolved a critical startup crash caused by improper scene changing.║
 ║      ░ ■ Fixed a critical bug where reloading after player death would fail. ║
 ║      ░ ■ Restored ability to drop through one-way platforms.                 ║
 ║      ░ ■ Standard melee attacks (forward/up) now correctly destroy enemy     ║
 ║      ░   projectiles.                                                        ║
 ║      ░ ■ Resolved a GDScript warning for a shadowed global variable.         ║
+║      ░ ■ Removed "corner clipping" from the bug list as it is a planned      ║
+║      ░   feature ("Corner Correction"), not a bug.                           ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║
@@ -1217,6 +1256,117 @@ environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 
 
 =====================================
+FILE: ./src/ui/game_hud/game_hud.gd
+=====================================
+# src/ui/game_hud/game_hud.gd
+#
+# Manages the in-game heads-up display. It connects to signals from the
+# player and boss to update health bars and other UI elements in real-time.
+extends CanvasLayer
+
+# --- Node References ---
+@onready var player_health_value: Label = $PlayerInfo/PlayerHealthHBox/PlayerHealthValue
+@onready var player_heal_charges_value: Label = $PlayerInfo/PlayerHealChargesHBox/PlayerHealChargesValue
+@onready var boss_health_bar: ProgressBar = $BossHealthBar
+
+func _ready():
+	# Wait until the main scene tree is ready before trying to connect signals.
+	await get_tree().process_frame
+	
+	var player = get_tree().get_first_node_in_group("player")
+	var boss = get_tree().get_first_node_in_group("enemy")
+
+	if is_instance_valid(player):
+		# Connect to the player's signals.
+		player.health_changed.connect(on_player_health_changed)
+		player.healing_charges_changed.connect(on_player_healing_charges_changed)
+	
+	if is_instance_valid(boss):
+		# Connect to the boss's signals.
+		boss.health_changed.connect(on_boss_health_changed)
+
+# --- Signal Callbacks ---
+
+func on_player_health_changed(current_health: int, max_health: int):
+	player_health_value.text = str(current_health) + " / " + str(max_health)
+
+func on_player_healing_charges_changed(current_charges: int):
+	player_heal_charges_value.text = str(current_charges)
+
+func on_boss_health_changed(current_health: int, max_health: int):
+	# Set the max_value of the progress bar first in case it has changed.
+	boss_health_bar.max_value = max_health
+	# Update the current value.
+	boss_health_bar.value = current_health
+
+=====================================
+FILE: ./src/ui/game_hud/game_hud.tscn
+=====================================
+[gd_scene load_steps=4 format=3 uid="uid://c1qkhw0snj226"]
+
+[ext_resource type="Script" path="res://src/ui/game_hud/game_hud.gd" id="1_3f8wa"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1"]
+bg_color = Color(0.262745, 0.262745, 0.262745, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2"]
+bg_color = Color(0.8, 0.2, 0.2, 1)
+
+[node name="GameHUD" type="CanvasLayer"]
+script = ExtResource("1_3f8wa")
+
+[node name="PlayerInfo" type="VBoxContainer" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -100.0
+offset_right = 220.0
+offset_bottom = -20.0
+grow_vertical = 0
+
+[node name="PlayerHealthHBox" type="HBoxContainer" parent="PlayerInfo"]
+layout_mode = 2
+
+[node name="PlayerHealthLabel" type="Label" parent="PlayerInfo/PlayerHealthHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Health:"
+
+[node name="PlayerHealthValue" type="Label" parent="PlayerInfo/PlayerHealthHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "5 / 5"
+
+[node name="PlayerHealChargesHBox" type="HBoxContainer" parent="PlayerInfo"]
+layout_mode = 2
+
+[node name="PlayerHealChargesLabel" type="Label" parent="PlayerInfo/PlayerHealChargesHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Heal Charges:"
+
+[node name="PlayerHealChargesValue" type="Label" parent="PlayerInfo/PlayerHealChargesHBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "0"
+
+[node name="BossHealthBar" type="ProgressBar" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 250.0
+offset_top = 20.0
+offset_right = -250.0
+offset_bottom = 50.0
+grow_horizontal = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_1")
+theme_override_styles/fill = SubResource("StyleBoxFlat_2")
+max_value = 30.0
+step = 1.0
+value = 30.0
+show_percentage = false
+
+=====================================
 FILE: ./src/ui/global_hud/global_hud.gd
 =====================================
 # src/ui/global_hud/global_hud.gd
@@ -1425,6 +1575,76 @@ func _update_cursors():
 
 	cursor_right.position.x = button_pos.x + button_size.x + cursor_padding
 	cursor_right.position.y = button_pos.y + (button_size.y - cursor_right.size.y) / 2
+
+=====================================
+FILE: ./src/ui/screens/game_over_screen/game_over_screen.tscn
+=====================================
+[gd_scene load_steps=3 format=3 uid="uid://dnlf14n0wfxm1"]
+
+[ext_resource type="Script" path="res://src/ui/screens/game_over_screen/game_over_screen.gd" id="1_goscr"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_1"]
+font_size = 96
+font_color = Color(0.8, 0.2, 0.2, 1)
+
+[node name="GameOverScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_goscr")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -291.0
+offset_top = -123.0
+offset_right = 291.0
+offset_bottom = 123.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 100
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "GAME OVER"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 1
+
+[node name="ReturnButton" type="TextureButton" parent="VBoxContainer"]
+layout_mode = 2
+
+=====================================
+FILE: ./src/ui/screens/game_over_screen/game_over_screen.gd
+=====================================
+# src/ui/screens/game_over_screen/game_over_screen.gd
+#
+# This screen is shown when the player's health reaches zero.
+extends Control
+
+@onready var return_button: TextureButton = $VBoxContainer/ReturnButton
+
+const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+
+func _ready():
+	# Configure the button and connect its signal.
+	return_button.texture_normal = load(AssetPaths.SPRITE_MENU_ITEM_BACK)
+	return_button.pressed.connect(_on_return_button_pressed)
+
+	# Set up the menu manager for keyboard/controller navigation.
+	var menu = MenuManager.new()
+	add_child(menu)
+	menu.setup_menu([MenuManager.MenuItem.new(return_button, "BACK")])
+
+func _on_return_button_pressed():
+	get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
 
 =====================================
 FILE: ./src/ui/screens/controls_menu/controls_menu.gd
@@ -1685,16 +1905,16 @@ func _ready():
 # --- Button Press Handlers ---
 
 func _on_sound_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_SOUND_MENU)
+	get_tree().change_scene_to_file(AssetPaths.SCENE_SOUND_MENU)
 
 func _on_controls_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_CONTROLS_MENU)
+	get_tree().change_scene_to_file(AssetPaths.SCENE_CONTROLS_MENU)
 
 func _on_credits_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_CREDITS_MENU)
+	get_tree().change_scene_to_file(AssetPaths.SCENE_CREDITS_MENU)
 
 func _on_back_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_TITLE_SCREEN)
+	get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
 
 =====================================
 FILE: ./src/ui/screens/sound_menu/sound_menu.gd
@@ -1831,6 +2051,76 @@ mouse_filter = 2
 script = ExtResource("1_sound_script")
 
 =====================================
+FILE: ./src/ui/screens/victory_screen/victory_screen.tscn
+=====================================
+[gd_scene load_steps=3 format=3 uid="uid://cx6i2wt2j05y4"]
+
+[ext_resource type="Script" path="res://src/ui/screens/victory_screen/victory_screen.gd" id="1_vsscr"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_1"]
+font_size = 96
+font_color = Color(0.2, 0.8, 0.2, 1)
+
+[node name="VictoryScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_vsscr")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 100
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "VICTORY"
+label_settings = SubResource("LabelSettings_1")
+horizontal_alignment = 1
+
+[node name="ReturnButton" type="TextureButton" parent="VBoxContainer"]
+layout_mode = 2
+
+=====================================
+FILE: ./src/ui/screens/victory_screen/victory_screen.gd
+=====================================
+# src/ui/screens/victory_screen/victory_screen.gd
+#
+# This screen is shown when the player defeats the boss.
+extends Control
+
+@onready var return_button: TextureButton = $VBoxContainer/ReturnButton
+
+const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+
+func _ready():
+	# Configure the button and connect its signal.
+	return_button.texture_normal = load(AssetPaths.SPRITE_MENU_ITEM_BACK)
+	return_button.pressed.connect(_on_return_button_pressed)
+
+	# Set up the menu manager for keyboard/controller navigation.
+	var menu = MenuManager.new()
+	add_child(menu)
+	menu.setup_menu([MenuManager.MenuItem.new(return_button, "BACK")])
+
+func _on_return_button_pressed():
+	get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
+
+=====================================
 FILE: ./src/ui/screens/title_screen/title_screen.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://cglqfxtqgxwul"]
@@ -1894,12 +2184,12 @@ func _on_start_button_pressed():
 	# Step 1: Tell the GameManager which level we want to play.
 	GameManager.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
 	
-	# Step 2: Transition to the generic loading screen.
-	# The loading screen will now use the GameManager to figure out what to do.
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_LOADING_SCREEN)
+	# Step 2: Transition to the generic loading screen directly.
+	get_tree().change_scene_to_file(AssetPaths.SCENE_LOADING_SCREEN)
 
 func _on_options_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)
+	# Changed to direct scene change for consistency.
+	get_tree().change_scene_to_file(AssetPaths.SCENE_OPTIONS_MENU)
 
 
 =====================================
@@ -2038,7 +2328,8 @@ FILE: ./src/scenes/loading/loading_screen.gd
 # src/scenes/loading/loading_screen.gd
 #
 # This script handles the pre-building of the entire game level to prevent
-# stuttering. It calls the ArenaBuilder to construct the level in memory.
+# stuttering. It calls the ArenaBuilder to construct the level in memory and
+# ensures proper frame yielding during the process.
 extends Control
 
 func _ready():
@@ -2048,14 +2339,25 @@ func _ready():
 		get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
 		return
 
-	# Tell the ArenaBuilder to construct the entire level. This is the
-	# "heavy lifting" that will now happen behind the loading screen.
-	GameManager.prebuilt_level = ArenaBuilder.build_level()
-	
-	# Wait for a single frame to ensure all creation processes are finalized.
+	# Start the asynchronous loading process
+	_load_level()
+
+func _load_level():
+	# Yield a couple of frames to ensure the "Loading..." text is rendered
+	# and visible before we start the heavy work.
+	await get_tree().process_frame
 	await get_tree().process_frame
 	
-	# Proceed to the main game scene.
+	# Tell the ArenaBuilder to construct the level asynchronously.
+	# The 'await' keyword pauses this function until build_level_async is complete.
+	GameManager.prebuilt_level = await ArenaBuilder.build_level_async()
+	
+	# Yield another couple of frames to ensure all creation processes are finalized
+	# before we switch scenes.
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	# Proceed to the main game scene using a direct change instead of deferred.
 	get_tree().change_scene_to_file(AssetPaths.SCENE_GAME)
 
 
@@ -2074,36 +2376,52 @@ FILE: ./src/scenes/game/game.gd
 =====================================
 # src/scenes/game/game.gd
 #
-# This script orchestrates the setup of an arena battle. It handles both
-# the initial smooth load from a pre-built level and in-place reloads for retries.
+# This script orchestrates the setup of an arena battle. It now also manages
+# the overall game flow by listening for signals from the player and boss.
 extends Node
 
-# --- MODIFIED FUNCTION ---
-func _ready():
-	# PATH 1: Initial Load (Fast and Smooth)
-	# Check if a level was pre-built by the loading screen.
-	if GameManager.prebuilt_level:
-		# Add the entire pre-built level to the scene tree in one fast operation.
-		add_child(GameManager.prebuilt_level)
-		# Clear the reference so it doesn't hold onto memory.
-		GameManager.prebuilt_level = null
-		return # We're done.
+var player_node: Node = null
+var boss_node: Node = null
 
-	# PATH 2: Reload / Retry
-	# If there's no pre-built level, we assume we're reloading the scene.
-	# We check if we still know WHICH level to build.
-	if not GameManager.current_encounter_script_path.is_empty():
-		print("No pre-built level found. Assuming retry. Rebuilding arena...")
-		# Tell the ArenaBuilder to construct the level directly.
-		# This will cause a brief hitch, which is acceptable for a retry.
-		var level_container = ArenaBuilder.build_level()
+func _ready():
+	if GameManager.prebuilt_level:
+		add_child(GameManager.prebuilt_level)
+		GameManager.prebuilt_level = null
+		await get_tree().process_frame
+	elif not GameManager.current_encounter_script_path.is_empty():
+		var level_container = await ArenaBuilder.build_level_async()
 		add_child(level_container)
-	
-	# PATH 3: Critical Error
-	# If we have no pre-built level AND no path, something is wrong.
+		await get_tree().process_frame
 	else:
 		print("ERROR: Game scene loaded without a pre-built level or encounter path. Returning to title.")
 		get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
+		return
+	
+	player_node = get_tree().get_first_node_in_group("player")
+	boss_node = get_tree().get_first_node_in_group("enemy")
+
+	# --- LOGIC & WIRING FIX ---
+	# Ensure the correct signals are connected to the correct handler functions.
+	if is_instance_valid(player_node):
+		player_node.died.connect(_on_player_died)
+	if is_instance_valid(boss_node):
+		boss_node.died.connect(_on_boss_died)
+
+# --- Signal Handlers for Game Flow ---
+
+func _on_player_died():
+	print("Game Manager: Player death detected. Initiating Game Over.")
+	get_tree().change_scene_to_file(AssetPaths.SCENE_GAME_OVER_SCREEN)
+
+func _on_boss_died():
+	print("Game Manager: Boss death detected. Initiating Victory.")
+	get_tree().change_scene_to_file(AssetPaths.SCENE_VICTORY_SCREEN)
+
+
+func _exit_tree():
+	# CRITICAL: Unpause the game when this scene is exited.
+	get_tree().paused = false
+
 
 =====================================
 FILE: ./src/scenes/main/main.tscn
@@ -2127,9 +2445,12 @@ extends Node
 
 func _ready():
 	# Using AssetPaths makes this transition type-safe and easy to manage.
-	# 'call_deferred' waits until the current frame is finished before changing scenes,
-	# which prevents potential physics or node errors during the switch.
+	# CRITICAL FIX: 'call_deferred' is REQUIRED here. The main scene cannot be
+	# replaced immediately in its own _ready function, as the scene tree is
+	# busy being set up. This defers the change to a safe point after the
+	# current frame's processing.
 	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_TITLE_SCREEN)
+
 
 =====================================
 FILE: ./src/core/settings.gd
@@ -2189,10 +2510,11 @@ FILE: ./src/core/arena_builder.gd
 extends Node
 
 const PlayerScene = preload(AssetPaths.SCENE_PLAYER)
+const GameHUDScene = preload(AssetPaths.SCENE_GAME_HUD) # <-- NEW
 
-# --- MODIFIED FUNCTION ---
-# This function now returns a fully constructed level scene in a container node.
-func build_level() -> Node:
+# --- NEW ASYNC FUNCTION ---
+# This function builds the level asynchronously to prevent frame drops
+func build_level_async() -> Node:
 	# Create the container "box" that will hold the entire level.
 	var level_container = Node.new()
 	level_container.name = "LevelContainer"
@@ -2208,7 +2530,11 @@ func build_level() -> Node:
 
 	var player_spawn_pos = Vector2.ZERO
 	var boss_spawn_pos = Vector2.ZERO
+	var terrain_tiles = []
+	var oneway_platforms = []
+	var hazard_tiles = []
 
+	# First pass: collect all tile data
 	for y in range(layout.TERRAIN_DATA.size()):
 		var row_string = layout.TERRAIN_DATA[y]
 		for x in range(row_string.length()):
@@ -2217,26 +2543,73 @@ func build_level() -> Node:
 
 			match tile_char:
 				'#':
-					_create_solid_tile(level_container, tile_pos)
+					terrain_tiles.append(tile_pos)
 				'-':
-					_create_oneway_platform(level_container, tile_pos)
+					oneway_platforms.append(tile_pos)
 				'^':
-					_create_hazard_tile(level_container, tile_pos)
+					hazard_tiles.append(tile_pos)
 				encounter.PLAYER_SPAWN_MARKER:
 					player_spawn_pos = tile_pos
 				encounter.BOSS_SPAWN_MARKER:
 					boss_spawn_pos = tile_pos
+	
+	# Yield every few iterations to prevent frame drops
+	await get_tree().process_frame
+	
+	# Create terrain tiles in batches
+	var batch_size = 20
+	for i in range(terrain_tiles.size()):
+		_create_solid_tile(level_container, terrain_tiles[i])
+		if i % batch_size == 0:
+			await get_tree().process_frame
+	
+	# Create oneway platforms in batches
+	for i in range(oneway_platforms.size()):
+		_create_oneway_platform(level_container, oneway_platforms[i])
+		if i % batch_size == 0:
+			await get_tree().process_frame
+	
+	# Create hazard tiles in batches
+	for i in range(hazard_tiles.size()):
+		_create_hazard_tile(level_container, hazard_tiles[i])
+		if i % batch_size == 0:
+			await get_tree().process_frame
+	
+	await get_tree().process_frame
+	
+	# Pre-instantiate entities
+	await _spawn_player_async(level_container, player_spawn_pos)
+	await _spawn_boss_async(level_container, boss_spawn_pos, encounter.BOSS_SCENE)
+	
+	# Instantiate the HUD
+	var hud_instance = GameHUDScene.instantiate()
+	level_container.add_child(hud_instance)
 
-	_spawn_player(level_container, player_spawn_pos)
-	_spawn_boss(level_container, boss_spawn_pos, encounter.BOSS_SCENE)
+	await get_tree().process_frame
 	
 	# Return the finished, self-contained level.
 	return level_container
 
-# The prewarm function is no longer needed, as build_level now serves this purpose.
-# func prewarm_assets(): ...
+# --- MODIFIED FUNCTION (kept for compatibility but now calls async version) ---
+func build_level() -> Node:
+	return await build_level_async()
 
-# --- Private Helper Functions are unchanged ---
+# --- Async Entity Spawning Functions ---
+
+func _spawn_player_async(parent_node: Node, pos: Vector2):
+	var player_instance = PlayerScene.instantiate()
+	player_instance.global_position = pos
+	parent_node.add_child(player_instance)
+	await get_tree().process_frame
+
+func _spawn_boss_async(parent_node: Node, pos: Vector2, scene: PackedScene):
+	if scene == null: return
+	var boss_instance = scene.instantiate()
+	boss_instance.global_position = pos
+	parent_node.add_child(boss_instance)
+	await get_tree().process_frame
+
+# --- Original sync functions (no longer used by async path but kept for potential direct use) ---
 
 func _spawn_player(parent_node: Node, pos: Vector2):
 	var player_instance = PlayerScene.instantiate()
@@ -2249,15 +2622,19 @@ func _spawn_boss(parent_node: Node, pos: Vector2, scene: PackedScene):
 	boss_instance.global_position = pos
 	parent_node.add_child(boss_instance)
 
+# --- Optimized Tile Creation Functions ---
+
 func _create_solid_tile(parent_node: Node, pos: Vector2):
 	var static_body = StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = 2
 	static_body.add_to_group("world")
+	
 	var collision_shape = CollisionShape2D.new()
 	var rectangle_shape = RectangleShape2D.new()
 	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
 	collision_shape.shape = rectangle_shape
+	
 	static_body.add_child(collision_shape)
 	parent_node.add_child(static_body)
 
@@ -2267,12 +2644,14 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2):
 	static_body.collision_layer = 2
 	static_body.add_to_group("world")
 	static_body.add_to_group("oneway_platforms")
+	
 	var collision_shape = CollisionShape2D.new()
 	collision_shape.one_way_collision = true
 	collision_shape.position.y = -20
 	var rectangle_shape = RectangleShape2D.new()
 	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
 	collision_shape.shape = rectangle_shape
+	
 	static_body.add_child(collision_shape)
 	parent_node.add_child(static_body)
 
@@ -2282,10 +2661,12 @@ func _create_hazard_tile(parent_node: Node, pos: Vector2):
 	static_body.collision_layer = 10
 	static_body.add_to_group("world")
 	static_body.add_to_group("hazard")
+	
 	var collision_shape = CollisionShape2D.new()
 	var rectangle_shape = RectangleShape2D.new()
 	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
 	collision_shape.shape = rectangle_shape
+	
 	static_body.add_child(collision_shape)
 	parent_node.add_child(static_body)
 
@@ -2399,7 +2780,10 @@ extends Node
 # --- Scenes ---
 const SCENE_MAIN = "res://src/scenes/main/main.tscn"
 const SCENE_GAME = "res://src/scenes/game/game.tscn"
-const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn" # <-- ADD THIS LINE
+const SCENE_GAME_HUD = "res://src/ui/game_hud/game_hud.tscn"
+const SCENE_GAME_OVER_SCREEN = "res://src/ui/screens/game_over_screen/game_over_screen.tscn" # <-- NEW
+const SCENE_VICTORY_SCREEN = "res://src/ui/screens/victory_screen/victory_screen.tscn" # <-- NEW
+const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn"
 const SCENE_TITLE_SCREEN = "res://src/ui/screens/title_screen/title_screen.tscn"
 const SCENE_OPTIONS_MENU = "res://src/ui/screens/options_menu/options_menu.tscn"
 const SCENE_SOUND_MENU = "res://src/ui/screens/sound_menu/sound_menu.tscn"
@@ -2723,11 +3107,21 @@ color = Color(1, 0.6, 0.6, 1)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_bossbody")
 
-[node name="ShotTimer" type="Timer" parent="."]
-wait_time = 2.0
-autostart = true
+[node name="CooldownTimer" type="Timer" parent="."]
+wait_time = 1.5
+one_shot = true
 
-[connection signal="timeout" from="ShotTimer" to="." method="_on_shot_timer_timeout"]
+[node name="PatrolTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[node name="HitFlashTimer" type="Timer" parent="."]
+wait_time = 0.4
+one_shot = true
+
+[connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
+[connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]
+[connection signal="timeout" from="HitFlashTimer" to="." method="_on_hit_flash_timer_timeout"]
 
 =====================================
 FILE: ./src/entities/boss/base_boss.gd
@@ -2735,48 +3129,157 @@ FILE: ./src/entities/boss/base_boss.gd
 # src/entities/boss/base_boss.gd
 #
 # This is the foundational script for all bosses in the game. It handles
-# shared logic like health, taking damage, gravity, and a basic attack.
+# shared logic like health, taking damage, gravity, and a basic attack
+# cycle managed by a state machine.
 extends CharacterBody2D
 
-# Preload the projectile scene using the safe path from our singleton.
+# --- Signals ---
+signal health_changed(current_health, max_health)
+signal died
+
+# --- Node References ---
+@onready var visual_sprite: ColorRect = $ColorRect
+@onready var cooldown_timer: Timer = $CooldownTimer
+@onready var patrol_timer: Timer = $PatrolTimer
+@onready var hit_flash_timer: Timer = $HitFlashTimer
+
+# --- Preloads ---
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
 
-# --- Boss Stats ---
+# --- State Machine ---
+enum State { IDLE, ATTACK, COOLDOWN, PATROL }
+var state: State = State.IDLE
+
+# --- Boss Stats & Properties ---
 var health = Constants.BOSS_HEALTH
+var player: CharacterBody2D = null
+var facing_direction = -1.0
+var patrol_speed = 100.0
+var original_color: Color
+
+# --- Attack Definitions ---
+enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
+var current_attack: AttackPattern
+
+# --- Engine Functions ---
 
 func _ready():
-	# Add to the "enemy" group so the player's attacks can find it.
 	add_to_group("enemy")
+	original_color = visual_sprite.color # Store the starting color
+	player = get_tree().get_first_node_in_group("player")
+	health_changed.emit(health, Constants.BOSS_HEALTH)
+	change_state(State.COOLDOWN)
 
 func _physics_process(delta):
-	# Apply gravity if the boss is not on the floor.
 	if not is_on_floor():
 		velocity.y += Constants.GRAVITY * delta
-	move_and_slide()
 
-# This function is called by the player's attacks.
+	_update_player_tracking()
+
+	match state:
+		State.IDLE:
+			state_idle(delta)
+		State.ATTACK:
+			state_attack(delta)
+		State.COOLDOWN:
+			state_cooldown(delta)
+		State.PATROL:
+			state_patrol(delta)
+
+	move_and_slide()
+	
+	if state == State.PATROL and is_on_wall():
+		facing_direction *= -1.0
+
+# --- State Functions ---
+
+func state_idle(_delta):
+	velocity.x = 0
+	change_state(State.ATTACK)
+
+func state_attack(_delta):
+	match current_attack:
+		AttackPattern.SINGLE_SHOT:
+			fire_shot_at_player()
+		AttackPattern.VOLLEY_SHOT:
+			var tween = get_tree().create_tween()
+			tween.tween_callback(fire_shot_at_player)
+			tween.tween_interval(0.2)
+			tween.tween_callback(fire_shot_at_player)
+			tween.tween_interval(0.2)
+			tween.tween_callback(fire_shot_at_player)
+	change_state(State.COOLDOWN)
+
+func state_cooldown(_delta):
+	velocity.x = 0
+	pass
+
+func state_patrol(_delta):
+	velocity.x = facing_direction * patrol_speed
+
+# --- Core Logic ---
+
+func _update_player_tracking():
+	if state == State.ATTACK:
+		if is_instance_valid(player):
+			var direction_to_player = player.global_position.x - global_position.x
+			if not is_zero_approx(direction_to_player):
+				facing_direction = sign(direction_to_player)
+	
+	self.scale.x = facing_direction
+	
+func fire_shot_at_player():
+	if not is_instance_valid(player): return
+	var shot_instance = BossShotScene.instantiate()
+	get_parent().add_child(shot_instance)
+	shot_instance.global_position = global_position
+	var direction_to_player = (player.global_position - global_position).normalized()
+	shot_instance.direction = direction_to_player
+	
 func take_damage(damage_amount: int):
 	health -= damage_amount
+	health_changed.emit(health, Constants.BOSS_HEALTH)
+	_trigger_hit_flash()
 	print("Boss took ", damage_amount, " damage! Health remaining: ", health)
 	if health <= 0:
 		die()
 
 func die():
 	print("Boss has been defeated!")
-	# We can add animations and effects here later.
-	queue_free()
+	died.emit()
 
-# --- Attack Logic ---
-# This function is connected to the ShotTimer's timeout signal.
-func _on_shot_timer_timeout():
-	fire_shot()
+func _trigger_hit_flash():
+	visual_sprite.color = Color.DODGER_BLUE
+	hit_flash_timer.start()
 
-func fire_shot():
-	var shot_instance = BossShotScene.instantiate()
-	# Spawn the shot 50 pixels to the left of the boss's center.
-	shot_instance.position = global_position + Vector2(-50, 0)
-	# Add the shot to the main game scene tree.
-	get_parent().add_child(shot_instance)
+func change_state(new_state: State):
+	if state == new_state:
+		return
+	state = new_state
+	print("Boss entering state: ", State.keys()[new_state])
+	match new_state:
+		State.ATTACK:
+			var attack_keys = AttackPattern.keys()
+			var chosen_attack_name = attack_keys[randi() % attack_keys.size()]
+			current_attack = AttackPattern[chosen_attack_name]
+			print("Boss chose attack: ", chosen_attack_name)
+		State.COOLDOWN:
+			cooldown_timer.start()
+		State.PATROL:
+			patrol_timer.start()
+
+# --- Signal Callbacks ---
+
+func _on_hit_flash_timer_timeout():
+	visual_sprite.color = original_color
+
+func _on_cooldown_timer_timeout():
+	if state == State.COOLDOWN:
+		change_state(State.PATROL)
+
+func _on_patrol_timer_timeout():
+	if state == State.PATROL:
+		change_state(State.IDLE)
 
 =====================================
 FILE: ./src/entities/player/player.tscn
@@ -2827,8 +3330,13 @@ one_shot = true
 [node name="HealingTimer" type="Timer" parent="."]
 one_shot = true
 
+[node name="HitFlashTimer" type="Timer" parent="."]
+wait_time = 0.4
+one_shot = true
+
 [connection signal="timeout" from="InvincibilityTimer" to="." method="_on_invincibility_timer_timeout"]
 [connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]
+[connection signal="timeout" from="HitFlashTimer" to="." method="_on_hit_flash_timer_timeout"]
 
 =====================================
 FILE: ./src/entities/player/player.gd
@@ -2839,11 +3347,18 @@ FILE: ./src/entities/player/player.gd
 # to manage its actions like moving, jumping, dashing, and attacking.
 extends CharacterBody2D
 
+# --- Signals ---
+signal health_changed(current_health, max_health)
+signal healing_charges_changed(current_charges)
+signal died
+
 # --- Node References ---
+@onready var visual_sprite: ColorRect = $ColorRect
 @onready var hitbox: Area2D = $Hitbox
 @onready var hurtbox: Area2D = $Hurtbox
 @onready var invincibility_timer: Timer = $InvincibilityTimer
 @onready var healing_timer: Timer = $HealingTimer
+@onready var hit_flash_timer: Timer = $HitFlashTimer
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 
 # --- Preloads ---
@@ -2861,14 +3376,11 @@ var jump_buffer_timer = 0.0
 var wall_coyote_timer = 0.0
 var knockback_timer = 0.0
 var is_invincible = false
+var is_dash_invincible = false # NEW: Invincibility specific to the dash state.
 var facing_direction = 1
 var last_wall_normal = Vector2.ZERO
-
-# --- NEW: Healing & Determination ---
 var determination_counter = 0
 var healing_charges = 0
-
-# Attack and Dash Timers
 var dash_duration_timer = 0.0
 var dash_cooldown_timer = 0.0
 var attack_duration_timer = 0.0
@@ -2877,19 +3389,20 @@ var is_charging = false
 var charge_timer = 0.0
 var is_pogo_attack = false
 var can_dash = true
-
+var original_color: Color
 
 # --- Engine Functions ---
 
 func _ready():
 	add_to_group("player")
+	original_color = visual_sprite.color
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-
+	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
+	healing_charges_changed.emit(healing_charges)
 
 func _physics_process(delta):
-	# --- Update Timers ---
 	coyote_timer = max(0.0, coyote_timer - delta)
 	jump_buffer_timer = max(0.0, jump_buffer_timer - delta)
 	dash_cooldown_timer = max(0.0, dash_cooldown_timer - delta)
@@ -2898,11 +3411,7 @@ func _physics_process(delta):
 	attack_cooldown_timer = max(0.0, attack_cooldown_timer - delta)
 	knockback_timer = max(0.0, knockback_timer - delta)
 	wall_coyote_timer = max(0.0, wall_coyote_timer - delta)
-
-	# --- Handle Global Inputs ---
 	_handle_input(delta)
-
-	# --- State Machine Logic (calculates velocity) ---
 	match state:
 		State.MOVE: state_move(delta)
 		State.JUMP: state_jump(delta)
@@ -2912,23 +3421,16 @@ func _physics_process(delta):
 		State.ATTACK: state_attack(delta)
 		State.HURT: state_hurt(delta)
 		State.HEAL: state_heal()
-
 	move_and_slide()
-	
 	_check_for_contact_damage()
-	
 	if is_on_wall():
 		wall_coyote_timer = Constants.WALL_COYOTE_TIME
 		last_wall_normal = get_wall_normal()
 
-
 func _handle_input(delta):
 	if Input.is_action_just_pressed("ui_jump"):
 		jump_buffer_timer = Constants.JUMP_BUFFER
-
-	# Only check for attacks if not already in an uninterruptible state.
 	if state in [State.ATTACK, State.HURT, State.HEAL]: return
-	
 	if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
 		is_charging = true; charge_timer = 0.0
 	if is_charging and Input.is_action_pressed("ui_attack"):
@@ -2942,80 +3444,51 @@ func _handle_input(delta):
 # --- State Functions ---
 
 func state_move(delta):
-	# Handle Drop-Through Platforms
 	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
 		if get_last_slide_collision():
 			var floor_collider = get_last_slide_collision().get_collider()
 			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
-				position.y += 2
-				jump_buffer_timer = 0
-				change_state(State.FALL)
-				return
-
+				position.y += 2; jump_buffer_timer = 0; change_state(State.FALL); return
 	coyote_timer = Constants.COYOTE_TIME
-	
-	var is_holding_heal = Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump")
-	if is_holding_heal and healing_charges > 0:
-		change_state(State.HEAL)
-		return
-		
+	if Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and healing_charges > 0:
+		change_state(State.HEAL); return
 	_apply_horizontal_movement()
 	velocity.y += Constants.GRAVITY * delta
 	if not is_on_floor(): change_state(State.FALL)
 	if jump_buffer_timer > 0: _perform_jump()
-
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
-		change_state(State.DASH)
+	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0: change_state(State.DASH)
 
 func state_jump(delta):
-	_apply_horizontal_movement()
-	_apply_gravity(delta)
-	_check_for_landing()
-	_check_for_wall_slide()
-
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
-		change_state(State.DASH)
-	
-	if jump_buffer_timer > 0 and air_jumps_left > 0:
-		_perform_air_jump()
+	_apply_horizontal_movement(); _apply_gravity(delta); _check_for_landing(); _check_for_wall_slide()
+	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0: change_state(State.DASH)
+	if jump_buffer_timer > 0 and air_jumps_left > 0: _perform_air_jump()
 
 func state_fall(delta):
-	_apply_horizontal_movement()
-	_apply_gravity(delta)
-	_check_for_landing()
-	_check_for_wall_slide()
-
+	_apply_horizontal_movement(); _apply_gravity(delta); _check_for_landing(); _check_for_wall_slide()
 	if jump_buffer_timer > 0:
 		if wall_coyote_timer > 0: _perform_wall_jump()
 		elif coyote_timer > 0: _perform_jump()
 		elif air_jumps_left > 0: _perform_air_jump()
-		
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
-		change_state(State.DASH)
+	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0: change_state(State.DASH)
 
 func state_wall_slide():
 	velocity.y = min(velocity.y + Constants.GRAVITY * get_physics_process_delta_time(), Constants.WALL_SLIDE_SPEED)
 	facing_direction = -last_wall_normal.x
-
-	if jump_buffer_timer > 0:
-		_perform_wall_jump(); return
-
-	if Input.get_axis("ui_left", "ui_right") * -last_wall_normal.x < 0.8:
-		change_state(State.FALL)
-	if wall_coyote_timer <= 0:
-		change_state(State.FALL)
-	if is_on_floor():
-		change_state(State.MOVE)
+	if jump_buffer_timer > 0: _perform_wall_jump(); return
+	if Input.get_axis("ui_left", "ui_right") * -last_wall_normal.x < 0.8: change_state(State.FALL)
+	if wall_coyote_timer <= 0: change_state(State.FALL)
+	if is_on_floor(): change_state(State.MOVE)
 
 func state_dash():
 	velocity = _get_dash_direction() * Constants.DASH_SPEED
-	if dash_duration_timer <= 0: velocity = Vector2.ZERO; change_state(State.FALL)
+	if dash_duration_timer <= 0:
+		is_dash_invincible = false # Turn off invincibility when dash ends.
+		velocity = Vector2.ZERO
+		change_state(State.FALL)
 
 func state_attack(delta):
 	velocity = velocity.move_toward(Vector2.ZERO, Constants.PLAYER_ATTACK_FRICTION * delta)
-	if attack_duration_timer <= 0:
-		hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false
-		change_state(State.FALL)
+	if attack_duration_timer <= 0: hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false; change_state(State.FALL)
 
 func state_hurt(delta):
 	velocity.y += Constants.GRAVITY * delta
@@ -3023,82 +3496,49 @@ func state_hurt(delta):
 
 func state_heal():
 	velocity = Vector2.ZERO
-	
-	var is_holding_heal = Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump")
-	var moved = not is_zero_approx(Input.get_axis("ui_left", "ui_right"))
-	
-	if not is_holding_heal or moved or not is_on_floor():
-		_cancel_heal()
-		change_state(State.MOVE)
+	if not Input.is_action_pressed("ui_down") or not Input.is_action_pressed("ui_jump") or not is_zero_approx(Input.get_axis("ui_left", "ui_right")) or not is_on_floor():
+		_cancel_heal(); change_state(State.MOVE)
 
 # --- State Change & Helper Functions ---
 
 func change_state(new_state: State):
 	if state == new_state: return
-	
-	if state == State.WALL_SLIDE:
-		if last_wall_normal != Vector2.ZERO:
-			facing_direction = last_wall_normal.x
-	
+	if state == State.WALL_SLIDE and last_wall_normal != Vector2.ZERO: facing_direction = last_wall_normal.x
 	state = new_state
 	match state:
 		State.JUMP:
 			jump_buffer_timer = 0; coyote_timer = 0
 			velocity.y = -Constants.PLAYER_JUMP_FORCE
 		State.DASH:
+			is_dash_invincible = true # Turn on invincibility when dash begins.
 			can_dash = false
 			dash_duration_timer = Constants.DASH_DURATION
 			dash_cooldown_timer = Constants.DASH_COOLDOWN
-		State.ATTACK:
-			_perform_melee_attack()
-		State.WALL_SLIDE:
-			can_dash = true
-			air_jumps_left = Constants.MAX_AIR_JUMPS
+		State.ATTACK: _perform_melee_attack()
+		State.WALL_SLIDE: can_dash = true; air_jumps_left = Constants.MAX_AIR_JUMPS
 		State.HURT:
-			is_charging = false
-			_cancel_heal()
+			is_charging = false; _cancel_heal()
 			knockback_timer = Constants.KNOCKBACK_DURATION
-		State.HEAL:
-			healing_timer.start(Constants.PLAYER_HEAL_DURATION)
-			print("Healing started...")
-
+		State.HEAL: healing_timer.start(Constants.PLAYER_HEAL_DURATION); print("Healing started...")
 
 func _apply_horizontal_movement():
 	if state in [State.DASH, State.HURT, State.ATTACK, State.WALL_SLIDE, State.HEAL]: return
-	var input_direction = Input.get_axis("ui_left", "ui_right")
-	velocity.x = input_direction * Constants.PLAYER_SPEED
-	if input_direction != 0: facing_direction = sign(input_direction)
+	velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
+	if Input.get_axis("ui_left", "ui_right") != 0: facing_direction = sign(Input.get_axis("ui_left", "ui_right"))
 
-# --- MODIFIED FUNCTION ---
 func _apply_gravity(delta):
-	# Apply variable jump height
-	if velocity.y < 0 and Input.is_action_just_released("ui_jump"):
-		velocity.y *= Constants.JUMP_RELEASE_DAMPENER
-	
-	# Apply fast-fall gravity
+	if velocity.y < 0 and Input.is_action_just_released("ui_jump"): velocity.y *= Constants.JUMP_RELEASE_DAMPENER
 	var gravity_multiplier = 1.0
-	if Input.is_action_pressed("ui_down"):
-		gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
-	
+	if Input.is_action_pressed("ui_down"): gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
 	velocity.y += Constants.GRAVITY * gravity_multiplier * delta
-	
-	# Transition from JUMP to FALL state
-	if state == State.JUMP and velocity.y > 0.0:
-		change_state(State.FALL)
+	if state == State.JUMP and velocity.y > 0.0: change_state(State.FALL)
 
 func _check_for_landing():
-	if is_on_floor() and state in [State.FALL, State.JUMP]:
-		can_dash = true
-		air_jumps_left = Constants.MAX_AIR_JUMPS
-		change_state(State.MOVE)
+	if is_on_floor() and state in [State.FALL, State.JUMP]: can_dash = true; air_jumps_left = Constants.MAX_AIR_JUMPS; change_state(State.MOVE)
 
 func _check_for_wall_slide():
-	if state != State.JUMP and state != State.FALL:
-		return
-		
-	var input_dir = Input.get_axis("ui_left", "ui_right")
-	if wall_coyote_timer > 0 and not is_on_floor() and input_dir != 0 and sign(input_dir) == -last_wall_normal.x:
-		change_state(State.WALL_SLIDE)
+	if state != State.JUMP and state != State.FALL: return
+	if wall_coyote_timer > 0 and not is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -last_wall_normal.x: change_state(State.WALL_SLIDE)
 
 func _get_dash_direction():
 	if Input.is_action_pressed("ui_up"): return Vector2.UP
@@ -3107,87 +3547,43 @@ func _get_dash_direction():
 
 # --- Action Functions ---
 
-func _perform_jump():
-	change_state(State.JUMP)
+func _perform_jump(): change_state(State.JUMP)
 
-func _perform_air_jump():
-	velocity.y = -Constants.PLAYER_JUMP_FORCE
-	air_jumps_left -= 1
-	jump_buffer_timer = 0
+func _perform_air_jump(): velocity.y = -Constants.PLAYER_JUMP_FORCE; air_jumps_left -= 1; jump_buffer_timer = 0
 
-func _perform_wall_jump():
-	velocity.y = -Constants.WALL_JUMP_FORCE_Y
-	velocity.x = last_wall_normal.x * Constants.WALL_JUMP_FORCE_X
-	state = State.JUMP
-	jump_buffer_timer = 0
-	coyote_timer = 0
-	wall_coyote_timer = 0
+func _perform_wall_jump(): velocity.y = -Constants.WALL_JUMP_FORCE_Y; velocity.x = last_wall_normal.x * Constants.WALL_JUMP_FORCE_X; state = State.JUMP; jump_buffer_timer = 0; coyote_timer = 0; wall_coyote_timer = 0
 
 func _perform_melee_attack():
-	attack_duration_timer = Constants.ATTACK_DURATION
-	attack_cooldown_timer = Constants.ATTACK_COOLDOWN
-	hitbox_shape.disabled = false
-	is_pogo_attack = false
+	attack_duration_timer = Constants.ATTACK_DURATION; attack_cooldown_timer = Constants.ATTACK_COOLDOWN; hitbox_shape.disabled = false; is_pogo_attack = false
 	if Input.is_action_pressed("ui_down"):
 		is_pogo_attack = true; hitbox.position = Vector2(0, 60)
-		if _check_for_immediate_pogo():
-			return 
-	elif Input.is_action_pressed("ui_up"):
-		hitbox.position = Vector2(0, -60)
-	else:
-		hitbox.position = Vector2(facing_direction * 60, 0)
+		if _check_for_immediate_pogo(): return 
+	elif Input.is_action_pressed("ui_up"): hitbox.position = Vector2(0, -60)
+	else: hitbox.position = Vector2(facing_direction * 60, 0)
 
 func _fire_shot():
-	attack_cooldown_timer = Constants.ATTACK_COOLDOWN
-	var shot_direction = Vector2(facing_direction, 0)
+	attack_cooldown_timer = Constants.ATTACK_COOLDOWN; var shot_direction = Vector2(facing_direction, 0)
 	if Input.is_action_pressed("ui_up"): shot_direction = Vector2.UP
 	elif Input.is_action_pressed("ui_down"): shot_direction = Vector2.DOWN
-	var shot_instance = PlayerShotScene.instantiate()
-	shot_instance.direction = shot_direction
-	shot_instance.position = global_position + (shot_direction * 60)
-	get_parent().add_child(shot_instance)
+	var shot_instance = PlayerShotScene.instantiate(); shot_instance.direction = shot_direction; shot_instance.position = global_position + (shot_direction * 60); get_parent().add_child(shot_instance)
 
 func _check_for_immediate_pogo() -> bool:
-	var space_state = get_world_2d().direct_space_state
-	var hitbox_shape_res = hitbox_shape.shape
-	
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = hitbox_shape_res
-	query.transform = hitbox.global_transform
-	query.collision_mask = 14
-	
-	var results = space_state.intersect_shape(query)
-	
-	if not results.is_empty():
-		_trigger_pogo(results[0].collider)
-		return true 
-	
+	var query = PhysicsShapeQueryParameters2D.new(); query.shape = hitbox_shape.shape; query.transform = hitbox.global_transform; query.collision_mask = 14
+	var results = get_world_2d().direct_space_state.intersect_shape(query)
+	if not results.is_empty(): _trigger_pogo(results[0].collider); return true 
 	return false 
 
 func _trigger_pogo(pogo_target):
-	hitbox_shape.call_deferred("set", "disabled", true) 
-	is_pogo_attack = false 
-	
-	can_dash = true
-	velocity.y = -Constants.POGO_FORCE
-	air_jumps_left = Constants.MAX_AIR_JUMPS
-	dash_duration_timer = 0
-	change_state(State.FALL) 
-	
+	hitbox_shape.call_deferred("set", "disabled", true); is_pogo_attack = false; can_dash = true; velocity.y = -Constants.POGO_FORCE; air_jumps_left = Constants.MAX_AIR_JUMPS; dash_duration_timer = 0; change_state(State.FALL) 
 	if pogo_target:
-		if pogo_target.has_method("take_damage"):
-			pogo_target.take_damage(1)
-			_on_damage_dealt()
-		elif pogo_target.is_in_group("enemy_projectile"):
-			pogo_target.queue_free()
+		if pogo_target.has_method("take_damage"): pogo_target.take_damage(1); _on_damage_dealt()
+		elif pogo_target.is_in_group("enemy_projectile"): pogo_target.queue_free()
 
 func take_damage(damage_amount: int, damage_source = null):
-	if is_invincible: return
-	health -= damage_amount
+	if is_invincible or is_dash_invincible: return
+	health -= damage_amount; health_changed.emit(health, Constants.PLAYER_MAX_HEALTH); _trigger_hit_flash()
 	print("Player took %s damage! Health: %s" % [damage_amount, health])
-	is_invincible = true
-	invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION)
-	change_state(State.HURT)
+	is_invincible = true; invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION); change_state(State.HURT)
 	if damage_source:
 		var knockback_direction = (global_position - damage_source.global_position).normalized()
 		var knockback_strength = Constants.KNOCKBACK_SPEED
@@ -3195,69 +3591,48 @@ func take_damage(damage_amount: int, damage_source = null):
 		velocity = (knockback_direction + Vector2.UP * 0.5).normalized() * knockback_strength
 	if health <= 0: die()
 
-func die():
-	print("Player has been defeated! Reloading stage.")
-	get_tree().call_deferred("reload_current_scene")
-
+func die(): print("Player has been defeated!"); died.emit()
+	
 func _check_for_contact_damage():
 	for i in range(get_slide_collision_count()):
-		var collision = get_slide_collision(i)
-		if not collision: continue
-
-		var body_hit = collision.get_collider()
-		if not body_hit: continue
-
-		if body_hit.is_in_group("enemy") or body_hit.is_in_group("hazard"):
-			take_damage(1, body_hit)
-			break
+		var collision = get_slide_collision(i); if not collision: continue
+		var body_hit = collision.get_collider(); if not body_hit: continue
+		if body_hit.is_in_group("enemy") or body_hit.is_in_group("hazard"): take_damage(1, body_hit); break
 
 func _on_damage_dealt():
-	if healing_charges >= Constants.PLAYER_MAX_HEALING_CHARGES:
-		return
-
-	determination_counter += 1
-	print("Determination: %d/%d" % [determination_counter, Constants.DETERMINATION_PER_CHARGE])
+	if healing_charges >= Constants.PLAYER_MAX_HEALING_CHARGES: return
+	determination_counter += 1; print("Determination: %d/%d" % [determination_counter, Constants.DETERMINATION_PER_CHARGE])
 	if determination_counter >= Constants.DETERMINATION_PER_CHARGE:
-		determination_counter = 0
-		healing_charges += 1
-		print("Healing charge gained! Total charges: %d" % healing_charges)
+		determination_counter = 0; healing_charges += 1; healing_charges_changed.emit(healing_charges); print("Healing charge gained! Total charges: %d" % healing_charges)
 
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
-	healing_timer.stop()
-	print("Healing canceled.")
-
+	healing_timer.stop(); print("Healing canceled.")
+	
+func _trigger_hit_flash():
+	visual_sprite.color = Color.DODGER_BLUE
+	hit_flash_timer.start()
 
 # --- Signal Callbacks ---
 
+func _on_hit_flash_timer_timeout(): visual_sprite.color = original_color
+
 func _on_hitbox_body_entered(body):
-	if is_pogo_attack: 
-		_trigger_pogo(body)
-	elif body.is_in_group("enemy"):
-		body.take_damage(1)
-		_on_damage_dealt()
-		hitbox_shape.call_deferred("set", "disabled", true)
+	if is_pogo_attack: _trigger_pogo(body)
+	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt(); hitbox_shape.call_deferred("set", "disabled", true)
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		if is_pogo_attack:
-			_trigger_pogo(area)
-		else:
-			area.queue_free()
-			hitbox_shape.call_deferred("set", "disabled", true)
+		if is_pogo_attack: _trigger_pogo(area)
+		else: area.queue_free(); hitbox_shape.call_deferred("set", "disabled", true)
 
 func _on_hurtbox_area_entered(area):
-	if area.is_in_group("enemy_projectile"):
-		take_damage(1, area); area.queue_free()
+	if area.is_in_group("enemy_projectile"): take_damage(1, area); area.queue_free()
 
-func _on_invincibility_timer_timeout():
-	is_invincible = false
+func _on_invincibility_timer_timeout(): is_invincible = false
 
 func _on_healing_timer_timeout():
 	if state == State.HEAL:
-		health = min(health + 1, Constants.PLAYER_MAX_HEALTH)
-		healing_charges -= 1
-		print("Healing successful! Health: %d. Charges left: %d" % [health, healing_charges])
-		change_state(State.MOVE)
-
+		health = min(health + 1, Constants.PLAYER_MAX_HEALTH); healing_charges -= 1; health_changed.emit(health, Constants.PLAYER_MAX_HEALTH); healing_charges_changed.emit(healing_charges)
+		print("Healing successful! Health: %d. Charges left: %d" % [health, healing_charges]); change_state(State.MOVE)
 

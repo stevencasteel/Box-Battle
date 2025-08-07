@@ -30,24 +30,27 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   □  [BUG-F006] Significant stutter/hitch occurred on arena load.            ║
-║      ░  FIXED: 2025-08-06                                                    ║
+║      ░  FIXED: 2025-08-07                                                    ║
 ║      ░  SOLUTION: Replaced the synchronous, blocking level generation with a ║
 ║      ░  new asynchronous system in `ArenaBuilder.gd`. The `build_level_async`║
 ║      ░  function now creates the level in batches, using `await` to yield    ║
 ║      ░  control back to the engine between batches. This prevents the main   ║
-║      ░  thread from freezing, resulting in a smooth loading sequence.        ║
+║      ░  thread from freezing, resulting in a smooth loading sequence managed ║
+║      ░  by a new `LoadingScreen`.                                            ║
 ║                                                                              ║
-║   □  [BUG-F005] Player death caused a black screen instead of reloading.     ║
-║      ░  FIXED: 2025-08-06                                                    ║
-║      ░  SOLUTION: The `game.gd` script was made robust to handle both        ║
-║      ░  initial loads (using the pre-built level from `GameManager`) and     ║
-║      ░  reloads (by calling `ArenaBuilder.build_level()` as a fallback).     ║
+║   □  [BUG-F005] Player death caused a physics crash.                         ║
+║      ░  FIXED: 2025-08-07                                                    ║
+║      ░  SOLUTION: Scene changes in `game.gd`'s `_on_player_died` and         ║
+║      ░  `_on_boss_died` functions were changed to `get_tree().call_deferred()`.║
+║      ░  This prevents the engine from trying to delete a physics body while  ║
+║      ░  it is still processing a physics callback.                           ║
 ║                                                                              ║
-║   □  [BUG-F004] Standard melee attacks did not destroy enemy projectiles.    ║
-║      ░  FIXED: 2025-08-06                                                    ║
-║      ░  SOLUTION: The `_on_hitbox_area_entered` function logic was           ║
-║      ░  corrected to handle non-pogo attack collisions with projectiles,     ║
-║      ░  allowing forward and upward swings to destroy them.                  ║
+║   □  [BUG-F004] Hazard tiles did not deal contact damage.                    ║
+║      ░  FIXED: 2025-08-07                                                    ║
+║      ░  SOLUTION: Corrected the implementation in `ArenaBuilder.gd`. The     ║
+║      ░  `_create_hazard_tile` function now creates a single `StaticBody2D`   ║
+║      ░  that exists on both the "world" and "hazard" collision layers and is ║
+║      ░  part of both corresponding groups, ensuring it's both solid and damaging.║
 ║                                                                              ║
 ║   □  [BUG-F003] Drop-through platforms ("-") were not functioning.           ║
 ║      ░  FIXED: 2025-08-06                                                    ║

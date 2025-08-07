@@ -24,8 +24,7 @@ func _ready():
 	player_node = get_tree().get_first_node_in_group("player")
 	boss_node = get_tree().get_first_node_in_group("enemy")
 
-	# --- LOGIC & WIRING FIX ---
-	# Ensure the correct signals are connected to the correct handler functions.
+	# --- Connect signals to the correct handler functions ---
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
 	if is_instance_valid(boss_node):
@@ -35,11 +34,13 @@ func _ready():
 
 func _on_player_died():
 	print("Game Manager: Player death detected. Initiating Game Over.")
-	get_tree().change_scene_to_file(AssetPaths.SCENE_GAME_OVER_SCREEN)
+	# FIX: Defer the scene change to prevent physics crash.
+	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_GAME_OVER_SCREEN)
 
 func _on_boss_died():
 	print("Game Manager: Boss death detected. Initiating Victory.")
-	get_tree().change_scene_to_file(AssetPaths.SCENE_VICTORY_SCREEN)
+	# FIX: Defer the scene change to prevent physics crash.
+	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_VICTORY_SCREEN)
 
 
 func _exit_tree():
