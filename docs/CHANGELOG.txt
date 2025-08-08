@@ -16,6 +16,10 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored the ArenaBuilder to strictly adhere to the Single        ║
+║      ░   Responsibility Principle. Its duties have been decoupled into new,  ║
+║      ░   focused classes: `LevelParser`, `TerrainBuilder`, and              ║
+║      ░   `EncounterDirector`. ArenaBuilder now acts as a high-level coordinator.║
 ║      ░ ■ Refactored the BaseBoss node to use the State Pattern, mirroring the║
 ║      ░   Player's architecture for improved scalability and maintainability. ║
 ║      ░ ■ Refactored the Player node to use the State Pattern. All state logic║

@@ -51,7 +51,7 @@
 ║      ░       states, just like the player. This will make adding new attack  ║
 ║      ░       patterns or defensive phases as simple as adding a new state file.║
 ║                                                                              ║
-║   □  Refactor ArenaBuilder using the Single Responsibility Principle (SRP)   ║
+║   ■  Refactor ArenaBuilder using the Single Responsibility Principle (SRP)   ║
 ║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs (parsing, building║
 ║      ░  terrain, spawning entities). SRP dictates that a script should have  ║
 ║      ░  one reason to change. Separating these roles makes the code more     ║

@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Thu Aug  7 18:37:53 CDT 2025
+Generated on: Fri Aug  8 09:39:15 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -161,7 +161,7 @@ FILE: ./docs/TODO.txt
 ║      ░       `current_state`. Its `_physics_process` will simplify to just one║
 ║      ░       line: `current_state.process_physics(delta)`.                   ║
 ║                                                                              ║
-║   □  Refactor Base Boss to use the State Pattern                             ║
+║   ■  Refactor Base Boss to use the State Pattern                             ║
 ║      ░  WHY: For the exact same reasons as the Player. As we add our "kitchen║
 ║      ░  sink" of advanced boss mechanics, this pattern is essential to       ║
 ║      ░  prevent `base_boss.gd` from becoming unmanageable.                   ║
@@ -847,6 +847,8 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored the BaseBoss node to use the State Pattern, mirroring the║
+║      ░   Player's architecture for improved scalability and maintainability. ║
 ║      ░ ■ Refactored the Player node to use the State Pattern. All state logic║
 ║      ░   (Move, Fall, Dash, etc.) has been decoupled into individual classes ║
 ║      ░   in `src/entities/player/states/` for improved scalability and      ║
@@ -3268,24 +3270,17 @@ one_shot = true
 FILE: ./src/entities/boss/states/state_boss_idle.gd
 =====================================
 # src/entities/boss/states/state_boss_idle.gd
+# The state for when the boss is pausing before an attack.
 extends "res://src/entities/boss/states/state_boss_base.gd"
-
 class_name BossStateIdle
 
-func enter(msg := {}) -> void:
-	boss.velocity = Vector2.ZERO
-	if boss.has_method("play_idle_animation"):
-		boss.play_idle_animation()
+func enter(_msg := {}) -> void:
+	boss.velocity.x = 0
+	boss.change_state(boss.State.ATTACK)
 
-func process_physics(delta: float) -> void:
-	# Original IDLE logic from old base_boss.gd:
-	# Boss waits and checks if player is in range to start attacking
-	if boss.can_see_player():
-		boss.change_state("attack")
-	else:
-		# Optionally start patrolling after some idle time
-		if boss.should_patrol():
-			boss.change_state("patrol")
+func process_physics(_delta: float) -> void:
+	# This state is instantaneous, so it does nothing in the physics process.
+	pass
 
 
 =====================================
@@ -3294,17 +3289,15 @@ FILE: ./src/entities/boss/states/state_boss_base.gd
 # src/entities/boss/states/state_boss_base.gd
 # Base class / contract for all Boss states.
 # Modeled after src/entities/player/states/state_base.gd
-
 class_name BossState
 
 var boss: CharacterBody2D
 
 func _init(boss_node: CharacterBody2D) -> void:
-	# Each state receives the boss instance (the "Context") on construction.
 	self.boss = boss_node
 
-# Called when this state becomes active. Optional message (e.g., reason/params).
-func enter(msg := {}) -> void:
+# Called when this state becomes active.
+func enter(_msg := {}) -> void:
 	pass
 
 # Called when this state is being replaced by another state.
@@ -3312,11 +3305,11 @@ func exit() -> void:
 	pass
 
 # Main per-physics-frame update for the state.
-func process_physics(delta: float) -> void:
+func process_physics(_delta: float) -> void:
 	pass
 
 # Optional input handling for state-specific input semantics.
-func process_input(event: InputEvent) -> void:
+func process_input(_event: InputEvent) -> void:
 	pass
 
 
@@ -3324,159 +3317,193 @@ func process_input(event: InputEvent) -> void:
 FILE: ./src/entities/boss/states/state_boss_cooldown.gd
 =====================================
 # src/entities/boss/states/state_boss_cooldown.gd
+# The state for when the boss is waiting after an attack.
 extends "res://src/entities/boss/states/state_boss_base.gd"
-
 class_name BossStateCooldown
 
-var cooldown_timer := 0.0
+func enter(_msg := {}) -> void:
+	boss.velocity.x = 0
+	boss.cooldown_timer.start()
 
-func enter(msg := {}) -> void:
-	# Set cooldown duration (from message or default)
-	cooldown_timer = msg.get("duration", boss.attack_cooldown_time)
-	if boss.has_method("play_cooldown_animation"):
-		boss.play_cooldown_animation()
-	boss.velocity = Vector2.ZERO
-
-func process_physics(delta: float) -> void:
-	cooldown_timer -= delta
-	if cooldown_timer <= 0.0:
-		# Return to patrol or idle after cooldown
-		if boss.should_patrol():
-			boss.change_state("patrol")
-		else:
-			boss.change_state("idle")
+func process_physics(_delta: float) -> void:
+	# The state itself does nothing; it's just waiting for the timer.
+	pass
 
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_attack.gd
 =====================================
 # src/entities/boss/states/state_boss_attack.gd
+# This state executes an attack and immediately transitions to Cooldown.
 extends "res://src/entities/boss/states/state_boss_base.gd"
-
 class_name BossStateAttack
 
-var attack_timer := 0.0
+func enter(_msg := {}) -> void:
+	var attack_keys = boss.AttackPattern.keys()
+	var chosen_attack_name = attack_keys[randi() % attack_keys.size()]
+	boss.current_attack = boss.AttackPattern[chosen_attack_name]
+	print("Boss chose attack: ", chosen_attack_name)
+	
+	match boss.current_attack:
+		boss.AttackPattern.SINGLE_SHOT:
+			boss.fire_shot_at_player()
+		boss.AttackPattern.VOLLEY_SHOT:
+			var tween = boss.get_tree().create_tween()
+			tween.tween_callback(boss.fire_shot_at_player)
+			tween.tween_interval(0.2)
+			tween.tween_callback(boss.fire_shot_at_player)
+			tween.tween_interval(0.2)
+			tween.tween_callback(boss.fire_shot_at_player)
+			
+	boss.change_state(boss.State.COOLDOWN)
 
-func enter(msg := {}) -> void:
-	# Reset attack timer and play animation
-	attack_timer = 0.0
-	if boss.has_method("play_attack_animation"):
-		boss.play_attack_animation()
-	# Windup if applicable
-	if boss.has_method("start_attack_windup"):
-		boss.start_attack_windup()
-
-func process_physics(delta: float) -> void:
-	attack_timer += delta
-
-	# Fire projectile / perform attack at right moment
-	if boss.has_method("perform_attack_action"):
-		boss.perform_attack_action(delta)
-
-	# When attack finished, switch to cooldown
-	if boss.is_attack_finished():
-		boss.change_state("cooldown", {"duration": boss.attack_cooldown_time})
+func process_physics(_delta: float) -> void:
+	# This state is instantaneous, so it does nothing in the physics process.
+	pass
 
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_patrol.gd
 =====================================
 # src/entities/boss/states/state_boss_patrol.gd
+# The state responsible for the boss's back-and-forth movement.
 extends "res://src/entities/boss/states/state_boss_base.gd"
-
 class_name BossStatePatrol
 
-func enter(msg := {}) -> void:
-	# Optional: set patrol path or animation
-	if boss.has_method("play_patrol_animation"):
-		boss.play_patrol_animation()
+func enter(_msg := {}) -> void:
+	boss.patrol_timer.start()
 
-func process_physics(delta: float) -> void:
-	# --- Original PATROL logic from base_boss.gd goes here ---
-	# Example placeholder:
-	boss.move_along_patrol_path(delta)
-
-	# Transition to attack if player spotted
-	if boss.can_see_player():
-		boss.change_state("attack")
+func process_physics(_delta: float) -> void:
+	boss.velocity.x = boss.facing_direction * boss.patrol_speed
 
 
 =====================================
 FILE: ./src/entities/boss/base_boss.gd
 =====================================
 # src/entities/boss/base_boss.gd
+# This is the "Context" script for the Boss State Machine. It holds all
+# shared data and delegates all per-frame logic to its current state object.
 extends CharacterBody2D
 
-# State machine
-var states: Dictionary = {}
+# --- Signals ---
+signal health_changed(current_health, max_health)
+signal died
+
+# --- State Machine Enum (Globally Accessible as BaseBoss.State) ---
+enum State { IDLE, ATTACK, COOLDOWN, PATROL }
+enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
+
+# --- Node References ---
+@onready var visual_sprite: ColorRect = $ColorRect
+@onready var cooldown_timer: Timer = $CooldownTimer
+@onready var patrol_timer: Timer = $PatrolTimer
+@onready var hit_flash_timer: Timer = $HitFlashTimer
+
+# --- Preloads ---
+const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
+# REFINEMENT: Removed preload constants for states as they are now global classes.
+
+# --- State Machine ---
+var states: Dictionary
 var current_state: BossState
 
-# Boss properties (replace with your existing variables)
-var health := 100
-var speed := 100
+# --- Boss Stats & Properties (Shared Data) ---
+var health = Constants.BOSS_HEALTH
+var player: CharacterBody2D = null
+var facing_direction = -1.0
+var patrol_speed = 100.0
+var original_color: Color
+var current_attack: AttackPattern
 
-func _ready() -> void:
-	# Load states and pass self as context
+# --- Engine Functions ---
+func _ready():
+	add_to_group("enemy")
+	original_color = visual_sprite.color
+	player = get_tree().get_first_node_in_group("player")
+	
+	# REFINEMENT: Initialize states using their global class names.
 	states = {
-		"idle": BossStateIdle.new(self),
-		"attack": BossStateAttack.new(self),
-		"cooldown": BossStateCooldown.new(self),
-		"patrol": BossStatePatrol.new(self)
+		State.IDLE: BossStateIdle.new(self),
+		State.ATTACK: BossStateAttack.new(self),
+		State.COOLDOWN: BossStateCooldown.new(self),
+		State.PATROL: BossStatePatrol.new(self),
 	}
+	
+	change_state(State.COOLDOWN)
+	health_changed.emit(health, Constants.BOSS_HEALTH)
 
-	change_state("idle")
+func _physics_process(delta):
+	if not is_on_floor():
+		velocity.y += Constants.GRAVITY * delta
 
-func change_state(new_state_name: String, msg := {}) -> void:
-	if current_state:
-		current_state.exit()
-	current_state = states.get(new_state_name)
-	if not current_state:
-		push_error("Boss state '%s' not found!" % new_state_name)
-		return
-	current_state.enter(msg)
-
-func _physics_process(delta: float) -> void:
 	if current_state:
 		current_state.process_physics(delta)
+	
+	move_and_slide()
+	
+	if states.find_key(current_state) == State.PATROL and is_on_wall():
+		facing_direction *= -1.0
 
-func _unhandled_input(event: InputEvent) -> void:
+# --- State Management ---
+func change_state(new_state_key: State):
+	if not states.has(new_state_key):
+		print("Boss state key not found: ", new_state_key)
+		return
+	if current_state == states[new_state_key]:
+		return
+		
 	if current_state:
-		current_state.process_input(event)
+		current_state.exit()
+	
+	current_state = states[new_state_key]
+	print("Boss entering state: ", State.keys()[new_state_key])
+	current_state.enter()
 
-# ------------------------------------------------------------------
-# Methods used by states (stub these with your existing logic)
-# ------------------------------------------------------------------
+# --- Helper Functions (used by states) ---
+func _update_player_tracking():
+	if is_instance_valid(player):
+		var direction_to_player = player.global_position.x - global_position.x
+		if not is_zero_approx(direction_to_player):
+			facing_direction = sign(direction_to_player)
+	self.scale.x = facing_direction
+	
+func fire_shot_at_player():
+	if not is_instance_valid(player): return
+	_update_player_tracking()
+	var shot_instance = BossShotScene.instantiate()
+	get_parent().add_child(shot_instance)
+	shot_instance.global_position = global_position
+	var direction_to_player = (player.global_position - global_position).normalized()
+	shot_instance.direction = direction_to_player
+	
+func take_damage(damage_amount: int):
+	health -= damage_amount
+	health_changed.emit(health, Constants.BOSS_HEALTH)
+	_trigger_hit_flash()
+	print("Boss took ", damage_amount, " damage! Health remaining: ", health)
+	if health <= 0:
+		die()
 
-func can_see_player() -> bool:
-	# Replace with detection logic from original match case
-	return false
+func die():
+	print("Boss has been defeated!")
+	died.emit()
+	queue_free()
 
-func is_attack_finished() -> bool:
-	# Replace with original attack completion logic
-	return true
+func _trigger_hit_flash():
+	visual_sprite.color = Color.DODGER_BLUE
+	hit_flash_timer.start()
 
-func should_patrol() -> bool:
-	# Replace with whatever decides if patrol happens
-	return true
+# --- Signal Callbacks (handle state transitions) ---
+func _on_hit_flash_timer_timeout():
+	visual_sprite.color = original_color
 
-func move_along_patrol_path(delta: float) -> void:
-	# Replace with your patrol movement code
-	pass
+func _on_cooldown_timer_timeout():
+	if states.find_key(current_state) == State.COOLDOWN:
+		change_state(State.PATROL)
 
-func play_idle_animation() -> void:
-	pass
-
-func play_attack_animation() -> void:
-	pass
-
-func start_attack_windup() -> void:
-	pass
-
-func play_cooldown_animation() -> void:
-	pass
-
-func play_patrol_animation() -> void:
-	pass
+func _on_patrol_timer_timeout():
+	if states.find_key(current_state) == State.PATROL:
+		change_state(State.IDLE)
 
 
 =====================================
