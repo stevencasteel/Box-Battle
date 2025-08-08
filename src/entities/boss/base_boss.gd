@@ -1,13 +1,12 @@
 # src/entities/boss/base_boss.gd
-# This is the "Context" script for the Boss State Machine. It holds all
-# shared data and delegates all per-frame logic to its current state object.
+# This is the "Context" script for the Boss State Machine.
 extends CharacterBody2D
 
 # --- Signals ---
-signal health_changed(current_health, max_health)
+signal health_changed(current_health, max_health) # Kept for compatibility
 signal died
 
-# --- State Machine Enum (Globally Accessible as BaseBoss.State) ---
+# --- Enums ---
 enum State { IDLE, ATTACK, COOLDOWN, PATROL }
 enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 
@@ -19,7 +18,6 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 
 # --- Preloads ---
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
-# REFINEMENT: Removed preload constants for states as they are now global classes.
 
 # --- State Machine ---
 var states: Dictionary
@@ -39,7 +37,6 @@ func _ready():
 	original_color = visual_sprite.color
 	player = get_tree().get_first_node_in_group("player")
 	
-	# REFINEMENT: Initialize states using their global class names.
 	states = {
 		State.IDLE: BossStateIdle.new(self),
 		State.ATTACK: BossStateAttack.new(self),
@@ -48,7 +45,7 @@ func _ready():
 	}
 	
 	change_state(State.COOLDOWN)
-	health_changed.emit(health, Constants.BOSS_HEALTH)
+	_emit_health_changed_event() # Initial emit
 
 func _physics_process(delta):
 	if not is_on_floor():
@@ -64,20 +61,22 @@ func _physics_process(delta):
 
 # --- State Management ---
 func change_state(new_state_key: State):
-	if not states.has(new_state_key):
-		print("Boss state key not found: ", new_state_key)
-		return
-	if current_state == states[new_state_key]:
-		return
-		
-	if current_state:
-		current_state.exit()
+	if not states.has(new_state_key): return
+	if current_state == states[new_state_key]: return
+	if current_state: current_state.exit()
 	
 	current_state = states[new_state_key]
-	print("Boss entering state: ", State.keys()[new_state_key])
 	current_state.enter()
 
-# --- Helper Functions (used by states) ---
+# --- Event Emitter ---
+func _emit_health_changed_event():
+	var ev = BossHealthChangedEvent.new()
+	ev.current_health = health
+	ev.max_health = Constants.BOSS_HEALTH
+	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
+	health_changed.emit(health, Constants.BOSS_HEALTH) # Compatibility
+
+# --- Helper Functions ---
 func _update_player_tracking():
 	if is_instance_valid(player):
 		var direction_to_player = player.global_position.x - global_position.x
@@ -96,14 +95,12 @@ func fire_shot_at_player():
 	
 func take_damage(damage_amount: int):
 	health -= damage_amount
-	health_changed.emit(health, Constants.BOSS_HEALTH)
+	_emit_health_changed_event()
 	_trigger_hit_flash()
-	print("Boss took ", damage_amount, " damage! Health remaining: ", health)
 	if health <= 0:
 		die()
 
 func die():
-	print("Boss has been defeated!")
 	died.emit()
 	queue_free()
 
@@ -111,7 +108,7 @@ func _trigger_hit_flash():
 	visual_sprite.color = Color.DODGER_BLUE
 	hit_flash_timer.start()
 
-# --- Signal Callbacks (handle state transitions) ---
+# --- Signal Callbacks ---
 func _on_hit_flash_timer_timeout():
 	visual_sprite.color = original_color
 

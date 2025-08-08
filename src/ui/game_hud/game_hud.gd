@@ -1,7 +1,6 @@
 # src/ui/game_hud/game_hud.gd
-#
-# Manages the in-game heads-up display. It connects to signals from the
-# player and boss to update health bars and other UI elements in real-time.
+# Manages the in-game heads-up display. It is now fully decoupled and listens
+# to the EventBus for real-time updates.
 extends CanvasLayer
 
 # --- Node References ---
@@ -9,32 +8,31 @@ extends CanvasLayer
 @onready var player_heal_charges_value: Label = $PlayerInfo/PlayerHealChargesHBox/PlayerHealChargesValue
 @onready var boss_health_bar: ProgressBar = $BossHealthBar
 
+# --- Subscription Tokens ---
+var _player_health_token: int = 0
+var _player_charges_token: int = 0
+var _boss_health_token: int = 0
+
 func _ready():
-	# Wait until the main scene tree is ready before trying to connect signals.
-	await get_tree().process_frame
-	
-	var player = get_tree().get_first_node_in_group("player")
-	var boss = get_tree().get_first_node_in_group("enemy")
+	# Subscribe to global events. We store the returned tokens to safely unsubscribe later.
+	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
+	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
+	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
 
-	if is_instance_valid(player):
-		# Connect to the player's signals.
-		player.health_changed.connect(on_player_health_changed)
-		player.healing_charges_changed.connect(on_player_healing_charges_changed)
-	
-	if is_instance_valid(boss):
-		# Connect to the boss's signals.
-		boss.health_changed.connect(on_boss_health_changed)
+func _exit_tree():
+	# CRITICAL: Always unsubscribe from events when the node is freed to prevent memory leaks.
+	EventBus.off(_player_health_token)
+	EventBus.off(_player_charges_token)
+	EventBus.off(_boss_health_token)
 
-# --- Signal Callbacks ---
+# --- EventBus Callbacks ---
 
-func on_player_health_changed(current_health: int, max_health: int):
-	player_health_value.text = str(current_health) + " / " + str(max_health)
+func on_player_health_changed(payload: PlayerHealthChangedEvent):
+	player_health_value.text = str(payload.current_health) + " / " + str(payload.max_health)
 
-func on_player_healing_charges_changed(current_charges: int):
-	player_heal_charges_value.text = str(current_charges)
+func on_player_healing_charges_changed(payload: PlayerHealingChargesChangedEvent):
+	player_heal_charges_value.text = str(payload.current_charges)
 
-func on_boss_health_changed(current_health: int, max_health: int):
-	# Set the max_value of the progress bar first in case it has changed.
-	boss_health_bar.max_value = max_health
-	# Update the current value.
-	boss_health_bar.value = current_health
+func on_boss_health_changed(payload: BossHealthChangedEvent):
+	boss_health_bar.max_value = payload.max_health
+	boss_health_bar.value = payload.current_health

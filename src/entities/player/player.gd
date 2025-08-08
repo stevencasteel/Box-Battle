@@ -1,16 +1,13 @@
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine. Its primary jobs are to:
-# 1. Hold all shared player data (health, velocity, timers, etc.).
-# 2. Manage the transitions between states.
-# 3. Provide centralized helper functions for states to use (DRY principle).
+# This script is the "Context" for the State Machine.
 extends CharacterBody2D
 
 # --- Signals ---
-signal health_changed(current_health, max_health)
-signal healing_charges_changed(current_charges)
+signal health_changed(current_health, max_health) # Kept for backward compatibility
+signal healing_charges_changed(current_charges) # Kept for backward compatibility
 signal died
 
-# --- REFINEMENT: The State enum is now globally accessible via Player.State ---
+# --- State Enum ---
 enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 
 # --- Node References ---
@@ -68,8 +65,7 @@ func _ready():
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
-	healing_charges_changed.emit(healing_charges)
+	
 	states = {
 		State.MOVE: MoveState.new(self), State.FALL: FallState.new(self),
 		State.JUMP: JumpState.new(self), State.DASH: DashState.new(self),
@@ -78,6 +74,9 @@ func _ready():
 	}
 	current_state = states[State.FALL]
 	current_state.enter()
+	
+	_emit_health_changed_event()
+	_emit_healing_charges_changed_event() # Initial emit
 
 func _physics_process(delta):
 	_update_timers(delta)
@@ -107,22 +106,16 @@ func _update_timers(delta):
 func _poll_global_inputs():
 	if Input.is_action_just_pressed("ui_jump"):
 		jump_buffer_timer = Constants.JUMP_BUFFER
-
-	if not states.find_key(current_state) in ACTION_ALLOWED_STATES:
-		return
-
+	if not states.find_key(current_state) in ACTION_ALLOWED_STATES: return
 	if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
 		is_charging = true; charge_timer = 0.0
-	
 	if Input.is_action_just_released("ui_attack"):
 		if is_charging:
 			if charge_timer >= Constants.CHARGE_TIME: _fire_shot()
 			else: change_state(State.ATTACK)
 			is_charging = false
-	
 	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
 		change_state(State.DASH)
-		
 	if is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and healing_charges > 0 and is_zero_approx(velocity.x):
 		change_state(State.HEAL)
 
@@ -132,17 +125,29 @@ func change_state(new_state_key: State):
 	current_state = states[new_state_key]
 	current_state.enter()
 
-# --- REFINEMENT: Centralized helper function for states (DRY Principle) ---
 func apply_horizontal_movement():
 	velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
 	if not is_zero_approx(velocity.x):
 		facing_direction = sign(velocity.x)
 
-# --- Public Action & Helper Functions (Unchanged) ---
+# --- Event Emitter Functions ---
+func _emit_health_changed_event():
+	var ev = PlayerHealthChangedEvent.new()
+	ev.current_health = health
+	ev.max_health = Constants.PLAYER_MAX_HEALTH
+	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)
+	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH) # Compatibility
+
+func _emit_healing_charges_changed_event():
+	var ev = PlayerHealingChargesChangedEvent.new()
+	ev.current_charges = healing_charges
+	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev, self)
+	healing_charges_changed.emit(healing_charges) # Compatibility
+
 func take_damage(damage_amount: int, damage_source = null):
 	if is_invincible or is_dash_invincible: return
 	health -= damage_amount
-	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
+	_emit_health_changed_event()
 	_trigger_hit_flash()
 	is_invincible = true
 	invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION)
@@ -167,17 +172,15 @@ func _on_damage_dealt():
 	determination_counter += 1
 	if determination_counter >= Constants.DETERMINATION_PER_CHARGE:
 		determination_counter = 0; healing_charges += 1
-		healing_charges_changed.emit(healing_charges)
+		_emit_healing_charges_changed_event()
 
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
-	healing_timer.stop(); print("Healing canceled.")
+	healing_timer.stop()
 	
-# --- BUG FIX STARTS HERE ---
 func _trigger_hit_flash():
 	visual_sprite.color = Color.DODGER_BLUE
-	hit_flash_timer.start() # This line was missing.
-# --- BUG FIX ENDS HERE ---
+	hit_flash_timer.start()
 
 func _fire_shot():
 	attack_cooldown_timer = Constants.ATTACK_COOLDOWN
@@ -190,8 +193,7 @@ func _fire_shot():
 
 func _trigger_pogo(pogo_target):
 	velocity.y = -Constants.POGO_FORCE
-	position.y -= 1
-	can_dash = true
+	position.y -= 1; can_dash = true
 	air_jumps_left = Constants.MAX_AIR_JUMPS
 	change_state(State.FALL)
 	if pogo_target:
@@ -220,6 +222,6 @@ func _on_invincibility_timer_timeout(): is_invincible = false
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
 		health = min(health + 1, Constants.PLAYER_MAX_HEALTH); healing_charges -= 1
-		health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
-		healing_charges_changed.emit(healing_charges)
+		_emit_health_changed_event()
+		_emit_healing_charges_changed_event()
 		change_state(State.MOVE)

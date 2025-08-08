@@ -19,7 +19,7 @@
 ║   align with professional design principles. This is the hard, foundational ║
 ║   work that enables all future features to be built cleanly and efficiently. ║
 ║                                                                              ║
-║   █  1. Implement the Event Bus                                              ║
+║   ■  1. Implement the Event Bus                                              ║
 ║      ░  WHY: This is the new central nervous system for the game. It will    ║
 ║      ░  decouple all our systems, from UI to gameplay to audio, making the   ║
 ║      ░  entire codebase more modular and easier to manage (Dependency Inversion).║
@@ -32,7 +32,7 @@
 ║      ░       to use the Event Bus. The HUD will listen for global events like ║
 ║      ░       `EventCatalog.PLAYER_HEALTH_CHANGED` instead of connecting directly.║
 ║                                                                              ║
-║   █  2. Refactor Player to use the State Pattern                             ║
+║   □  2. Refactor Player to use the State Pattern                             ║
 ║      ░  WHY: `player.gd` is a large, monolithic script. This refactor will   ║
 ║      ░  decouple the logic for each state into its own class, making the     ║
 ║      ░  system cleaner and easier to extend (Open/Closed Principle).         ║
@@ -41,7 +41,7 @@
 ║      ░  for each state into its own file. `player.gd` will become a "Context"║
 ║      ░  that simply manages the current state object.                        ║
 ║                                                                              ║
-║   █  3. Implement the Centralized Sequencer                                  ║
+║   □  3. Implement the Centralized Sequencer                                  ║
 ║      ░  WHY: To eliminate scattered `Timer` nodes and `await` calls for      ║
 ║      ░  scripted events. This provides a clean, readable way to create       ║
 ║      ░  cinematic sequences like boss intros or multi-stage attacks.         ║
@@ -49,14 +49,14 @@
 ║      ░  `run_sequence(steps: Array)` function that can process a list of     ║
 ║      ░  commands like `wait`, `emit` (on Event Bus), and `call` (a function).║
 ║                                                                              ║
-║   █  4. Refactor Base Boss to use the State Pattern                          ║
+║   □  4. Refactor Base Boss to use the State Pattern                          ║
 ║      ░  WHY: To mirror the player's clean architecture, preparing the boss   ║
 ║      ░  for the advanced "kitchen sink" mechanics planned for a later phase. ║
 ║      ░  HOW: Apply the exact same State Pattern as used for the Player,      ║
 ║      ░  creating a `states` subdirectory and migrating state logic into      ║
 ║      ░  separate, focused class files.                                       ║
 ║                                                                              ║
-║   █  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
+║   □  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
 ║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs. Separating these ║
 ║      ░  roles will make the level generation pipeline more robust and easier ║
 ║      ░  to maintain.                                                         ║
@@ -73,7 +73,7 @@
 ║   This phase separates hard-coded values from our logic and builds the key   ║
 ║   visual components needed to achieve our "Framer + Geometry Wars" aesthetic.║
 ║                                                                              ║
-║   ▓  1. Implement Data-Driven Configs (JSON)                                 ║
+║   □  1. Implement Data-Driven Configs (JSON)                                 ║
 ║      ░  WHY: To centralize all tuning and balancing numbers (damage, health, ║
 ║      ░  cooldowns) into external, human-readable files. This allows for rapid║
 ║      ░  iteration without changing any code.                                 ║
@@ -81,14 +81,14 @@
 ║      ░  Move all combat-related values from `Constants.gd` into a new        ║
 ║      ░  `combat_config.json`. Refactor code to pull values from this config. ║
 ║                                                                              ║
-║   ▓  2. Implement the Global Palette System                                  ║
+║   □  2. Implement the Global Palette System                                  ║
 ║      ░  WHY: To enforce a consistent, project-wide color scheme. This is a   ║
 ║      ░  critical prerequisite for the UI overhaul.                           ║
 ║      ░  HOW: Create a `Palette.gd` singleton. Define the 32-step grayscale   ║
 ║      ░  array and create semantic constant names (e.g., `COLOR_PLAYER`).     ║
 ║      ░  Replace all hard-coded colors with calls to this new Palette.        ║
 ║                                                                              ║
-║   ▓  3. UI Overhaul Part 1: The `StyledMenuItem`                             ║
+║   □  3. UI Overhaul Part 1: The `StyledMenuItem`                             ║
 ║      ░  WHY: To create the cornerstone visual component for our new UI. We   ║
 ║      ░  will perfect this one piece before replacing the entire menu system. ║
 ║      ░  HOW: Create a new scene, `StyledMenuItem.tscn`, that extends `Control`.║
@@ -102,19 +102,19 @@
 ║                                                                              ║
 ║   With a solid architecture, we can now focus on making the game feel amazing.║
 ║                                                                              ║
-║   ▒  1. Refine Player Combat Mechanics ("Game Juice")                        ║
+║   □  1. Refine Player Combat Mechanics ("Game Juice")                        ║
 ║      ░  □ Enhanced Melee Hitbox: Implement a two-part hitbox where the inner ║
 ║      ░    box deals 1.5x damage and the outer deals 1.0x damage.             ║
 ║      ░  □ Input Buffering: Add buffering for attack and dash inputs.         ║
 ║      ░  □ Pogo-Fall Prevention: Add a brief grace period after a pogo to     ║
 ║      ░    prevent accidental fast-falling.                                   ║
 ║                                                                              ║
-║   ▒  2. Implement "Kitchen Sink" Base Boss Features                          ║
+║   □  2. Implement "Kitchen Sink" Base Boss Features                          ║
 ║      ░  □ Health Phases: Boss transitions to new states at health thresholds.║
 ║      ░  □ Armor/Weak Points: Implement an `is_armored` state.                ║
 ║      ░  □ Clear Attack Telegraphing: Create a dedicated `Telegraph` state.   ║
 ║                                                                              ║
-║   ▒  3. Implement a Minion Enemy Type                                        ║
+║   □  3. Implement a Minion Enemy Type                                        ║
 ║      ░  Create a simple Turret enemy to test our data-driven spawning and    ║
 ║      ░  component-based architecture (e.g., by reusing the HealthComponent). ║
 ║                                                                              ║
