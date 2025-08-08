@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Fri Aug  8 09:39:15 CDT 2025
+Generated on: Fri Aug  8 11:13:32 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -37,6 +37,11 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── arena_builder.gd
     │   ├── asset_paths.gd
     │   ├── audio_manager.gd
+    │   ├── builders
+    │   │   ├── encounter_director.gd
+    │   │   ├── level_build_data.gd
+    │   │   ├── level_parser.gd
+    │   │   └── terrain_builder.gd
     │   ├── constants.gd
     │   ├── cursor_manager.gd
     │   ├── game_manager.gd
@@ -114,7 +119,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-30 directories, 76 files
+31 directories, 80 files
 
 
 =====================================
@@ -134,157 +139,126 @@ FILE: ./docs/TODO.txt
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              PHASE 1: THE GREAT ARCHITECTURAL REFACTOR               ██  ║
+║  ██              PHASE 1: THE CORE SYSTEMS REFACTOR                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   This phase is our highest priority. We will refactor the existing code to  ║
-║   align with professional design principles (SOLID, DRY). This is like       ║
-║   cleaning and organizing our workshop before building new things. It will   ║
-║   make all future development faster, safer, and more enjoyable.             ║
+║   align with professional design principles. This is the hard, foundational ║
+║   work that enables all future features to be built cleanly and efficiently. ║
 ║                                                                              ║
-║   ■  Refactor Player to use the State Pattern                                ║
-║      ░  WHY: `player.gd` is becoming large and hard to manage. The State     ║
-║      ░  Pattern will decouple the logic for each state (Move, Fall, Dash)    ║
-║      ░  into its own separate script, making the system incredibly clean,    ║
-║      ░  stable, and easy to extend with new abilities like parrying.         ║
+║   █  1. Implement the Event Bus                                              ║
+║      ░  WHY: This is the new central nervous system for the game. It will    ║
+║      ░  decouple all our systems, from UI to gameplay to audio, making the   ║
+║      ░  entire codebase more modular and easier to manage (Dependency Inversion).║
 ║      ░  HOW:                                                                 ║
-║      ░    1. Create a new directory: `src/entities/player/states/`.          ║
-║      ░    2. Create `state_base.gd`: This will be the parent class for all   ║
-║      ░       player states, defining the "contract" functions they must have:║
-║      ░       `enter()`, `exit()`, `process_physics(delta)`, `process_input(event)`.║
-║      ░    3. Create individual state scripts (e.g., `state_move.gd`,         ║
-║      ░       `state_fall.gd`) that extend `state_base.gd`.                   ║
-║      ░    4. Move the logic from `player.gd`'s `state_move` function into    ║
-║      ░       the `process_physics` function of `state_move.gd`, and so on for each state.║
-║      ░    5. Modify `player.gd` to act as a "Context". It will hold a        ║
-║      ░       dictionary of all state objects and a variable for the          ║
-║      ░       `current_state`. Its `_physics_process` will simplify to just one║
-║      ░       line: `current_state.process_physics(delta)`.                   ║
+║      ░    1. Create a new autoload singleton: `EventBus.gd`.                 ║
+║      ░    2. Implement three core functions: `on(event, callback)`,          ║
+║      ░       `off(event, callback)`, and `emit(event, payload)`.             ║
+║      ░    3. Create `EventCatalog.gd` to store all event names as constants. ║
+║      ░    4. Refactor existing direct signal connections (e.g., in `game_hud.gd`)║
+║      ░       to use the Event Bus. The HUD will listen for global events like ║
+║      ░       `EventCatalog.PLAYER_HEALTH_CHANGED` instead of connecting directly.║
 ║                                                                              ║
-║   ■  Refactor Base Boss to use the State Pattern                             ║
-║      ░  WHY: For the exact same reasons as the Player. As we add our "kitchen║
-║      ░  sink" of advanced boss mechanics, this pattern is essential to       ║
-║      ░  prevent `base_boss.gd` from becoming unmanageable.                   ║
-║      ░  HOW:                                                                 ║
-║      ░    1. Create `src/entities/boss/states/`.                             ║
-║      ░    2. Create `state_boss_base.gd` and individual state scripts like   ║
-║      ░       `state_boss_patrol.gd` and `state_boss_attack.gd`.              ║
-║      ░    3. Refactor `base_boss.gd` into a "Context" that manages its       ║
-║      ░       states, just like the player. This will make adding new attack  ║
-║      ░       patterns or defensive phases as simple as adding a new state file.║
+║   █  2. Refactor Player to use the State Pattern                             ║
+║      ░  WHY: `player.gd` is a large, monolithic script. This refactor will   ║
+║      ░  decouple the logic for each state into its own class, making the     ║
+║      ░  system cleaner and easier to extend (Open/Closed Principle).         ║
+║      ░  HOW: Follow the detailed plan to create a `states` subdirectory for  ║
+║      ░  the player, create a `PlayerState` base class, and migrate the logic ║
+║      ░  for each state into its own file. `player.gd` will become a "Context"║
+║      ░  that simply manages the current state object.                        ║
 ║                                                                              ║
-║   □  Refactor ArenaBuilder using the Single Responsibility Principle (SRP)   ║
-║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs (parsing, building║
-║      ░  terrain, spawning entities). SRP dictates that a script should have  ║
-║      ░  one reason to change. Separating these roles makes the code more     ║
-║      ░  robust and easier to maintain.                                       ║
-║      ░  HOW:                                                                 ║
-║      ░    1. Create a new `TerrainBuilder.gd` class. Its only job will be to ║
-║      ░       read layout data and create the physical tiles (`#`, `-`, `^`).║
-║      ░    2. Create a new `EncounterDirector.gd` class. Its only job will be ║
-║      ░       to read encounter data and spawn the player, boss, and any      ║
-║      ░       future minions or entities.                                     ║
-║      ░    3. `ArenaBuilder.gd` will become a simple coordinator that uses    ║
-║      ░       instances of the new classes to do the heavy lifting.           ║
+║   █  3. Implement the Centralized Sequencer                                  ║
+║      ░  WHY: To eliminate scattered `Timer` nodes and `await` calls for      ║
+║      ░  scripted events. This provides a clean, readable way to create       ║
+║      ░  cinematic sequences like boss intros or multi-stage attacks.         ║
+║      ░  HOW: Create a new autoload singleton: `Sequencer.gd`. Implement a    ║
+║      ░  `run_sequence(steps: Array)` function that can process a list of     ║
+║      ░  commands like `wait`, `emit` (on Event Bus), and `call` (a function).║
 ║                                                                              ║
-║   □  Implement the Global Palette System                                     ║
-║      ░  WHY: To achieve a cohesive, professional aesthetic, all colors must  ║
-║      ░  be managed from a central location. This makes theme changes instant.║
-║      ░  This is a prerequisite for the visual overhaul in Phase 2.           ║
-║      ░  HOW:                                                                 ║
-║      ░    1. Create a new autoload singleton: `Palette.gd`.                  ║
-║      ░    2. In `Palette.gd`, define the 32-step grayscale array.            ║
-║      ░    3. Define semantic color names as constants, e.g.,                 ║
-║      ░       `const COLOR_PLAYER = GRAYS[31]`, `const COLOR_ENEMY = GRAYS[24]`.║
-║      ░    4. Go through existing scripts (Player, Boss, UI) and replace all  ║
-║      ░       hard-coded `ColorRect` colors with references to the new `Palette`.║
+║   █  4. Refactor Base Boss to use the State Pattern                          ║
+║      ░  WHY: To mirror the player's clean architecture, preparing the boss   ║
+║      ░  for the advanced "kitchen sink" mechanics planned for a later phase. ║
+║      ░  HOW: Apply the exact same State Pattern as used for the Player,      ║
+║      ░  creating a `states` subdirectory and migrating state logic into      ║
+║      ░  separate, focused class files.                                       ║
+║                                                                              ║
+║   █  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
+║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs. Separating these ║
+║      ░  roles will make the level generation pipeline more robust and easier ║
+║      ░  to maintain.                                                         ║
+║      ░  HOW: Split the current logic into three new classes:                 ║
+║      ░    - `LevelParser.gd`: Reads data from layout/encounter files.        ║
+║      ░    - `TerrainBuilder.gd`: Creates the static level geometry (tiles).  ║
+║      ░    - `EncounterDirector.gd`: Spawns all dynamic entities (player, boss).║
+║      ░  `ArenaBuilder.gd` will become a simple coordinator of these new classes.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██            PHASE 2: CORE GAMEPLAY & "FRAMER" AESTHETICS              ██  ║
+║  ██            PHASE 2: DATA-DRIVEN & VISUAL FOUNDATION                  ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   With a clean foundation, we can now build new features and implement the   ║
-║   target visual style. The priority is on game-feel and visual polish.       ║
+║   This phase separates hard-coded values from our logic and builds the key   ║
+║   visual components needed to achieve our "Framer + Geometry Wars" aesthetic.║
 ║                                                                              ║
-║   □  UI Aesthetic Overhaul                                                   ║
-║      ░  WHY: To match the "expensive Framer website" aesthetic, we must move ║
-║      ░  away from static PNGs for UI and towards a procedural, shader-driven ║
-║      ░  approach. This will provide a crisp, scalable, and animatable UI.    ║
-║      ░  HOW:                                                                 ║
-║      ░    1. Create a reusable `StyledMenuItem` scene that extends `Control`.║
-║      ░    2. This scene will use the `_draw()` function and shaders to render║
-║      ░       itself procedurally: a thin border, a main body, and a glow effect.║
-║      ░    3. The main body will use a "frosted glass" shader that samples the║
-║      ░       `SCREEN_TEXTURE` to blur what's behind it.                      ║
-║      ░    4. All colors will be pulled from `Palette.gd`.                    ║
-║      ░    5. Replace the `TextureButton`s in all menu screens with this new  ║
-║      ░       `StyledMenuItem` scene.                                         ║
+║   ▓  1. Implement Data-Driven Configs (JSON)                                 ║
+║      ░  WHY: To centralize all tuning and balancing numbers (damage, health, ║
+║      ░  cooldowns) into external, human-readable files. This allows for rapid║
+║      ░  iteration without changing any code.                                 ║
+║      ░  HOW: Create a `Config.gd` singleton that loads `.json` files on start.║
+║      ░  Move all combat-related values from `Constants.gd` into a new        ║
+║      ░  `combat_config.json`. Refactor code to pull values from this config. ║
 ║                                                                              ║
-║   □  Refine Player Combat Mechanics ("Game Juice")                           ║
-║      ░  □ Melee Hitbox Enhancement:                                          ║
-║      ░      WHY: To reward skillful spacing and make melee feel better.      ║
-║      ░      HOW: The player's melee attack will use two `Area2D` hitboxes.   ║
-║      ░      The inner box (closer to player) will deal 1.5x damage. The outer║
-║      ░      box will deal 1.0x damage.                                       ║
-║      ░  □ Input Buffering for Attack & Dash:                                 ║
-║      ░      WHY: The jump is already buffered. Applying this to attacks and  ║
-║      ░      dashes will make the controls feel significantly more responsive.║
-║      ░      HOW: In `player.gd`, create `attack_buffer_timer` and            ║
-║      ░      `dash_buffer_timer`. When the action is pressed, start the timer.║
-║      ░      The state logic will then execute the action if the timer is > 0.║
-║      ░  □ Pogo-Attack Fast-Fall Prevention:                                  ║
-║      ░      WHY: To prevent the frustrating experience of accidentally       ║
-║      ░      fast-falling immediately after a successful pogo.                ║
-║      ░      HOW: After a `_trigger_pogo()`, have a short timer or boolean flag║
-║      ░      that temporarily ignores the "Down" input for gravity calculation.║
+║   ▓  2. Implement the Global Palette System                                  ║
+║      ░  WHY: To enforce a consistent, project-wide color scheme. This is a   ║
+║      ░  critical prerequisite for the UI overhaul.                           ║
+║      ░  HOW: Create a `Palette.gd` singleton. Define the 32-step grayscale   ║
+║      ░  array and create semantic constant names (e.g., `COLOR_PLAYER`).     ║
+║      ░  Replace all hard-coded colors with calls to this new Palette.        ║
 ║                                                                              ║
-║   □  Implement "Kitchen Sink" Base Boss Features                             ║
-║      ░  WHY: To create a robust template for all future bosses, equipping it ║
-║      ░  with a library of professional boss mechanics.                       ║
-║      ░  HOW: These will be implemented as new states or variables in the     ║
-║      ░  refactored Boss State Machine.                                       ║
-║      ░    □ Health-Based Phases: In `take_damage()`, check if health has     ║
-║      ░      crossed a threshold (e.g., 50%) and trigger a `change_state` to  ║
-║      ░      a more aggressive `Phase2Attack` state.                          ║
-║      ░    □ Armor/Weak Points: Add an `is_armored` boolean. Create an        ║
-║      ░      `Armored` state where the boss takes no damage. Certain attack   ║
-║      ░      states will temporarily set `is_armored` to false.               ║
-║      ░    □ Clear Attack Telegraphing: Create a dedicated `Telegraph` state  ║
-║      ░      that plays a visual effect (e.g., a shader flash) before         ║
-║      ░      transitioning to the `Attack` state.                             ║
+║   ▓  3. UI Overhaul Part 1: The `StyledMenuItem`                             ║
+║      ░  WHY: To create the cornerstone visual component for our new UI. We   ║
+║      ░  will perfect this one piece before replacing the entire menu system. ║
+║      ░  HOW: Create a new scene, `StyledMenuItem.tscn`, that extends `Control`.║
+║      ░  It will use the `_draw()` function and shaders to render itself      ║
+║      ░  procedurally with frosted glass, backlighting, and reactive effects, ║
+║      ░  all driven by the `Palette` and `EventBus`.                          ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                     PHASE 3: CONTENT EXPANSION                       ██  ║
+║  ██              PHASE 3: GAMEPLAY & FEEL ENHANCEMENT                    ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   Once our systems are robust and polished, we can begin adding more content.║
+║   With a solid architecture, we can now focus on making the game feel amazing.║
 ║                                                                              ║
-║   ░  Implement a "Minion" Enemy Type                                         ║
-║      ░  WHY: To add variety to combat encounters and test the player's skills║
-║      ░  in more diverse scenarios than just a 1v1 boss fight.                ║
-║      ░  HOW: Create a simple "Turret" enemy scene. It will not move, but will║
-║      ░  periodically fire a projectile at the player. We will add it to the  ║
-║      ░  `arena_00_encounter.gd` script using our new `EncounterDirector`.    ║
+║   ▒  1. Refine Player Combat Mechanics ("Game Juice")                        ║
+║      ░  □ Enhanced Melee Hitbox: Implement a two-part hitbox where the inner ║
+║      ░    box deals 1.5x damage and the outer deals 1.0x damage.             ║
+║      ░  □ Input Buffering: Add buffering for attack and dash inputs.         ║
+║      ░  □ Pogo-Fall Prevention: Add a brief grace period after a pogo to     ║
+║      ░    prevent accidental fast-falling.                                   ║
 ║                                                                              ║
-║   ░  Create a Second Boss & Arena                                            ║
-║      ░  WHY: This is the ultimate test of our modular, data-driven architecture.║
-║      ░  If our systems are truly well-designed, creating a new boss should be║
-║      ░  a matter of configuration and new state creation, not rewriting core logic.║
-║      ░  HOW: We will choose a concept from `DESIGN.txt` (e.g., "Garden Box").║
-║      ░  We will create a new layout file, a new encounter file, and a new boss║
-║      ░  scene that inherits from `base_boss.gd` but uses new attack states.  ║
+║   ▒  2. Implement "Kitchen Sink" Base Boss Features                          ║
+║      ░  □ Health Phases: Boss transitions to new states at health thresholds.║
+║      ░  □ Armor/Weak Points: Implement an `is_armored` state.                ║
+║      ░  □ Clear Attack Telegraphing: Create a dedicated `Telegraph` state.   ║
+║                                                                              ║
+║   ▒  3. Implement a Minion Enemy Type                                        ║
+║      ░  Create a simple Turret enemy to test our data-driven spawning and    ║
+║      ░  component-based architecture (e.g., by reusing the HealthComponent). ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██               PHASE 4: LOW PRIORITY & DEFERRED TASKS                 ██  ║
+║  ██           PHASE 4: FUTURE EXPANSION & DEFERRED TASKS                 ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   Features that are pure "juice" or non-essential. These are deferred to     ║
-║   prevent them from interfering with foundational development and debugging. ║
+║   A list of lower-priority goals to be addressed after the core loop is solid.║
 ║                                                                              ║
-║   ░  Implement Screen Shake                                                  ║
-║      ░  WHY: Adds satisfying impact to events like taking damage or boss death.║
-║      ░  STATUS: Deferred. We will not implement this until the core mechanics║
-║      ░  and visual debugging are complete, as it adds visual noise.          ║
+║   ░  Full UI System Replacement (using `StyledMenuItem`)                     ║
+║   ░  Diegetic UI Implementation                                              ║
+║   ░  Dynamic Music Layering System                                           ║
+║   ░  Adaptive Boss AI Tactics Layer                                          ║
+║   ░  Player Loadout System                                                   ║
+║   ░  Special Game Modes (Boss Rush, Time Attack)                             ║
+║   ░  Screen Shake (Explicitly deferred to avoid visual noise during debugging)║
+║   ░  Dynamic Camera (Explicitly deferred per design decision)                ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -847,6 +821,10 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored the ArenaBuilder to strictly adhere to the Single        ║
+║      ░   Responsibility Principle. Its duties have been decoupled into new,  ║
+║      ░   focused classes: `LevelParser`, `TerrainBuilder`, and              ║
+║      ░   `EncounterDirector`. ArenaBuilder now acts as a high-level coordinator.║
 ║      ░ ■ Refactored the BaseBoss node to use the State Pattern, mirroring the║
 ║      ░   Player's architecture for improved scalability and maintainability. ║
 ║      ░ ■ Refactored the Player node to use the State Pattern. All state logic║
@@ -2623,6 +2601,188 @@ extends Node
 @export var sfx_muted: bool = false
 
 =====================================
+FILE: ./src/core/builders/level_parser.gd
+=====================================
+# src/core/builders/level_parser.gd
+#
+# Responsibility: To parse the raw data from layout and encounter scripts and
+# organize it into a structured LevelBuildData object. This class does not
+# create any nodes; it only processes data.
+class_name LevelParser
+extends RefCounted
+
+# FIX: Removed redundant preload. We can now use the global class name directly.
+
+# The single public method of this class. It takes the instantiated arena
+# scripts and returns a complete LevelBuildData resource.
+func parse_level_data(layout_script: Object, encounter_script: Object) -> LevelBuildData:
+	var data = LevelBuildData.new()
+	data.encounter_script_object = encounter_script
+
+	for y in range(layout_script.TERRAIN_DATA.size()):
+		var row_string: String = layout_script.TERRAIN_DATA[y]
+		for x in range(row_string.length()):
+			var tile_char: String = row_string[x]
+			var tile_pos := Vector2(x * Constants.TILE_SIZE, y * Constants.TILE_SIZE) + Vector2(Constants.TILE_SIZE / 2.0, Constants.TILE_SIZE / 2.0)
+
+			match tile_char:
+				'#':
+					data.terrain_tiles.append(tile_pos)
+				'-':
+					data.oneway_platforms.append(tile_pos)
+				'^':
+					data.hazard_tiles.append(tile_pos)
+				_:
+					if tile_char == encounter_script.PLAYER_SPAWN_MARKER:
+						data.player_spawn_pos = tile_pos
+					elif tile_char == encounter_script.BOSS_SPAWN_MARKER:
+						data.boss_spawn_pos = tile_pos
+	
+	return data
+
+
+=====================================
+FILE: ./src/core/builders/terrain_builder.gd
+=====================================
+# src/core/builders/terrain_builder.gd
+#
+# Responsibility: To create all static level geometry (solid tiles,
+# one-way platforms, hazards) based on parsed LevelBuildData.
+class_name TerrainBuilder
+extends RefCounted
+
+# The main public method. It takes the parent node, the data, and a valid
+# SceneTree reference, then builds the tiles asynchronously in batches.
+func build_terrain_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
+	const BATCH_SIZE = 20 # How many tiles to create before yielding a frame.
+
+	for i in range(build_data.terrain_tiles.size()):
+		_create_solid_tile(parent_node, build_data.terrain_tiles[i])
+		if i % BATCH_SIZE == 0:
+			await tree.process_frame
+
+	for i in range(build_data.oneway_platforms.size()):
+		_create_oneway_platform(parent_node, build_data.oneway_platforms[i])
+		if i % BATCH_SIZE == 0:
+			await tree.process_frame
+
+	for i in range(build_data.hazard_tiles.size()):
+		_create_hazard_tile(parent_node, build_data.hazard_tiles[i])
+		if i % BATCH_SIZE == 0:
+			await tree.process_frame
+	
+	await tree.process_frame
+
+# --- Tile Creation Functions (Moved from ArenaBuilder) ---
+
+func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
+	var static_body := StaticBody2D.new()
+	static_body.position = pos
+	static_body.collision_layer = 2 # 'world' layer
+	static_body.add_to_group("world")
+	
+	var collision_shape := CollisionShape2D.new()
+	var rectangle_shape := RectangleShape2D.new()
+	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
+	collision_shape.shape = rectangle_shape
+	
+	static_body.add_child(collision_shape)
+	parent_node.add_child(static_body)
+
+func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
+	var static_body := StaticBody2D.new()
+	static_body.position = pos
+	static_body.collision_layer = 2 # 'world' layer
+	static_body.add_to_group("world")
+	static_body.add_to_group("oneway_platforms")
+	
+	var collision_shape := CollisionShape2D.new()
+	collision_shape.one_way_collision = true
+	collision_shape.position.y = -(Constants.TILE_SIZE / 2.0) + 5
+	var rectangle_shape := RectangleShape2D.new()
+	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
+	collision_shape.shape = rectangle_shape
+	
+	static_body.add_child(collision_shape)
+	parent_node.add_child(static_body)
+
+func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
+	var static_body := StaticBody2D.new()
+	static_body.position = pos
+	static_body.collision_layer = 10 # world | hazard
+	static_body.add_to_group("world")
+	static_body.add_to_group("hazard")
+	
+	var collision_shape := CollisionShape2D.new()
+	var rectangle_shape := RectangleShape2D.new()
+	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
+	collision_shape.shape = rectangle_shape
+	
+	static_body.add_child(collision_shape)
+	parent_node.add_child(static_body)
+
+
+=====================================
+FILE: ./src/core/builders/level_build_data.gd
+=====================================
+# src/core/builders/level_build_data.gd
+#
+# A custom Resource script that acts as a data container. Its only purpose is to
+# hold all the parsed information about a level in one clean, portable object.
+# This prevents us from having to pass many individual arrays and variables between
+# our different builder classes.
+class_name LevelBuildData
+extends Resource
+
+var terrain_tiles: Array[Vector2] = []
+var oneway_platforms: Array[Vector2] = []
+var hazard_tiles: Array[Vector2] = []
+var player_spawn_pos: Vector2 = Vector2.ZERO
+var boss_spawn_pos: Vector2 = Vector2.ZERO
+var encounter_script_object: Object = null
+
+=====================================
+FILE: ./src/core/builders/encounter_director.gd
+=====================================
+# src/core/builders/encounter_director.gd
+#
+# Responsibility: To spawn all dynamic entities (Player, Boss, HUD) based on
+# the parsed LevelBuildData.
+class_name EncounterDirector
+extends RefCounted
+
+# The main public method. It takes the parent node, the data, and a valid
+# SceneTree reference, then spawns the entities asynchronously.
+func spawn_entities_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
+	await _spawn_player_async(parent_node, build_data.player_spawn_pos, tree)
+	await _spawn_boss_async(parent_node, build_data.boss_spawn_pos, build_data.encounter_script_object, tree)
+	await _spawn_hud_async(parent_node, tree)
+
+# --- Entity Spawning Functions (Moved from ArenaBuilder) ---
+
+func _spawn_player_async(parent_node: Node, pos: Vector2, tree: SceneTree):
+	var player_instance = load(AssetPaths.SCENE_PLAYER).instantiate()
+	player_instance.global_position = pos
+	parent_node.add_child(player_instance)
+	await tree.process_frame
+
+func _spawn_boss_async(parent_node: Node, pos: Vector2, encounter: Object, tree: SceneTree):
+	var boss_scene: PackedScene = encounter.BOSS_SCENE if encounter else null
+	if not boss_scene:
+		push_error("EncounterDirector: Could not find BOSS_SCENE in encounter script.")
+		return
+		
+	var boss_instance = boss_scene.instantiate()
+	boss_instance.global_position = pos
+	parent_node.add_child(boss_instance)
+	await tree.process_frame
+
+func _spawn_hud_async(parent_node: Node, tree: SceneTree):
+	var hud_instance = load(AssetPaths.SCENE_GAME_HUD).instantiate()
+	parent_node.add_child(hud_instance)
+	await tree.process_frame
+
+=====================================
 FILE: ./src/core/game_manager.gd
 =====================================
 # src/core/game_manager.gd
@@ -2644,174 +2804,52 @@ FILE: ./src/core/arena_builder.gd
 =====================================
 # src/core/arena_builder.gd
 #
-# This singleton is responsible for all procedural level construction.
-# It contains the logic for creating terrain tiles and spawning entities.
+# This singleton is now a high-level "Coordinator". Its single responsibility
+# is to manage the overall process of level construction by delegating tasks
+# to specialized builder classes.
 extends Node
 
-const PlayerScene = preload(AssetPaths.SCENE_PLAYER)
-const GameHUDScene = preload(AssetPaths.SCENE_GAME_HUD)
-
-# --- NEW ASYNC FUNCTION ---
-# This function builds the level asynchronously to prevent frame drops
+# This function is now much cleaner and easier to read. It's a clear,
+# step-by-step recipe for building a level.
 func build_level_async() -> Node:
-	# Create the container "box" that will hold the entire level.
-	var level_container = Node.new()
+	var level_container := Node.new()
 	level_container.name = "LevelContainer"
 
-	var encounter_path = GameManager.current_encounter_script_path
-	var layout_path = encounter_path.replace("encounter.gd", "layout.gd")
-	
-	var ArenaLayout = load(layout_path)
-	var ArenaEncounter = load(encounter_path)
+	# --- 1. Load Raw Data ---
+	var encounter_path: String = GameManager.current_encounter_script_path
+	if encounter_path.is_empty():
+		push_error("ArenaBuilder: No encounter script specified in GameManager.")
+		return level_container
+		
+	var layout_path: String = encounter_path.replace("encounter.gd", "layout.gd")
+	var layout_script: Script = load(layout_path)
+	var encounter_script: Script = load(encounter_path)
 
-	var layout = ArenaLayout.new()
-	var encounter = ArenaEncounter.new()
+	if not layout_script or not encounter_script:
+		push_error("ArenaBuilder: Failed to load layout or encounter script.")
+		return level_container
 
-	var player_spawn_pos = Vector2.ZERO
-	var boss_spawn_pos = Vector2.ZERO
-	var terrain_tiles = []
-	var oneway_platforms = []
-	var hazard_tiles = []
-
-	# First pass: collect all tile data
-	for y in range(layout.TERRAIN_DATA.size()):
-		var row_string = layout.TERRAIN_DATA[y]
-		for x in range(row_string.length()):
-			var tile_char = row_string[x]
-			var tile_pos = Vector2(x * Constants.TILE_SIZE, y * Constants.TILE_SIZE) + Vector2(Constants.TILE_SIZE / 2.0, Constants.TILE_SIZE / 2.0)
-
-			match tile_char:
-				'#':
-					terrain_tiles.append(tile_pos)
-				'-':
-					oneway_platforms.append(tile_pos)
-				'^':
-					hazard_tiles.append(tile_pos)
-				encounter.PLAYER_SPAWN_MARKER:
-					player_spawn_pos = tile_pos
-				encounter.BOSS_SPAWN_MARKER:
-					boss_spawn_pos = tile_pos
+	# --- 2. Parse Data ---
+	var parser = LevelParser.new()
+	var build_data = parser.parse_level_data(layout_script.new(), encounter_script.new())
 	
 	await get_tree().process_frame
-	
-	# Create terrain tiles in batches
-	var batch_size = 20
-	for i in range(terrain_tiles.size()):
-		_create_solid_tile(level_container, terrain_tiles[i])
-		if i % batch_size == 0:
-			await get_tree().process_frame
-	
-	# Create oneway platforms in batches
-	for i in range(oneway_platforms.size()):
-		_create_oneway_platform(level_container, oneway_platforms[i])
-		if i % batch_size == 0:
-			await get_tree().process_frame
-	
-	# Create hazard tiles in batches
-	for i in range(hazard_tiles.size()):
-		_create_hazard_tile(level_container, hazard_tiles[i])
-		if i % batch_size == 0:
-			await get_tree().process_frame
-	
-	await get_tree().process_frame
-	
-	# Pre-instantiate entities
-	await _spawn_player_async(level_container, player_spawn_pos)
-	await _spawn_boss_async(level_container, boss_spawn_pos, encounter.BOSS_SCENE)
-	
-	# Instantiate the HUD
-	var hud_instance = GameHUDScene.instantiate()
-	level_container.add_child(hud_instance)
 
+	# --- 3. Build Terrain ---
+	var terrain_builder = TerrainBuilder.new()
+	# FIX: Pass the SceneTree reference to the builder.
+	await terrain_builder.build_terrain_async(level_container, build_data, get_tree())
+
+	# --- 4. Spawn Entities ---
+	var encounter_director = EncounterDirector.new()
+	# FIX: Pass the SceneTree reference to the director.
+	await encounter_director.spawn_entities_async(level_container, build_data, get_tree())
+
+	# --- 5. Finalize ---
 	await get_tree().process_frame
 	
-	# Return the finished, self-contained level.
 	return level_container
 
-# --- MODIFIED FUNCTION (kept for compatibility but now calls async version) ---
-func build_level() -> Node:
-	return await build_level_async()
-
-# --- Async Entity Spawning Functions ---
-
-func _spawn_player_async(parent_node: Node, pos: Vector2):
-	var player_instance = PlayerScene.instantiate()
-	player_instance.global_position = pos
-	parent_node.add_child(player_instance)
-	await get_tree().process_frame
-
-func _spawn_boss_async(parent_node: Node, pos: Vector2, scene: PackedScene):
-	if scene == null: return
-	var boss_instance = scene.instantiate()
-	boss_instance.global_position = pos
-	parent_node.add_child(boss_instance)
-	await get_tree().process_frame
-
-# --- Original sync functions (no longer used by async path but kept for potential direct use) ---
-
-func _spawn_player(parent_node: Node, pos: Vector2):
-	var player_instance = PlayerScene.instantiate()
-	player_instance.global_position = pos
-	parent_node.add_child(player_instance)
-
-func _spawn_boss(parent_node: Node, pos: Vector2, scene: PackedScene):
-	if scene == null: return
-	var boss_instance = scene.instantiate()
-	boss_instance.global_position = pos
-	parent_node.add_child(boss_instance)
-
-# --- Optimized Tile Creation Functions ---
-
-func _create_solid_tile(parent_node: Node, pos: Vector2):
-	var static_body = StaticBody2D.new()
-	static_body.position = pos
-	static_body.collision_layer = 2 # 'world' layer
-	static_body.add_to_group("world")
-	
-	var collision_shape = CollisionShape2D.new()
-	var rectangle_shape = RectangleShape2D.new()
-	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
-	collision_shape.shape = rectangle_shape
-	
-	static_body.add_child(collision_shape)
-	parent_node.add_child(static_body)
-
-func _create_oneway_platform(parent_node: Node, pos: Vector2):
-	var static_body = StaticBody2D.new()
-	static_body.position = pos
-	static_body.collision_layer = 2 # 'world' layer
-	static_body.add_to_group("world")
-	static_body.add_to_group("oneway_platforms") # For player logic
-	
-	var collision_shape = CollisionShape2D.new()
-	collision_shape.one_way_collision = true
-	# Position the thin collision shape at the very top of the tile's space
-	collision_shape.position.y = - (Constants.TILE_SIZE / 2.0) + 5
-	var rectangle_shape = RectangleShape2D.new()
-	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
-	collision_shape.shape = rectangle_shape
-	
-	static_body.add_child(collision_shape)
-	parent_node.add_child(static_body)
-
-# --- CORRECTED HAZARD FUNCTION ---
-func _create_hazard_tile(parent_node: Node, pos: Vector2):
-	var static_body = StaticBody2D.new()
-	static_body.position = pos
-	# FIX: Set its layer to be BOTH "world" (layer 2) and "hazard" (layer 4).
-	# The bitwise OR operation ( | ) combines them. 2 | 8 = 10.
-	static_body.collision_layer = 10
-	# FIX: Add it to BOTH groups so it behaves as both solid ground and a hazard.
-	static_body.add_to_group("world")
-	static_body.add_to_group("hazard")
-	
-	var collision_shape = CollisionShape2D.new()
-	var rectangle_shape = RectangleShape2D.new()
-	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
-	collision_shape.shape = rectangle_shape
-	
-	static_body.add_child(collision_shape)
-	parent_node.add_child(static_body)
 
 =====================================
 FILE: ./src/core/audio_manager.gd
@@ -3741,7 +3779,11 @@ func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop(); print("Healing canceled.")
 	
-func _trigger_hit_flash(): visual_sprite.color = Color.DODGER_BLUE
+# --- BUG FIX STARTS HERE ---
+func _trigger_hit_flash():
+	visual_sprite.color = Color.DODGER_BLUE
+	hit_flash_timer.start() # This line was missing.
+# --- BUG FIX ENDS HERE ---
 
 func _fire_shot():
 	attack_cooldown_timer = Constants.ATTACK_COOLDOWN

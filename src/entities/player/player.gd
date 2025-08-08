@@ -173,7 +173,11 @@ func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop(); print("Healing canceled.")
 	
-func _trigger_hit_flash(): visual_sprite.color = Color.DODGER_BLUE
+# --- BUG FIX STARTS HERE ---
+func _trigger_hit_flash():
+	visual_sprite.color = Color.DODGER_BLUE
+	hit_flash_timer.start() # This line was missing.
+# --- BUG FIX ENDS HERE ---
 
 func _fire_shot():
 	attack_cooldown_timer = Constants.ATTACK_COOLDOWN
