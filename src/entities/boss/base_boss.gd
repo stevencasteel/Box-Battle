@@ -3,7 +3,7 @@
 extends CharacterBody2D
 
 # --- Signals ---
-signal health_changed(current_health, max_health) # Kept for compatibility
+signal health_changed(current_health, max_health)
 signal died
 
 # --- Enums ---
@@ -17,6 +17,7 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 @onready var hit_flash_timer: Timer = $HitFlashTimer
 
 # --- Preloads ---
+# State preloads have been removed to use global class_name instead.
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
 
 # --- State Machine ---
@@ -24,15 +25,18 @@ var states: Dictionary
 var current_state: BossState
 
 # --- Boss Stats & Properties (Shared Data) ---
-var health = Constants.BOSS_HEALTH
+var health: int
 var player: CharacterBody2D = null
 var facing_direction = -1.0
-var patrol_speed = 100.0
+var patrol_speed: float
 var original_color: Color
 var current_attack: AttackPattern
 
 # --- Engine Functions ---
 func _ready():
+	health = Config.get_value("boss.stats.health", 30)
+	patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
+
 	add_to_group("enemy")
 	original_color = visual_sprite.color
 	player = get_tree().get_first_node_in_group("player")
@@ -45,11 +49,11 @@ func _ready():
 	}
 	
 	change_state(State.COOLDOWN)
-	_emit_health_changed_event() # Initial emit
+	_emit_health_changed_event()
 
 func _physics_process(delta):
 	if not is_on_floor():
-		velocity.y += Constants.GRAVITY * delta
+		velocity.y += Config.get_value("general.physics.gravity") * delta
 
 	if current_state:
 		current_state.process_physics(delta)
@@ -59,7 +63,6 @@ func _physics_process(delta):
 	if states.find_key(current_state) == State.PATROL and is_on_wall():
 		facing_direction *= -1.0
 
-# --- State Management ---
 func change_state(new_state_key: State):
 	if not states.has(new_state_key): return
 	if current_state == states[new_state_key]: return
@@ -68,15 +71,13 @@ func change_state(new_state_key: State):
 	current_state = states[new_state_key]
 	current_state.enter()
 
-# --- Event Emitter ---
 func _emit_health_changed_event():
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = health
-	ev.max_health = Constants.BOSS_HEALTH
+	ev.max_health = Config.get_value("boss.stats.health")
 	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
-	health_changed.emit(health, Constants.BOSS_HEALTH) # Compatibility
+	health_changed.emit(health, Config.get_value("boss.stats.health"))
 
-# --- Helper Functions ---
 func _update_player_tracking():
 	if is_instance_valid(player):
 		var direction_to_player = player.global_position.x - global_position.x
@@ -108,7 +109,6 @@ func _trigger_hit_flash():
 	visual_sprite.color = Color.DODGER_BLUE
 	hit_flash_timer.start()
 
-# --- Signal Callbacks ---
 func _on_hit_flash_timer_timeout():
 	visual_sprite.color = original_color
 

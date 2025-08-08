@@ -5,13 +5,12 @@ extends PlayerState
 func enter():
 	player.is_dash_invincible = true
 	player.can_dash = false
-	player.dash_duration_timer = Constants.DASH_DURATION
-	player.dash_cooldown_timer = Constants.DASH_COOLDOWN
-	player.velocity = _get_dash_direction() * Constants.DASH_SPEED
+	player.dash_duration_timer = Config.get_value("player.physics.dash_duration")
+	player.dash_cooldown_timer = Config.get_value("player.physics.dash_cooldown")
+	player.velocity = _get_dash_direction() * Config.get_value("player.physics.dash_speed")
 
 func exit():
 	player.is_dash_invincible = false
-	# A small safety check to ensure player doesn't stick to walls after a dash.
 	player.velocity = player.velocity * 0.5 
 
 func process_physics(_delta: float):

@@ -3,16 +3,15 @@
 extends PlayerState
 
 func enter():
-	player.velocity.y = -Constants.PLAYER_JUMP_FORCE
+	player.velocity.y = -Config.get_value("player.physics.jump_force")
 	player.coyote_timer = 0
 	player.jump_buffer_timer = 0
 
 func process_physics(delta: float):
-	# REFINEMENT: Call the centralized movement function.
 	player.apply_horizontal_movement()
 	
 	if Input.is_action_just_released("ui_jump") and player.velocity.y < 0:
-		player.velocity.y *= Constants.JUMP_RELEASE_DAMPENER
+		player.velocity.y *= Config.get_value("player.physics.jump_release_dampener")
 
 	_apply_gravity(delta)
 	
@@ -23,7 +22,7 @@ func process_physics(delta: float):
 	_check_for_wall_slide()
 
 func _apply_gravity(delta):
-	player.velocity.y += Constants.GRAVITY * delta
+	player.velocity.y += Config.get_value("general.physics.gravity") * delta
 	if player.velocity.y > 0.0:
 		player.change_state(player.State.FALL)
 

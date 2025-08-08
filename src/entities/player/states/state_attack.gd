@@ -3,8 +3,8 @@
 extends PlayerState
 
 func enter():
-	player.attack_duration_timer = Constants.ATTACK_DURATION
-	player.attack_cooldown_timer = Constants.ATTACK_COOLDOWN
+	player.attack_duration_timer = Config.get_value("player.combat.attack_duration")
+	player.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
 	player.hitbox_shape.disabled = false
 	player.is_pogo_attack = false
 	
@@ -12,12 +12,10 @@ func enter():
 		player.is_pogo_attack = true
 		player.hitbox.position = Vector2(0, 60)
 		
-		# If we're on the floor, we know the ground is there, so just trigger the bounce.
 		if player.is_on_floor():
-			player._trigger_pogo(null) # Pass null because the floor isn't a damageable target.
+			player._trigger_pogo(null)
 			return
 		
-		# If we're in the air, do the physics check for enemies/projectiles.
 		if _check_for_immediate_pogo():
 			return
 			
@@ -31,9 +29,9 @@ func exit():
 	player.is_pogo_attack = false
 
 func process_physics(delta: float):
-	# Apply friction only if not pogoing. A pogo attack should preserve momentum.
 	if not player.is_pogo_attack:
-		player.velocity = player.velocity.move_toward(Vector2.ZERO, Constants.PLAYER_ATTACK_FRICTION * delta)
+		var friction = Config.get_value("player.combat.attack_friction")
+		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
 	if player.attack_duration_timer <= 0:
 		player.change_state(player.State.FALL)
@@ -42,7 +40,7 @@ func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = player.hitbox_shape.shape
 	query.transform = player.global_transform * player.hitbox.transform
-	query.collision_mask = 2 | 4 | 8 | 16 # World, Enemy, Hazard, Enemy Projectile
+	query.collision_mask = 2 | 4 | 8 | 16
 	query.exclude = [player]
 	
 	var results = player.get_world_2d().direct_space_state.intersect_shape(query)

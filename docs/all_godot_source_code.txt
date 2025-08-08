@@ -2,13 +2,15 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Fri Aug  8 13:35:03 CDT 2025
+Generated on: Fri Aug  8 14:17:09 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
 ├── README.md
+├── data
+│   └── combat_config.json
 ├── default_bus_layout.tres
 ├── docs
 │   ├── ARCHITECTURE.txt
@@ -34,6 +36,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── arena_00_encounter.gd
     │   └── arena_00_layout.gd
     ├── core
+    │   ├── Config.gd
     │   ├── arena_builder.gd
     │   ├── asset_paths.gd
     │   ├── audio_manager.gd
@@ -126,7 +129,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-32 directories, 86 files
+33 directories, 88 files
 
 
 =====================================
@@ -154,51 +157,10 @@ FILE: ./docs/TODO.txt
 ║   work that enables all future features to be built cleanly and efficiently. ║
 ║                                                                              ║
 ║   ■  1. Implement the Event Bus                                              ║
-║      ░  WHY: This is the new central nervous system for the game. It will    ║
-║      ░  decouple all our systems, from UI to gameplay to audio, making the   ║
-║      ░  entire codebase more modular and easier to manage (Dependency Inversion).║
-║      ░  HOW:                                                                 ║
-║      ░    1. Create a new autoload singleton: `EventBus.gd`.                 ║
-║      ░    2. Implement three core functions: `on(event, callback)`,          ║
-║      ░       `off(event, callback)`, and `emit(event, payload)`.             ║
-║      ░    3. Create `EventCatalog.gd` to store all event names as constants. ║
-║      ░    4. Refactor existing direct signal connections (e.g., in `game_hud.gd`)║
-║      ░       to use the Event Bus. The HUD will listen for global events like ║
-║      ░       `EventCatalog.PLAYER_HEALTH_CHANGED` instead of connecting directly.║
-║                                                                              ║
 ║   ■  2. Refactor Player to use the State Pattern                             ║
-║      ░  WHY: `player.gd` is a large, monolithic script. This refactor will   ║
-║      ░  decouple the logic for each state into its own class, making the     ║
-║      ░  system cleaner and easier to extend (Open/Closed Principle).         ║
-║      ░  HOW: Follow the detailed plan to create a `states` subdirectory for  ║
-║      ░  the player, create a `PlayerState` base class, and migrate the logic ║
-║      ░  for each state into its own file. `player.gd` will become a "Context"║
-║      ░  that simply manages the current state object.                        ║
-║                                                                              ║
 ║   ■  3. Implement the Centralized Sequencer                                  ║
-║      ░  WHY: To eliminate scattered `Timer` nodes and `await` calls for      ║
-║      ░  scripted events. This provides a clean, readable way to create       ║
-║      ░  cinematic sequences like boss intros or multi-stage attacks.         ║
-║      ░  HOW: Create a new autoload singleton: `Sequencer.gd`. Implement a    ║
-║      ░  `run_sequence(steps: Array)` function that can process a list of     ║
-║      ░  commands like `wait`, `emit` (on Event Bus), and `call` (a function).║
-║                                                                              ║
 ║   ■  4. Refactor Base Boss to use the State Pattern                          ║
-║      ░  WHY: To mirror the player's clean architecture, preparing the boss   ║
-║      ░  for the advanced "kitchen sink" mechanics planned for a later phase. ║
-║      ░  HOW: Apply the exact same State Pattern as used for the Player,      ║
-║      ░  creating a `states` subdirectory and migrating state logic into      ║
-║      ░  separate, focused class files.                                       ║
-║                                                                              ║
 ║   ■  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
-║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs. Separating these ║
-║      ░  roles will make the level generation pipeline more robust and easier ║
-║      ░  to maintain.                                                         ║
-║      ░  HOW: Split the current logic into three new classes:                 ║
-║      ░    - `LevelParser.gd`: Reads data from layout/encounter files.        ║
-║      ░    - `TerrainBuilder.gd`: Creates the static level geometry (tiles).  ║
-║      ░    - `EncounterDirector.gd`: Spawns all dynamic entities (player, boss).║
-║      ░  `ArenaBuilder.gd` will become a simple coordinator of these new classes.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██            PHASE 2: DATA-DRIVEN & VISUAL FOUNDATION                  ██  ║
@@ -207,7 +169,7 @@ FILE: ./docs/TODO.txt
 ║   This phase separates hard-coded values from our logic and builds the key   ║
 ║   visual components needed to achieve our "Framer + Geometry Wars" aesthetic.║
 ║                                                                              ║
-║   □  1. Implement Data-Driven Configs (JSON)                                 ║
+║   ■  1. Implement Data-Driven Configs (JSON)                                 ║
 ║      ░  WHY: To centralize all tuning and balancing numbers (damage, health, ║
 ║      ░  cooldowns) into external, human-readable files. This allows for rapid║
 ║      ░  iteration without changing any code.                                 ║
@@ -254,7 +216,7 @@ FILE: ./docs/TODO.txt
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██           PHASE 4: FUTURE EXPANSION & DEFERRED TASKS                 ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║
 ║                                                                              ║
@@ -828,6 +790,10 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
+║      ░ ■ Implemented the `Config.gd` autoload for loading all `.json` files ║
+║      ░   from a new `res://data/` directory.                                 ║
+║      ░ ■ Created `combat_config.json` to house all gameplay-related tuning  ║
+║      ░   values, such as health, speed, damage, and cooldowns.               ║
 ║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event   ║
 ║      ░   sequences, completing the Phase 1 architectural refactor.           ║
 ║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog` ║
@@ -838,6 +804,11 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   to ensure type safety and improve developer ergonomics.             ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored the entire codebase to be data-driven. All gameplay      ║
+║      ░   "magic numbers" are now pulled from `Config.get_value()` instead of ║
+║      ░   being hard-coded in `Constants.gd` or other scripts.                ║
+║      ░ ■ The `Constants.gd` singleton has been streamlined to only contain   ║
+║      ░   true, non-tunable constants like `TILE_SIZE`.                       ║
 ║      ░ ■ The `EncounterDirector` now uses the `Sequencer` to run a clean,    ║
 ║      ░   readable, and dramatic introduction sequence for the boss.          ║
 ║      ░ ■ The main `game.gd` scene now listens for pause/resume events to     ║
@@ -858,6 +829,12 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   maintainability, adhering to SOLID principles.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Renamed `Config.get()` to `Config.get_value()` to resolve a conflict║
+║      ░   with the native Godot `Object.get()` method.                        ║
+║      ░ ■ Resolved `SHADOWED_GLOBAL_IDENTIFIER` warnings in `base_boss.gd` by ║
+║      ░   removing redundant `preload` constants and using the global `class_name`.║
+║      ░ ■ Resolved `Identifier not declared` errors in `player.gd` by         ║
+║      ░   restoring necessary `preload` constants for its local state scripts.║
 ║      ░ ■ Resolved bug where Player hit flash timer would not reset, leaving  ║
 ║      ░   the player sprite permanently changed after taking damage.          ║
 ║                                                                              ║
@@ -1275,6 +1252,7 @@ GameManager="*res://src/core/game_manager.gd"
 ArenaBuilder="*res://src/core/arena_builder.gd"
 EventBus="*res://src/core/event_bus.gd"
 Sequencer="*res://src/core/sequencer.gd"
+Config="*res://src/core/Config.gd"
 
 [display]
 
@@ -1376,13 +1354,19 @@ var _player_charges_token: int = 0
 var _boss_health_token: int = 0
 
 func _ready():
-	# Subscribe to global events. We store the returned tokens to safely unsubscribe later.
 	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
 	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
 	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
+	
+	# Set initial state from config, as events may not have fired yet.
+	var max_health = Config.get_value("player.health.max_health", 5)
+	player_health_value.text = "%d / %d" % [max_health, max_health]
+	player_heal_charges_value.text = "0"
+	boss_health_bar.max_value = Config.get_value("boss.stats.health", 30)
+	boss_health_bar.value = boss_health_bar.max_value
+
 
 func _exit_tree():
-	# CRITICAL: Always unsubscribe from events when the node is freed to prevent memory leaks.
 	EventBus.off(_player_health_token)
 	EventBus.off(_player_charges_token)
 	EventBus.off(_boss_health_token)
@@ -3015,6 +2999,66 @@ func run_intro_sequence() -> void:
 
 
 =====================================
+FILE: ./src/core/Config.gd
+=====================================
+# src/core/Config.gd
+#
+# An autoloaded singleton responsible for loading all configuration files
+# from the res://data/ directory at startup. It provides a simple dot-notation
+# getter to access nested configuration values from anywhere in the project.
+extends Node
+
+var _config_data: Dictionary = {}
+
+func _ready() -> void:
+	_load_all_configs()
+
+# Public getter to retrieve a config value using a dot-separated key.
+# Example: Config.get_value("player.physics.speed")
+func get_value(key: String, default = null):
+	var parts = key.split(".")
+	var current_level = _config_data
+	for part in parts:
+		if current_level is Dictionary and current_level.has(part):
+			current_level = current_level[part]
+		else:
+			push_warning("Config.get_value: Key '%s' not found." % key)
+			return default
+	return current_level
+
+# --- Internal Functions ---
+
+func _load_all_configs() -> void:
+	var dir = DirAccess.open("res://data")
+	if not dir:
+		push_error("Config: Could not open 'res://data/' directory. Make sure it exists.")
+		return
+
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".json"):
+			_load_and_parse_file("res://data/" + file_name)
+		file_name = dir.get_next()
+
+func _load_and_parse_file(file_path: String) -> void:
+	var file = FileAccess.open(file_path, FileAccess.READ)
+	if not file:
+		push_error("Config: Failed to open config file: %s" % file_path)
+		return
+
+	var content = file.get_as_text()
+	var json = JSON.new()
+	var error = json.parse(content)
+	if error != OK:
+		push_error("Config: Failed to parse JSON in %s. Error: %s at line %d" % [file_path, json.get_error_message(), json.get_error_line()])
+		return
+
+	# Merge the data from this file into our main dictionary.
+	_config_data.merge(json.data, true)
+
+
+=====================================
 FILE: ./src/core/game_manager.gd
 =====================================
 # src/core/game_manager.gd
@@ -3402,9 +3446,9 @@ FILE: ./src/core/constants.gd
 =====================================
 # src/core/constants.gd
 #
-# This singleton holds global game design constants. Centralizing these values
-# makes it much easier to balance and tune the game's feel without having to
-# hunt through multiple files.
+# This singleton now only holds true global constants that are not meant for
+# gameplay tuning, such as UI layout numbers or asset counts. All gameplay
+# values have been moved to combat_config.json.
 extends Node
 
 # --- Audio ---
@@ -3412,44 +3456,6 @@ const NUM_SFX_PLAYERS = 8 # The number of sound effects that can play at once.
 
 # --- Arena Design ---
 const TILE_SIZE = 50
-
-# --- General Physics ---
-const GRAVITY = 1200.0
-
-# --- Player Physics ---
-const PLAYER_SPEED = 450.0
-const PLAYER_JUMP_FORCE = 680.0
-const POGO_FORCE = 450.0
-const COYOTE_TIME = 0.1
-const JUMP_BUFFER = 0.1
-const JUMP_RELEASE_DAMPENER = 0.4
-const WALL_COYOTE_TIME = 0.05
-const FAST_FALL_GRAVITY_MULTIPLIER = 1.4
-# Set to 0 to disable double jump for testing. Set back to 1 to re-enable.
-const MAX_AIR_JUMPS = 0
-const DASH_SPEED = 1400.0
-const DASH_DURATION = 0.15
-const DASH_COOLDOWN = 0.5
-const WALL_SLIDE_SPEED = 120.0
-const WALL_JUMP_FORCE_X = 1650.0
-const WALL_JUMP_FORCE_Y = 680.0
-
-# --- Player Combat & Health ---
-const PLAYER_MAX_HEALTH = 5
-const PLAYER_HEAL_DURATION = 2.0 # How many seconds it takes to heal.
-const PLAYER_MAX_HEALING_CHARGES = 1 # The maximum number of heal charges the player can store.
-const ATTACK_COOLDOWN = 0.12
-const CHARGE_TIME = 0.35
-const ATTACK_DURATION = 0.1
-const PLAYER_ATTACK_FRICTION = 2000.0
-const KNOCKBACK_SPEED = 700.0
-const KNOCKBACK_DURATION = 0.1
-const HAZARD_KNOCKBACK_SPEED = 400.0
-const DETERMINATION_PER_CHARGE = 10
-const PLAYER_INVINCIBILITY_DURATION = 1.5
-
-# --- Boss Stats ---
-const BOSS_HEALTH = 30
 
 =====================================
 FILE: ./src/arenas/arena_00_layout.gd
@@ -3808,7 +3814,7 @@ FILE: ./src/entities/boss/base_boss.gd
 extends CharacterBody2D
 
 # --- Signals ---
-signal health_changed(current_health, max_health) # Kept for compatibility
+signal health_changed(current_health, max_health)
 signal died
 
 # --- Enums ---
@@ -3822,6 +3828,7 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 @onready var hit_flash_timer: Timer = $HitFlashTimer
 
 # --- Preloads ---
+# State preloads have been removed to use global class_name instead.
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
 
 # --- State Machine ---
@@ -3829,15 +3836,18 @@ var states: Dictionary
 var current_state: BossState
 
 # --- Boss Stats & Properties (Shared Data) ---
-var health = Constants.BOSS_HEALTH
+var health: int
 var player: CharacterBody2D = null
 var facing_direction = -1.0
-var patrol_speed = 100.0
+var patrol_speed: float
 var original_color: Color
 var current_attack: AttackPattern
 
 # --- Engine Functions ---
 func _ready():
+	health = Config.get_value("boss.stats.health", 30)
+	patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
+
 	add_to_group("enemy")
 	original_color = visual_sprite.color
 	player = get_tree().get_first_node_in_group("player")
@@ -3850,11 +3860,11 @@ func _ready():
 	}
 	
 	change_state(State.COOLDOWN)
-	_emit_health_changed_event() # Initial emit
+	_emit_health_changed_event()
 
 func _physics_process(delta):
 	if not is_on_floor():
-		velocity.y += Constants.GRAVITY * delta
+		velocity.y += Config.get_value("general.physics.gravity") * delta
 
 	if current_state:
 		current_state.process_physics(delta)
@@ -3864,7 +3874,6 @@ func _physics_process(delta):
 	if states.find_key(current_state) == State.PATROL and is_on_wall():
 		facing_direction *= -1.0
 
-# --- State Management ---
 func change_state(new_state_key: State):
 	if not states.has(new_state_key): return
 	if current_state == states[new_state_key]: return
@@ -3873,15 +3882,13 @@ func change_state(new_state_key: State):
 	current_state = states[new_state_key]
 	current_state.enter()
 
-# --- Event Emitter ---
 func _emit_health_changed_event():
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = health
-	ev.max_health = Constants.BOSS_HEALTH
+	ev.max_health = Config.get_value("boss.stats.health")
 	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
-	health_changed.emit(health, Constants.BOSS_HEALTH) # Compatibility
+	health_changed.emit(health, Config.get_value("boss.stats.health"))
 
-# --- Helper Functions ---
 func _update_player_tracking():
 	if is_instance_valid(player):
 		var direction_to_player = player.global_position.x - global_position.x
@@ -3913,7 +3920,6 @@ func _trigger_hit_flash():
 	visual_sprite.color = Color.DODGER_BLUE
 	hit_flash_timer.start()
 
-# --- Signal Callbacks ---
 func _on_hit_flash_timer_timeout():
 	visual_sprite.color = original_color
 
@@ -3991,8 +3997,8 @@ FILE: ./src/entities/player/player.gd
 extends CharacterBody2D
 
 # --- Signals ---
-signal health_changed(current_health, max_health) # Kept for backward compatibility
-signal healing_charges_changed(current_charges) # Kept for backward compatibility
+signal health_changed(current_health, max_health)
+signal healing_charges_changed(current_charges)
 signal died
 
 # --- State Enum ---
@@ -4008,6 +4014,7 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 
 # --- Preloads ---
+# RE-ADDED: These are necessary because player state scripts do not use global class_name.
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const MoveState = preload("res://src/entities/player/states/state_move.gd")
 const FallState = preload("res://src/entities/player/states/state_fall.gd")
@@ -4024,7 +4031,7 @@ var current_state: PlayerState
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 
 # --- Player Stats & Timers (Shared Data) ---
-var health = Constants.PLAYER_MAX_HEALTH
+var health: int
 var air_jumps_left = 0
 var coyote_timer = 0.0
 var jump_buffer_timer = 0.0
@@ -4048,6 +4055,8 @@ var original_color: Color
 
 # --- Engine Functions ---
 func _ready():
+	health = Config.get_value("player.health.max_health", 5)
+	
 	add_to_group("player")
 	original_color = visual_sprite.color
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
@@ -4064,7 +4073,7 @@ func _ready():
 	current_state.enter()
 	
 	_emit_health_changed_event()
-	_emit_healing_charges_changed_event() # Initial emit
+	_emit_healing_charges_changed_event()
 
 func _physics_process(delta):
 	_update_timers(delta)
@@ -4073,7 +4082,7 @@ func _physics_process(delta):
 	move_and_slide()
 	_check_for_contact_damage()
 	if is_on_wall() and not is_on_floor():
-		wall_coyote_timer = Constants.WALL_COYOTE_TIME
+		wall_coyote_timer = Config.get_value("player.physics.wall_coyote_time")
 		last_wall_normal = get_wall_normal()
 
 func _unhandled_input(event: InputEvent):
@@ -4093,13 +4102,13 @@ func _update_timers(delta):
 
 func _poll_global_inputs():
 	if Input.is_action_just_pressed("ui_jump"):
-		jump_buffer_timer = Constants.JUMP_BUFFER
+		jump_buffer_timer = Config.get_value("player.physics.jump_buffer")
 	if not states.find_key(current_state) in ACTION_ALLOWED_STATES: return
 	if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
 		is_charging = true; charge_timer = 0.0
 	if Input.is_action_just_released("ui_attack"):
 		if is_charging:
-			if charge_timer >= Constants.CHARGE_TIME: _fire_shot()
+			if charge_timer >= Config.get_value("player.combat.charge_time"): _fire_shot()
 			else: change_state(State.ATTACK)
 			is_charging = false
 	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
@@ -4114,23 +4123,22 @@ func change_state(new_state_key: State):
 	current_state.enter()
 
 func apply_horizontal_movement():
-	velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
+	velocity.x = Input.get_axis("ui_left", "ui_right") * Config.get_value("player.physics.speed")
 	if not is_zero_approx(velocity.x):
 		facing_direction = sign(velocity.x)
 
-# --- Event Emitter Functions ---
 func _emit_health_changed_event():
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = health
-	ev.max_health = Constants.PLAYER_MAX_HEALTH
+	ev.max_health = Config.get_value("player.health.max_health")
 	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)
-	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH) # Compatibility
+	health_changed.emit(health, Config.get_value("player.health.max_health"))
 
 func _emit_healing_charges_changed_event():
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = healing_charges
 	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev, self)
-	healing_charges_changed.emit(healing_charges) # Compatibility
+	healing_charges_changed.emit(healing_charges)
 
 func take_damage(damage_amount: int, damage_source = null):
 	if is_invincible or is_dash_invincible: return
@@ -4138,11 +4146,11 @@ func take_damage(damage_amount: int, damage_source = null):
 	_emit_health_changed_event()
 	_trigger_hit_flash()
 	is_invincible = true
-	invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION)
+	invincibility_timer.start(Config.get_value("player.health.invincibility_duration"))
 	if damage_source:
 		var knockback_dir = (global_position - damage_source.global_position).normalized()
-		var knockback_str = Constants.KNOCKBACK_SPEED
-		if damage_source.is_in_group("hazard"): knockback_str = Constants.HAZARD_KNOCKBACK_SPEED
+		var knockback_str = Config.get_value("player.combat.knockback_speed")
+		if damage_source.is_in_group("hazard"): knockback_str = Config.get_value("player.combat.hazard_knockback_speed")
 		velocity = (knockback_dir + Vector2.UP * 0.5).normalized() * knockback_str
 	change_state(State.HURT)
 	if health <= 0: die()
@@ -4156,9 +4164,9 @@ func _check_for_contact_damage():
 			take_damage(1, col.get_collider()); break
 
 func _on_damage_dealt():
-	if healing_charges >= Constants.PLAYER_MAX_HEALING_CHARGES: return
+	if healing_charges >= Config.get_value("player.health.max_healing_charges"): return
 	determination_counter += 1
-	if determination_counter >= Constants.DETERMINATION_PER_CHARGE:
+	if determination_counter >= Config.get_value("player.combat.determination_per_charge"):
 		determination_counter = 0; healing_charges += 1
 		_emit_healing_charges_changed_event()
 
@@ -4171,7 +4179,7 @@ func _trigger_hit_flash():
 	hit_flash_timer.start()
 
 func _fire_shot():
-	attack_cooldown_timer = Constants.ATTACK_COOLDOWN
+	attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
 	var shot_dir = Vector2(facing_direction, 0)
 	if Input.is_action_pressed("ui_up"): shot_dir = Vector2.UP
 	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
@@ -4180,9 +4188,9 @@ func _fire_shot():
 	get_parent().add_child(shot)
 
 func _trigger_pogo(pogo_target):
-	velocity.y = -Constants.POGO_FORCE
+	velocity.y = -Config.get_value("player.physics.pogo_force")
 	position.y -= 1; can_dash = true
-	air_jumps_left = Constants.MAX_AIR_JUMPS
+	air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 	change_state(State.FALL)
 	if pogo_target:
 		if pogo_target.has_method("take_damage"):
@@ -4190,7 +4198,6 @@ func _trigger_pogo(pogo_target):
 		elif pogo_target.is_in_group("enemy_projectile"):
 			pogo_target.queue_free()
 
-# --- Signal Callbacks ---
 func _on_hit_flash_timer_timeout(): visual_sprite.color = original_color
 
 func _on_hitbox_body_entered(body):
@@ -4209,7 +4216,7 @@ func _on_invincibility_timer_timeout(): is_invincible = false
 
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
-		health = min(health + 1, Constants.PLAYER_MAX_HEALTH); healing_charges -= 1
+		health = min(health + 1, Config.get_value("player.health.max_health")); healing_charges -= 1
 		_emit_health_changed_event()
 		_emit_healing_charges_changed_event()
 		change_state(State.MOVE)
@@ -4223,16 +4230,15 @@ FILE: ./src/entities/player/states/state_jump.gd
 extends PlayerState
 
 func enter():
-	player.velocity.y = -Constants.PLAYER_JUMP_FORCE
+	player.velocity.y = -Config.get_value("player.physics.jump_force")
 	player.coyote_timer = 0
 	player.jump_buffer_timer = 0
 
 func process_physics(delta: float):
-	# REFINEMENT: Call the centralized movement function.
 	player.apply_horizontal_movement()
 	
 	if Input.is_action_just_released("ui_jump") and player.velocity.y < 0:
-		player.velocity.y *= Constants.JUMP_RELEASE_DAMPENER
+		player.velocity.y *= Config.get_value("player.physics.jump_release_dampener")
 
 	_apply_gravity(delta)
 	
@@ -4243,7 +4249,7 @@ func process_physics(delta: float):
 	_check_for_wall_slide()
 
 func _apply_gravity(delta):
-	player.velocity.y += Constants.GRAVITY * delta
+	player.velocity.y += Config.get_value("general.physics.gravity") * delta
 	if player.velocity.y > 0.0:
 		player.change_state(player.State.FALL)
 
@@ -4262,13 +4268,12 @@ extends PlayerState
 func enter():
 	player.is_dash_invincible = true
 	player.can_dash = false
-	player.dash_duration_timer = Constants.DASH_DURATION
-	player.dash_cooldown_timer = Constants.DASH_COOLDOWN
-	player.velocity = _get_dash_direction() * Constants.DASH_SPEED
+	player.dash_duration_timer = Config.get_value("player.physics.dash_duration")
+	player.dash_cooldown_timer = Config.get_value("player.physics.dash_cooldown")
+	player.velocity = _get_dash_direction() * Config.get_value("player.physics.dash_speed")
 
 func exit():
 	player.is_dash_invincible = false
-	# A small safety check to ensure player doesn't stick to walls after a dash.
 	player.velocity = player.velocity * 0.5 
 
 func process_physics(_delta: float):
@@ -4290,14 +4295,13 @@ extends PlayerState
 
 func enter():
 	player.velocity = Vector2.ZERO
-	player.healing_timer.start(Constants.PLAYER_HEAL_DURATION)
+	player.healing_timer.start(Config.get_value("player.health.heal_duration"))
 	print("Healing started...")
 
 func exit():
 	player._cancel_heal()
 
 func process_physics(_delta: float):
-	# Cancel healing if conditions are broken (e.g., player moves or is no longer grounded)
 	if not Input.is_action_pressed("ui_down") or not Input.is_action_pressed("ui_jump") or not is_zero_approx(player.velocity.x) or not player.is_on_floor():
 		player.change_state(player.State.MOVE)
 
@@ -4340,26 +4344,26 @@ extends PlayerState
 
 func enter():
 	player.can_dash = true
-	player.air_jumps_left = Constants.MAX_AIR_JUMPS
+	player.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 
 func exit():
 	if player.last_wall_normal != Vector2.ZERO:
 		player.facing_direction = player.last_wall_normal.x
 
 func process_physics(delta: float):
-	player.velocity.y = min(player.velocity.y + Constants.GRAVITY * delta, Constants.WALL_SLIDE_SPEED)
+	var gravity = Config.get_value("general.physics.gravity")
+	var wall_slide_speed = Config.get_value("player.physics.wall_slide_speed")
+	player.velocity.y = min(player.velocity.y + gravity * delta, wall_slide_speed)
 	player.facing_direction = -player.last_wall_normal.x
 	
 	if player.jump_buffer_timer > 0:
 		_perform_wall_jump()
 		return
 	
-	# Check if player is no longer holding into the wall
 	if Input.get_axis("ui_left", "ui_right") * -player.last_wall_normal.x < 0.8:
 		player.change_state(player.State.FALL)
 		return
 		
-	# Check if wall coyote time has run out
 	if player.wall_coyote_timer <= 0:
 		player.change_state(player.State.FALL)
 		return
@@ -4369,8 +4373,8 @@ func process_physics(delta: float):
 		return
 
 func _perform_wall_jump():
-	player.velocity.y = -Constants.WALL_JUMP_FORCE_Y
-	player.velocity.x = player.last_wall_normal.x * Constants.WALL_JUMP_FORCE_X
+	player.velocity.y = -Config.get_value("player.physics.wall_jump_force_y")
+	player.velocity.x = player.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
 	player.jump_buffer_timer = 0
 	player.coyote_timer = 0
 	player.wall_coyote_timer = 0
@@ -4384,8 +4388,8 @@ FILE: ./src/entities/player/states/state_attack.gd
 extends PlayerState
 
 func enter():
-	player.attack_duration_timer = Constants.ATTACK_DURATION
-	player.attack_cooldown_timer = Constants.ATTACK_COOLDOWN
+	player.attack_duration_timer = Config.get_value("player.combat.attack_duration")
+	player.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
 	player.hitbox_shape.disabled = false
 	player.is_pogo_attack = false
 	
@@ -4393,12 +4397,10 @@ func enter():
 		player.is_pogo_attack = true
 		player.hitbox.position = Vector2(0, 60)
 		
-		# If we're on the floor, we know the ground is there, so just trigger the bounce.
 		if player.is_on_floor():
-			player._trigger_pogo(null) # Pass null because the floor isn't a damageable target.
+			player._trigger_pogo(null)
 			return
 		
-		# If we're in the air, do the physics check for enemies/projectiles.
 		if _check_for_immediate_pogo():
 			return
 			
@@ -4412,9 +4414,9 @@ func exit():
 	player.is_pogo_attack = false
 
 func process_physics(delta: float):
-	# Apply friction only if not pogoing. A pogo attack should preserve momentum.
 	if not player.is_pogo_attack:
-		player.velocity = player.velocity.move_toward(Vector2.ZERO, Constants.PLAYER_ATTACK_FRICTION * delta)
+		var friction = Config.get_value("player.combat.attack_friction")
+		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
 	if player.attack_duration_timer <= 0:
 		player.change_state(player.State.FALL)
@@ -4423,7 +4425,7 @@ func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = player.hitbox_shape.shape
 	query.transform = player.global_transform * player.hitbox.transform
-	query.collision_mask = 2 | 4 | 8 | 16 # World, Enemy, Hazard, Enemy Projectile
+	query.collision_mask = 2 | 4 | 8 | 16
 	query.exclude = [player]
 	
 	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
@@ -4445,10 +4447,10 @@ extends PlayerState
 func enter():
 	player.is_charging = false
 	player._cancel_heal()
-	player.knockback_timer = Constants.KNOCKBACK_DURATION
+	player.knockback_timer = Config.get_value("player.combat.knockback_duration")
 
 func process_physics(delta):
-	player.velocity.y += Constants.GRAVITY * delta
+	player.velocity.y += Config.get_value("general.physics.gravity") * delta
 	
 	if player.knockback_timer <= 0:
 		player.change_state(player.State.FALL)
@@ -4461,7 +4463,6 @@ FILE: ./src/entities/player/states/state_fall.gd
 extends PlayerState
 
 func process_physics(delta: float):
-	# REFINEMENT: Call the centralized movement function.
 	player.apply_horizontal_movement()
 	_apply_gravity(delta)
 
@@ -4482,8 +4483,8 @@ func process_physics(delta: float):
 func _apply_gravity(delta):
 	var gravity_multiplier = 1.0
 	if Input.is_action_pressed("ui_down"):
-		gravity_multiplier = Constants.FAST_FALL_GRAVITY_MULTIPLIER
-	player.velocity.y += Constants.GRAVITY * gravity_multiplier * delta
+		gravity_multiplier = Config.get_value("player.physics.fast_fall_gravity_multiplier")
+	player.velocity.y += Config.get_value("general.physics.gravity") * gravity_multiplier * delta
 
 func _check_for_wall_slide():
 	if player.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -player.last_wall_normal.x:
@@ -4494,7 +4495,7 @@ func _perform_air_jump():
 	player.change_state(player.State.JUMP)
 	
 func _perform_wall_jump():
-	player.velocity.x = player.last_wall_normal.x * Constants.WALL_JUMP_FORCE_X
+	player.velocity.x = player.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
 	player.coyote_timer = 0
 	player.wall_coyote_timer = 0
 	player.change_state(player.State.JUMP)
@@ -4508,18 +4509,16 @@ FILE: ./src/entities/player/states/state_move.gd
 extends PlayerState
 
 func enter():
-	player.air_jumps_left = Constants.MAX_AIR_JUMPS
+	player.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 	player.can_dash = true
 
 func process_physics(delta: float):
-	player.coyote_timer = Constants.COYOTE_TIME
+	player.coyote_timer = Config.get_value("player.physics.coyote_time")
 	
-	player.velocity.y += Constants.GRAVITY * delta
-	# REFINEMENT: Call the centralized movement function.
+	player.velocity.y += Config.get_value("general.physics.gravity") * delta
 	player.apply_horizontal_movement()
 
 	if not player.is_on_floor():
-		# REFINEMENT: Use global enum syntax for clarity.
 		player.change_state(player.State.FALL)
 		return
 	

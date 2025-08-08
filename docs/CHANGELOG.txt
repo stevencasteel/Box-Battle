@@ -16,6 +16,10 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
+║      ░ ■ Implemented the `Config.gd` autoload for loading all `.json` files ║
+║      ░   from a new `res://data/` directory.                                 ║
+║      ░ ■ Created `combat_config.json` to house all gameplay-related tuning  ║
+║      ░   values, such as health, speed, damage, and cooldowns.               ║
 ║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event   ║
 ║      ░   sequences, completing the Phase 1 architectural refactor.           ║
 ║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog` ║
@@ -26,6 +30,11 @@
 ║      ░   to ensure type safety and improve developer ergonomics.             ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored the entire codebase to be data-driven. All gameplay      ║
+║      ░   "magic numbers" are now pulled from `Config.get_value()` instead of ║
+║      ░   being hard-coded in `Constants.gd` or other scripts.                ║
+║      ░ ■ The `Constants.gd` singleton has been streamlined to only contain   ║
+║      ░   true, non-tunable constants like `TILE_SIZE`.                       ║
 ║      ░ ■ The `EncounterDirector` now uses the `Sequencer` to run a clean,    ║
 ║      ░   readable, and dramatic introduction sequence for the boss.          ║
 ║      ░ ■ The main `game.gd` scene now listens for pause/resume events to     ║
@@ -46,6 +55,12 @@
 ║      ░   maintainability, adhering to SOLID principles.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Renamed `Config.get()` to `Config.get_value()` to resolve a conflict║
+║      ░   with the native Godot `Object.get()` method.                        ║
+║      ░ ■ Resolved `SHADOWED_GLOBAL_IDENTIFIER` warnings in `base_boss.gd` by ║
+║      ░   removing redundant `preload` constants and using the global `class_name`.║
+║      ░ ■ Resolved `Identifier not declared` errors in `player.gd` by         ║
+║      ░   restoring necessary `preload` constants for its local state scripts.║
 ║      ░ ■ Resolved bug where Player hit flash timer would not reset, leaving  ║
 ║      ░   the player sprite permanently changed after taking damage.          ║
 ║                                                                              ║

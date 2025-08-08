@@ -14,13 +14,19 @@ var _player_charges_token: int = 0
 var _boss_health_token: int = 0
 
 func _ready():
-	# Subscribe to global events. We store the returned tokens to safely unsubscribe later.
 	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
 	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
 	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
+	
+	# Set initial state from config, as events may not have fired yet.
+	var max_health = Config.get_value("player.health.max_health", 5)
+	player_health_value.text = "%d / %d" % [max_health, max_health]
+	player_heal_charges_value.text = "0"
+	boss_health_bar.max_value = Config.get_value("boss.stats.health", 30)
+	boss_health_bar.value = boss_health_bar.max_value
+
 
 func _exit_tree():
-	# CRITICAL: Always unsubscribe from events when the node is freed to prevent memory leaks.
 	EventBus.off(_player_health_token)
 	EventBus.off(_player_charges_token)
 	EventBus.off(_boss_health_token)

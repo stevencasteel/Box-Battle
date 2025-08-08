@@ -3,18 +3,16 @@
 extends PlayerState
 
 func enter():
-	player.air_jumps_left = Constants.MAX_AIR_JUMPS
+	player.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 	player.can_dash = true
 
 func process_physics(delta: float):
-	player.coyote_timer = Constants.COYOTE_TIME
+	player.coyote_timer = Config.get_value("player.physics.coyote_time")
 	
-	player.velocity.y += Constants.GRAVITY * delta
-	# REFINEMENT: Call the centralized movement function.
+	player.velocity.y += Config.get_value("general.physics.gravity") * delta
 	player.apply_horizontal_movement()
 
 	if not player.is_on_floor():
-		# REFINEMENT: Use global enum syntax for clarity.
 		player.change_state(player.State.FALL)
 		return
 	

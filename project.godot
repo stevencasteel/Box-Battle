@@ -27,6 +27,7 @@ GameManager="*res://src/core/game_manager.gd"
 ArenaBuilder="*res://src/core/arena_builder.gd"
 EventBus="*res://src/core/event_bus.gd"
 Sequencer="*res://src/core/sequencer.gd"
+Config="*res://src/core/Config.gd"
 
 [display]
 
