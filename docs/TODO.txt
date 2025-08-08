@@ -32,7 +32,7 @@
 ║      ░       to use the Event Bus. The HUD will listen for global events like ║
 ║      ░       `EventCatalog.PLAYER_HEALTH_CHANGED` instead of connecting directly.║
 ║                                                                              ║
-║   □  2. Refactor Player to use the State Pattern                             ║
+║   ■  2. Refactor Player to use the State Pattern                             ║
 ║      ░  WHY: `player.gd` is a large, monolithic script. This refactor will   ║
 ║      ░  decouple the logic for each state into its own class, making the     ║
 ║      ░  system cleaner and easier to extend (Open/Closed Principle).         ║
@@ -41,7 +41,7 @@
 ║      ░  for each state into its own file. `player.gd` will become a "Context"║
 ║      ░  that simply manages the current state object.                        ║
 ║                                                                              ║
-║   □  3. Implement the Centralized Sequencer                                  ║
+║   ■  3. Implement the Centralized Sequencer                                  ║
 ║      ░  WHY: To eliminate scattered `Timer` nodes and `await` calls for      ║
 ║      ░  scripted events. This provides a clean, readable way to create       ║
 ║      ░  cinematic sequences like boss intros or multi-stage attacks.         ║
@@ -49,14 +49,14 @@
 ║      ░  `run_sequence(steps: Array)` function that can process a list of     ║
 ║      ░  commands like `wait`, `emit` (on Event Bus), and `call` (a function).║
 ║                                                                              ║
-║   □  4. Refactor Base Boss to use the State Pattern                          ║
+║   ■  4. Refactor Base Boss to use the State Pattern                          ║
 ║      ░  WHY: To mirror the player's clean architecture, preparing the boss   ║
 ║      ░  for the advanced "kitchen sink" mechanics planned for a later phase. ║
 ║      ░  HOW: Apply the exact same State Pattern as used for the Player,      ║
 ║      ░  creating a `states` subdirectory and migrating state logic into      ║
 ║      ░  separate, focused class files.                                       ║
 ║                                                                              ║
-║   □  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
+║   ■  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
 ║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs. Separating these ║
 ║      ░  roles will make the level generation pipeline more robust and easier ║
 ║      ░  to maintain.                                                         ║
@@ -120,7 +120,7 @@
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██           PHASE 4: FUTURE EXPANSION & DEFERRED TASKS                 ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║
 ║                                                                              ║

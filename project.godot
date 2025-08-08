@@ -26,6 +26,7 @@ GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
 GameManager="*res://src/core/game_manager.gd"
 ArenaBuilder="*res://src/core/arena_builder.gd"
 EventBus="*res://src/core/event_bus.gd"
+Sequencer="*res://src/core/sequencer.gd"
 
 [display]
 

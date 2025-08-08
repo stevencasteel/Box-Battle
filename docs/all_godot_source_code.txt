@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Fri Aug  8 11:13:32 CDT 2025
+Generated on: Fri Aug  8 13:35:03 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -44,7 +44,14 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   └── terrain_builder.gd
     │   ├── constants.gd
     │   ├── cursor_manager.gd
+    │   ├── event_bus.gd
+    │   ├── event_catalog.gd
+    │   ├── events
+    │   │   ├── boss_health_changed_event.gd
+    │   │   ├── player_healing_charges_changed_event.gd
+    │   │   └── player_health_changed_event.gd
     │   ├── game_manager.gd
+    │   ├── sequencer.gd
     │   └── settings.gd
     ├── entities
     │   ├── boss
@@ -119,7 +126,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-31 directories, 80 files
+32 directories, 86 files
 
 
 =====================================
@@ -146,7 +153,7 @@ FILE: ./docs/TODO.txt
 ║   align with professional design principles. This is the hard, foundational ║
 ║   work that enables all future features to be built cleanly and efficiently. ║
 ║                                                                              ║
-║   █  1. Implement the Event Bus                                              ║
+║   ■  1. Implement the Event Bus                                              ║
 ║      ░  WHY: This is the new central nervous system for the game. It will    ║
 ║      ░  decouple all our systems, from UI to gameplay to audio, making the   ║
 ║      ░  entire codebase more modular and easier to manage (Dependency Inversion).║
@@ -159,7 +166,7 @@ FILE: ./docs/TODO.txt
 ║      ░       to use the Event Bus. The HUD will listen for global events like ║
 ║      ░       `EventCatalog.PLAYER_HEALTH_CHANGED` instead of connecting directly.║
 ║                                                                              ║
-║   █  2. Refactor Player to use the State Pattern                             ║
+║   ■  2. Refactor Player to use the State Pattern                             ║
 ║      ░  WHY: `player.gd` is a large, monolithic script. This refactor will   ║
 ║      ░  decouple the logic for each state into its own class, making the     ║
 ║      ░  system cleaner and easier to extend (Open/Closed Principle).         ║
@@ -168,7 +175,7 @@ FILE: ./docs/TODO.txt
 ║      ░  for each state into its own file. `player.gd` will become a "Context"║
 ║      ░  that simply manages the current state object.                        ║
 ║                                                                              ║
-║   █  3. Implement the Centralized Sequencer                                  ║
+║   ■  3. Implement the Centralized Sequencer                                  ║
 ║      ░  WHY: To eliminate scattered `Timer` nodes and `await` calls for      ║
 ║      ░  scripted events. This provides a clean, readable way to create       ║
 ║      ░  cinematic sequences like boss intros or multi-stage attacks.         ║
@@ -176,14 +183,14 @@ FILE: ./docs/TODO.txt
 ║      ░  `run_sequence(steps: Array)` function that can process a list of     ║
 ║      ░  commands like `wait`, `emit` (on Event Bus), and `call` (a function).║
 ║                                                                              ║
-║   █  4. Refactor Base Boss to use the State Pattern                          ║
+║   ■  4. Refactor Base Boss to use the State Pattern                          ║
 ║      ░  WHY: To mirror the player's clean architecture, preparing the boss   ║
 ║      ░  for the advanced "kitchen sink" mechanics planned for a later phase. ║
 ║      ░  HOW: Apply the exact same State Pattern as used for the Player,      ║
 ║      ░  creating a `states` subdirectory and migrating state logic into      ║
 ║      ░  separate, focused class files.                                       ║
 ║                                                                              ║
-║   █  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
+║   ■  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
 ║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs. Separating these ║
 ║      ░  roles will make the level generation pipeline more robust and easier ║
 ║      ░  to maintain.                                                         ║
@@ -200,7 +207,7 @@ FILE: ./docs/TODO.txt
 ║   This phase separates hard-coded values from our logic and builds the key   ║
 ║   visual components needed to achieve our "Framer + Geometry Wars" aesthetic.║
 ║                                                                              ║
-║   ▓  1. Implement Data-Driven Configs (JSON)                                 ║
+║   □  1. Implement Data-Driven Configs (JSON)                                 ║
 ║      ░  WHY: To centralize all tuning and balancing numbers (damage, health, ║
 ║      ░  cooldowns) into external, human-readable files. This allows for rapid║
 ║      ░  iteration without changing any code.                                 ║
@@ -208,14 +215,14 @@ FILE: ./docs/TODO.txt
 ║      ░  Move all combat-related values from `Constants.gd` into a new        ║
 ║      ░  `combat_config.json`. Refactor code to pull values from this config. ║
 ║                                                                              ║
-║   ▓  2. Implement the Global Palette System                                  ║
+║   □  2. Implement the Global Palette System                                  ║
 ║      ░  WHY: To enforce a consistent, project-wide color scheme. This is a   ║
 ║      ░  critical prerequisite for the UI overhaul.                           ║
 ║      ░  HOW: Create a `Palette.gd` singleton. Define the 32-step grayscale   ║
 ║      ░  array and create semantic constant names (e.g., `COLOR_PLAYER`).     ║
 ║      ░  Replace all hard-coded colors with calls to this new Palette.        ║
 ║                                                                              ║
-║   ▓  3. UI Overhaul Part 1: The `StyledMenuItem`                             ║
+║   □  3. UI Overhaul Part 1: The `StyledMenuItem`                             ║
 ║      ░  WHY: To create the cornerstone visual component for our new UI. We   ║
 ║      ░  will perfect this one piece before replacing the entire menu system. ║
 ║      ░  HOW: Create a new scene, `StyledMenuItem.tscn`, that extends `Control`.║
@@ -229,25 +236,25 @@ FILE: ./docs/TODO.txt
 ║                                                                              ║
 ║   With a solid architecture, we can now focus on making the game feel amazing.║
 ║                                                                              ║
-║   ▒  1. Refine Player Combat Mechanics ("Game Juice")                        ║
+║   □  1. Refine Player Combat Mechanics ("Game Juice")                        ║
 ║      ░  □ Enhanced Melee Hitbox: Implement a two-part hitbox where the inner ║
 ║      ░    box deals 1.5x damage and the outer deals 1.0x damage.             ║
 ║      ░  □ Input Buffering: Add buffering for attack and dash inputs.         ║
 ║      ░  □ Pogo-Fall Prevention: Add a brief grace period after a pogo to     ║
 ║      ░    prevent accidental fast-falling.                                   ║
 ║                                                                              ║
-║   ▒  2. Implement "Kitchen Sink" Base Boss Features                          ║
+║   □  2. Implement "Kitchen Sink" Base Boss Features                          ║
 ║      ░  □ Health Phases: Boss transitions to new states at health thresholds.║
 ║      ░  □ Armor/Weak Points: Implement an `is_armored` state.                ║
 ║      ░  □ Clear Attack Telegraphing: Create a dedicated `Telegraph` state.   ║
 ║                                                                              ║
-║   ▒  3. Implement a Minion Enemy Type                                        ║
+║   □  3. Implement a Minion Enemy Type                                        ║
 ║      ░  Create a simple Turret enemy to test our data-driven spawning and    ║
 ║      ░  component-based architecture (e.g., by reusing the HealthComponent). ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██           PHASE 4: FUTURE EXPANSION & DEFERRED TASKS                 ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║
 ║                                                                              ║
@@ -820,17 +827,39 @@ FILE: ./docs/CHANGELOG.txt
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event   ║
+║      ░   sequences, completing the Phase 1 architectural refactor.           ║
+║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog` ║
+║      ░   to facilitate global state management.                              ║
+║      ░ ■ Implemented a professional-grade, singleton-based Event Bus for     ║
+║      ░   decoupled inter-system communication.                               ║
+║      ░ ■ Added an `EventCatalog` and typed `Resource`-based event payloads   ║
+║      ░   to ensure type safety and improve developer ergonomics.             ║
+║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ The `EncounterDirector` now uses the `Sequencer` to run a clean,    ║
+║      ░   readable, and dramatic introduction sequence for the boss.          ║
+║      ░ ■ The main `game.gd` scene now listens for pause/resume events to     ║
+║      ░   manage the `SceneTree`'s pause state, making it globally controllable.║
+║      ░ ■ Refactored the `GameHUD` to be fully driven by the Event Bus,       ║
+║      ░   removing its direct dependencies on the Player and Boss nodes.      ║
+║      ░ ■ The Player and Boss now emit all health and stat changes through the║
+║      ░   Event Bus.                                                          ║
 ║      ░ ■ Refactored the ArenaBuilder to strictly adhere to the Single        ║
 ║      ░   Responsibility Principle. Its duties have been decoupled into new,  ║
-║      ░   focused classes: `LevelParser`, `TerrainBuilder`, and              ║
+║      ░   focused classes: `LevelParser`, `TerrainBuilder`, and               ║
 ║      ░   `EncounterDirector`. ArenaBuilder now acts as a high-level coordinator.║
 ║      ░ ■ Refactored the BaseBoss node to use the State Pattern, mirroring the║
 ║      ░   Player's architecture for improved scalability and maintainability. ║
 ║      ░ ■ Refactored the Player node to use the State Pattern. All state logic║
 ║      ░   (Move, Fall, Dash, etc.) has been decoupled into individual classes ║
-║      ░   in `src/entities/player/states/` for improved scalability and      ║
+║      ░   in `src/entities/player/states/` for improved scalability and       ║
 ║      ░   maintainability, adhering to SOLID principles.                      ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved bug where Player hit flash timer would not reset, leaving  ║
+║      ░   the player sprite permanently changed after taking damage.          ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
@@ -846,8 +875,8 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
 ║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
 ║      ░   prevent any "first-appearance" hitches for entities.                ║
-║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in  ║
-║      ░   the official documentation.                                        ║
+║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
+║      ░   the official documentation.                                         ║
 ║                                                                              ║
 ║   █  Bug Fixes                                                               ║
 ║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
@@ -857,9 +886,9 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
 ║                                                                              ║
 ║   █  Documentation                                                           ║
-║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap. ║
-║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new     ║
-║      ░   design philosophies, patterns, and planned features.               ║
+║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
+║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
+║      ░   design philosophies, patterns, and planned features.                ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       [0.1.0] - 2025-08-05                           ██  ║
@@ -1131,38 +1160,39 @@ A combat-focused 2D action game built in Godot 4, showcasing clean architecture 
 ## What Makes This Code Notable
 
 ### Architectural Excellence
-- **Centralized Asset Management**: All file paths are managed through a single `AssetPaths` singleton, eliminating broken references and making refactoring trivial
-- **Singleton-Based Core Systems**: Audio, settings, cursor management, and constants are globally accessible without tight coupling
-- **Modular Arena System**: Level layouts and encounters are separated into data-only scripts, making level creation declarative and maintainable
+- **Decoupled Messaging System**: A professional-grade Event Bus singleton allows game systems (UI, Audio, Gameplay) to communicate without direct dependencies, making the architecture highly modular and scalable.
+- **Centralized Asset Management**: All file paths are managed through a single `AssetPaths` singleton, eliminating broken references and making refactoring trivial.
+- **Singleton-Based Core Systems**: Audio, settings, cursor management, and constants are globally accessible without tight coupling.
+- **Modular Arena System**: Level layouts and encounters are separated into data-only scripts, making level creation declarative and maintainable.
 
 ### Advanced Player Controller
-- **Robust State Machine**: Clean finite state machine handling movement, combat, dashing, wall-sliding, and healing states
-- **Physics-Driven Design**: Implements coyote time, jump buffering, wall jumping, and variable jump height for responsive controls
-- **Pogo Mechanics**: Sophisticated downward attack system with instant collision detection and momentum preservation
-- **Determination System**: Risk/reward mechanics where dealing damage builds healing charges
+- **Robust State Machine**: Clean finite state machine handling movement, combat, dashing, wall-sliding, and healing states.
+- **Physics-Driven Design**: Implements coyote time, jump buffering, wall jumping, and variable jump height for responsive controls.
+- **Pogo Mechanics**: Sophisticated downward attack system with instant collision detection and momentum preservation.
+- **Determination System**: Risk/reward mechanics where dealing damage builds healing charges.
 
 ### Production-Quality UI
-- **Custom Menu Navigation**: Unified system supporting both keyboard and mouse input with audio feedback
-- **Global HUD Management**: Context-aware UI elements that appear/disappear based on current scene
-- **Real-time Settings Sync**: Audio sliders and checkboxes update immediately without save/load cycles
-- **Custom Slider Component**: Self-contained, reusable UI widget with proper mouse interaction
+- **Custom Menu Navigation**: Unified system supporting both keyboard and mouse input with audio feedback.
+- **Global HUD Management**: Context-aware UI elements that appear/disappear based on current scene.
+- **Real-time Settings Sync**: Audio sliders and checkboxes update immediately without save/load cycles.
+- **Custom Slider Component**: Self-contained, reusable UI widget with proper mouse interaction.
 
 ### Smart Audio Architecture
-- **Pooled SFX Players**: Multiple AudioStreamPlayer instances prevent sound cutoff during rapid-fire events
+- **Pooled SFX Players**: Multiple AudioStreamPlayer instances prevent sound cutoff during rapid-fire events.
 - **Context-Aware Sounds**: Different menu actions trigger appropriate audio cues (back vs select vs error)
-- **Robust Music Management**: Prevents music restarts when switching between menu screens
+- **Robust Music Management**: Prevents music restarts when switching between menu screens.
 
 ### Clean Code Practices
-- **Extensive Documentation**: Every script explains its purpose and key design decisions
-- **Consistent Naming**: Clear, descriptive variable and function names throughout
-- **Proper Signal Usage**: Decoupled communication between components using Godot's signal system
-- **Layer-Based Physics**: Thoughtful collision layer setup for different object types and interactions
+- **Extensive Documentation**: Every script explains its purpose and key design decisions.
+- **Consistent Naming**: Clear, descriptive variable and function names throughout.
+- **Proper Signal Usage**: Decoupled communication between components using Godot's signal system.
+- **Layer-Based Physics**: Thoughtful collision layer setup for different object types and interactions.
 
 ### Noteworthy Technical Solutions
-- **Fake Cursor System**: Custom cursor that works consistently across all platforms with proper click-through behavior
-- **Immediate Pogo Detection**: Proactive collision checking prevents frame-delay issues in fast-paced combat
-- **Hazard Dual-Layer System**: Terrain that's both solid (world layer) and damaging (hazard layer) for consistent physics
-- **Deferred Scene Changes**: Proper scene transition handling to prevent physics errors
+- **Fake Cursor System**: Custom cursor that works consistently across all platforms with proper click-through behavior.
+- **Immediate Pogo Detection**: Proactive collision checking prevents frame-delay issues in fast-paced combat.
+- **Hazard Dual-Layer System**: Terrain that's both solid (world layer) and damaging (hazard layer) for consistent physics.
+- **Deferred Scene Changes**: Proper scene transition handling to prevent physics errors.
 
 ## Getting Started
 
@@ -1180,15 +1210,13 @@ A combat-focused 2D action game built in Godot 4, showcasing clean architecture 
 
 ## Project Structure
 
-```
 src/
-├── core/           # Singleton systems (audio, settings, etc.)
-├── entities/       # Player and enemy classes
-├── projectiles/    # Bullet and shot behaviors
-├── scenes/         # Main game scenes
-├── ui/             # Menu systems and components
-└── arenas/         # Level data and encounter scripts
-```
+├── core/ # Singleton systems (audio, settings, etc.)
+├── entities/ # Player and enemy classes
+├── projectiles/ # Bullet and shot behaviors
+├── scenes/ # Main game scenes
+├── ui/ # Menu systems and components
+└── arenas/ # Level data and encounter scripts
 
 This codebase demonstrates how to structure a Godot project for maintainability, extensibility, and professional polish. Every system is designed to be modular, well-documented, and easy to extend.
 
@@ -1245,6 +1273,8 @@ AssetPaths="*res://src/core/asset_paths.gd"
 GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
 GameManager="*res://src/core/game_manager.gd"
 ArenaBuilder="*res://src/core/arena_builder.gd"
+EventBus="*res://src/core/event_bus.gd"
+Sequencer="*res://src/core/sequencer.gd"
 
 [display]
 
@@ -1331,9 +1361,8 @@ environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 FILE: ./src/ui/game_hud/game_hud.gd
 =====================================
 # src/ui/game_hud/game_hud.gd
-#
-# Manages the in-game heads-up display. It connects to signals from the
-# player and boss to update health bars and other UI elements in real-time.
+# Manages the in-game heads-up display. It is now fully decoupled and listens
+# to the EventBus for real-time updates.
 extends CanvasLayer
 
 # --- Node References ---
@@ -1341,35 +1370,35 @@ extends CanvasLayer
 @onready var player_heal_charges_value: Label = $PlayerInfo/PlayerHealChargesHBox/PlayerHealChargesValue
 @onready var boss_health_bar: ProgressBar = $BossHealthBar
 
+# --- Subscription Tokens ---
+var _player_health_token: int = 0
+var _player_charges_token: int = 0
+var _boss_health_token: int = 0
+
 func _ready():
-	# Wait until the main scene tree is ready before trying to connect signals.
-	await get_tree().process_frame
-	
-	var player = get_tree().get_first_node_in_group("player")
-	var boss = get_tree().get_first_node_in_group("enemy")
+	# Subscribe to global events. We store the returned tokens to safely unsubscribe later.
+	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
+	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
+	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
 
-	if is_instance_valid(player):
-		# Connect to the player's signals.
-		player.health_changed.connect(on_player_health_changed)
-		player.healing_charges_changed.connect(on_player_healing_charges_changed)
-	
-	if is_instance_valid(boss):
-		# Connect to the boss's signals.
-		boss.health_changed.connect(on_boss_health_changed)
+func _exit_tree():
+	# CRITICAL: Always unsubscribe from events when the node is freed to prevent memory leaks.
+	EventBus.off(_player_health_token)
+	EventBus.off(_player_charges_token)
+	EventBus.off(_boss_health_token)
 
-# --- Signal Callbacks ---
+# --- EventBus Callbacks ---
 
-func on_player_health_changed(current_health: int, max_health: int):
-	player_health_value.text = str(current_health) + " / " + str(max_health)
+func on_player_health_changed(payload: PlayerHealthChangedEvent):
+	player_health_value.text = str(payload.current_health) + " / " + str(payload.max_health)
 
-func on_player_healing_charges_changed(current_charges: int):
-	player_heal_charges_value.text = str(current_charges)
+func on_player_healing_charges_changed(payload: PlayerHealingChargesChangedEvent):
+	player_heal_charges_value.text = str(payload.current_charges)
 
-func on_boss_health_changed(current_health: int, max_health: int):
-	# Set the max_value of the progress bar first in case it has changed.
-	boss_health_bar.max_value = max_health
-	# Update the current value.
-	boss_health_bar.value = current_health
+func on_boss_health_changed(payload: BossHealthChangedEvent):
+	boss_health_bar.max_value = payload.max_health
+	boss_health_bar.value = payload.current_health
+
 
 =====================================
 FILE: ./src/ui/game_hud/game_hud.tscn
@@ -2493,13 +2522,22 @@ FILE: ./src/scenes/game/game.gd
 # src/scenes/game/game.gd
 #
 # This script orchestrates the setup of an arena battle. It now also manages
-# the overall game flow by listening for signals from the player and boss.
+# the overall game flow by listening for signals and events.
 extends Node
 
 var player_node: Node = null
 var boss_node: Node = null
 
+# --- NEW: Subscription Tokens ---
+var _pause_token: int
+var _resume_token: int
+
+
 func _ready():
+	# --- NEW: Subscribe to game state events ---
+	_pause_token = EventBus.on(EventCatalog.GAME_PAUSED, _on_game_paused)
+	_resume_token = EventBus.on(EventCatalog.GAME_RESUMED, _on_game_resumed)
+
 	if GameManager.prebuilt_level:
 		add_child(GameManager.prebuilt_level)
 		GameManager.prebuilt_level = null
@@ -2512,31 +2550,43 @@ func _ready():
 		print("ERROR: Game scene loaded without a pre-built level or encounter path. Returning to title.")
 		get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
 		return
-	
+
 	player_node = get_tree().get_first_node_in_group("player")
 	boss_node = get_tree().get_first_node_in_group("enemy")
 
-	# --- Connect signals to the correct handler functions ---
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
-	if is_instance_valid(boss_node):
-		boss_node.died.connect(_on_boss_died)
+	# Connect to the boss 'died' signal AFTER the intro sequence has spawned it.
+	# We can get the node reference again just in case it wasn't ready before.
+	var final_boss_node = get_tree().get_first_node_in_group("enemy")
+	if is_instance_valid(final_boss_node):
+		final_boss_node.died.connect(_on_boss_died)
 
-# --- Signal Handlers for Game Flow ---
+func _exit_tree():
+	# CRITICAL: Unsubscribe from all events to prevent memory leaks.
+	EventBus.off(_pause_token)
+	EventBus.off(_resume_token)
+	# Unpause the game when this scene is exited.
+	get_tree().paused = false
+
+
+# --- Signal & Event Handlers ---
 
 func _on_player_died():
 	print("Game Manager: Player death detected. Initiating Game Over.")
-	# FIX: Defer the scene change to prevent physics crash.
 	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_GAME_OVER_SCREEN)
 
 func _on_boss_died():
 	print("Game Manager: Boss death detected. Initiating Victory.")
-	# FIX: Defer the scene change to prevent physics crash.
 	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_VICTORY_SCREEN)
 
+# --- NEW: Pause Handlers ---
+func _on_game_paused(_payload):
+	print("Game Scene: Pausing tree.")
+	get_tree().paused = true
 
-func _exit_tree():
-	# CRITICAL: Unpause the game when this scene is exited.
+func _on_game_resumed(_payload):
+	print("Game Scene: Resuming tree.")
 	get_tree().paused = false
 
 
@@ -2599,6 +2649,131 @@ extends Node
 @export var master_muted: bool = false
 @export var music_muted: bool = true # Start with music muted by default.
 @export var sfx_muted: bool = false
+
+=====================================
+FILE: ./src/core/event_bus.gd
+=====================================
+# src/core/event_bus.gd
+# --- VERSION 4: FINAL - Explicitly Type-Safe and Cleaned ---
+# This is the autoloaded singleton that manages all decoupled communication.
+extends Node
+
+var _subscribers: Dictionary = {}
+var _by_id: Dictionary = {}
+var _next_id: int = 1
+var _event_queue: Array = []
+var _trace_capacity: int = 200
+var _trace: Array = []
+
+var debug_enabled: bool = OS.is_debug_build()
+
+func _process(_delta: float) -> void:
+	if _event_queue.is_empty(): return
+	var q = _event_queue.duplicate()
+	_event_queue.clear()
+	for item in q:
+		_emit_internal(item["event"], item["payload"], item["source"])
+
+func on(event_name: String, callback: Callable, opts: Dictionary = {}) -> int:
+	assert(callback.is_valid(), "EventBus.on: callback must be a valid Callable")
+	var subs: Array = _subscribers.get(event_name, [])
+	var owner_node = callback.get_object()
+	var weak_ref = weakref(owner_node) if owner_node is Node else null
+
+	var entry := {
+		"id": _next_id, "callback": callback, "owner_weak": weak_ref,
+		"once": opts.get("once", false), "priority": opts.get("priority", 0),
+		"type": opts.get("type", null)
+	}
+	subs.append(entry)
+	subs.sort_custom(func(a, b): return a.priority > b.priority)
+	_subscribers[event_name] = subs
+	_by_id[_next_id] = event_name
+	_next_id += 1
+	return entry.id
+
+func off(token: int) -> void:
+	if not _by_id.has(token): return
+	var event_name: String = _by_id[token]
+	if _subscribers.has(event_name):
+		for i in range(_subscribers[event_name].size() - 1, -1, -1):
+			if _subscribers[event_name][i].id == token:
+				_subscribers[event_name].remove_at(i)
+				break
+		if _subscribers[event_name].is_empty():
+			_subscribers.erase(event_name)
+	_by_id.erase(token)
+
+func off_owner(owner_node: Node) -> void:
+	if owner_node == null: return
+	var tokens_to_remove: Array[int] = []
+	for token in _by_id.keys():
+		var event_name = _by_id[token]
+		if _subscribers.has(event_name):
+			var subs = _subscribers[event_name]
+			for sub in subs:
+				if sub.id == token and sub.owner_weak and sub.owner_weak.get_ref() == owner_node:
+					tokens_to_remove.append(token)
+	for token in tokens_to_remove:
+		off(token)
+
+func emit(event_name: String, payload = null, source: Object = null) -> void:
+	_emit_internal(event_name, payload, source)
+
+func emit_async(event_name: String, payload = null, source: Object = null) -> void:
+	_event_queue.append({"event": event_name, "payload": payload, "source": source})
+
+func _emit_internal(event_name: String, payload, source: Object) -> void:
+	if debug_enabled:
+		var payload_class = "null"
+		if payload != null: payload_class = payload.get_class()
+		var source_str = "invalid"
+		if is_instance_valid(source): source_str = str(source)
+		
+		_trace.append({ "time": Time.get_ticks_msec(), "event": event_name,
+			"payload_type": payload_class, "source": source_str })
+		if _trace.size() > _trace_capacity: _trace.pop_front()
+
+	if not _subscribers.has(event_name): return
+
+	for sub in _subscribers[event_name].duplicate():
+		if sub.owner_weak and not sub.owner_weak.get_ref():
+			off(sub.id); continue
+		
+		var expected_type = sub.type
+		if expected_type and not (payload is Resource and payload.get_script() == expected_type):
+			if debug_enabled:
+				var type_path = expected_type.resource_path if expected_type is Script else str(expected_type)
+				push_warning("[EventBus] Subscriber for '%s' expected type %s but got %s. Skipping." % [event_name, type_path, payload.get_class()])
+			continue
+
+		sub.callback.call(payload)
+		
+		if sub.once: off(sub.id)
+
+# --- Debugging Tools ---
+func debug_recent_events() -> Array: return _trace.duplicate()
+
+func dump_subscribers(event_name: String = "") -> Dictionary:
+	var output := {}
+	var events_to_dump: Array = _subscribers.keys() if event_name.is_empty() else [event_name]
+
+	for ev in events_to_dump:
+		if _subscribers.has(ev):
+			output[ev] = []
+			for sub in _subscribers[ev]:
+				var owner_desc := "null"
+				if sub.owner_weak and sub.owner_weak.get_ref():
+					owner_desc = str(sub.owner_weak.get_ref())
+				
+				var type_desc := "any"
+				if sub.type and sub.type is Script:
+					type_desc = sub.type.resource_path
+				
+				output[ev].append({ "id": sub.id, "owner": owner_desc, "priority": sub.priority,
+					"once": sub.once, "type": type_desc })
+	return output
+
 
 =====================================
 FILE: ./src/core/builders/level_parser.gd
@@ -2746,41 +2921,98 @@ FILE: ./src/core/builders/encounter_director.gd
 =====================================
 # src/core/builders/encounter_director.gd
 #
-# Responsibility: To spawn all dynamic entities (Player, Boss, HUD) based on
-# the parsed LevelBuildData.
+# Responsibility: To spawn all dynamic entities (Player, Boss, HUD) and to
+# direct the flow of the encounter, such as running an intro sequence.
 class_name EncounterDirector
 extends RefCounted
+
+# --- Stored References ---
+var _parent_node: Node
+var _build_data: LevelBuildData
+var _tree: SceneTree
 
 # The main public method. It takes the parent node, the data, and a valid
 # SceneTree reference, then spawns the entities asynchronously.
 func spawn_entities_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
-	await _spawn_player_async(parent_node, build_data.player_spawn_pos, tree)
-	await _spawn_boss_async(parent_node, build_data.boss_spawn_pos, build_data.encounter_script_object, tree)
-	await _spawn_hud_async(parent_node, tree)
+	# Store references for use in other functions
+	_parent_node = parent_node
+	_build_data = build_data
+	_tree = tree
 
-# --- Entity Spawning Functions (Moved from ArenaBuilder) ---
+	# Spawn the essential non-sequenced entities first.
+	await _spawn_player_async()
+	await _spawn_hud_async()
 
-func _spawn_player_async(parent_node: Node, pos: Vector2, tree: SceneTree):
+	# Run the scripted intro sequence for the boss.
+	await run_intro_sequence()
+
+
+# --- Entity Spawning Functions ---
+
+func _spawn_player_async() -> void:
 	var player_instance = load(AssetPaths.SCENE_PLAYER).instantiate()
-	player_instance.global_position = pos
-	parent_node.add_child(player_instance)
-	await tree.process_frame
+	player_instance.global_position = _build_data.player_spawn_pos
+	_parent_node.add_child(player_instance)
+	await _tree.process_frame
 
-func _spawn_boss_async(parent_node: Node, pos: Vector2, encounter: Object, tree: SceneTree):
-	var boss_scene: PackedScene = encounter.BOSS_SCENE if encounter else null
+func _spawn_boss_async() -> Node:
+	var boss_scene: PackedScene = _build_data.encounter_script_object.BOSS_SCENE if _build_data.encounter_script_object else null
 	if not boss_scene:
 		push_error("EncounterDirector: Could not find BOSS_SCENE in encounter script.")
-		return
-		
-	var boss_instance = boss_scene.instantiate()
-	boss_instance.global_position = pos
-	parent_node.add_child(boss_instance)
-	await tree.process_frame
+		return null
 
-func _spawn_hud_async(parent_node: Node, tree: SceneTree):
+	var boss_instance = boss_scene.instantiate()
+	boss_instance.global_position = _build_data.boss_spawn_pos
+	_parent_node.add_child(boss_instance)
+	await _tree.process_frame
+	return boss_instance
+
+func _spawn_hud_async() -> void:
 	var hud_instance = load(AssetPaths.SCENE_GAME_HUD).instantiate()
-	parent_node.add_child(hud_instance)
-	await tree.process_frame
+	_parent_node.add_child(hud_instance)
+	await _tree.process_frame
+
+
+# --- Sequencer Implementation ---
+
+# Defines and runs the sequence for the boss's grand entrance.
+func run_intro_sequence() -> void:
+	# This sequence is a great example of the Sequencer's power.
+	# It's a readable, step-by-step recipe for what should happen.
+	var intro_steps = [
+		# Step 1: Pause the game to build tension.
+		{ "type": "emit", "event": EventCatalog.GAME_PAUSED },
+
+		# Step 2: A short dramatic pause.
+		{ "type": "wait", "duration": 0.5 },
+
+		# Step 3: Spawn the boss entity into the world.
+		# Note: We can't use "call" here because we need the boss node reference
+		# for the next step. So we call our helper and await its completion.
+	]
+
+	# Run the first part of the sequence.
+	await Sequencer.run_sequence(intro_steps)
+
+	# Manually spawn the boss to get the node reference.
+	# THE FIX IS HERE: Add an underscore to silence the UNUSED_VARIABLE warning.
+	var _boss_node = await _spawn_boss_async()
+
+	# Define the rest of the sequence. We will use the _boss_node variable later.
+	var outro_steps = [
+		# Step 4: Add a visual/audio cue here later (e.g., spawn VFX).
+		# { "type": "call", "node": vfx_manager, "function": "spawn_effect", "args": ["boss_spawn", _boss_node.global_position] }
+
+		# Step 5: Wait for the spawn effect to finish.
+		{ "type": "wait", "duration": 1.0 },
+
+		# Step 6: Resume the game.
+		{ "type": "emit", "event": EventCatalog.GAME_RESUMED }
+	]
+
+	# Run the final part of the sequence.
+	await Sequencer.run_sequence(outro_steps)
+
 
 =====================================
 FILE: ./src/core/game_manager.gd
@@ -2798,6 +3030,126 @@ var current_encounter_script_path: String = ""
 # --- NEW VARIABLE ---
 # This will hold the fully constructed, but currently hidden, level node.
 var prebuilt_level: Node = null
+
+=====================================
+FILE: ./src/core/sequencer.gd
+=====================================
+# src/core/sequencer.gd
+#
+# An autoloaded singleton that runs sequences of timed events. This provides a
+# clean, data-driven way to script boss intros, multi-stage attacks, and any
+# other "cutscene-like" behavior without cluttering game logic with timers.
+#
+# It is designed to be called with 'await' for easy integration into async flows.
+# Example: await Sequencer.run_sequence(my_steps_array)
+#
+extends Node
+# CLASS NAME REMOVED TO PREVENT CONFLICT WITH AUTOLOAD NAME
+
+# --- EXAMPLE STEP FORMATS ---
+# { "type": "wait", "duration": 2.0 }
+# { "type": "emit", "event": EventCatalog.BOSS_SPAWNED, "payload": { ... } }
+# { "type": "call", "node": some_node, "function": "do_super_attack", "args": [arg1, arg2] }
+# { "type": "await_signal", "node": some_node, "signal_name": "animation_finished" }
+#
+
+# --- PUBLIC API ---
+
+# The primary function of the sequencer. It iterates through an array of
+# dictionaries, executing each step in order.
+func run_sequence(steps: Array) -> void:
+	if steps.is_empty():
+		return
+
+	for step in steps:
+		# Ensure the step is a valid dictionary before processing.
+		if not step is Dictionary:
+			push_warning("Sequencer: Invalid step found (not a Dictionary). Skipping.")
+			continue
+
+		var type = step.get("type", "")
+		match type:
+			"wait":
+				await _execute_wait(step)
+			"emit":
+				_execute_emit(step)
+			"call":
+				_execute_call(step)
+			"await_signal":
+				await _execute_await_signal(step)
+			_:
+				push_warning("Sequencer: Unknown step type encountered: '%s'" % type)
+
+# --- INTERNAL STEP HANDLERS ---
+
+func _execute_wait(step: Dictionary) -> void:
+	var duration = float(step.get("duration", 0.0))
+	if duration > 0.0:
+		await get_tree().create_timer(duration).timeout
+
+func _execute_emit(step: Dictionary) -> void:
+	var event_name = step.get("event", "")
+	if event_name.is_empty():
+		push_warning("Sequencer: 'emit' step is missing 'event' name.")
+		return
+	var payload = step.get("payload", null)
+	# Use the existing EventBus to broadcast the event system-wide.
+	EventBus.emit(event_name, payload)
+
+func _execute_call(step: Dictionary) -> void:
+	var node = step.get("node", null)
+	var function_name = step.get("function", "")
+	var args = step.get("args", [])
+
+	if not is_instance_valid(node):
+		push_warning("Sequencer: 'call' step has an invalid or null node.")
+		return
+	if function_name.is_empty() or not node.has_method(function_name):
+		push_warning("Sequencer: 'call' step has an invalid function name: '%s' on node %s" % [function_name, node.name])
+		return
+
+	# Call the function on the target node with the provided arguments.
+	node.callv(function_name, args)
+
+func _execute_await_signal(step: Dictionary) -> void:
+	var node = step.get("node", null)
+	var signal_name = step.get("signal_name", "")
+
+	if not is_instance_valid(node):
+		push_warning("Sequencer: 'await_signal' step has an invalid or null node.")
+		return
+	if signal_name.is_empty():
+		push_warning("Sequencer: 'await_signal' step is missing 'signal_name'.")
+		return
+
+	# This powerful one-liner pauses the sequence until the specified node
+	# emits the specified signal.
+	await node[signal_name]
+
+=====================================
+FILE: ./src/core/event_catalog.gd
+=====================================
+# src/core/event_catalog.gd
+# This script serves as the canonical, central list of all event names in the project.
+# By using these constants instead of raw strings, we gain IDE autocompletion and
+# prevent typos that would lead to silent runtime failures.
+extends Object
+class_name EventCatalog
+
+# --- Player Events ---
+const PLAYER_HEALTH_CHANGED = "player.health_changed"
+const PLAYER_HEALING_CHARGES_CHANGED = "player.healing_charges_changed"
+const PLAYER_TOOK_DAMAGE = "player.took_damage"
+const PLAYER_DIED = "player.died"
+
+# --- Boss / Entity Events ---
+const BOSS_HEALTH_CHANGED = "boss.health_changed"
+const BOSS_DIED = "boss.died"
+
+# --- Game State Events ---
+# NEWLY ADDED:
+const GAME_PAUSED = "game.paused"
+const GAME_RESUMED = "game.resumed"
 
 =====================================
 FILE: ./src/core/arena_builder.gd
@@ -2905,6 +3257,39 @@ func play_music(music_path: String):
 
 func stop_music():
 	music_player.stop()
+
+=====================================
+FILE: ./src/core/events/boss_health_changed_event.gd
+=====================================
+# src/core/events/boss_health_changed_event.gd
+# A typed payload for the BOSS_HEALTH_CHANGED event.
+extends Resource
+class_name BossHealthChangedEvent
+
+@export var current_health: int = 0
+@export var max_health: int = 0
+
+=====================================
+FILE: ./src/core/events/player_health_changed_event.gd
+=====================================
+# src/core/events/player_health_changed_event.gd
+# A typed payload for the PLAYER_HEALTH_CHANGED event. Using a Resource allows
+# for type safety and IDE autocompletion in listener scripts.
+extends Resource
+class_name PlayerHealthChangedEvent
+
+@export var current_health: int = 0
+@export var max_health: int = 0
+
+=====================================
+FILE: ./src/core/events/player_healing_charges_changed_event.gd
+=====================================
+# src/core/events/player_healing_charges_changed_event.gd
+# A typed payload for the PLAYER_HEALING_CHARGES_CHANGED event.
+extends Resource
+class_name PlayerHealingChargesChangedEvent
+
+@export var current_charges: int = 0
 
 =====================================
 FILE: ./src/core/cursor_manager.gd
@@ -3419,15 +3804,14 @@ func process_physics(_delta: float) -> void:
 FILE: ./src/entities/boss/base_boss.gd
 =====================================
 # src/entities/boss/base_boss.gd
-# This is the "Context" script for the Boss State Machine. It holds all
-# shared data and delegates all per-frame logic to its current state object.
+# This is the "Context" script for the Boss State Machine.
 extends CharacterBody2D
 
 # --- Signals ---
-signal health_changed(current_health, max_health)
+signal health_changed(current_health, max_health) # Kept for compatibility
 signal died
 
-# --- State Machine Enum (Globally Accessible as BaseBoss.State) ---
+# --- Enums ---
 enum State { IDLE, ATTACK, COOLDOWN, PATROL }
 enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 
@@ -3439,7 +3823,6 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 
 # --- Preloads ---
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
-# REFINEMENT: Removed preload constants for states as they are now global classes.
 
 # --- State Machine ---
 var states: Dictionary
@@ -3459,7 +3842,6 @@ func _ready():
 	original_color = visual_sprite.color
 	player = get_tree().get_first_node_in_group("player")
 	
-	# REFINEMENT: Initialize states using their global class names.
 	states = {
 		State.IDLE: BossStateIdle.new(self),
 		State.ATTACK: BossStateAttack.new(self),
@@ -3468,7 +3850,7 @@ func _ready():
 	}
 	
 	change_state(State.COOLDOWN)
-	health_changed.emit(health, Constants.BOSS_HEALTH)
+	_emit_health_changed_event() # Initial emit
 
 func _physics_process(delta):
 	if not is_on_floor():
@@ -3484,20 +3866,22 @@ func _physics_process(delta):
 
 # --- State Management ---
 func change_state(new_state_key: State):
-	if not states.has(new_state_key):
-		print("Boss state key not found: ", new_state_key)
-		return
-	if current_state == states[new_state_key]:
-		return
-		
-	if current_state:
-		current_state.exit()
+	if not states.has(new_state_key): return
+	if current_state == states[new_state_key]: return
+	if current_state: current_state.exit()
 	
 	current_state = states[new_state_key]
-	print("Boss entering state: ", State.keys()[new_state_key])
 	current_state.enter()
 
-# --- Helper Functions (used by states) ---
+# --- Event Emitter ---
+func _emit_health_changed_event():
+	var ev = BossHealthChangedEvent.new()
+	ev.current_health = health
+	ev.max_health = Constants.BOSS_HEALTH
+	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
+	health_changed.emit(health, Constants.BOSS_HEALTH) # Compatibility
+
+# --- Helper Functions ---
 func _update_player_tracking():
 	if is_instance_valid(player):
 		var direction_to_player = player.global_position.x - global_position.x
@@ -3516,14 +3900,12 @@ func fire_shot_at_player():
 	
 func take_damage(damage_amount: int):
 	health -= damage_amount
-	health_changed.emit(health, Constants.BOSS_HEALTH)
+	_emit_health_changed_event()
 	_trigger_hit_flash()
-	print("Boss took ", damage_amount, " damage! Health remaining: ", health)
 	if health <= 0:
 		die()
 
 func die():
-	print("Boss has been defeated!")
 	died.emit()
 	queue_free()
 
@@ -3531,7 +3913,7 @@ func _trigger_hit_flash():
 	visual_sprite.color = Color.DODGER_BLUE
 	hit_flash_timer.start()
 
-# --- Signal Callbacks (handle state transitions) ---
+# --- Signal Callbacks ---
 func _on_hit_flash_timer_timeout():
 	visual_sprite.color = original_color
 
@@ -3605,18 +3987,15 @@ one_shot = true
 FILE: ./src/entities/player/player.gd
 =====================================
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine. Its primary jobs are to:
-# 1. Hold all shared player data (health, velocity, timers, etc.).
-# 2. Manage the transitions between states.
-# 3. Provide centralized helper functions for states to use (DRY principle).
+# This script is the "Context" for the State Machine.
 extends CharacterBody2D
 
 # --- Signals ---
-signal health_changed(current_health, max_health)
-signal healing_charges_changed(current_charges)
+signal health_changed(current_health, max_health) # Kept for backward compatibility
+signal healing_charges_changed(current_charges) # Kept for backward compatibility
 signal died
 
-# --- REFINEMENT: The State enum is now globally accessible via Player.State ---
+# --- State Enum ---
 enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 
 # --- Node References ---
@@ -3674,8 +4053,7 @@ func _ready():
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
-	healing_charges_changed.emit(healing_charges)
+	
 	states = {
 		State.MOVE: MoveState.new(self), State.FALL: FallState.new(self),
 		State.JUMP: JumpState.new(self), State.DASH: DashState.new(self),
@@ -3684,6 +4062,9 @@ func _ready():
 	}
 	current_state = states[State.FALL]
 	current_state.enter()
+	
+	_emit_health_changed_event()
+	_emit_healing_charges_changed_event() # Initial emit
 
 func _physics_process(delta):
 	_update_timers(delta)
@@ -3713,22 +4094,16 @@ func _update_timers(delta):
 func _poll_global_inputs():
 	if Input.is_action_just_pressed("ui_jump"):
 		jump_buffer_timer = Constants.JUMP_BUFFER
-
-	if not states.find_key(current_state) in ACTION_ALLOWED_STATES:
-		return
-
+	if not states.find_key(current_state) in ACTION_ALLOWED_STATES: return
 	if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
 		is_charging = true; charge_timer = 0.0
-	
 	if Input.is_action_just_released("ui_attack"):
 		if is_charging:
 			if charge_timer >= Constants.CHARGE_TIME: _fire_shot()
 			else: change_state(State.ATTACK)
 			is_charging = false
-	
 	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
 		change_state(State.DASH)
-		
 	if is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and healing_charges > 0 and is_zero_approx(velocity.x):
 		change_state(State.HEAL)
 
@@ -3738,17 +4113,29 @@ func change_state(new_state_key: State):
 	current_state = states[new_state_key]
 	current_state.enter()
 
-# --- REFINEMENT: Centralized helper function for states (DRY Principle) ---
 func apply_horizontal_movement():
 	velocity.x = Input.get_axis("ui_left", "ui_right") * Constants.PLAYER_SPEED
 	if not is_zero_approx(velocity.x):
 		facing_direction = sign(velocity.x)
 
-# --- Public Action & Helper Functions (Unchanged) ---
+# --- Event Emitter Functions ---
+func _emit_health_changed_event():
+	var ev = PlayerHealthChangedEvent.new()
+	ev.current_health = health
+	ev.max_health = Constants.PLAYER_MAX_HEALTH
+	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)
+	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH) # Compatibility
+
+func _emit_healing_charges_changed_event():
+	var ev = PlayerHealingChargesChangedEvent.new()
+	ev.current_charges = healing_charges
+	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev, self)
+	healing_charges_changed.emit(healing_charges) # Compatibility
+
 func take_damage(damage_amount: int, damage_source = null):
 	if is_invincible or is_dash_invincible: return
 	health -= damage_amount
-	health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
+	_emit_health_changed_event()
 	_trigger_hit_flash()
 	is_invincible = true
 	invincibility_timer.start(Constants.PLAYER_INVINCIBILITY_DURATION)
@@ -3773,17 +4160,15 @@ func _on_damage_dealt():
 	determination_counter += 1
 	if determination_counter >= Constants.DETERMINATION_PER_CHARGE:
 		determination_counter = 0; healing_charges += 1
-		healing_charges_changed.emit(healing_charges)
+		_emit_healing_charges_changed_event()
 
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
-	healing_timer.stop(); print("Healing canceled.")
+	healing_timer.stop()
 	
-# --- BUG FIX STARTS HERE ---
 func _trigger_hit_flash():
 	visual_sprite.color = Color.DODGER_BLUE
-	hit_flash_timer.start() # This line was missing.
-# --- BUG FIX ENDS HERE ---
+	hit_flash_timer.start()
 
 func _fire_shot():
 	attack_cooldown_timer = Constants.ATTACK_COOLDOWN
@@ -3796,8 +4181,7 @@ func _fire_shot():
 
 func _trigger_pogo(pogo_target):
 	velocity.y = -Constants.POGO_FORCE
-	position.y -= 1
-	can_dash = true
+	position.y -= 1; can_dash = true
 	air_jumps_left = Constants.MAX_AIR_JUMPS
 	change_state(State.FALL)
 	if pogo_target:
@@ -3826,8 +4210,8 @@ func _on_invincibility_timer_timeout(): is_invincible = false
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
 		health = min(health + 1, Constants.PLAYER_MAX_HEALTH); healing_charges -= 1
-		health_changed.emit(health, Constants.PLAYER_MAX_HEALTH)
-		healing_charges_changed.emit(healing_charges)
+		_emit_health_changed_event()
+		_emit_healing_charges_changed_event()
 		change_state(State.MOVE)
 
 

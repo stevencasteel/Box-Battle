@@ -16,12 +16,20 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
+║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event   ║
+║      ░   sequences, completing the Phase 1 architectural refactor.           ║
+║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog` ║
+║      ░   to facilitate global state management.                              ║
 ║      ░ ■ Implemented a professional-grade, singleton-based Event Bus for     ║
 ║      ░   decoupled inter-system communication.                               ║
 ║      ░ ■ Added an `EventCatalog` and typed `Resource`-based event payloads   ║
 ║      ░   to ensure type safety and improve developer ergonomics.             ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ The `EncounterDirector` now uses the `Sequencer` to run a clean,    ║
+║      ░   readable, and dramatic introduction sequence for the boss.          ║
+║      ░ ■ The main `game.gd` scene now listens for pause/resume events to     ║
+║      ░   manage the `SceneTree`'s pause state, making it globally controllable.║
 ║      ░ ■ Refactored the `GameHUD` to be fully driven by the Event Bus,       ║
 ║      ░   removing its direct dependencies on the Player and Boss nodes.      ║
 ║      ░ ■ The Player and Boss now emit all health and stat changes through the║
