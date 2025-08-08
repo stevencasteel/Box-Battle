@@ -3,11 +3,16 @@
 # Controls the behavior of the player's charged projectile.
 extends Area2D
 
+@onready var visual_sprite: ColorRect = $ColorRect
+
 var direction = Vector2.RIGHT
 var speed = 1000.0
 var damage = 2 # Charged shots do more damage than melee
 
 func _ready():
+	# PALETTE INTEGRATION: Set the projectile's color from the Palette.
+	visual_sprite.color = Palette.COLOR_PLAYER_PROJECTILE
+
 	# Connect signals to handle collisions with both solid bodies and other areas.
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)

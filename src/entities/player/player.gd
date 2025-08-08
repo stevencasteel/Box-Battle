@@ -20,7 +20,6 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 
 # --- Preloads ---
-# RE-ADDED: These are necessary because player state scripts do not use global class_name.
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const MoveState = preload("res://src/entities/player/states/state_move.gd")
 const FallState = preload("res://src/entities/player/states/state_fall.gd")
@@ -63,8 +62,11 @@ var original_color: Color
 func _ready():
 	health = Config.get_value("player.health.max_health", 5)
 	
+	# PALETTE INTEGRATION: Set the player's color from the Palette.
+	original_color = Palette.COLOR_PLAYER
+	visual_sprite.color = original_color
+	
 	add_to_group("player")
-	original_color = visual_sprite.color
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
@@ -181,7 +183,9 @@ func _cancel_heal():
 	healing_timer.stop()
 	
 func _trigger_hit_flash():
-	visual_sprite.color = Color.DODGER_BLUE
+	# PALETTE INTEGRATION: Use a palette color for the hit flash.
+	# A mid-gray provides a clear but not jarring feedback color.
+	visual_sprite.color = Palette.get_color(16) # Using an index for a generic "feedback" color
 	hit_flash_timer.start()
 
 func _fire_shot():
@@ -204,7 +208,8 @@ func _trigger_pogo(pogo_target):
 		elif pogo_target.is_in_group("enemy_projectile"):
 			pogo_target.queue_free()
 
-func _on_hit_flash_timer_timeout(): visual_sprite.color = original_color
+func _on_hit_flash_timer_timeout():
+	visual_sprite.color = original_color
 
 func _on_hitbox_body_entered(body):
 	if is_pogo_attack: _trigger_pogo(body)
@@ -218,7 +223,8 @@ func _on_hitbox_area_entered(area):
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"): take_damage(1, area); area.queue_free()
 
-func _on_invincibility_timer_timeout(): is_invincible = false
+func _on_invincibility_timer_timeout():
+	is_invincible = false
 
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:

@@ -16,7 +16,7 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   This phase is our highest priority. We will refactor the existing code to  ║
-║   align with professional design principles. This is the hard, foundational ║
+║   align with professional design principles. This is the hard, foundational  ║
 ║   work that enables all future features to be built cleanly and efficiently. ║
 ║                                                                              ║
 ║   ■  1. Implement the Event Bus                                              ║
@@ -40,7 +40,7 @@
 ║      ░  Move all combat-related values from `Constants.gd` into a new        ║
 ║      ░  `combat_config.json`. Refactor code to pull values from this config. ║
 ║                                                                              ║
-║   □  2. Implement the Global Palette System                                  ║
+║   ■  2. Implement the Global Palette System                                  ║
 ║      ░  WHY: To enforce a consistent, project-wide color scheme. This is a   ║
 ║      ░  critical prerequisite for the UI overhaul.                           ║
 ║      ░  HOW: Create a `Palette.gd` singleton. Define the 32-step grayscale   ║

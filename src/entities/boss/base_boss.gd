@@ -17,7 +17,6 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 @onready var hit_flash_timer: Timer = $HitFlashTimer
 
 # --- Preloads ---
-# State preloads have been removed to use global class_name instead.
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
 
 # --- State Machine ---
@@ -37,8 +36,11 @@ func _ready():
 	health = Config.get_value("boss.stats.health", 30)
 	patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
 
+	# PALETTE INTEGRATION: Set the boss's color from the Palette.
+	original_color = Palette.COLOR_BOSS_PRIMARY
+	visual_sprite.color = original_color
+
 	add_to_group("enemy")
-	original_color = visual_sprite.color
 	player = get_tree().get_first_node_in_group("player")
 	
 	states = {
@@ -106,7 +108,8 @@ func die():
 	queue_free()
 
 func _trigger_hit_flash():
-	visual_sprite.color = Color.DODGER_BLUE
+	# PALETTE INTEGRATION: Use a palette color for the hit flash.
+	visual_sprite.color = Palette.get_color(16)
 	hit_flash_timer.start()
 
 func _on_hit_flash_timer_timeout():
