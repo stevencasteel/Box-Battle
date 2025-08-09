@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://cgt63w7k4w5gq"]
+
+[ext_resource type="Script" path="res://src/ui/components/styled_menu_item/styled_menu_item.gd" id="1_menu_item_script"]
+
+[node name="StyledMenuItem" type="Control"]
+custom_minimum_size = Vector2(400, 80)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_menu_item_script")

@@ -46,6 +46,9 @@ find . -type f \( \
   -name "*.tscn" -o \
   -name "*.md" -o \
   -name "*.tres" -o \
+  -name "*.gdshader" -o \
+  -name "*.json" -o \
+  -name "*.csv" -o \
   -name "project.godot" -o \
   -name "*.txt" \
 \) \
@@ -55,12 +58,13 @@ find . -type f \( \
 -not -path "./$OUTPUT_FILE" \
 -not -name "*.uid" \
 -not -name "*.import" \
--print0 | xargs -0 -I {} sh -c '
-  echo "=====================================";
-  echo "FILE: {}";
-  echo "=====================================";
-  cat {};
-  echo "\n";
-' >> "$OUTPUT_FILE"
+-exec sh -c '
+  echo "====================================="
+  echo "FILE: $1"
+  echo "====================================="
+  cat "$1"
+  echo ""
+  echo ""
+' _ {} \; >> "$OUTPUT_FILE"
 
 echo "all_godot_source_code.txt '$OUTPUT_FILE' created successfully."

@@ -16,14 +16,55 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   This phase is our highest priority. We will refactor the existing code to  ║
-║   align with professional design principles. This is the hard, foundational  ║
+║   align with professional design principles. This is the hard, foundational ║
 ║   work that enables all future features to be built cleanly and efficiently. ║
 ║                                                                              ║
 ║   ■  1. Implement the Event Bus                                              ║
+║      ░  WHY: This is the new central nervous system for the game. It will    ║
+║      ░  decouple all our systems, from UI to gameplay to audio, making the   ║
+║      ░  entire codebase more modular and easier to manage (Dependency Inversion).║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a new autoload singleton: `EventBus.gd`.                 ║
+║      ░    2. Implement three core functions: `on(event, callback)`,          ║
+║      ░       `off(event, callback)`, and `emit(event, payload)`.             ║
+║      ░    3. Create `EventCatalog.gd` to store all event names as constants. ║
+║      ░    4. Refactor existing direct signal connections (e.g., in `game_hud.gd`)║
+║      ░       to use the Event Bus. The HUD will listen for global events like ║
+║      ░       `EventCatalog.PLAYER_HEALTH_CHANGED` instead of connecting directly.║
+║                                                                              ║
 ║   ■  2. Refactor Player to use the State Pattern                             ║
+║      ░  WHY: `player.gd` is a large, monolithic script. This refactor will   ║
+║      ░  decouple the logic for each state into its own class, making the     ║
+║      ░  system cleaner and easier to extend (Open/Closed Principle).         ║
+║      ░  HOW: Follow the detailed plan to create a `states` subdirectory for  ║
+║      ░  the player, create a `PlayerState` base class, and migrate the logic ║
+║      ░  for each state into its own file. `player.gd` will become a "Context"║
+║      ░  that simply manages the current state object.                        ║
+║                                                                              ║
 ║   ■  3. Implement the Centralized Sequencer                                  ║
+║      ░  WHY: To eliminate scattered `Timer` nodes and `await` calls for      ║
+║      ░  scripted events. This provides a clean, readable way to create       ║
+║      ░  cinematic sequences like boss intros or multi-stage attacks.         ║
+║      ░  HOW: Create a new autoload singleton: `Sequencer.gd`. Implement a    ║
+║      ░  `run_sequence(steps: Array)` function that can process a list of     ║
+║      ░  commands like `wait`, `emit` (on Event Bus), and `call` (a function).║
+║                                                                              ║
 ║   ■  4. Refactor Base Boss to use the State Pattern                          ║
+║      ░  WHY: To mirror the player's clean architecture, preparing the boss   ║
+║      ░  for the advanced "kitchen sink" mechanics planned for a later phase. ║
+║      ░  HOW: Apply the exact same State Pattern as used for the Player,      ║
+║      ░  creating a `states` subdirectory and migrating state logic into      ║
+║      ░  separate, focused class files.                                       ║
+║                                                                              ║
 ║   ■  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
+║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs. Separating these ║
+║      ░  roles will make the level generation pipeline more robust and easier ║
+║      ░  to maintain.                                                         ║
+║      ░  HOW: Split the current logic into three new classes:                 ║
+║      ░    - `LevelParser.gd`: Reads data from layout/encounter files.        ║
+║      ░    - `TerrainBuilder.gd`: Creates the static level geometry (tiles).  ║
+║      ░    - `EncounterDirector.gd`: Spawns all dynamic entities (player, boss).║
+║      ░  `ArenaBuilder.gd` will become a simple coordinator of these new classes.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██            PHASE 2: DATA-DRIVEN & VISUAL FOUNDATION                  ██  ║
@@ -46,14 +87,6 @@
 ║      ░  HOW: Create a `Palette.gd` singleton. Define the 32-step grayscale   ║
 ║      ░  array and create semantic constant names (e.g., `COLOR_PLAYER`).     ║
 ║      ░  Replace all hard-coded colors with calls to this new Palette.        ║
-║                                                                              ║
-║   □  3. UI Overhaul Part 1: The `StyledMenuItem`                             ║
-║      ░  WHY: To create the cornerstone visual component for our new UI. We   ║
-║      ░  will perfect this one piece before replacing the entire menu system. ║
-║      ░  HOW: Create a new scene, `StyledMenuItem.tscn`, that extends `Control`.║
-║      ░  It will use the `_draw()` function and shaders to render itself      ║
-║      ░  procedurally with frosted glass, backlighting, and reactive effects, ║
-║      ░  all driven by the `Palette` and `EventBus`.                          ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██              PHASE 3: GAMEPLAY & FEEL ENHANCEMENT                    ██  ║
@@ -83,12 +116,21 @@
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║
 ║                                                                              ║
+║   □  UI Overhaul Part 1: The `StyledMenuItem`                                ║
+║      ░  WHY: To create the cornerstone visual component for our new UI. We   ║
+║      ░  will perfect this one piece before replacing the entire menu system. ║
+║      ░  HOW: Create a new scene, `StyledMenuItem.tscn`, that extends `Control`.║
+║      ░  It will use the `_draw()` function and shaders to render itself      ║
+║      ░  procedurally with frosted glass, backlighting, and reactive effects, ║
+║      ░  all driven by the `Palette` and `EventBus`.                          ║
+║                                                                              ║
 ║   ░  Full UI System Replacement (using `StyledMenuItem`)                     ║
 ║   ░  Diegetic UI Implementation                                              ║
 ║   ░  Dynamic Music Layering System                                           ║
 ║   ░  Adaptive Boss AI Tactics Layer                                          ║
 ║   ░  Player Loadout System                                                   ║
 ║   ░  Special Game Modes (Boss Rush, Time Attack)                             ║
+║   ░  Cleanup or remove `test_ui` scene and related dev assets.               ║
 ║   ░  Screen Shake (Explicitly deferred to avoid visual noise during debugging)║
 ║   ░  Dynamic Camera (Explicitly deferred per design decision)                ║
 ║                                                                              ║

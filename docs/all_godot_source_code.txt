@@ -2,13 +2,14 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Fri Aug  8 14:17:09 CDT 2025
+Generated on: Sat Aug  9 10:31:37 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
 ├── README.md
+├── all_script_errors.txt
 ├── data
 │   └── combat_config.json
 ├── default_bus_layout.tres
@@ -19,6 +20,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── BRAINSTORM.txt
 │   ├── BUGS.txt
 │   ├── CHANGELOG.txt
+│   ├── CHANGELOG_archive_pre-0.3.0.txt
 │   ├── DESIGN.txt
 │   ├── DOCS_PROTOCOL.txt
 │   ├── LICENSE
@@ -26,6 +28,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── ROADMAP.txt
 │   ├── TODO.txt
 │   ├── all_godot_source_code.txt
+│   ├── all_script_errors.txt
 │   └── create_all_godot_source_code_txt.sh
 ├── icon.svg
 ├── progess
@@ -54,6 +57,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── player_healing_charges_changed_event.gd
     │   │   └── player_health_changed_event.gd
     │   ├── game_manager.gd
+    │   ├── palette.gd
     │   ├── sequencer.gd
     │   └── settings.gd
     ├── entities
@@ -85,6 +89,9 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── player_shot.gd
     │   └── player_shot.tscn
     ├── scenes
+    │   ├── dev
+    │   │   ├── test_ui.gd
+    │   │   └── test_ui.tscn
     │   ├── game
     │   │   ├── game.gd
     │   │   └── game.tscn
@@ -96,8 +103,11 @@ PROJECT DIRECTORY STRUCTURE:
     │       └── main.tscn
     └── ui
         ├── components
-        │   └── custom_slider
-        │       └── custom_slider.gd
+        │   ├── custom_slider
+        │   │   └── custom_slider.gd
+        │   └── styled_menu_item
+        │       ├── styled_menu_item.gd
+        │       └── styled_menu_item.tscn
         ├── game_hud
         │   ├── game_hud.gd
         │   └── game_hud.tscn
@@ -129,8 +139,127 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-33 directories, 88 files
+35 directories, 96 files
 
+
+=====================================
+FILE: ./all_script_errors.txt
+=====================================
+Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
+Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
+
+
+
+=====================================
+FILE: ./docs/CHANGELOG_archive_pre-0.3.0.txt
+=====================================
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║    ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ██████╗  ██████╗                ║
+║   ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔══██╗██╔════╝                ║
+║   ██║     ███████║███████║██╔██╗ ██║██║  ███╗██████╔╝███████╗                ║
+║   ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══██╗██╔════╝                ║
+║   ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║███████╗                ║
+║    ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝                ║
+║                                                                              ║
+║          A historical log of all notable changes to the project.             ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██             [0.3.0] - THE VISUAL FOUNDATION - 2025-08-08             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version completes the core architectural refactor and establishes the ║
+║   foundational visual and data-driven systems for the entire project.        ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented the `Palette.gd` autoload singleton, which defines a    ║
+║      ░   project-wide 32-step grayscale value scale.                         ║
+║      ░ ■ Added semantic color constants (e.g., `COLOR_PLAYER`) to establish a║
+║      ░   clear visual hierarchy for all game elements.                       ║
+║      ░ ■ Implemented the `Config.gd` autoload for loading all `.json` files. ║
+║      ░ ■ Created `combat_config.json` to house all gameplay-related tuning.  ║
+║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event.   ║
+║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog`.║
+║      ░ ■ Implemented a professional-grade, singleton-based Event Bus.        ║
+║      ░ ■ Added an `EventCatalog` and typed `Resource`-based event payloads.  ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored Player, Boss, Projectiles, and TerrainBuilder to source  ║
+║      ░   all their colors from the new `Palette` singleton.                  ║
+║      ░ ■ The game world is now visually rendered with a consistent value scale.║
+║      ░ ■ Refactored the entire codebase to be data-driven via `Config.gd`.   ║
+║      ░ ■ The `Constants.gd` singleton has been streamlined.                  ║
+║      ░ ■ The `EncounterDirector` now uses the `Sequencer` for boss intros.   ║
+║      ░ ■ The main `game.gd` scene now handles the global pause state.        ║
+║      ░ ■ Refactored the `GameHUD` to be fully driven by the Event Bus.       ║
+║      ░ ■ Refactored the ArenaBuilder to strictly adhere to SRP.              ║
+║      ░ ■ Refactored the BaseBoss and Player nodes to use the State Pattern.  ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a cascade of parse errors in `Palette.gd` by using the     ║
+║      ░   `Color("#hex")` constructor, which is a valid constant expression.  ║
+║      ░ ■ Corrected `Palette.gd` to extend `Node` so it can be autoloaded.    ║
+║      ░ ■ Renamed `Config.get()` to `Config.get_value()` to resolve a conflict.║
+║      ░ ■ Resolved `SHADOWED_GLOBAL_IDENTIFIER` warnings in `base_boss.gd`.   ║
+║      ░ ■ Resolved `Identifier not declared` errors in `player.gd`.           ║
+║      ░ ■ Resolved bug where Player hit flash timer would not reset.          ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version represents a foundational overhaul of the project's technical ║
+║   architecture. The focus was on implementing professional design patterns   ║
+║   (SOLID, State Pattern) and eliminating performance issues to prepare for   ║
+║   future content and feature development.                                    ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system ║
+║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
+║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
+║      ░   prevent any "first-appearance" hitches for entities.                ║
+║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
+║      ░   the official documentation.                                         ║
+║                                                                              ║
+║   █  Bug Fixes                                                               ║
+║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
+║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
+║      ░ ■ Resolved a physics crash on entity death by using `call_deferred`   ║
+║      ░   for scene transitions.                                              ║
+║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
+║                                                                              ║
+║   █  Documentation                                                           ║
+║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
+║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
+║      ░   design philosophies, patterns, and planned features.                ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                       [0.1.0] - 2025-08-05                           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version marks the initial architectural overhaul, transforming the    ║
+║   project from a functional prototype into a robust and scalable foundation. ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Player Character with rich moveset (dash, wall-jump, etc.).         ║
+║      ░ ■ Combat System with melee, charged shot, and pogo mechanics.         ║
+║      ░ ■ "Determination" healing system & Data-Driven Arena system.          ║
+║      ░ ■ Basic Boss entity framework & Reusable Menu System.                 ║
+║      ░ ■ Full suite of initial project documentation (.txt files).           ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Complete Architectural Refactor to use professional design patterns.║
+║      ░ ■ Player Logic: Migrated from boolean flags to a formal FSM.          ║
+║      ░ ■ Global Singletons: Centralized constants and asset paths.           ║
+║      ░ ■ File Organization: Restructured project directories.                ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Restored player contact damage from enemies and hazards.            ║
+║      ░ ■ Fully restored the pogo mechanic.                                   ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
 FILE: ./docs/TODO.txt
@@ -153,7 +282,7 @@ FILE: ./docs/TODO.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   This phase is our highest priority. We will refactor the existing code to  ║
-║   align with professional design principles. This is the hard, foundational ║
+║   align with professional design principles. This is the hard, foundational  ║
 ║   work that enables all future features to be built cleanly and efficiently. ║
 ║                                                                              ║
 ║   ■  1. Implement the Event Bus                                              ║
@@ -177,7 +306,7 @@ FILE: ./docs/TODO.txt
 ║      ░  Move all combat-related values from `Constants.gd` into a new        ║
 ║      ░  `combat_config.json`. Refactor code to pull values from this config. ║
 ║                                                                              ║
-║   □  2. Implement the Global Palette System                                  ║
+║   ■  2. Implement the Global Palette System                                  ║
 ║      ░  WHY: To enforce a consistent, project-wide color scheme. This is a   ║
 ║      ░  critical prerequisite for the UI overhaul.                           ║
 ║      ░  HOW: Create a `Palette.gd` singleton. Define the 32-step grayscale   ║
@@ -230,6 +359,15 @@ FILE: ./docs/TODO.txt
 ║   ░  Dynamic Camera (Explicitly deferred per design decision)                ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+=====================================
+FILE: ./docs/all_script_errors.txt
+=====================================
+Run in Box Battle folder for all errors in Terminal
+
+
+"/Applications/Godot.app/Contents/MacOS/Godot" --check-only "/Users/stevencasteel/Desktop/GODOT/BOX BATTLE" > all_script_errors.txt
+
 
 =====================================
 FILE: ./docs/DESIGN.txt
@@ -789,107 +927,7 @@ FILE: ./docs/CHANGELOG.txt
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Implemented the `Config.gd` autoload for loading all `.json` files ║
-║      ░   from a new `res://data/` directory.                                 ║
-║      ░ ■ Created `combat_config.json` to house all gameplay-related tuning  ║
-║      ░   values, such as health, speed, damage, and cooldowns.               ║
-║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event   ║
-║      ░   sequences, completing the Phase 1 architectural refactor.           ║
-║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog` ║
-║      ░   to facilitate global state management.                              ║
-║      ░ ■ Implemented a professional-grade, singleton-based Event Bus for     ║
-║      ░   decoupled inter-system communication.                               ║
-║      ░ ■ Added an `EventCatalog` and typed `Resource`-based event payloads   ║
-║      ░   to ensure type safety and improve developer ergonomics.             ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Refactored the entire codebase to be data-driven. All gameplay      ║
-║      ░   "magic numbers" are now pulled from `Config.get_value()` instead of ║
-║      ░   being hard-coded in `Constants.gd` or other scripts.                ║
-║      ░ ■ The `Constants.gd` singleton has been streamlined to only contain   ║
-║      ░   true, non-tunable constants like `TILE_SIZE`.                       ║
-║      ░ ■ The `EncounterDirector` now uses the `Sequencer` to run a clean,    ║
-║      ░   readable, and dramatic introduction sequence for the boss.          ║
-║      ░ ■ The main `game.gd` scene now listens for pause/resume events to     ║
-║      ░   manage the `SceneTree`'s pause state, making it globally controllable.║
-║      ░ ■ Refactored the `GameHUD` to be fully driven by the Event Bus,       ║
-║      ░   removing its direct dependencies on the Player and Boss nodes.      ║
-║      ░ ■ The Player and Boss now emit all health and stat changes through the║
-║      ░   Event Bus.                                                          ║
-║      ░ ■ Refactored the ArenaBuilder to strictly adhere to the Single        ║
-║      ░   Responsibility Principle. Its duties have been decoupled into new,  ║
-║      ░   focused classes: `LevelParser`, `TerrainBuilder`, and               ║
-║      ░   `EncounterDirector`. ArenaBuilder now acts as a high-level coordinator.║
-║      ░ ■ Refactored the BaseBoss node to use the State Pattern, mirroring the║
-║      ░   Player's architecture for improved scalability and maintainability. ║
-║      ░ ■ Refactored the Player node to use the State Pattern. All state logic║
-║      ░   (Move, Fall, Dash, etc.) has been decoupled into individual classes ║
-║      ░   in `src/entities/player/states/` for improved scalability and       ║
-║      ░   maintainability, adhering to SOLID principles.                      ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Renamed `Config.get()` to `Config.get_value()` to resolve a conflict║
-║      ░   with the native Godot `Object.get()` method.                        ║
-║      ░ ■ Resolved `SHADOWED_GLOBAL_IDENTIFIER` warnings in `base_boss.gd` by ║
-║      ░   removing redundant `preload` constants and using the global `class_name`.║
-║      ░ ■ Resolved `Identifier not declared` errors in `player.gd` by         ║
-║      ░   restoring necessary `preload` constants for its local state scripts.║
-║      ░ ■ Resolved bug where Player hit flash timer would not reset, leaving  ║
-║      ░   the player sprite permanently changed after taking damage.          ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This version represents a foundational overhaul of the project's technical ║
-║   architecture. The focus was on implementing professional design patterns   ║
-║   (SOLID, State Pattern) and eliminating performance issues to prepare for   ║
-║   future content and feature development.                                    ║
-║                                                                              ║
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system ║
-║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
-║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
-║      ░   prevent any "first-appearance" hitches for entities.                ║
-║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
-║      ░   the official documentation.                                         ║
-║                                                                              ║
-║   █  Bug Fixes                                                               ║
-║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
-║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
-║      ░ ■ Resolved a physics crash on entity death by using `call_deferred`   ║
-║      ░   for scene transitions.                                              ║
-║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
-║                                                                              ║
-║   █  Documentation                                                           ║
-║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
-║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
-║      ░   design philosophies, patterns, and planned features.                ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                       [0.1.0] - 2025-08-05                           ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This version marks the initial architectural overhaul, transforming the    ║
-║   project from a functional prototype into a robust and scalable foundation. ║
-║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Player Character with rich moveset (dash, wall-jump, etc.).         ║
-║      ░ ■ Combat System with melee, charged shot, and pogo mechanics.         ║
-║      ░ ■ "Determination" healing system & Data-Driven Arena system.          ║
-║      ░ ■ Basic Boss entity framework & Reusable Menu System.                 ║
-║      ░ ■ Full suite of initial project documentation (.txt files).           ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Complete Architectural Refactor to use professional design patterns.║
-║      ░ ■ Player Logic: Migrated from boolean flags to a formal FSM.          ║
-║      ░ ■ Global Singletons: Centralized constants and asset paths.           ║
-║      ░ ■ File Organization: Restructured project directories.                ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Restored player contact damage from enemies and hazards.            ║
-║      ░ ■ Fully restored the pogo mechanic.                                   ║
+║   (Changes for the next version will be logged here.)                        ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -1253,6 +1291,7 @@ ArenaBuilder="*res://src/core/arena_builder.gd"
 EventBus="*res://src/core/event_bus.gd"
 Sequencer="*res://src/core/sequencer.gd"
 Config="*res://src/core/Config.gd"
+Palette="*res://src/core/palette.gd"
 
 [display]
 
@@ -1334,6 +1373,58 @@ ui_dash={
 renderer/rendering_method="mobile"
 environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 
+
+=====================================
+FILE: ./data/combat_config.json
+=====================================
+{
+    "general": {
+        "physics": {
+            "gravity": 1200.0
+        }
+    },
+    "player": {
+        "physics": {
+            "speed": 450.0,
+            "jump_force": 680.0,
+            "pogo_force": 450.0,
+            "coyote_time": 0.1,
+            "jump_buffer": 0.1,
+            "jump_release_dampener": 0.4,
+            "wall_coyote_time": 0.05,
+            "fast_fall_gravity_multiplier": 1.4,
+            "max_air_jumps": 0,
+            "dash_speed": 1400.0,
+            "dash_duration": 0.15,
+            "dash_cooldown": 0.5,
+            "wall_slide_speed": 120.0,
+            "wall_jump_force_x": 1650.0,
+            "wall_jump_force_y": 680.0
+        },
+        "combat": {
+            "attack_cooldown": 0.12,
+            "charge_time": 0.35,
+            "attack_duration": 0.1,
+            "attack_friction": 2000.0,
+            "knockback_speed": 700.0,
+            "knockback_duration": 0.1,
+            "hazard_knockback_speed": 400.0,
+            "determination_per_charge": 10
+        },
+        "health": {
+            "max_health": 5,
+            "heal_duration": 2.0,
+            "max_healing_charges": 1,
+            "invincibility_duration": 1.5
+        }
+    },
+    "boss": {
+        "stats": {
+            "health": 30,
+            "patrol_speed": 100.0
+        }
+    }
+}
 
 =====================================
 FILE: ./src/ui/game_hud/game_hud.gd
@@ -2278,6 +2369,119 @@ func _on_options_button_pressed():
 
 
 =====================================
+FILE: ./src/ui/components/styled_menu_item/styled_menu_item.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://cgt63w7k4w5gq"]
+
+[ext_resource type="Script" path="res://src/ui/components/styled_menu_item/styled_menu_item.gd" id="1_menu_item_script"]
+
+[node name="StyledMenuItem" type="Control"]
+custom_minimum_size = Vector2(400, 80)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_menu_item_script")
+
+=====================================
+FILE: ./src/ui/components/styled_menu_item/styled_menu_item.gd
+=====================================
+# src/ui/components/styled_menu_item/styled_menu_item.gd
+#
+# The core logic for our new, reusable, procedurally-drawn menu item.
+# This component will be the cornerstone of our "Framer + Geometry Wars" UI.
+# It extends Control and uses the _draw() function to render itself.
+@tool
+class_name StyledMenuItem
+extends Control
+
+# --- Properties ---
+@export var text: String = "Menu Item" : set = set_text
+
+# --- State ---
+var is_hovered: bool = false
+var is_pressed: bool = false
+var is_selected: bool = false # For keyboard/controller navigation
+
+# --- Font Reference ---
+var _font: Font
+
+func _ready() -> void:
+	_font = load(AssetPaths.FONT_BOLD)
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+
+# --- The Core Drawing Function ---
+func _draw() -> void:
+	# --- NEW: Step 1: Draw the Glow Effect ---
+	# We only show the glow when the item is active (hovered or selected).
+	if is_hovered or is_selected:
+		_draw_glow()
+
+	# --- Step 2: Draw the Main Button ---
+	var bg_color: Color
+	var text_color: Color
+	var border_color: Color
+	var border_width: float = 3.0
+
+	if is_hovered or is_selected:
+		bg_color = Palette.COLOR_UI_ACCENT_PRIMARY
+		text_color = Palette.COLOR_BACKGROUND
+		border_color = Palette.get_color(4)
+	else:
+		bg_color = Palette.COLOR_UI_PANEL_BG
+		text_color = Palette.COLOR_TEXT_PRIMARY
+		border_color = Palette.COLOR_UI_ACCENT_PRIMARY
+
+	# Draw the background and border.
+	draw_rect(Rect2(Vector2.ZERO, size), bg_color)
+	draw_rect(Rect2(Vector2.ZERO, size), border_color, false, border_width)
+	
+	# --- Step 3: Draw the Text ---
+	var font_size = 48
+	var text_width = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size).x
+	var text_pos_x = (size.x - text_width) / 2
+	var text_pos_y = (size.y / 2) + (font_size / 3.0)
+
+	draw_string(_font, Vector2(text_pos_x, text_pos_y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color)
+
+
+# --- NEW: Helper function for the glow effect ---
+func _draw_glow() -> void:
+	var glow_layers = 8 # How many layers to stack for a smooth falloff.
+	var glow_size = 20.0 # How far the glow extends beyond the button.
+	var glow_color = Palette.COLOR_UI_GLOW
+
+	for i in range(glow_layers):
+		# Each layer is slightly smaller and more opaque than the last.
+		var t = (i + 1.0) / glow_layers
+		var current_size = size + Vector2(glow_size, glow_size) * (1.0 - t)
+		var current_pos = (size - current_size) / 2.0
+		
+		# Modulate the alpha to create the fade effect.
+		var layer_color = glow_color
+		layer_color.a = 0.1 * (1.0 - t) # Make outer layers more transparent.
+		
+		draw_rect(Rect2(current_pos, current_size), layer_color)
+
+
+# --- Public API ---
+func set_text(new_text: String) -> void:
+	if text != new_text:
+		text = new_text
+		queue_redraw()
+
+# --- Signal Handlers ---
+func _on_mouse_entered() -> void:
+	is_hovered = true
+	CursorManager.set_pointer_state(true)
+	queue_redraw()
+
+func _on_mouse_exited() -> void:
+	is_hovered = false
+	CursorManager.set_pointer_state(false)
+	queue_redraw()
+
+
+=====================================
 FILE: ./src/ui/components/custom_slider/custom_slider.gd
 =====================================
 # src/ui/components/custom_slider/custom_slider.gd
@@ -2575,6 +2779,62 @@ func _on_game_resumed(_payload):
 
 
 =====================================
+FILE: ./src/scenes/dev/test_ui.gd
+=====================================
+# src/scenes/dev/test_ui.gd
+#
+# A simple script for the UI test scene. Its only purpose is to
+# provide a convenient way to close the scene by pressing Escape.
+extends Control
+
+func _unhandled_input(event: InputEvent) -> void:
+	# If the Escape key is pressed, quit the running scene.
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().quit()
+
+=====================================
+FILE: ./src/scenes/dev/test_ui.tscn
+=====================================
+[gd_scene load_steps=3 format=3 uid="uid://dma2j2a2h30d1"]
+
+[ext_resource type="Script" uid="uid://cyfvs7mg1lxlj" path="res://src/scenes/dev/test_ui.gd" id="1_test_ui_script"]
+[ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
+
+[node name="TestUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_test_ui_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0627451, 0.0627451, 0.0627451, 1)
+
+[node name="StyledMenuItem" parent="." instance=ExtResource("2_styled_menu_item")]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -40.0
+offset_right = 200.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "TEST BUTTON"
+
+
+=====================================
 FILE: ./src/scenes/main/main.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://bt1c5p8wphc4a"]
@@ -2806,7 +3066,8 @@ FILE: ./src/core/builders/terrain_builder.gd
 # src/core/builders/terrain_builder.gd
 #
 # Responsibility: To create all static level geometry (solid tiles,
-# one-way platforms, hazards) based on parsed LevelBuildData.
+# one-way platforms, hazards) based on parsed LevelBuildData. It now also
+# creates the visual representation for each tile using the Palette.
 class_name TerrainBuilder
 extends RefCounted
 
@@ -2832,7 +3093,7 @@ func build_terrain_async(parent_node: Node, build_data: LevelBuildData, tree: Sc
 	
 	await tree.process_frame
 
-# --- Tile Creation Functions (Moved from ArenaBuilder) ---
+# --- Tile Creation Functions (Now with Visuals) ---
 
 func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
@@ -2844,8 +3105,15 @@ func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	var rectangle_shape := RectangleShape2D.new()
 	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
 	collision_shape.shape = rectangle_shape
-	
 	static_body.add_child(collision_shape)
+	
+	# PALETTE INTEGRATION: Add a visible ColorRect.
+	var visual_rect := ColorRect.new()
+	visual_rect.color = Palette.COLOR_TERRAIN_PRIMARY
+	visual_rect.size = rectangle_shape.size
+	visual_rect.position = -rectangle_shape.size / 2.0 # Center the rect on the body's origin
+	static_body.add_child(visual_rect)
+	
 	parent_node.add_child(static_body)
 
 func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
@@ -2857,12 +3125,19 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	
 	var collision_shape := CollisionShape2D.new()
 	collision_shape.one_way_collision = true
-	collision_shape.position.y = -(Constants.TILE_SIZE / 2.0) + 5
 	var rectangle_shape := RectangleShape2D.new()
 	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
 	collision_shape.shape = rectangle_shape
-	
+	collision_shape.position.y = -(Constants.TILE_SIZE / 2.0) + (rectangle_shape.size.y / 2.0)
 	static_body.add_child(collision_shape)
+
+	# PALETTE INTEGRATION: Add a visible ColorRect that matches the thin platform.
+	var visual_rect := ColorRect.new()
+	visual_rect.color = Palette.COLOR_TERRAIN_SECONDARY
+	visual_rect.size = rectangle_shape.size
+	visual_rect.position = Vector2(-rectangle_shape.size.x / 2.0, collision_shape.position.y - (rectangle_shape.size.y / 2.0))
+	static_body.add_child(visual_rect)
+	
 	parent_node.add_child(static_body)
 
 func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
@@ -2876,8 +3151,15 @@ func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
 	var rectangle_shape := RectangleShape2D.new()
 	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
 	collision_shape.shape = rectangle_shape
-	
 	static_body.add_child(collision_shape)
+	
+	# PALETTE INTEGRATION: Add a visible ColorRect using the hazard color.
+	var visual_rect := ColorRect.new()
+	visual_rect.color = Palette.COLOR_HAZARD_PRIMARY
+	visual_rect.size = rectangle_shape.size
+	visual_rect.position = -rectangle_shape.size / 2.0
+	static_body.add_child(visual_rect)
+	
 	parent_node.add_child(static_body)
 
 
@@ -3336,6 +3618,64 @@ class_name PlayerHealingChargesChangedEvent
 @export var current_charges: int = 0
 
 =====================================
+FILE: ./src/core/palette.gd
+=====================================
+# src/core/palette.gd
+#
+# An autoloaded singleton that holds the project's master color palette.
+# It establishes a single source of truth for all visual elements, ensuring a
+# cohesive aesthetic. It is designed around a 32-step grayscale value scale.
+extends Node
+
+# FIX: The Color("#hex") constructor is a valid constant expression, unlike
+# Color.from_string(). This allows the entire palette and its semantic
+# constants to be correctly defined at compile-time.
+const _palette: Array[Color] = [
+	Color("#000000"), Color("#080808"), Color("#101010"), Color("#191919"),
+	Color("#212121"), Color("#292929"), Color("#313131"), Color("#3a3a3a"),
+	Color("#424242"), Color("#4a4a4a"), Color("#525252"), Color("#5a5a5a"),
+	Color("#636363"), Color("#6b6b6b"), Color("#737373"), Color("#7b7b7b"),
+	Color("#848484"), Color("#8c8c8c"), Color("#949494"), Color("#9c9c9c"),
+	Color("#a5a5a5"), Color("#adadad"), Color("#b5b5b5"), Color("#bdbdbd"),
+	Color("#c5c5c5"), Color("#cecece"), Color("#d6d6d6"), Color("#dedede"),
+	Color("#e6e6e6"), Color("#efefef"), Color("#f7f7f7"), Color("#ffffff")
+]
+
+# --- SEMANTIC CONSTANTS ---
+# This is the most important part of the script. We refer to these constants
+# in our code, not the raw index numbers. This makes the code readable and
+# easy to update. If we want to make all hazards darker, we just change one
+# line here.
+
+# Gameplay
+const COLOR_PLAYER: Color = _palette[31]
+const COLOR_BOSS_PRIMARY: Color = _palette[30]
+const COLOR_PLAYER_PROJECTILE: Color = _palette[29]
+const COLOR_HAZARD_PRIMARY: Color = _palette[28] # Also Enemy Projectiles
+
+# Environment
+const COLOR_BACKGROUND: Color = _palette[0]
+const COLOR_GRID: Color = _palette[2]
+const COLOR_TERRAIN_PRIMARY: Color = _palette[4]
+const COLOR_TERRAIN_SECONDARY: Color = _palette[6]
+
+# UI/UX
+const COLOR_TEXT_HEADER: Color = _palette[30]
+const COLOR_UI_ACCENT_PRIMARY: Color = _palette[28]
+const COLOR_TEXT_PRIMARY: Color = _palette[26]
+const COLOR_TEXT_DISABLED: Color = _palette[16]
+const COLOR_UI_GLOW: Color = _palette[12]
+const COLOR_UI_PANEL_BG: Color = _palette[8]
+
+# --- Helper Function ---
+# Provides a safe way to get a color by its index if needed.
+func get_color(index: int) -> Color:
+	if index >= 0 and index < _palette.size():
+		return _palette[index]
+	push_warning("Palette: Invalid color index requested: %d" % index)
+	return Color.MAGENTA # Return a highly visible error color
+
+=====================================
 FILE: ./src/core/cursor_manager.gd
 =====================================
 # src/core/cursor_manager.gd
@@ -3600,11 +3940,16 @@ FILE: ./src/projectiles/player_shot.gd
 # Controls the behavior of the player's charged projectile.
 extends Area2D
 
+@onready var visual_sprite: ColorRect = $ColorRect
+
 var direction = Vector2.RIGHT
 var speed = 1000.0
 var damage = 2 # Charged shots do more damage than melee
 
 func _ready():
+	# PALETTE INTEGRATION: Set the projectile's color from the Palette.
+	visual_sprite.color = Palette.COLOR_PLAYER_PROJECTILE
+
 	# Connect signals to handle collisions with both solid bodies and other areas.
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
@@ -3639,10 +3984,16 @@ FILE: ./src/projectiles/boss_shot.gd
 # Controls the behavior of the boss's projectile.
 extends Area2D
 
+@onready var visual_sprite: ColorRect = $ColorRect
+
 var direction = Vector2.LEFT
 var speed = 400.0
 
 func _ready():
+	# PALETTE INTEGRATION: Set the projectile's color from the Palette.
+	# We use the primary hazard color to communicate that this is dangerous.
+	visual_sprite.color = Palette.COLOR_HAZARD_PRIMARY
+
 	# This projectile's purpose is to be detected by the player's hurtbox.
 	# The physics layers are set in the scene file.
 	add_to_group("enemy_projectile")
@@ -3828,7 +4179,6 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 @onready var hit_flash_timer: Timer = $HitFlashTimer
 
 # --- Preloads ---
-# State preloads have been removed to use global class_name instead.
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
 
 # --- State Machine ---
@@ -3848,8 +4198,11 @@ func _ready():
 	health = Config.get_value("boss.stats.health", 30)
 	patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
 
+	# PALETTE INTEGRATION: Set the boss's color from the Palette.
+	original_color = Palette.COLOR_BOSS_PRIMARY
+	visual_sprite.color = original_color
+
 	add_to_group("enemy")
-	original_color = visual_sprite.color
 	player = get_tree().get_first_node_in_group("player")
 	
 	states = {
@@ -3917,7 +4270,8 @@ func die():
 	queue_free()
 
 func _trigger_hit_flash():
-	visual_sprite.color = Color.DODGER_BLUE
+	# PALETTE INTEGRATION: Use a palette color for the hit flash.
+	visual_sprite.color = Palette.get_color(16)
 	hit_flash_timer.start()
 
 func _on_hit_flash_timer_timeout():
@@ -4014,7 +4368,6 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 
 # --- Preloads ---
-# RE-ADDED: These are necessary because player state scripts do not use global class_name.
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const MoveState = preload("res://src/entities/player/states/state_move.gd")
 const FallState = preload("res://src/entities/player/states/state_fall.gd")
@@ -4057,8 +4410,11 @@ var original_color: Color
 func _ready():
 	health = Config.get_value("player.health.max_health", 5)
 	
+	# PALETTE INTEGRATION: Set the player's color from the Palette.
+	original_color = Palette.COLOR_PLAYER
+	visual_sprite.color = original_color
+	
 	add_to_group("player")
-	original_color = visual_sprite.color
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
@@ -4175,7 +4531,9 @@ func _cancel_heal():
 	healing_timer.stop()
 	
 func _trigger_hit_flash():
-	visual_sprite.color = Color.DODGER_BLUE
+	# PALETTE INTEGRATION: Use a palette color for the hit flash.
+	# A mid-gray provides a clear but not jarring feedback color.
+	visual_sprite.color = Palette.get_color(16) # Using an index for a generic "feedback" color
 	hit_flash_timer.start()
 
 func _fire_shot():
@@ -4198,7 +4556,8 @@ func _trigger_pogo(pogo_target):
 		elif pogo_target.is_in_group("enemy_projectile"):
 			pogo_target.queue_free()
 
-func _on_hit_flash_timer_timeout(): visual_sprite.color = original_color
+func _on_hit_flash_timer_timeout():
+	visual_sprite.color = original_color
 
 func _on_hitbox_body_entered(body):
 	if is_pogo_attack: _trigger_pogo(body)
@@ -4212,7 +4571,8 @@ func _on_hitbox_area_entered(area):
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"): take_damage(1, area); area.queue_free()
 
-func _on_invincibility_timer_timeout(): is_invincible = false
+func _on_invincibility_timer_timeout():
+	is_invincible = false
 
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
