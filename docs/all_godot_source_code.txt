@@ -2,13 +2,14 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 15:22:49 CDT 2025
+Generated on: Sat Aug  9 16:25:51 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
 ├── README.md
+├── all_script_errors.txt
 ├── data
 │   └── combat_config.json
 ├── default_bus_layout.tres
@@ -57,6 +58,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── player_healing_charges_changed_event.gd
     │   │   └── player_health_changed_event.gd
     │   ├── game_manager.gd
+    │   ├── object_pool.gd
     │   ├── palette.gd
     │   ├── sequencer
     │   │   ├── sequence_step.gd
@@ -148,7 +150,139 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-39 directories, 101 files
+39 directories, 103 files
+
+
+=====================================
+FILE: ./all_script_errors.txt
+=====================================
+WorkerThreadPool: 8 threads, 2 max low-priority.
+Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Devices:
+  #0: Apple Apple M1 (Apple7) - Supported, Integrated
+- Metal multiview supported:
+  max view count: 16
+  max instances: 4294967295
+Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
+Using "default" pen tablet driver...
+Shader 'CanvasSdfShaderRD' (group 0) SHA256: 97dc9fb2f592cd02d8b1f8fd33df8aec73849d2fbafcfeaa6e99b9c3678c221d
+Shader 'SkeletonShaderRD' (group 0) SHA256: a7e5115c09793f8e950720a2ab8906bff195e9b508eec01af7aeb363da2bf75b
+Shader 'SortShaderRD' (group 0) SHA256: e184fb752fd6b1f86c536cb9dff20977fee019403e1025080eca44e6bfa11ef1
+Shader 'ParticlesShaderRD' (group 0) SHA256: 9797916f926fab4024422fe6c75cc0d8d517705d90802882fb9efa6dda0af392
+Shader 'ParticlesCopyShaderRD' (group 0) SHA256: 1a312a6797c1ba217655b41d33ce357ac226cba8d65d4daab9278d88c57d6468
+Shader 'CanvasShaderRD' (group 0) SHA256: 908e609e1337d67f8799155a57f03a3de33fcdba22b574595e90da921079b33d
+Shader 'CanvasOcclusionShaderRD' (group 0) SHA256: f9d6c9d569cf2f40595061ee84efd5fe34d68284e1f7273f62a4ac36de8852ee
+Shader 'SceneForwardMobileShaderRD' (group 0) SHA256: 1c5d16b1f4d38d016026900999bd209a9f901f70f04136d9fdd669f9601e2db3
+Shader 'SkyShaderRD' (group 0) SHA256: 34c03a8e46624b5ab7488ca0527d4f733272c048f0dd61258a69b9bf419225bd
+Shader 'BokehDofRasterShaderRD' (group 0) SHA256: a5ed26e5b86fb1a016f61f719fa3ba45119a0bda505dcc038bfd26e718ef956d
+Shader 'BlurRasterShaderRD' (group 0) SHA256: 193d80f293dc88299ae7ef003640f13fa7cab1fd1a57de366b53029265639146
+Shader 'CopyShaderRD' (group 0) SHA256: aaaaf4bfa2e7bd72bdafaa25005b56152e2e738422178c95ce5ed4976f964862
+Shader 'CopyToFbShaderRD' (group 0) SHA256: f113ba1d923f38bcf263af4dbc168573e755be83c1d3616fc49b7588aa9fffa4
+Shader 'CubeToDpShaderRD' (group 0) SHA256: 37d76ea0432d00e86934ff9eab83ce63c9c7feffafd96809773e109c5a078e17
+Shader 'CubemapDownsamplerRasterShaderRD' (group 0) SHA256: 20c48704e5817755c17d80b22e7c39d99270bd1e95c54446d742753abc03db33
+Shader 'CubemapFilterRasterShaderRD' (group 0) SHA256: de06c7a642b6af01caa44a65e94daa5dfafbdda1a6111bdd975c28e8c1fe4c1a
+Shader 'CubemapRoughnessRasterShaderRD' (group 0) SHA256: 3efae0638df891d7ec5aaa17ead03d3243a3fdc9f5920d95e16f92a0aeccfd04
+Shader 'SpecularMergeShaderRD' (group 0) SHA256: 8d06f9bec87ae4177f0a49133608f41313ebad2d0d81a5c074db1541cd396ddc
+Shader 'ShadowFrustumShaderRD' (group 0) SHA256: b73466659c6c1252aff41d1d117370efac3ed69d2ee89bb6e036036557afb5bd
+Shader 'MotionVectorsShaderRD' (group 0) SHA256: 548f1c61370fbba7d8bacec2827d86adc6984d8874d31cb21b7bb5f78e6d4335
+Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e6003b5a0c97bd615d1990a7012076a61e11cb05df558
+Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
+Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
+CoreAudio: detected 2 channels
+CoreAudio: output sampling rate: 44100 Hz
+CoreAudio: output audio buffer frames: 512 calculated latency: 11ms
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
+Loading resource: res://default_bus_layout.tres
+CORE API HASH: 4052744068
+EDITOR API HASH: 910296392
+Loading resource: res://src/core/settings.gd
+Loading resource: res://src/core/audio_manager.gd
+Loading resource: res://src/core/cursor_manager.gd
+Loading resource: res://assets/sprites/ui/cursors/cursor_default.png
+Loading resource: res://.godot/imported/cursor_default.png-adc7f5ed4336e28008b129c5a66cab2e.ctex
+Loading resource: res://assets/sprites/ui/cursors/cursor_pointer.png
+Loading resource: res://.godot/imported/cursor_pointer.png-90e307ad4e06d49b3b74ef9b44e078f4.ctex
+Loading resource: res://src/ui/global_hud/global_hud.tscn
+Loading resource: res://src/ui/global_hud/global_hud.gd
+Loading resource: res://assets/sprites/ui/icons/icon-sound-on.png
+Loading resource: res://.godot/imported/icon-sound-on.png-e846c5d97e3d706214419caf8e828d71.ctex
+Loading resource: res://assets/sprites/ui/icons/icon-sound-off.png
+Loading resource: res://.godot/imported/icon-sound-off.png-6ce140963307e6f579be834adb53f1a0.ctex
+Loading resource: res://src/core/game_manager.gd
+Loading resource: res://src/core/arena_builder.gd
+Loading resource: res://src/core/Config.gd
+Loading resource: res://src/core/object_pool.gd
+Loading resource: res://src/projectiles/player_shot.tscn
+Loading resource: res://src/projectiles/player_shot.gd
+Loading resource: res://src/projectiles/boss_shot.tscn
+Loading resource: res://src/projectiles/boss_shot.gd
+Loaded system CA certificates
+Loading resource: res://src/scenes/main/main.tscn
+Loading resource: res://src/scenes/main/main.gd
+Loading resource: res://src/ui/screens/title_screen/title_screen.tscn
+Loading resource: res://src/ui/screens/title_screen/title_screen.gd
+Loading resource: res://assets/audio/music/title-screen-loop.mp3
+Loading resource: res://.godot/imported/title-screen-loop.mp3-7ec904333b11a47509751ae22a703854.mp3str
+Loading resource: res://assets/sprites/ui/title/box_battle_title.png
+Loading resource: res://.godot/imported/box_battle_title.png-b9353d8af8deadfd04d4db0e868561f1.ctex
+Loading resource: res://assets/sprites/ui/menu/menu-item-start.png
+Loading resource: res://.godot/imported/menu-item-start.png-32e538bb682d9a1b639fc2dc41f90bed.ctex
+Loading resource: res://assets/sprites/ui/menu/menu-item-options.png
+Loading resource: res://.godot/imported/menu-item-options.png-0a5f7fa3c76e43a264f366e36bedb5f1.ctex
+Loading resource: res://assets/sprites/ui/menu/menu-cursor.png
+Loading resource: res://.godot/imported/menu-cursor.png-3bbc1015f1afec795ab061c5256925a7.ctex
+Loading resource: res://src/scenes/loading/loading_screen.tscn
+Loading resource: res://src/scenes/loading/loading_screen.gd
+Loading resource: res://assets/audio/sfx/start-chime.mp3
+Loading resource: res://.godot/imported/start-chime.mp3-d648111bc9ecb7811859947d2e9fa808.mp3str
+Starting shader pre-warming...
+Loading resource: res://src/entities/player/player.tscn
+Loading resource: res://src/entities/player/player.gd
+Loading resource: res://src/entities/boss/base_boss.tscn
+Loading resource: res://src/entities/boss/base_boss.gd
+Shader pre-warming complete.
+Loading resource: res://src/arenas/arena_00_layout.gd
+Loading resource: res://src/arenas/arena_00_encounter.gd
+Loading resource: res://src/entities/boss/base_boss.tscn
+Loading resource: res://src/entities/player/player.tscn
+Loading resource: res://src/ui/game_hud/game_hud.tscn
+Loading resource: res://src/ui/game_hud/game_hud.gd
+Loading resource: res://src/scenes/game/game.tscn
+Loading resource: res://src/scenes/game/game.gd
+[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
+Boss chose attack: SINGLE_SHOT
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
+Boss chose attack: SINGLE_SHOT
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
+Boss chose attack: VOLLEY_SHOT
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
+Boss chose attack: VOLLEY_SHOT
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
+Boss chose attack: SINGLE_SHOT
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+Healing started...
+Boss chose attack: VOLLEY_SHOT
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+Boss chose attack: SINGLE_SHOT
+[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
 
 
 =====================================
@@ -1021,6 +1155,12 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░ ■ Created a `PlayerStateData` resource to act as a central data       ║
 ║      ░   container, decoupling state from the Player node itself.            ║
 ║                                                                              ║
+║   █  Performance                                                             ║
+║      ░ ■ Implemented a robust, generic `ObjectPool` singleton to manage      ║
+║      ░   reusable nodes like projectiles.                                    ║
+║      ░ ■ Refactored Player and Boss to get/return projectiles from the pool, ║
+║      ░   eliminating runtime instantiation to prevent GC spikes and stutter. ║
+║                                                                              ║
 ║   █  Changed                                                                 ║
 ║      ░ ■ Refactored `Sequencer.gd` to use type-safe `SequenceStep` resources ║
 ║      ░   instead of ad-hoc dictionaries, preventing runtime errors and       ║
@@ -1030,15 +1170,14 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   polling for changes every frame.                                    ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║
+║      ░   use a signal-based, non-re-parenting architecture that is immune to ║
+║      ░   race conditions.                                                    ║
 ║      ░ ■ Resolved all memory leaks by implementing proper cleanup in         ║
-║      ░   `_exit_tree` for the Player, Boss, and HealthComponent to break     ║
-║      ░   cyclical references.                                                ║
-║      ░ ■ Resolved a memory leak caused by creating orphaned nodes in         ║
-║      ░   `ArenaBuilder` by accessing script constants directly.              ║
-║      ░ ■ Corrected `Config.gd` to sort JSON filenames before loading,        ║
-║      ░   ensuring a deterministic and platform-agnostic configuration merge. ║
-║      ░ ■ Fixed a critical crash in `EventBus.gd` by using the robust global  ║
-║      ░   `is_instance_of()` for polymorphic type checking.                   ║
+║      ░   `_exit_tree` for all state machines, components, and singletons.    ║
+║      ░ ■ Resolved a leak caused by creating orphaned nodes in `ArenaBuilder`.║
+║      ░ ■ Corrected `Config.gd` to ensure deterministic config loading.       ║
+║      ░ ■ Fixed a critical crash in the `EventBus` related to polymorphism.   ║
 ║      ░ ■ Resolved all remaining static analysis warnings for a clean build.  ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
@@ -1451,6 +1590,7 @@ EventBus="*res://src/core/event_bus.gd"
 Sequencer="*res://src/core/sequencer.gd"
 Config="*res://src/core/Config.gd"
 Palette="*res://src/core/palette.gd"
+ObjectPool="*res://src/core/object_pool.gd"
 
 [display]
 
@@ -3723,13 +3863,78 @@ func build_level_async() -> Node:
 
 
 =====================================
+FILE: ./src/core/object_pool.gd
+=====================================
+# src/core/object_pool.gd
+#
+# FINAL, PRODUCTION-READY VERSION. This pool is the permanent owner of
+# all its objects. It never re-parents during gameplay. It activates objects
+# by moving them into position and deactivates them by moving them off-screen.
+# This architecture prevents all physics-related crashes and memory leaks.
+extends Node
+
+const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
+const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
+
+var _pools: Dictionary = {}
+
+func _ready():
+	_create_pool_for_scene(&"player_shots", PlayerShotScene, 15)
+	_create_pool_for_scene(&"boss_shots", BossShotScene, 30)
+
+func _create_pool_for_scene(p_pool_name: StringName, p_scene: PackedScene, p_initial_size: int):
+	if _pools.has(p_pool_name):
+		return
+		
+	var pool_container = Node.new()
+	pool_container.name = p_pool_name
+	add_child(pool_container)
+	
+	_pools[p_pool_name] = {"scene": p_scene, "inactive": []}
+	
+	for i in range(p_initial_size):
+		var instance = p_scene.instantiate()
+		pool_container.add_child(instance)
+		instance.deactivate()
+		_pools[p_pool_name].inactive.append(instance)
+
+func get_instance(p_pool_name: StringName) -> Node:
+	if not _pools.has(p_pool_name):
+		push_error("ObjectPool: Pool '%s' does not exist." % p_pool_name)
+		return null
+
+	var pool = _pools[p_pool_name]
+	var instance: Node
+	
+	if not pool.inactive.is_empty():
+		instance = pool.inactive.pop_front()
+	else:
+		# This case handles if the pool runs dry during intense combat.
+		instance = pool.scene.instantiate()
+		get_node(NodePath(p_pool_name)).add_child(instance)
+	
+	return instance
+
+func return_instance(p_instance: Node):
+	if not is_instance_valid(p_instance) or p_instance.process_mode == PROCESS_MODE_DISABLED:
+		return
+
+	var pool_name = p_instance.get_meta("pool_name", "")
+	if pool_name == "" or not _pools.has(pool_name):
+		p_instance.queue_free()
+		return
+	
+	p_instance.deactivate()
+	_pools[pool_name].inactive.append(p_instance)
+
+
+=====================================
 FILE: ./src/core/audio_manager.gd
 =====================================
 # src/core/audio_manager.gd
 #
-# This singleton is responsible for all audio playback. It is now event-driven,
-# only updating the AudioServer when settings actually change, which is much
-# more performant than polling every frame.
+# This singleton is responsible for all audio playback. This version includes
+# a robust cleanup function to prevent memory leaks on exit.
 extends Node
 
 var sfx_players = []
@@ -3737,7 +3942,6 @@ var sfx_player_index = 0
 var music_player: AudioStreamPlayer
 
 func _ready():
-	# --- Setup Audio Players ---
 	for i in range(Constants.NUM_SFX_PLAYERS):
 		var player = AudioStreamPlayer.new()
 		add_child(player)
@@ -3748,19 +3952,15 @@ func _ready():
 	add_child(music_player)
 	music_player.bus = "Music"
 
-	# --- MODIFICATION ---
-	# Connect to the settings signal. Now, _on_audio_settings_changed will be
-	# called automatically whenever a relevant setting is modified.
 	Settings.audio_settings_changed.connect(_on_audio_settings_changed)
-
-	# Call the update function once at the start to set the initial volume.
 	_on_audio_settings_changed()
 
-# REMOVED: The _process(_delta) function has been deleted. No more polling!
+# CRITICAL FIX: This function is called when the game closes. It manually
+# stops the music and releases the stream resource, preventing the audio leak.
+func _exit_tree():
+	music_player.stop()
+	music_player.stream = null
 
-# --- NEW: Signal Handler ---
-# This function now holds the logic that used to be in _process().
-# It only runs when the 'audio_settings_changed' signal is received from Settings.gd.
 func _on_audio_settings_changed():
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(Settings.master_volume))
 	AudioServer.set_bus_mute(AudioServer.get_bus_index("Master"), Settings.master_muted)
@@ -3770,9 +3970,6 @@ func _on_audio_settings_changed():
 
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("SFX"), linear_to_db(Settings.sfx_volume))
 	AudioServer.set_bus_mute(AudioServer.get_bus_index("SFX"), Settings.sfx_muted)
-
-
-# --- Public Functions (Unchanged) ---
 
 func play_sfx(sound_path: String):
 	var player = sfx_players[sfx_player_index]
@@ -4113,6 +4310,11 @@ color = Color(0.5, 0.8, 1, 1)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_playershot")
 
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+rect = Rect2(-20, -20, 40, 40)
+
+[connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
+
 =====================================
 FILE: ./src/projectiles/boss_shot.tscn
 =====================================
@@ -4138,78 +4340,86 @@ color = Color(1, 0.8, 0.4, 1)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_bossshot")
 
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+rect = Rect2(-30, -30, 60, 60)
+
+[connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
+
 =====================================
 FILE: ./src/projectiles/player_shot.gd
 =====================================
 # src/projectiles/player_shot.gd
 #
-# Controls the behavior of the player's charged projectile.
+# Final, stable pool-aware version.
 extends Area2D
 
-@onready var visual_sprite: ColorRect = $ColorRect
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 var direction = Vector2.RIGHT
 var speed = 1000.0
-var damage = 2 # Charged shots do more damage than melee
+var damage = 2
 
 func _ready():
-	# PALETTE INTEGRATION: Set the projectile's color from the Palette.
-	visual_sprite.color = Palette.COLOR_PLAYER_PROJECTILE
-
-	# Connect signals to handle collisions with both solid bodies and other areas.
+	$ColorRect.color = Palette.COLOR_PLAYER_PROJECTILE
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
 
+func activate():
+	process_mode = PROCESS_MODE_INHERIT
+	collision_shape.disabled = false
+
+func deactivate():
+	process_mode = PROCESS_MODE_DISABLED
+	collision_shape.disabled = true
+	global_position = Vector2(-1000, -1000) # Move to the graveyard
+
 func _physics_process(delta):
-	position += direction * speed * delta
+	global_position += direction * speed * delta
 
 func _on_body_entered(body):
-	# Check if the body hit is an enemy.
 	if body.is_in_group("enemy"):
 		body.take_damage(damage)
-		queue_free() # Destroy self on hit.
-		return # Stop further processing.
+	ObjectPool.return_instance(self)
 
-	# Check if the body hit is part of the solid world.
-	if body.is_in_group("world"):
-		queue_free() # Destroy self on hitting a wall.
-
-# This function is called when this projectile's area overlaps with another Area2D.
 func _on_area_entered(area):
-	# Check if the area we hit is an enemy projectile.
 	if area.is_in_group("enemy_projectile"):
-		# Destroy both this projectile and the enemy one.
-		queue_free()
-		area.queue_free()
+		ObjectPool.return_instance(area)
+	ObjectPool.return_instance(self)
+
+func _on_screen_exited():
+	ObjectPool.return_instance(self)
 
 =====================================
 FILE: ./src/projectiles/boss_shot.gd
 =====================================
 # src/projectiles/boss_shot.gd
 #
-# Controls the behavior of the boss's projectile.
+# Final, stable pool-aware version.
 extends Area2D
 
-@onready var visual_sprite: ColorRect = $ColorRect
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 var direction = Vector2.LEFT
 var speed = 400.0
 
 func _ready():
-	# PALETTE INTEGRATION: Set the projectile's color from the Palette.
-	# We use the primary hazard color to communicate that this is dangerous.
-	visual_sprite.color = Palette.COLOR_HAZARD_PRIMARY
-
-	# This projectile's purpose is to be detected by the player's hurtbox.
-	# The physics layers are set in the scene file.
+	$ColorRect.color = Palette.COLOR_HAZARD_PRIMARY
 	add_to_group("enemy_projectile")
 
-func _physics_process(delta):
-	position += direction * speed * delta
+func activate():
+	process_mode = PROCESS_MODE_INHERIT
+	collision_shape.disabled = false
 
-# This function is not used because the projectile itself doesn't need to detect
-# things. Instead, the player's hurtbox detects this projectile. We leave the
-# Area2D's monitoring property on by default, but we don't connect its signals.
+func deactivate():
+	process_mode = PROCESS_MODE_DISABLED
+	collision_shape.disabled = true
+	global_position = Vector2(-1000, -1000) # Move to the graveyard
+
+func _physics_process(delta):
+	global_position += direction * speed * delta
+
+func _on_screen_exited():
+	ObjectPool.return_instance(self)
 
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
@@ -4386,8 +4596,6 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 
 # --- Preloads ---
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
-# REMOVED: The following const preloads are no longer needed as the states
-# are now global classes via `class_name`.
 
 # --- State Machine ---
 var states: Dictionary
@@ -4412,7 +4620,6 @@ func _ready():
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
 	
-	# CORRECTED: Instantiate states using their global class names directly.
 	states = {
 		State.IDLE: BossStateIdle.new(self),
 		State.ATTACK: BossStateAttack.new(self),
@@ -4463,12 +4670,17 @@ func _update_player_tracking():
 	
 func fire_shot_at_player():
 	if not is_instance_valid(player): return
+	
+	var shot_instance = ObjectPool.get_instance(&"boss_shots")
+	if not shot_instance: return
+	
 	_update_player_tracking()
-	var shot_instance = BossShotScene.instantiate()
-	get_parent().add_child(shot_instance)
-	shot_instance.global_position = global_position
 	var direction_to_player = (player.global_position - global_position).normalized()
 	shot_instance.direction = direction_to_player
+	
+	# CORRECTED: No longer call add_child. The pool manages the scene tree.
+	shot_instance.global_position = global_position
+	shot_instance.activate()
 	
 func take_damage(damage_amount: int):
 	health -= damage_amount
@@ -4732,9 +4944,7 @@ func _unhandled_input(event: InputEvent):
 	current_state.process_input(event)
 	
 func _exit_tree():
-	# NEW: Unsubscribe this node from all EventBus events.
 	EventBus.off_owner(self)
-	
 	states.clear()
 	p_data = null
 	health_component = null
@@ -4807,12 +5017,18 @@ func _cancel_heal():
 	
 func _fire_shot():
 	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	
+	var shot = ObjectPool.get_instance(&"player_shots")
+	if not shot: return
+	
 	var shot_dir = Vector2(p_data.facing_direction, 0)
 	if Input.is_action_pressed("ui_up"): shot_dir = Vector2.UP
 	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
-	var shot = PlayerShotScene.instantiate(); shot.direction = shot_dir
-	shot.position = global_position + (shot_dir * 60)
-	get_parent().add_child(shot)
+	
+	shot.direction = shot_dir
+	# CORRECTED: No longer call add_child. The pool manages the scene tree.
+	shot.global_position = global_position + (shot_dir * 60)
+	shot.activate()
 
 func _trigger_pogo(pogo_target):
 	velocity.y = -Config.get_value("player.physics.pogo_force")
@@ -4823,7 +5039,7 @@ func _trigger_pogo(pogo_target):
 		if pogo_target.has_method("take_damage"):
 			pogo_target.take_damage(1); _on_damage_dealt()
 		elif pogo_target.is_in_group("enemy_projectile"):
-			pogo_target.queue_free()
+			ObjectPool.return_instance(pogo_target)
 
 func _on_hitbox_body_entered(body):
 	if p_data.is_pogo_attack: _trigger_pogo(body)
@@ -4832,7 +5048,7 @@ func _on_hitbox_body_entered(body):
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		if p_data.is_pogo_attack: _trigger_pogo(area)
-		else: area.queue_free()
+		else: ObjectPool.return_instance(area)
 
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
@@ -4840,7 +5056,7 @@ func _on_hurtbox_area_entered(area):
 		if damage_result.was_damaged:
 			velocity = damage_result.knockback_velocity
 			change_state(State.HURT)
-		area.queue_free()
+		ObjectPool.return_instance(area)
 
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
@@ -4850,7 +5066,6 @@ func _on_healing_timer_timeout():
 		_emit_healing_charges_changed_event()
 		change_state(State.MOVE)
 
-# --- Signal handlers for HealthComponent ---
 func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current

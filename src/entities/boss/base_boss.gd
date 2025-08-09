@@ -18,8 +18,6 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 
 # --- Preloads ---
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
-# REMOVED: The following const preloads are no longer needed as the states
-# are now global classes via `class_name`.
 
 # --- State Machine ---
 var states: Dictionary
@@ -44,7 +42,6 @@ func _ready():
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
 	
-	# CORRECTED: Instantiate states using their global class names directly.
 	states = {
 		State.IDLE: BossStateIdle.new(self),
 		State.ATTACK: BossStateAttack.new(self),
@@ -95,12 +92,17 @@ func _update_player_tracking():
 	
 func fire_shot_at_player():
 	if not is_instance_valid(player): return
+	
+	var shot_instance = ObjectPool.get_instance(&"boss_shots")
+	if not shot_instance: return
+	
 	_update_player_tracking()
-	var shot_instance = BossShotScene.instantiate()
-	get_parent().add_child(shot_instance)
-	shot_instance.global_position = global_position
 	var direction_to_player = (player.global_position - global_position).normalized()
 	shot_instance.direction = direction_to_player
+	
+	# CORRECTED: No longer call add_child. The pool manages the scene tree.
+	shot_instance.global_position = global_position
+	shot_instance.activate()
 	
 func take_damage(damage_amount: int):
 	health -= damage_amount

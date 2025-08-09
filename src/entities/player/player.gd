@@ -77,9 +77,7 @@ func _unhandled_input(event: InputEvent):
 	current_state.process_input(event)
 	
 func _exit_tree():
-	# NEW: Unsubscribe this node from all EventBus events.
 	EventBus.off_owner(self)
-	
 	states.clear()
 	p_data = null
 	health_component = null
@@ -152,12 +150,18 @@ func _cancel_heal():
 	
 func _fire_shot():
 	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	
+	var shot = ObjectPool.get_instance(&"player_shots")
+	if not shot: return
+	
 	var shot_dir = Vector2(p_data.facing_direction, 0)
 	if Input.is_action_pressed("ui_up"): shot_dir = Vector2.UP
 	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
-	var shot = PlayerShotScene.instantiate(); shot.direction = shot_dir
-	shot.position = global_position + (shot_dir * 60)
-	get_parent().add_child(shot)
+	
+	shot.direction = shot_dir
+	# CORRECTED: No longer call add_child. The pool manages the scene tree.
+	shot.global_position = global_position + (shot_dir * 60)
+	shot.activate()
 
 func _trigger_pogo(pogo_target):
 	velocity.y = -Config.get_value("player.physics.pogo_force")
@@ -168,7 +172,7 @@ func _trigger_pogo(pogo_target):
 		if pogo_target.has_method("take_damage"):
 			pogo_target.take_damage(1); _on_damage_dealt()
 		elif pogo_target.is_in_group("enemy_projectile"):
-			pogo_target.queue_free()
+			ObjectPool.return_instance(pogo_target)
 
 func _on_hitbox_body_entered(body):
 	if p_data.is_pogo_attack: _trigger_pogo(body)
@@ -177,7 +181,7 @@ func _on_hitbox_body_entered(body):
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		if p_data.is_pogo_attack: _trigger_pogo(area)
-		else: area.queue_free()
+		else: ObjectPool.return_instance(area)
 
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
@@ -185,7 +189,7 @@ func _on_hurtbox_area_entered(area):
 		if damage_result.was_damaged:
 			velocity = damage_result.knockback_velocity
 			change_state(State.HURT)
-		area.queue_free()
+		ObjectPool.return_instance(area)
 
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
@@ -195,7 +199,6 @@ func _on_healing_timer_timeout():
 		_emit_healing_charges_changed_event()
 		change_state(State.MOVE)
 
-# --- Signal handlers for HealthComponent ---
 func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current

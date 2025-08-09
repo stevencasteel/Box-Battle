@@ -1,25 +1,28 @@
 # src/projectiles/boss_shot.gd
 #
-# Controls the behavior of the boss's projectile.
+# Final, stable pool-aware version.
 extends Area2D
 
-@onready var visual_sprite: ColorRect = $ColorRect
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 var direction = Vector2.LEFT
 var speed = 400.0
 
 func _ready():
-	# PALETTE INTEGRATION: Set the projectile's color from the Palette.
-	# We use the primary hazard color to communicate that this is dangerous.
-	visual_sprite.color = Palette.COLOR_HAZARD_PRIMARY
-
-	# This projectile's purpose is to be detected by the player's hurtbox.
-	# The physics layers are set in the scene file.
+	$ColorRect.color = Palette.COLOR_HAZARD_PRIMARY
 	add_to_group("enemy_projectile")
 
-func _physics_process(delta):
-	position += direction * speed * delta
+func activate():
+	process_mode = PROCESS_MODE_INHERIT
+	collision_shape.disabled = false
 
-# This function is not used because the projectile itself doesn't need to detect
-# things. Instead, the player's hurtbox detects this projectile. We leave the
-# Area2D's monitoring property on by default, but we don't connect its signals.
+func deactivate():
+	process_mode = PROCESS_MODE_DISABLED
+	collision_shape.disabled = true
+	global_position = Vector2(-1000, -1000) # Move to the graveyard
+
+func _physics_process(delta):
+	global_position += direction * speed * delta
+
+func _on_screen_exited():
+	ObjectPool.return_instance(self)

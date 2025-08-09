@@ -1,40 +1,40 @@
 # src/projectiles/player_shot.gd
 #
-# Controls the behavior of the player's charged projectile.
+# Final, stable pool-aware version.
 extends Area2D
 
-@onready var visual_sprite: ColorRect = $ColorRect
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
 var direction = Vector2.RIGHT
 var speed = 1000.0
-var damage = 2 # Charged shots do more damage than melee
+var damage = 2
 
 func _ready():
-	# PALETTE INTEGRATION: Set the projectile's color from the Palette.
-	visual_sprite.color = Palette.COLOR_PLAYER_PROJECTILE
-
-	# Connect signals to handle collisions with both solid bodies and other areas.
+	$ColorRect.color = Palette.COLOR_PLAYER_PROJECTILE
 	body_entered.connect(_on_body_entered)
 	area_entered.connect(_on_area_entered)
 
+func activate():
+	process_mode = PROCESS_MODE_INHERIT
+	collision_shape.disabled = false
+
+func deactivate():
+	process_mode = PROCESS_MODE_DISABLED
+	collision_shape.disabled = true
+	global_position = Vector2(-1000, -1000) # Move to the graveyard
+
 func _physics_process(delta):
-	position += direction * speed * delta
+	global_position += direction * speed * delta
 
 func _on_body_entered(body):
-	# Check if the body hit is an enemy.
 	if body.is_in_group("enemy"):
 		body.take_damage(damage)
-		queue_free() # Destroy self on hit.
-		return # Stop further processing.
+	ObjectPool.return_instance(self)
 
-	# Check if the body hit is part of the solid world.
-	if body.is_in_group("world"):
-		queue_free() # Destroy self on hitting a wall.
-
-# This function is called when this projectile's area overlaps with another Area2D.
 func _on_area_entered(area):
-	# Check if the area we hit is an enemy projectile.
 	if area.is_in_group("enemy_projectile"):
-		# Destroy both this projectile and the enemy one.
-		queue_free()
-		area.queue_free()
+		ObjectPool.return_instance(area)
+	ObjectPool.return_instance(self)
+
+func _on_screen_exited():
+	ObjectPool.return_instance(self)
