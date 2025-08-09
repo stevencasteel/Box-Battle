@@ -4,9 +4,12 @@
 class_name BossState
 
 var boss: CharacterBody2D
+var b_data: BossStateData # NEW: Reference to the shared state data
 
-func _init(boss_node: CharacterBody2D) -> void:
+# MODIFIED: The constructor now accepts the state data resource.
+func _init(boss_node: CharacterBody2D, boss_data: BossStateData) -> void:
 	self.boss = boss_node
+	self.b_data = boss_data
 
 # Called when this state becomes active.
 func enter(_msg := {}) -> void:

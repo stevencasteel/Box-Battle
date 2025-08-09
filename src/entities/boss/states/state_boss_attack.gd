@@ -6,10 +6,12 @@ class_name BossStateAttack
 func enter(_msg := {}) -> void:
 	var attack_keys = boss.AttackPattern.keys()
 	var chosen_attack_name = attack_keys[randi() % attack_keys.size()]
-	boss.current_attack = boss.AttackPattern[chosen_attack_name]
+	
+	# MODIFIED: Write to the data object
+	b_data.current_attack = boss.AttackPattern[chosen_attack_name]
 	print("Boss chose attack: ", chosen_attack_name)
 	
-	match boss.current_attack:
+	match b_data.current_attack:
 		boss.AttackPattern.SINGLE_SHOT:
 			boss.fire_shot_at_player()
 		boss.AttackPattern.VOLLEY_SHOT:

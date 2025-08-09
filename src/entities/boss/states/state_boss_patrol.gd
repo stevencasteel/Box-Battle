@@ -7,4 +7,5 @@ func enter(_msg := {}) -> void:
 	boss.patrol_timer.start()
 
 func process_physics(_delta: float) -> void:
-	boss.velocity.x = boss.facing_direction * boss.patrol_speed
+	# MODIFIED: Read direction and speed from the data object.
+	boss.velocity.x = b_data.facing_direction * b_data.patrol_speed

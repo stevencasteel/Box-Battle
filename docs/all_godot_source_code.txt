@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 16:25:51 CDT 2025
+Generated on: Sat Aug  9 17:03:20 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -71,6 +71,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── boss
     │   │   ├── base_boss.gd
     │   │   ├── base_boss.tscn
+    │   │   ├── boss_state_data.gd
     │   │   └── states
     │   │       ├── state_boss_attack.gd
     │   │       ├── state_boss_base.gd
@@ -150,7 +151,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-39 directories, 103 files
+39 directories, 104 files
 
 
 =====================================
@@ -253,33 +254,7 @@ Loading resource: res://src/ui/game_hud/game_hud.tscn
 Loading resource: res://src/ui/game_hud/game_hud.gd
 Loading resource: res://src/scenes/game/game.tscn
 Loading resource: res://src/scenes/game/game.gd
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
 Boss chose attack: SINGLE_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-Boss chose attack: SINGLE_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-Boss chose attack: VOLLEY_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-Boss chose attack: VOLLEY_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-Boss chose attack: SINGLE_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-Healing started...
-Boss chose attack: VOLLEY_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-Boss chose attack: SINGLE_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
 XR: Removed interface "OpenXR"
@@ -1148,6 +1123,12 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `base_boss.gd` script into a component-   ║
+║      ░   based architecture, adhering to SRP and mirroring the Player's design.║
+║      ░ ■ Created `BossStateData.gd` resource to act as a central data        ║
+║      ░   container, decoupling the boss's state from the node itself.        ║
+║      ░ ■ Generalized the `HealthComponent` to be fully reusable, now managing║
+║      ░   health, damage, and invincibility logic for any entity.             ║
 ║      ░ ■ Refactored the monolithic `player.gd` script into a component-based ║
 ║      ░   architecture, adhering to the Single Responsibility Principle.      ║
 ║      ░ ■ Created a `HealthComponent` to manage all health, damage, and       ║
@@ -1170,6 +1151,8 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   polling for changes every frame.                                    ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
+║      ░   unnecessary `preload` calls for scripts with a `class_name`.        ║
 ║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║
 ║      ░   use a signal-based, non-re-parenting architecture that is immune to ║
 ║      ░   race conditions.                                                    ║
@@ -4422,11 +4405,31 @@ func _on_screen_exited():
 	ObjectPool.return_instance(self)
 
 =====================================
+FILE: ./src/entities/boss/boss_state_data.gd
+=====================================
+# src/entities/boss/data/boss_state_data.gd
+#
+# A Resource that holds all shared state data for the Boss. This decouples
+# the states from the main boss node.
+class_name BossStateData
+extends Resource
+
+# --- Health & Combat ---
+var health: int = 30
+var is_invincible: bool = false
+var current_attack: int # Using the enum from base_boss.gd
+
+# --- Physics & Movement ---
+var facing_direction: float = -1.0
+var patrol_speed: float = 100.0
+
+=====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=3 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=4 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
+[ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -4454,13 +4457,11 @@ one_shot = true
 wait_time = 3.0
 one_shot = true
 
-[node name="HitFlashTimer" type="Timer" parent="."]
-wait_time = 0.4
-one_shot = true
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_b0so8")
 
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]
-[connection signal="timeout" from="HitFlashTimer" to="." method="_on_hit_flash_timer_timeout"]
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_idle.gd
@@ -4488,9 +4489,12 @@ FILE: ./src/entities/boss/states/state_boss_base.gd
 class_name BossState
 
 var boss: CharacterBody2D
+var b_data: BossStateData # NEW: Reference to the shared state data
 
-func _init(boss_node: CharacterBody2D) -> void:
+# MODIFIED: The constructor now accepts the state data resource.
+func _init(boss_node: CharacterBody2D, boss_data: BossStateData) -> void:
 	self.boss = boss_node
+	self.b_data = boss_data
 
 # Called when this state becomes active.
 func enter(_msg := {}) -> void:
@@ -4537,10 +4541,12 @@ class_name BossStateAttack
 func enter(_msg := {}) -> void:
 	var attack_keys = boss.AttackPattern.keys()
 	var chosen_attack_name = attack_keys[randi() % attack_keys.size()]
-	boss.current_attack = boss.AttackPattern[chosen_attack_name]
+	
+	# MODIFIED: Write to the data object
+	b_data.current_attack = boss.AttackPattern[chosen_attack_name]
 	print("Boss chose attack: ", chosen_attack_name)
 	
-	match boss.current_attack:
+	match b_data.current_attack:
 		boss.AttackPattern.SINGLE_SHOT:
 			boss.fire_shot_at_player()
 		boss.AttackPattern.VOLLEY_SHOT:
@@ -4570,14 +4576,16 @@ func enter(_msg := {}) -> void:
 	boss.patrol_timer.start()
 
 func process_physics(_delta: float) -> void:
-	boss.velocity.x = boss.facing_direction * boss.patrol_speed
+	# MODIFIED: Read direction and speed from the data object.
+	boss.velocity.x = b_data.facing_direction * b_data.patrol_speed
 
 
 =====================================
 FILE: ./src/entities/boss/base_boss.gd
 =====================================
 # src/entities/boss/base_boss.gd
-# This is the "Context" script for the Boss State Machine.
+# This is the "Context" script for the Boss State Machine. It now delegates
+# state and health management to its data resource and component.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -4592,27 +4600,28 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 @onready var visual_sprite: ColorRect = $ColorRect
 @onready var cooldown_timer: Timer = $CooldownTimer
 @onready var patrol_timer: Timer = $PatrolTimer
-@onready var hit_flash_timer: Timer = $HitFlashTimer
+@onready var health_component: HealthComponent = $HealthComponent
 
-# --- Preloads ---
-const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
-
-# --- State Machine ---
+# --- State Machine & Data ---
 var states: Dictionary
 var current_state: BossState
+var b_data: BossStateData
 
-# --- Boss Stats & Properties (Shared Data) ---
-var health: int
+# --- Boss Properties ---
 var player: CharacterBody2D = null
-var facing_direction = -1.0
-var patrol_speed: float
 var original_color: Color
-var current_attack: AttackPattern
 
 # --- Engine Functions ---
 func _ready():
-	health = Config.get_value("boss.stats.health", 30)
-	patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
+	b_data = BossStateData.new()
+	b_data.patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
+	
+	var boss_health_configs = {
+		"max_health": "boss.stats.health"
+	}
+	health_component.setup(b_data, self, boss_health_configs)
+	health_component.health_changed.connect(_on_health_component_health_changed)
+	health_component.died.connect(_on_health_component_died)
 
 	original_color = Palette.COLOR_BOSS_PRIMARY
 	visual_sprite.color = original_color
@@ -4620,15 +4629,15 @@ func _ready():
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
 	
+	# CORRECTED: Use the global class names directly for instantiation.
 	states = {
-		State.IDLE: BossStateIdle.new(self),
-		State.ATTACK: BossStateAttack.new(self),
-		State.COOLDOWN: BossStateCooldown.new(self),
-		State.PATROL: BossStatePatrol.new(self),
+		State.IDLE: BossStateIdle.new(self, b_data),
+		State.ATTACK: BossStateAttack.new(self, b_data),
+		State.COOLDOWN: BossStateCooldown.new(self, b_data),
+		State.PATROL: BossStatePatrol.new(self, b_data),
 	}
 	
 	change_state(State.COOLDOWN)
-	_emit_health_changed_event()
 
 func _physics_process(delta):
 	if not is_on_floor():
@@ -4640,11 +4649,13 @@ func _physics_process(delta):
 	move_and_slide()
 	
 	if states.find_key(current_state) == State.PATROL and is_on_wall():
-		facing_direction *= -1.0
+		b_data.facing_direction *= -1.0
 
 func _exit_tree():
 	EventBus.off_owner(self)
 	states.clear()
+	b_data = null
+	health_component = null
 
 func change_state(new_state_key: State):
 	if not states.has(new_state_key): return
@@ -4654,19 +4665,22 @@ func change_state(new_state_key: State):
 	current_state = states[new_state_key]
 	current_state.enter()
 
-func _emit_health_changed_event():
-	var ev = BossHealthChangedEvent.new()
-	ev.current_health = health
-	ev.max_health = Config.get_value("boss.stats.health")
-	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
-	health_changed.emit(health, Config.get_value("boss.stats.health"))
+# --- Public Methods ---
+func take_damage(damage_amount: int):
+	# Delegate the call to the component.
+	health_component.take_damage(damage_amount, self)
 
+func die():
+	died.emit()
+	queue_free()
+
+# --- Internal Functions ---
 func _update_player_tracking():
 	if is_instance_valid(player):
 		var direction_to_player = player.global_position.x - global_position.x
 		if not is_zero_approx(direction_to_player):
-			facing_direction = sign(direction_to_player)
-	self.scale.x = facing_direction
+			b_data.facing_direction = sign(direction_to_player)
+	self.scale.x = b_data.facing_direction
 	
 func fire_shot_at_player():
 	if not is_instance_valid(player): return
@@ -4678,28 +4692,10 @@ func fire_shot_at_player():
 	var direction_to_player = (player.global_position - global_position).normalized()
 	shot_instance.direction = direction_to_player
 	
-	# CORRECTED: No longer call add_child. The pool manages the scene tree.
 	shot_instance.global_position = global_position
 	shot_instance.activate()
 	
-func take_damage(damage_amount: int):
-	health -= damage_amount
-	_emit_health_changed_event()
-	_trigger_hit_flash()
-	if health <= 0:
-		die()
-
-func die():
-	died.emit()
-	queue_free()
-
-func _trigger_hit_flash():
-	visual_sprite.color = Palette.get_color(16)
-	hit_flash_timer.start()
-
-func _on_hit_flash_timer_timeout():
-	visual_sprite.color = original_color
-
+# --- Signal Handlers ---
 func _on_cooldown_timer_timeout():
 	if states.find_key(current_state) == State.COOLDOWN:
 		change_state(State.PATROL)
@@ -4707,6 +4703,16 @@ func _on_cooldown_timer_timeout():
 func _on_patrol_timer_timeout():
 	if states.find_key(current_state) == State.PATROL:
 		change_state(State.IDLE)
+		
+func _on_health_component_health_changed(current, max_val):
+	var ev = BossHealthChangedEvent.new()
+	ev.current_health = current
+	ev.max_health = max_val
+	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
+	health_changed.emit(current, max_val)
+
+func _on_health_component_died():
+	die()
 
 
 =====================================
@@ -4715,7 +4721,7 @@ FILE: ./src/entities/components/health_component.gd
 # src/entities/components/health_component.gd
 #
 # A component responsible for managing an entity's health, damage intake,
-# invincibility, and death.
+# invincibility, and death. Made generic to work with both Player and Boss.
 class_name HealthComponent
 extends Node
 
@@ -4723,7 +4729,7 @@ signal health_changed(current_health: int, max_health: int)
 signal died
 
 # --- Dependencies ---
-var p_data: PlayerStateData
+var entity_data: Resource # Can be PlayerStateData or BossStateData
 var owner_node: CharacterBody2D
 
 # --- Node References ---
@@ -4744,52 +4750,51 @@ func _ready():
 	hit_flash_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
 	
-	invincibility_timer.timeout.connect(func(): p_data.is_invincible = false)
+	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
 	hit_flash_timer.timeout.connect(func(): 
 		if is_instance_valid(get_visual_sprite()):
 			get_visual_sprite().color = original_color
 	)
 
-# NEW: This is the critical fix. When the component is about to be freed,
-# it explicitly nullifies its references to external objects, breaking any
-# potential reference cycles and allowing the p_data resource to be freed.
 func _exit_tree():
-	p_data = null
+	entity_data = null
 	owner_node = null
 	EventBus.off_owner(self)
 
-func setup(player_data: PlayerStateData, p_owner_node: CharacterBody2D):
-	self.p_data = player_data
+func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, config_paths: Dictionary):
+	self.entity_data = p_entity_data
 	self.owner_node = p_owner_node
 	
-	max_health = Config.get_value("player.health.max_health", 5)
-	invincibility_duration = Config.get_value("player.health.invincibility_duration", 1.5)
+	max_health = Config.get_value(config_paths.max_health, 10)
+	invincibility_duration = Config.get_value(config_paths.get("invincibility", "player.health.invincibility_duration"), 1.0) # Graceful fallback
 	
-	p_data.health = max_health
-	original_color = get_visual_sprite().color
+	entity_data.health = max_health
+	if is_instance_valid(get_visual_sprite()):
+		original_color = get_visual_sprite().color
 	
-	health_changed.emit(p_data.health, max_health)
+	health_changed.emit(entity_data.health, max_health)
 
 func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
-	if p_data.is_invincible or p_data.is_dash_invincible:
+	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
+	if entity_data.is_invincible or is_dash_invincible:
 		return {"was_damaged": false}
 
-	p_data.health -= damage_amount
-	health_changed.emit(p_data.health, max_health)
+	entity_data.health -= damage_amount
+	health_changed.emit(entity_data.health, max_health)
 	
 	_trigger_hit_flash()
-	p_data.is_invincible = true
+	entity_data.is_invincible = true
 	invincibility_timer.start(invincibility_duration)
 	
 	var knockback_info = _calculate_knockback(damage_source)
 	
-	if p_data.health <= 0:
+	if entity_data.health <= 0:
 		died.emit()
 		
 	return {"was_damaged": true, "knockback_velocity": knockback_info}
 
 func _calculate_knockback(damage_source: Node) -> Vector2:
-	if not damage_source:
+	if not damage_source or not owner_node.is_in_group("player"):
 		return Vector2.ZERO
 		
 	var knockback_dir = (owner_node.global_position - damage_source.global_position).normalized()
@@ -4808,7 +4813,6 @@ func get_visual_sprite() -> ColorRect:
 	if is_instance_valid(owner_node):
 		return owner_node.get_node_or_null("ColorRect")
 	return null
-
 
 =====================================
 FILE: ./src/entities/player/player.tscn
@@ -4897,6 +4901,7 @@ const WallSlideState = preload("res://src/entities/player/states/state_wall_slid
 const AttackState = preload("res://src/entities/player/states/state_attack.gd")
 const HurtState = preload("res://src/entities/player/states/state_hurt.gd")
 const HealState = preload("res://src/entities/player/states/state_heal.gd")
+# REMOVED: Unnecessary preload of PlayerStateData.gd
 
 # --- State Machine & Data ---
 var states: Dictionary
@@ -4915,7 +4920,12 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	health_component.setup(p_data, self)
+	# MODIFIED: Pass config paths to the now-generic HealthComponent
+	var player_health_configs = {
+		"max_health": "player.health.max_health",
+		"invincibility": "player.health.invincibility_duration"
+	}
+	health_component.setup(p_data, self, player_health_configs)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
@@ -5026,7 +5036,6 @@ func _fire_shot():
 	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
 	
 	shot.direction = shot_dir
-	# CORRECTED: No longer call add_child. The pool manages the scene tree.
 	shot.global_position = global_position + (shot_dir * 60)
 	shot.activate()
 

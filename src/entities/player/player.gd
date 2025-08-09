@@ -30,6 +30,7 @@ const WallSlideState = preload("res://src/entities/player/states/state_wall_slid
 const AttackState = preload("res://src/entities/player/states/state_attack.gd")
 const HurtState = preload("res://src/entities/player/states/state_hurt.gd")
 const HealState = preload("res://src/entities/player/states/state_heal.gd")
+# REMOVED: Unnecessary preload of PlayerStateData.gd
 
 # --- State Machine & Data ---
 var states: Dictionary
@@ -48,7 +49,12 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	health_component.setup(p_data, self)
+	# MODIFIED: Pass config paths to the now-generic HealthComponent
+	var player_health_configs = {
+		"max_health": "player.health.max_health",
+		"invincibility": "player.health.invincibility_duration"
+	}
+	health_component.setup(p_data, self, player_health_configs)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
@@ -159,7 +165,6 @@ func _fire_shot():
 	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
 	
 	shot.direction = shot_dir
-	# CORRECTED: No longer call add_child. The pool manages the scene tree.
 	shot.global_position = global_position + (shot_dir * 60)
 	shot.activate()
 

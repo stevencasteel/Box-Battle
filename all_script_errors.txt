@@ -95,33 +95,7 @@ Loading resource: res://src/ui/game_hud/game_hud.tscn
 Loading resource: res://src/ui/game_hud/game_hud.gd
 Loading resource: res://src/scenes/game/game.tscn
 Loading resource: res://src/scenes/game/game.gd
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
 Boss chose attack: SINGLE_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-Boss chose attack: SINGLE_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-Boss chose attack: VOLLEY_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-Boss chose attack: VOLLEY_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'player_shots'.
-Boss chose attack: SINGLE_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-Healing started...
-Boss chose attack: VOLLEY_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
-Boss chose attack: SINGLE_SHOT
-[VERIFICATION] ObjectPool: Reusing object from pool 'boss_shots'.
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
 XR: Removed interface "OpenXR"

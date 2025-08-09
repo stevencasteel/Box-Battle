@@ -16,6 +16,12 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `base_boss.gd` script into a component-   ║
+║      ░   based architecture, adhering to SRP and mirroring the Player's design.║
+║      ░ ■ Created `BossStateData.gd` resource to act as a central data        ║
+║      ░   container, decoupling the boss's state from the node itself.        ║
+║      ░ ■ Generalized the `HealthComponent` to be fully reusable, now managing║
+║      ░   health, damage, and invincibility logic for any entity.             ║
 ║      ░ ■ Refactored the monolithic `player.gd` script into a component-based ║
 ║      ░   architecture, adhering to the Single Responsibility Principle.      ║
 ║      ░ ■ Created a `HealthComponent` to manage all health, damage, and       ║
@@ -38,6 +44,8 @@
 ║      ░   polling for changes every frame.                                    ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
+║      ░   unnecessary `preload` calls for scripts with a `class_name`.        ║
 ║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║
 ║      ░   use a signal-based, non-re-parenting architecture that is immune to ║
 ║      ░   race conditions.                                                    ║

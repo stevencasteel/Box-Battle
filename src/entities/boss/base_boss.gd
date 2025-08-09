@@ -1,5 +1,6 @@
 # src/entities/boss/base_boss.gd
-# This is the "Context" script for the Boss State Machine.
+# This is the "Context" script for the Boss State Machine. It now delegates
+# state and health management to its data resource and component.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -14,27 +15,28 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 @onready var visual_sprite: ColorRect = $ColorRect
 @onready var cooldown_timer: Timer = $CooldownTimer
 @onready var patrol_timer: Timer = $PatrolTimer
-@onready var hit_flash_timer: Timer = $HitFlashTimer
+@onready var health_component: HealthComponent = $HealthComponent
 
-# --- Preloads ---
-const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
-
-# --- State Machine ---
+# --- State Machine & Data ---
 var states: Dictionary
 var current_state: BossState
+var b_data: BossStateData
 
-# --- Boss Stats & Properties (Shared Data) ---
-var health: int
+# --- Boss Properties ---
 var player: CharacterBody2D = null
-var facing_direction = -1.0
-var patrol_speed: float
 var original_color: Color
-var current_attack: AttackPattern
 
 # --- Engine Functions ---
 func _ready():
-	health = Config.get_value("boss.stats.health", 30)
-	patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
+	b_data = BossStateData.new()
+	b_data.patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
+	
+	var boss_health_configs = {
+		"max_health": "boss.stats.health"
+	}
+	health_component.setup(b_data, self, boss_health_configs)
+	health_component.health_changed.connect(_on_health_component_health_changed)
+	health_component.died.connect(_on_health_component_died)
 
 	original_color = Palette.COLOR_BOSS_PRIMARY
 	visual_sprite.color = original_color
@@ -42,15 +44,15 @@ func _ready():
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
 	
+	# CORRECTED: Use the global class names directly for instantiation.
 	states = {
-		State.IDLE: BossStateIdle.new(self),
-		State.ATTACK: BossStateAttack.new(self),
-		State.COOLDOWN: BossStateCooldown.new(self),
-		State.PATROL: BossStatePatrol.new(self),
+		State.IDLE: BossStateIdle.new(self, b_data),
+		State.ATTACK: BossStateAttack.new(self, b_data),
+		State.COOLDOWN: BossStateCooldown.new(self, b_data),
+		State.PATROL: BossStatePatrol.new(self, b_data),
 	}
 	
 	change_state(State.COOLDOWN)
-	_emit_health_changed_event()
 
 func _physics_process(delta):
 	if not is_on_floor():
@@ -62,11 +64,13 @@ func _physics_process(delta):
 	move_and_slide()
 	
 	if states.find_key(current_state) == State.PATROL and is_on_wall():
-		facing_direction *= -1.0
+		b_data.facing_direction *= -1.0
 
 func _exit_tree():
 	EventBus.off_owner(self)
 	states.clear()
+	b_data = null
+	health_component = null
 
 func change_state(new_state_key: State):
 	if not states.has(new_state_key): return
@@ -76,19 +80,22 @@ func change_state(new_state_key: State):
 	current_state = states[new_state_key]
 	current_state.enter()
 
-func _emit_health_changed_event():
-	var ev = BossHealthChangedEvent.new()
-	ev.current_health = health
-	ev.max_health = Config.get_value("boss.stats.health")
-	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
-	health_changed.emit(health, Config.get_value("boss.stats.health"))
+# --- Public Methods ---
+func take_damage(damage_amount: int):
+	# Delegate the call to the component.
+	health_component.take_damage(damage_amount, self)
 
+func die():
+	died.emit()
+	queue_free()
+
+# --- Internal Functions ---
 func _update_player_tracking():
 	if is_instance_valid(player):
 		var direction_to_player = player.global_position.x - global_position.x
 		if not is_zero_approx(direction_to_player):
-			facing_direction = sign(direction_to_player)
-	self.scale.x = facing_direction
+			b_data.facing_direction = sign(direction_to_player)
+	self.scale.x = b_data.facing_direction
 	
 func fire_shot_at_player():
 	if not is_instance_valid(player): return
@@ -100,28 +107,10 @@ func fire_shot_at_player():
 	var direction_to_player = (player.global_position - global_position).normalized()
 	shot_instance.direction = direction_to_player
 	
-	# CORRECTED: No longer call add_child. The pool manages the scene tree.
 	shot_instance.global_position = global_position
 	shot_instance.activate()
 	
-func take_damage(damage_amount: int):
-	health -= damage_amount
-	_emit_health_changed_event()
-	_trigger_hit_flash()
-	if health <= 0:
-		die()
-
-func die():
-	died.emit()
-	queue_free()
-
-func _trigger_hit_flash():
-	visual_sprite.color = Palette.get_color(16)
-	hit_flash_timer.start()
-
-func _on_hit_flash_timer_timeout():
-	visual_sprite.color = original_color
-
+# --- Signal Handlers ---
 func _on_cooldown_timer_timeout():
 	if states.find_key(current_state) == State.COOLDOWN:
 		change_state(State.PATROL)
@@ -129,3 +118,13 @@ func _on_cooldown_timer_timeout():
 func _on_patrol_timer_timeout():
 	if states.find_key(current_state) == State.PATROL:
 		change_state(State.IDLE)
+		
+func _on_health_component_health_changed(current, max_val):
+	var ev = BossHealthChangedEvent.new()
+	ev.current_health = current
+	ev.max_health = max_val
+	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
+	health_changed.emit(current, max_val)
+
+func _on_health_component_died():
+	die()
