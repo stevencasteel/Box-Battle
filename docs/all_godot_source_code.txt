@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 17:03:20 CDT 2025
+Generated on: Sat Aug  9 17:55:59 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -79,6 +79,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   │       ├── state_boss_idle.gd
     │   │       └── state_boss_patrol.gd
     │   ├── components
+    │   │   ├── combat_component.gd
     │   │   └── health_component.gd
     │   └── player
     │       ├── data
@@ -151,7 +152,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-39 directories, 104 files
+39 directories, 105 files
 
 
 =====================================
@@ -1123,6 +1124,12 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Decoupled `GlobalHUD` from specific menu scenes by making its       ║
+║      ░   visibility fully event-driven (`MENU_OPENED`, `MENU_CLOSED`),       ║
+║      ░   resolving an Open/Closed Principle violation.                       ║
+║      ░ ■ Extracted player combat logic (firing shots, pogo attacks) from     ║
+║      ░   `player.gd` into a new, focused `CombatComponent`, further applying ║
+║      ░   the Single Responsibility Principle.                                ║
 ║      ░ ■ Refactored the monolithic `base_boss.gd` script into a component-   ║
 ║      ░   based architecture, adhering to SRP and mirroring the Player's design.║
 ║      ░ ■ Created `BossStateData.gd` resource to act as a central data        ║
@@ -1151,6 +1158,8 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   polling for changes every frame.                                    ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved an audio stream memory leak on exit by implementing a      ║
+║      ░   robust cleanup handler for `NOTIFICATION_WM_CLOSE_REQUEST`.         ║
 ║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
 ║      ░   unnecessary `preload` calls for scripts with a `class_name`.        ║
 ║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║
@@ -1830,7 +1839,8 @@ FILE: ./src/ui/global_hud/global_hud.gd
 # src/ui/global_hud/global_hud.gd
 #
 # This autoloaded scene is always present. Its main job is to manage the
-# global mute button. It is now event-driven to prevent race conditions.
+# global mute button. It is now fully event-driven and decoupled from any
+# specific menu scene.
 extends Control
 
 # Preload icons into constants for performance and safety.
@@ -1839,13 +1849,10 @@ const ICON_SOUND_OFF = preload(AssetPaths.SPRITE_ICON_SOUND_OFF)
 
 var mute_button: TextureButton
 
-const MENU_SCENES = [
-	AssetPaths.SCENE_TITLE_SCREEN,
-	AssetPaths.SCENE_OPTIONS_MENU,
-	AssetPaths.SCENE_SOUND_MENU,
-	AssetPaths.SCENE_CONTROLS_MENU,
-	AssetPaths.SCENE_CREDITS_MENU,
-]
+# Subscription tokens for safe cleanup.
+var _menu_opened_token: int
+var _menu_closed_token: int
+var _audio_settings_token: int
 
 func _ready():
 	mute_button = TextureButton.new()
@@ -1854,24 +1861,36 @@ func _ready():
 	var padding = 40
 	await get_tree().process_frame
 	mute_button.position = Vector2(get_viewport_rect().size.x - 120, padding)
+	mute_button.visible = false # Start hidden by default
 
 	# Connect signals for interaction.
 	mute_button.pressed.connect(_on_mute_button_pressed)
 	mute_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 	mute_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 
-	# Connect to the Settings signal to react to changes.
-	Settings.audio_settings_changed.connect(_update_icon)
+	# Subscribe to all necessary events.
+	_audio_settings_token = Settings.audio_settings_changed.connect(_update_icon)
+	_menu_opened_token = EventBus.on(EventCatalog.MENU_OPENED, _on_menu_opened)
+	_menu_closed_token = EventBus.on(EventCatalog.MENU_CLOSED, _on_menu_closed)
 	
 	# Set the initial icon state once on startup.
 	_update_icon()
 
-# This loop is now only responsible for VISIBILITY.
-func _process(_delta):
-	if not get_tree().current_scene: return
+func _exit_tree():
+	# Unsubscribe from all signals and events to prevent memory leaks.
+	Settings.audio_settings_changed.disconnect(_update_icon)
+	EventBus.off(_menu_opened_token)
+	EventBus.off(_menu_closed_token)
 
-	var current_scene_path = get_tree().current_scene.scene_file_path
-	mute_button.visible = current_scene_path in MENU_SCENES
+# --- EventBus Handlers (The New Visibility Logic) ---
+
+func _on_menu_opened(_payload):
+	mute_button.visible = true
+
+func _on_menu_closed(_payload):
+	mute_button.visible = false
+
+# --- Internal Functions ---
 
 func _on_mute_button_pressed():
 	# Toggle the setting. This emits the 'audio_settings_changed' signal,
@@ -1879,7 +1898,6 @@ func _on_mute_button_pressed():
 	Settings.music_muted = not Settings.music_muted
 	AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
 
-# The _update_icon function is now called automatically by the signal from Settings.gd.
 func _update_icon():
 	if Settings.music_muted:
 		mute_button.texture_normal = ICON_SOUND_OFF
@@ -2107,6 +2125,7 @@ extends Control
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 	var bold_font = load(AssetPaths.FONT_BOLD)
 	var regular_font = load(AssetPaths.FONT_REGULAR)
@@ -2122,7 +2141,6 @@ func _ready():
 	title_label.position.y = 80
 
 	# --- Controls List ---
-	# FIX: Restoring the original, more detailed controls data.
 	var controls_data = [
 		{ "action": "Movement", "keys": "Arrow Keys / WASD / Mouse" },
 		{ "action": "Primary Action", "keys": "X / . / Space / Left-Click" },
@@ -2144,7 +2162,6 @@ func _ready():
 		add_child(action_label)
 		action_label.add_theme_font_override("font", bold_font)
 		action_label.add_theme_font_size_override("font_size", 36)
-		# FIX: Restoring original x-size for alignment.
 		action_label.size.x = 390
 		action_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		action_label.position = Vector2(0, y_pos)
@@ -2154,7 +2171,6 @@ func _ready():
 		add_child(keys_label)
 		keys_label.add_theme_font_override("font", regular_font)
 		keys_label.add_theme_font_size_override("font_size", 36)
-		# FIX: Restoring original x-position for alignment.
 		keys_label.position = Vector2(460, y_pos)
 
 	# --- Back Button ---
@@ -2168,6 +2184,9 @@ func _ready():
 	var menu = MenuManager.new()
 	add_child(menu)
 	menu.setup_menu([MenuManager.MenuItem.new(back_button, "BACK")])
+
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED)
 
 func _on_back_button_pressed():
 	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)
@@ -2200,6 +2219,7 @@ extends Control
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 
 	var title_label = Label.new()
@@ -2249,9 +2269,11 @@ func _ready():
 	add_child(menu)
 	menu.setup_menu([MenuManager.MenuItem.new(back_button, "BACK")])
 
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED)
+
 # Called when a URL inside the RichTextLabel is clicked.
 func _on_meta_clicked(meta):
-	# OS.shell_open() opens the URL in the user's default web browser.
 	OS.shell_open(str(meta))
 
 func _on_back_button_pressed():
@@ -2302,6 +2324,7 @@ extends Control
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 	
 	# --- Create UI Elements ---
@@ -2352,6 +2375,9 @@ func _ready():
 	]
 	menu.setup_menu(menu_items)
 
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED)
+
 # --- Button Press Handlers ---
 
 func _on_sound_button_pressed():
@@ -2387,6 +2413,7 @@ var music_mute_checkbox: TextureButton
 var sfx_mute_checkbox: TextureButton
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 
 	var title_label = Label.new()
@@ -2398,7 +2425,6 @@ func _ready():
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.position.y = 80
 
-	# FIX: The 'initial_mute' argument is no longer needed here.
 	_create_volume_row("MASTER", 300, Settings.master_volume, "master")
 	_create_volume_row("MUSIC", 450, Settings.music_volume, "music")
 	_create_volume_row("SFX", 600, Settings.sfx_volume, "sfx")
@@ -2414,7 +2440,9 @@ func _ready():
 	add_child(menu)
 	menu.setup_menu([MenuManager.MenuItem.new(back_button, "BACK")])
 
-# This function now runs every frame to ensure the UI is always in sync.
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED)
+
 func _process(_delta):
 	# Sync volume labels
 	master_volume_label.text = str(int(Settings.master_volume * 100))
@@ -2426,7 +2454,6 @@ func _process(_delta):
 	_update_checkbox_texture(music_mute_checkbox, Settings.music_muted)
 	_update_checkbox_texture(sfx_mute_checkbox, Settings.sfx_muted)
 
-# FIX: The 'initial_mute' parameter has been removed from the function definition.
 func _create_volume_row(label_text: String, y_pos: int, initial_volume: float, type: String):
 	var row_label = Label.new()
 	row_label.text = label_text
@@ -2599,6 +2626,7 @@ extends Control
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED) # Announce that a menu is open
 	await get_tree().process_frame
 	AudioManager.play_music(AssetPaths.AUDIO_MUSIC_TITLE)
 
@@ -2629,16 +2657,14 @@ func _ready():
 	]
 	menu.setup_menu(menu_items)
 
-# --- MODIFIED FUNCTION ---
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED) # Announce that the menu is closing
+
 func _on_start_button_pressed():
-	# Step 1: Tell the GameManager which level we want to play.
 	GameManager.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
-	
-	# Step 2: Transition to the generic loading screen directly.
 	get_tree().change_scene_to_file(AssetPaths.SCENE_LOADING_SCREEN)
 
 func _on_options_button_pressed():
-	# Changed to direct scene change for consistency.
 	get_tree().change_scene_to_file(AssetPaths.SCENE_OPTIONS_MENU)
 
 
@@ -3729,9 +3755,12 @@ const BOSS_HEALTH_CHANGED = "boss.health_changed"
 const BOSS_DIED = "boss.died"
 
 # --- Game State Events ---
-# NEWLY ADDED:
 const GAME_PAUSED = "game.paused"
 const GAME_RESUMED = "game.resumed"
+
+# --- UI State Events ---
+const MENU_OPENED = "ui.menu_opened"
+const MENU_CLOSED = "ui.menu_closed"
 
 =====================================
 FILE: ./src/core/sequencer/sequence_step.gd
@@ -3938,11 +3967,21 @@ func _ready():
 	Settings.audio_settings_changed.connect(_on_audio_settings_changed)
 	_on_audio_settings_changed()
 
-# CRITICAL FIX: This function is called when the game closes. It manually
-# stops the music and releases the stream resource, preventing the audio leak.
+# This function catches system-level notifications. It's our new, more
+# reliable way to ensure cleanup happens before the application quits.
+func _notification(what):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		# The user has requested to close the game. Clean up the music stream now.
+		if is_instance_valid(music_player):
+			music_player.stop()
+			music_player.stream = null
+
+# The _exit_tree function is still good practice for when nodes are removed
+# during gameplay, so we'll keep it as a secondary cleanup method.
 func _exit_tree():
-	music_player.stop()
-	music_player.stream = null
+	if is_instance_valid(music_player):
+		music_player.stop()
+		music_player.stream = null
 
 func _on_audio_settings_changed():
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(Settings.master_volume))
@@ -4716,6 +4755,57 @@ func _on_health_component_died():
 
 
 =====================================
+FILE: ./src/entities/components/combat_component.gd
+=====================================
+# src/entities/components/combat_component.gd
+#
+# A component that handles the execution of the player's combat abilities,
+# such as firing projectiles and performing pogo attacks.
+class_name CombatComponent
+extends Node
+
+# --- Dependencies ---
+var owner_node: CharacterBody2D
+var p_data: PlayerStateData
+
+# This setup function is called by the owner (the Player) to provide the
+# component with the references it needs to do its job.
+func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData):
+	self.owner_node = p_owner_node
+	self.p_data = player_data
+
+# --- Public Combat Methods ---
+
+func fire_shot():
+	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	
+	var shot = ObjectPool.get_instance(&"player_shots")
+	if not shot: return
+	
+	var shot_dir = Vector2(p_data.facing_direction, 0)
+	if Input.is_action_pressed("ui_up"): shot_dir = Vector2.UP
+	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
+	
+	shot.direction = shot_dir
+	shot.global_position = owner_node.global_position + (shot_dir * 60)
+	shot.activate()
+
+func trigger_pogo(pogo_target):
+	owner_node.velocity.y = -Config.get_value("player.physics.pogo_force")
+	owner_node.position.y -= 1
+	p_data.can_dash = true
+	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	owner_node.change_state(owner_node.State.FALL)
+	
+	if p_ogo_target:
+		if pogo_target.has_method("take_damage"):
+			pogo_target.take_damage(1)
+			# The owner is still responsible for its own game logic (like gaining charges).
+			owner_node._on_damage_dealt() 
+		elif pogo_target.is_in_group("enemy_projectile"):
+			ObjectPool.return_instance(pogo_target)
+
+=====================================
 FILE: ./src/entities/components/health_component.gd
 =====================================
 # src/entities/components/health_component.gd
@@ -4814,13 +4904,15 @@ func get_visual_sprite() -> ColorRect:
 		return owner_node.get_node_or_null("ColorRect")
 	return null
 
+
 =====================================
 FILE: ./src/entities/player/player.tscn
 =====================================
-[gd_scene load_steps=5 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=6 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_hcomp"]
+[ext_resource type="Script" path="res://src/entities/components/combat_component.gd" id="3_combat_comp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -4864,6 +4956,9 @@ one_shot = true
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_hcomp")
 
+[node name="CombatComponent" type="Node" parent="."]
+script = ExtResource("3_combat_comp")
+
 [connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]
 
 =====================================
@@ -4890,9 +4985,9 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var healing_timer: Timer = $HealingTimer
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 @onready var health_component: HealthComponent = $HealthComponent
+@onready var combat_component: CombatComponent = $CombatComponent
 
 # --- Preloads ---
-const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const MoveState = preload("res://src/entities/player/states/state_move.gd")
 const FallState = preload("res://src/entities/player/states/state_fall.gd")
 const JumpState = preload("res://src/entities/player/states/state_jump.gd")
@@ -4901,7 +4996,6 @@ const WallSlideState = preload("res://src/entities/player/states/state_wall_slid
 const AttackState = preload("res://src/entities/player/states/state_attack.gd")
 const HurtState = preload("res://src/entities/player/states/state_hurt.gd")
 const HealState = preload("res://src/entities/player/states/state_heal.gd")
-# REMOVED: Unnecessary preload of PlayerStateData.gd
 
 # --- State Machine & Data ---
 var states: Dictionary
@@ -4920,7 +5014,6 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	# MODIFIED: Pass config paths to the now-generic HealthComponent
 	var player_health_configs = {
 		"max_health": "player.health.max_health",
 		"invincibility": "player.health.invincibility_duration"
@@ -4928,6 +5021,9 @@ func _ready():
 	health_component.setup(p_data, self, player_health_configs)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
+
+	# NEW: Setup the CombatComponent
+	combat_component.setup(self, p_data)
 
 	states = {
 		State.MOVE: MoveState.new(self, p_data), State.FALL: FallState.new(self, p_data),
@@ -4958,6 +5054,7 @@ func _exit_tree():
 	states.clear()
 	p_data = null
 	health_component = null
+	combat_component = null # Clean up component reference
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -4979,7 +5076,8 @@ func _poll_global_inputs():
 		p_data.is_charging = true; p_data.charge_timer = 0.0
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
-			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"): _fire_shot()
+			# MODIFIED: Delegate call to the component
+			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"): combat_component.fire_shot()
 			else: change_state(State.ATTACK)
 			p_data.is_charging = false
 	if Input.is_action_just_pressed("ui_dash") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
@@ -5025,38 +5123,18 @@ func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 	
-func _fire_shot():
-	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
-	
-	var shot = ObjectPool.get_instance(&"player_shots")
-	if not shot: return
-	
-	var shot_dir = Vector2(p_data.facing_direction, 0)
-	if Input.is_action_pressed("ui_up"): shot_dir = Vector2.UP
-	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
-	
-	shot.direction = shot_dir
-	shot.global_position = global_position + (shot_dir * 60)
-	shot.activate()
-
-func _trigger_pogo(pogo_target):
-	velocity.y = -Config.get_value("player.physics.pogo_force")
-	position.y -= 1; p_data.can_dash = true
-	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
-	change_state(State.FALL)
-	if pogo_target:
-		if pogo_target.has_method("take_damage"):
-			pogo_target.take_damage(1); _on_damage_dealt()
-		elif pogo_target.is_in_group("enemy_projectile"):
-			ObjectPool.return_instance(pogo_target)
+# REMOVED: _fire_shot() method. Now handled by CombatComponent.
+# REMOVED: _trigger_pogo() method. Now handled by CombatComponent.
 
 func _on_hitbox_body_entered(body):
-	if p_data.is_pogo_attack: _trigger_pogo(body)
+	# MODIFIED: Delegate call to the component
+	if p_data.is_pogo_attack: combat_component.trigger_pogo(body)
 	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		if p_data.is_pogo_attack: _trigger_pogo(area)
+		# MODIFIED: Delegate call to the component
+		if p_data.is_pogo_attack: combat_component.trigger_pogo(area)
 		else: ObjectPool.return_instance(area)
 
 func _on_hurtbox_area_entered(area):
@@ -5084,7 +5162,6 @@ func _on_health_component_health_changed(current, max_val):
 
 func _on_health_component_died():
 	died.emit()
-
 
 =====================================
 FILE: ./src/entities/player/states/state_jump.gd
@@ -5260,7 +5337,6 @@ FILE: ./src/entities/player/states/state_attack.gd
 extends PlayerState
 
 func enter():
-	# MODIFIED: All state variables now read from/write to p_data.
 	p_data.attack_duration_timer = Config.get_value("player.combat.attack_duration")
 	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
 	player.hitbox_shape.disabled = false
@@ -5271,7 +5347,8 @@ func enter():
 		player.hitbox.position = Vector2(0, 60)
 		
 		if player.is_on_floor():
-			player._trigger_pogo(null)
+			# MODIFIED: Call the component's method
+			player.combat_component.trigger_pogo(null)
 			return
 		
 		if _check_for_immediate_pogo():
@@ -5287,7 +5364,6 @@ func exit():
 	p_data.is_pogo_attack = false
 
 func process_physics(delta: float):
-	# MODIFIED: Check state variable from p_data.
 	if not p_data.is_pogo_attack:
 		var friction = Config.get_value("player.combat.attack_friction")
 		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
@@ -5305,11 +5381,11 @@ func _check_for_immediate_pogo() -> bool:
 	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
 	
 	if not results.is_empty():
-		player._trigger_pogo(results[0].collider)
+		# MODIFIED: Call the component's method
+		player.combat_component.trigger_pogo(results[0].collider)
 		return true
 		
 	return false
-
 
 =====================================
 FILE: ./src/entities/player/states/state_hurt.gd

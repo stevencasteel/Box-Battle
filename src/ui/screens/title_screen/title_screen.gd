@@ -7,6 +7,7 @@ extends Control
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED) # Announce that a menu is open
 	await get_tree().process_frame
 	AudioManager.play_music(AssetPaths.AUDIO_MUSIC_TITLE)
 
@@ -37,14 +38,12 @@ func _ready():
 	]
 	menu.setup_menu(menu_items)
 
-# --- MODIFIED FUNCTION ---
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED) # Announce that the menu is closing
+
 func _on_start_button_pressed():
-	# Step 1: Tell the GameManager which level we want to play.
 	GameManager.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
-	
-	# Step 2: Transition to the generic loading screen directly.
 	get_tree().change_scene_to_file(AssetPaths.SCENE_LOADING_SCREEN)
 
 func _on_options_button_pressed():
-	# Changed to direct scene change for consistency.
 	get_tree().change_scene_to_file(AssetPaths.SCENE_OPTIONS_MENU)

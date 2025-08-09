@@ -6,6 +6,7 @@ extends Control
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 	
 	# --- Create UI Elements ---
@@ -55,6 +56,9 @@ func _ready():
 		MenuManager.MenuItem.new(back_button, "BACK")
 	]
 	menu.setup_menu(menu_items)
+
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED)
 
 # --- Button Press Handlers ---
 

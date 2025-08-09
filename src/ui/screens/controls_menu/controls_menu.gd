@@ -6,6 +6,7 @@ extends Control
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 	var bold_font = load(AssetPaths.FONT_BOLD)
 	var regular_font = load(AssetPaths.FONT_REGULAR)
@@ -21,7 +22,6 @@ func _ready():
 	title_label.position.y = 80
 
 	# --- Controls List ---
-	# FIX: Restoring the original, more detailed controls data.
 	var controls_data = [
 		{ "action": "Movement", "keys": "Arrow Keys / WASD / Mouse" },
 		{ "action": "Primary Action", "keys": "X / . / Space / Left-Click" },
@@ -43,7 +43,6 @@ func _ready():
 		add_child(action_label)
 		action_label.add_theme_font_override("font", bold_font)
 		action_label.add_theme_font_size_override("font_size", 36)
-		# FIX: Restoring original x-size for alignment.
 		action_label.size.x = 390
 		action_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		action_label.position = Vector2(0, y_pos)
@@ -53,7 +52,6 @@ func _ready():
 		add_child(keys_label)
 		keys_label.add_theme_font_override("font", regular_font)
 		keys_label.add_theme_font_size_override("font_size", 36)
-		# FIX: Restoring original x-position for alignment.
 		keys_label.position = Vector2(460, y_pos)
 
 	# --- Back Button ---
@@ -67,6 +65,9 @@ func _ready():
 	var menu = MenuManager.new()
 	add_child(menu)
 	menu.setup_menu([MenuManager.MenuItem.new(back_button, "BACK")])
+
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED)
 
 func _on_back_button_pressed():
 	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)

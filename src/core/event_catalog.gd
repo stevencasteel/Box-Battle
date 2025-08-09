@@ -16,6 +16,9 @@ const BOSS_HEALTH_CHANGED = "boss.health_changed"
 const BOSS_DIED = "boss.died"
 
 # --- Game State Events ---
-# NEWLY ADDED:
 const GAME_PAUSED = "game.paused"
 const GAME_RESUMED = "game.resumed"
+
+# --- UI State Events ---
+const MENU_OPENED = "ui.menu_opened"
+const MENU_CLOSED = "ui.menu_closed"

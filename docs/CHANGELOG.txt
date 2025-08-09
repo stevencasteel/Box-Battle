@@ -16,6 +16,12 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Decoupled `GlobalHUD` from specific menu scenes by making its       ║
+║      ░   visibility fully event-driven (`MENU_OPENED`, `MENU_CLOSED`),       ║
+║      ░   resolving an Open/Closed Principle violation.                       ║
+║      ░ ■ Extracted player combat logic (firing shots, pogo attacks) from     ║
+║      ░   `player.gd` into a new, focused `CombatComponent`, further applying ║
+║      ░   the Single Responsibility Principle.                                ║
 ║      ░ ■ Refactored the monolithic `base_boss.gd` script into a component-   ║
 ║      ░   based architecture, adhering to SRP and mirroring the Player's design.║
 ║      ░ ■ Created `BossStateData.gd` resource to act as a central data        ║
@@ -44,6 +50,8 @@
 ║      ░   polling for changes every frame.                                    ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved an audio stream memory leak on exit by implementing a      ║
+║      ░   robust cleanup handler for `NOTIFICATION_WM_CLOSE_REQUEST`.         ║
 ║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
 ║      ░   unnecessary `preload` calls for scripts with a `class_name`.        ║
 ║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║

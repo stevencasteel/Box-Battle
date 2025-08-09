@@ -19,9 +19,9 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var healing_timer: Timer = $HealingTimer
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 @onready var health_component: HealthComponent = $HealthComponent
+@onready var combat_component: CombatComponent = $CombatComponent
 
 # --- Preloads ---
-const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const MoveState = preload("res://src/entities/player/states/state_move.gd")
 const FallState = preload("res://src/entities/player/states/state_fall.gd")
 const JumpState = preload("res://src/entities/player/states/state_jump.gd")
@@ -30,7 +30,6 @@ const WallSlideState = preload("res://src/entities/player/states/state_wall_slid
 const AttackState = preload("res://src/entities/player/states/state_attack.gd")
 const HurtState = preload("res://src/entities/player/states/state_hurt.gd")
 const HealState = preload("res://src/entities/player/states/state_heal.gd")
-# REMOVED: Unnecessary preload of PlayerStateData.gd
 
 # --- State Machine & Data ---
 var states: Dictionary
@@ -49,7 +48,6 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	# MODIFIED: Pass config paths to the now-generic HealthComponent
 	var player_health_configs = {
 		"max_health": "player.health.max_health",
 		"invincibility": "player.health.invincibility_duration"
@@ -57,6 +55,9 @@ func _ready():
 	health_component.setup(p_data, self, player_health_configs)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
+
+	# NEW: Setup the CombatComponent
+	combat_component.setup(self, p_data)
 
 	states = {
 		State.MOVE: MoveState.new(self, p_data), State.FALL: FallState.new(self, p_data),
@@ -87,6 +88,7 @@ func _exit_tree():
 	states.clear()
 	p_data = null
 	health_component = null
+	combat_component = null # Clean up component reference
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -108,7 +110,8 @@ func _poll_global_inputs():
 		p_data.is_charging = true; p_data.charge_timer = 0.0
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
-			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"): _fire_shot()
+			# MODIFIED: Delegate call to the component
+			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"): combat_component.fire_shot()
 			else: change_state(State.ATTACK)
 			p_data.is_charging = false
 	if Input.is_action_just_pressed("ui_dash") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
@@ -154,38 +157,18 @@ func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 	
-func _fire_shot():
-	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
-	
-	var shot = ObjectPool.get_instance(&"player_shots")
-	if not shot: return
-	
-	var shot_dir = Vector2(p_data.facing_direction, 0)
-	if Input.is_action_pressed("ui_up"): shot_dir = Vector2.UP
-	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
-	
-	shot.direction = shot_dir
-	shot.global_position = global_position + (shot_dir * 60)
-	shot.activate()
-
-func _trigger_pogo(pogo_target):
-	velocity.y = -Config.get_value("player.physics.pogo_force")
-	position.y -= 1; p_data.can_dash = true
-	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
-	change_state(State.FALL)
-	if pogo_target:
-		if pogo_target.has_method("take_damage"):
-			pogo_target.take_damage(1); _on_damage_dealt()
-		elif pogo_target.is_in_group("enemy_projectile"):
-			ObjectPool.return_instance(pogo_target)
+# REMOVED: _fire_shot() method. Now handled by CombatComponent.
+# REMOVED: _trigger_pogo() method. Now handled by CombatComponent.
 
 func _on_hitbox_body_entered(body):
-	if p_data.is_pogo_attack: _trigger_pogo(body)
+	# MODIFIED: Delegate call to the component
+	if p_data.is_pogo_attack: combat_component.trigger_pogo(body)
 	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		if p_data.is_pogo_attack: _trigger_pogo(area)
+		# MODIFIED: Delegate call to the component
+		if p_data.is_pogo_attack: combat_component.trigger_pogo(area)
 		else: ObjectPool.return_instance(area)
 
 func _on_hurtbox_area_entered(area):

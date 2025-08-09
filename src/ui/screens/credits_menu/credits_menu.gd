@@ -6,6 +6,7 @@ extends Control
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 
 	var title_label = Label.new()
@@ -55,9 +56,11 @@ func _ready():
 	add_child(menu)
 	menu.setup_menu([MenuManager.MenuItem.new(back_button, "BACK")])
 
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED)
+
 # Called when a URL inside the RichTextLabel is clicked.
 func _on_meta_clicked(meta):
-	# OS.shell_open() opens the URL in the user's default web browser.
 	OS.shell_open(str(meta))
 
 func _on_back_button_pressed():

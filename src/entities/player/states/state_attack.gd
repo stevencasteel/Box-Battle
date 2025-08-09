@@ -3,7 +3,6 @@
 extends PlayerState
 
 func enter():
-	# MODIFIED: All state variables now read from/write to p_data.
 	p_data.attack_duration_timer = Config.get_value("player.combat.attack_duration")
 	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
 	player.hitbox_shape.disabled = false
@@ -14,7 +13,8 @@ func enter():
 		player.hitbox.position = Vector2(0, 60)
 		
 		if player.is_on_floor():
-			player._trigger_pogo(null)
+			# MODIFIED: Call the component's method
+			player.combat_component.trigger_pogo(null)
 			return
 		
 		if _check_for_immediate_pogo():
@@ -30,7 +30,6 @@ func exit():
 	p_data.is_pogo_attack = false
 
 func process_physics(delta: float):
-	# MODIFIED: Check state variable from p_data.
 	if not p_data.is_pogo_attack:
 		var friction = Config.get_value("player.combat.attack_friction")
 		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
@@ -48,7 +47,8 @@ func _check_for_immediate_pogo() -> bool:
 	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
 	
 	if not results.is_empty():
-		player._trigger_pogo(results[0].collider)
+		# MODIFIED: Call the component's method
+		player.combat_component.trigger_pogo(results[0].collider)
 		return true
 		
 	return false

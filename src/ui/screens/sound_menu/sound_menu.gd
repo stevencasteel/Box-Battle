@@ -16,6 +16,7 @@ var music_mute_checkbox: TextureButton
 var sfx_mute_checkbox: TextureButton
 
 func _ready():
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 
 	var title_label = Label.new()
@@ -27,7 +28,6 @@ func _ready():
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.position.y = 80
 
-	# FIX: The 'initial_mute' argument is no longer needed here.
 	_create_volume_row("MASTER", 300, Settings.master_volume, "master")
 	_create_volume_row("MUSIC", 450, Settings.music_volume, "music")
 	_create_volume_row("SFX", 600, Settings.sfx_volume, "sfx")
@@ -43,7 +43,9 @@ func _ready():
 	add_child(menu)
 	menu.setup_menu([MenuManager.MenuItem.new(back_button, "BACK")])
 
-# This function now runs every frame to ensure the UI is always in sync.
+func _exit_tree():
+	EventBus.emit(EventCatalog.MENU_CLOSED)
+
 func _process(_delta):
 	# Sync volume labels
 	master_volume_label.text = str(int(Settings.master_volume * 100))
@@ -55,7 +57,6 @@ func _process(_delta):
 	_update_checkbox_texture(music_mute_checkbox, Settings.music_muted)
 	_update_checkbox_texture(sfx_mute_checkbox, Settings.sfx_muted)
 
-# FIX: The 'initial_mute' parameter has been removed from the function definition.
 func _create_volume_row(label_text: String, y_pos: int, initial_volume: float, type: String):
 	var row_label = Label.new()
 	row_label.text = label_text

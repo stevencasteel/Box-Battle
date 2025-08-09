@@ -22,11 +22,21 @@ func _ready():
 	Settings.audio_settings_changed.connect(_on_audio_settings_changed)
 	_on_audio_settings_changed()
 
-# CRITICAL FIX: This function is called when the game closes. It manually
-# stops the music and releases the stream resource, preventing the audio leak.
+# This function catches system-level notifications. It's our new, more
+# reliable way to ensure cleanup happens before the application quits.
+func _notification(what):
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		# The user has requested to close the game. Clean up the music stream now.
+		if is_instance_valid(music_player):
+			music_player.stop()
+			music_player.stream = null
+
+# The _exit_tree function is still good practice for when nodes are removed
+# during gameplay, so we'll keep it as a secondary cleanup method.
 func _exit_tree():
-	music_player.stop()
-	music_player.stream = null
+	if is_instance_valid(music_player):
+		music_player.stop()
+		music_player.stream = null
 
 func _on_audio_settings_changed():
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(Settings.master_volume))
