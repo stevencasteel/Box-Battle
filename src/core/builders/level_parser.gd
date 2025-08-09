@@ -6,14 +6,17 @@
 class_name LevelParser
 extends RefCounted
 
-# FIX: Removed redundant preload. We can now use the global class name directly.
-
-# The single public method of this class. It takes the instantiated arena
-# scripts and returns a complete LevelBuildData resource.
-func parse_level_data(layout_script: Object, encounter_script: Object) -> LevelBuildData:
+# The single public method of this class. It takes the arena script resources
+# and returns a complete LevelBuildData resource.
+#
+# CORRECTED: The function signature now correctly expects Script resources,
+# not instantiated Objects.
+func parse_level_data(layout_script: Script, encounter_script: Script) -> LevelBuildData:
 	var data = LevelBuildData.new()
+	# We can still store the script resource for later use.
 	data.encounter_script_object = encounter_script
 
+	# Constants can be accessed directly from the script resource.
 	for y in range(layout_script.TERRAIN_DATA.size()):
 		var row_string: String = layout_script.TERRAIN_DATA[y]
 		for x in range(row_string.length()):

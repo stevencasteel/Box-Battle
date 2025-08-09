@@ -3,13 +3,14 @@
 extends PlayerState
 
 func enter():
-	player.attack_duration_timer = Config.get_value("player.combat.attack_duration")
-	player.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	# MODIFIED: All state variables now read from/write to p_data.
+	p_data.attack_duration_timer = Config.get_value("player.combat.attack_duration")
+	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
 	player.hitbox_shape.disabled = false
-	player.is_pogo_attack = false
+	p_data.is_pogo_attack = false
 	
 	if Input.is_action_pressed("ui_down"):
-		player.is_pogo_attack = true
+		p_data.is_pogo_attack = true
 		player.hitbox.position = Vector2(0, 60)
 		
 		if player.is_on_floor():
@@ -22,18 +23,19 @@ func enter():
 	elif Input.is_action_pressed("ui_up"):
 		player.hitbox.position = Vector2(0, -60)
 	else:
-		player.hitbox.position = Vector2(player.facing_direction * 60, 0)
+		player.hitbox.position = Vector2(p_data.facing_direction * 60, 0)
 
 func exit():
 	player.hitbox_shape.call_deferred("set", "disabled", true)
-	player.is_pogo_attack = false
+	p_data.is_pogo_attack = false
 
 func process_physics(delta: float):
-	if not player.is_pogo_attack:
+	# MODIFIED: Check state variable from p_data.
+	if not p_data.is_pogo_attack:
 		var friction = Config.get_value("player.combat.attack_friction")
 		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
-	if player.attack_duration_timer <= 0:
+	if p_data.attack_duration_timer <= 0:
 		player.change_state(player.State.FALL)
 
 func _check_for_immediate_pogo() -> bool:

@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=5 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
+[ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_hcomp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -38,16 +39,10 @@ collision_mask = 28
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 shape = SubResource("RectangleShape2D_playerbody")
 
-[node name="InvincibilityTimer" type="Timer" parent="."]
-one_shot = true
-
 [node name="HealingTimer" type="Timer" parent="."]
 one_shot = true
 
-[node name="HitFlashTimer" type="Timer" parent="."]
-wait_time = 0.4
-one_shot = true
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_hcomp")
 
-[connection signal="timeout" from="InvincibilityTimer" to="." method="_on_invincibility_timer_timeout"]
 [connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]
-[connection signal="timeout" from="HitFlashTimer" to="." method="_on_hit_flash_timer_timeout"]

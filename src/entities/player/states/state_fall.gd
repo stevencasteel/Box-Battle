@@ -12,12 +12,13 @@ func process_physics(delta: float):
 
 	_check_for_wall_slide()
 
-	if player.jump_buffer_timer > 0:
-		if player.wall_coyote_timer > 0:
+	# MODIFIED: All timer checks now use the p_data resource.
+	if p_data.jump_buffer_timer > 0:
+		if p_data.wall_coyote_timer > 0:
 			_perform_wall_jump()
-		elif player.coyote_timer > 0:
+		elif p_data.coyote_timer > 0:
 			player.change_state(player.State.JUMP)
-		elif player.air_jumps_left > 0:
+		elif p_data.air_jumps_left > 0:
 			_perform_air_jump()
 
 func _apply_gravity(delta):
@@ -27,15 +28,16 @@ func _apply_gravity(delta):
 	player.velocity.y += Config.get_value("general.physics.gravity") * gravity_multiplier * delta
 
 func _check_for_wall_slide():
-	if player.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -player.last_wall_normal.x:
+	# MODIFIED: All state variables now read from/write to p_data.
+	if p_data.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -p_data.last_wall_normal.x:
 		player.change_state(player.State.WALL_SLIDE)
 
 func _perform_air_jump():
-	player.air_jumps_left -= 1
+	p_data.air_jumps_left -= 1
 	player.change_state(player.State.JUMP)
 	
 func _perform_wall_jump():
-	player.velocity.x = player.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
-	player.coyote_timer = 0
-	player.wall_coyote_timer = 0
+	player.velocity.x = p_data.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
+	p_data.coyote_timer = 0
+	p_data.wall_coyote_timer = 0
 	player.change_state(player.State.JUMP)

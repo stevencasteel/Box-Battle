@@ -2,14 +2,13 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 11:56:08 CDT 2025
+Generated on: Sat Aug  9 15:22:49 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
 ├── README.md
-├── all_script_errors.txt
 ├── data
 │   └── combat_config.json
 ├── default_bus_layout.tres
@@ -59,6 +58,11 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   └── player_health_changed_event.gd
     │   ├── game_manager.gd
     │   ├── palette.gd
+    │   ├── sequencer
+    │   │   ├── sequence_step.gd
+    │   │   └── steps
+    │   │       ├── emit_step.gd
+    │   │       └── wait_step.gd
     │   ├── sequencer.gd
     │   └── settings.gd
     ├── entities
@@ -71,7 +75,11 @@ PROJECT DIRECTORY STRUCTURE:
     │   │       ├── state_boss_cooldown.gd
     │   │       ├── state_boss_idle.gd
     │   │       └── state_boss_patrol.gd
+    │   ├── components
+    │   │   └── health_component.gd
     │   └── player
+    │       ├── data
+    │       │   └── player_state_data.gd
     │       ├── player.gd
     │       ├── player.tscn
     │       └── states
@@ -140,30 +148,22 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-35 directories, 97 files
-
-
-=====================================
-FILE: ./all_script_errors.txt
-=====================================
-Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
-Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
-
+39 directories, 101 files
 
 
 =====================================
 FILE: ./docs/CHANGELOG_archive_pre-0.3.0.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║    ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ██████╗  ██████╗                ║
-║   ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔══██╗██╔════╝                ║
-║   ██║     ███████║███████║██╔██╗ ██║██║  ███╗██████╔╝███████╗                ║
-║   ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══██╗██╔════╝                ║
-║   ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║███████╗                ║
-║    ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝                ║
-║                                                                              ║
-║          A historical log of all notable changes to the project.             ║
+║                                                                              ╚═╗
+║   ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ███████╗██╗      ██████╗  ██████╗  ║
+║  ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔════╝██║     ██╔═══██╗██╔════╝  ║
+║  ██║     ███████║███████║██╔██╗ ██║██║  ███╗█████╗  ██║     ██║   ██║██║  ███╗ ║
+║  ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██║     ██║   ██║██║   ██║ ║
+║  ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝███████╗███████╗╚██████╔╝╚██████╔╝ ║
+║   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚═════╝  ║
+║                                                                              ╔═╝
+║                  A log of all notable changes to the project.                ║
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
@@ -409,7 +409,7 @@ FILE: ./docs/all_script_errors.txt
 Run in Box Battle folder for all errors in Terminal
 
 
-"/Applications/Godot.app/Contents/MacOS/Godot" --check-only "/Users/stevencasteel/Desktop/GODOT/BOX BATTLE" > all_script_errors.txt
+"/Applications/Godot.app/Contents/MacOS/Godot" --verbose --check-only "/Users/stevencasteel/Desktop/GODOT/BOX BATTLE" > all_script_errors.txt
 
 
 =====================================
@@ -570,14 +570,14 @@ FILE: ./docs/ROADMAP.txt
 FILE: ./docs/PLAYTESTING.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║   ██████╗ ██╗      █████╗ ██╗   ████   ████╗███████╗████████╗██╗███╗   ██╗ ██████╗ ║
-║   ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝ ║
-║   ██████╔╝██║     ███████║ ╚████╔╝    ██║   █████╗     ██║   ██║██╔██╗ ██║███████╗ ║
-║   ██╔═══╝ ██║     ██╔══██║  ╚██╔╝     ██║   ██╔══╝     ██║   ██║██║╚██╗██║██╔════╝ ║
-║   ██║     ███████╗██║  ██║   ██║      ██║   ███████╗   ██║   ██║██║ ╚████║███████╗ ║
-║   ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝╚══════╝ ║
-║                                                                              ║
+║                                                                              ╚═════════════╗
+║  ██████╗ ██╗      █████╗ ██╗   ██╗████████╗███████╗███████╗████████╗██╗███╗   ██╗ ██████╗  ║
+║  ██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝  ║
+║  ██████╔╝██║     ███████║ ╚████╔╝    ██║   █████╗  ███████╗   ██║   ██║██╔██╗ ██║██║  ███╗ ║
+║  ██╔═══╝ ██║     ██╔══██║  ╚██╔╝     ██║   ██╔══╝  ╚════██║   ██║   ██║██║╚██╗██║██║   ██║ ║
+║  ██║     ███████╗██║  ██║   ██║      ██║   ███████╗███████║   ██║   ██║██║ ╚████║╚██████╔╝ ║
+║  ╚═╝     ╚══════╝╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝  ║ 
+║                                                                              ╔═════════════╝
 ║           A log of all playtesting sessions and resulting feedback.          ║
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
@@ -616,6 +616,49 @@ FILE: ./docs/PLAYTESTING.txt
 ║      ░  features or changes?                                                 ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+
+
+║                                                                                                            ║
+║                     A log of all playtesting sessions and resulting feedback.                             ║
+║                                                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                                            ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                               PLAYTEST SESSION LOG                                               ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                                                            ║
+║   (New playtest session reports should be added here, most recent at top.)                               ║
+║                                                                                                            ║
+║  --------------------------------------------------------------------------------------------------      ║
+║                                                                                                            ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                               TEST SESSION TEMPLATE                                              ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                                                            ║
+║   █  Date: YYYY-MM-DD                                                                                     ║
+║   █  Tester: [Name or description, e.g., "Developer," "Friend A"]                                        ║
+║   █  Build Version: [e.g., 0.1.0]                                                                        ║
+║   █  Session Goal: [e.g., "Test boss fight fairness", "Check menu UI"]                                   ║
+║                                                                                                            ║
+║   ▓  General Observations & Player Behavior                                                               ║
+║      ░  What did the player do? Did they understand the goals? Where did                                 ║
+║      ░  they go first? (e.g., "Tester immediately tried to wall-jump.")                                  ║
+║                                                                                                            ║
+║   ▓  Issues & Bugs Found                                                                                  ║
+║      ░  List any bugs, crashes, or moments of confusion. Was anything                                    ║
+║      ░  frustrating or unfair?                                                                            ║
+║                                                                                                            ║
+║   ▓  Positive Feedback                                                                                    ║
+║      ░  What did the player say they enjoyed? What felt good to them?                                    ║
+║      ░  (e.g., "Player audibly said 'nice' after a successful pogo.")                                    ║
+║                                                                                                            ║
+║   ▓  Suggestions & Ideas                                                                                  ║
+║      ░  What did the player suggest? Did they have any ideas for new                                     ║
+║      ░  features or changes?                                                                              ║
+║                                                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
 FILE: ./docs/BUGS.txt
@@ -814,14 +857,14 @@ FILE: ./docs/DOCS_PROTOCOL.txt
 FILE: ./docs/ARCHITECTURE.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║    █████╗ ██████╗  ██████╗██╗  ██╗██╗████████╗███████╗ ██████╗████████╗██╗   ██╗ ║
-║   ██╔══██╗██╔══██╗██╔════╝██║  ██║██║╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██║   ██║ ║
-║   ███████║██████╔╝██║     ███████║██║   ██║   █████╗  ██║        ██║   ██║   ██║ ║
-║   ██╔══██║██╔══██╗██║     ██╔══██║██║   ██║   ██╔══╝  ██║        ██║   ██║   ██║ ║
-║   ██║  ██║██║  ██║╚██████╗██║  ██║██║   ██║   ███████╗╚██████╗   ██║   ╚██████╔╝ ║
-║   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝   ╚═╝   ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝  ║
-║                                                                              ║
+║                                                                              ╚═════════════════╗
+║  █████╗ ██████╗  ██████╗██╗  ██╗██╗████████╗███████╗ ██████╗████████╗██╗   ██╗██████╗ ███████╗ ║
+║ ██╔══██╗██╔══██╗██╔════╝██║  ██║██║╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗██╔════╝ ║
+║ ███████║██████╔╝██║     ███████║██║   ██║   █████╗  ██║        ██║   ██║   ██║██████╔╝█████╗   ║
+║ ██╔══██║██╔══██╗██║     ██╔══██║██║   ██║   ██╔══╝  ██║        ██║   ██║   ██║██╔══██╗██╔══╝   ║
+║ ██║  ██║██║  ██║╚██████╗██║  ██║██║   ██║   ███████╗╚██████╗   ██║   ╚██████╔╝██║  ██║███████╗ ║
+║ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝   ╚═╝   ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝ ║
+║                                                                              ╔═════════════════╝
 ║          The project's technical structure, standards, and patterns.         ║
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
@@ -954,14 +997,14 @@ FILE: ./docs/ASSETS.txt
 FILE: ./docs/CHANGELOG.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║    ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ██████╗  ██████╗                ║
-║   ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔══██╗██╔════╝                ║
-║   ██║     ███████║███████║██╔██╗ ██║██║  ███╗██████╔╝███████╗                ║
-║   ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══██╗██╔════╝                ║
-║   ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║███████╗                ║
-║    ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝                ║
-║                                                                              ║
+║                                                                              ╚═╗
+║   ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ███████╗██╗      ██████╗  ██████╗  ║
+║  ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔════╝██║     ██╔═══██╗██╔════╝  ║
+║  ██║     ███████║███████║██╔██╗ ██║██║  ███╗█████╗  ██║     ██║   ██║██║  ███╗ ║
+║  ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██║     ██║   ██║██║   ██║ ║
+║  ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝███████╗███████╗╚██████╔╝╚██████╔╝ ║
+║   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚═════╝  ║
+║                                                                              ╔═╝
 ║                  A log of all notable changes to the project.                ║
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
@@ -970,7 +1013,33 @@ FILE: ./docs/CHANGELOG.txt
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   (Changes for the next version will be logged here.)                        ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `player.gd` script into a component-based ║
+║      ░   architecture, adhering to the Single Responsibility Principle.      ║
+║      ░ ■ Created a `HealthComponent` to manage all health, damage, and       ║
+║      ░   invincibility logic, making it reusable for other entities.         ║
+║      ░ ■ Created a `PlayerStateData` resource to act as a central data       ║
+║      ░   container, decoupling state from the Player node itself.            ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored `Sequencer.gd` to use type-safe `SequenceStep` resources ║
+║      ░   instead of ad-hoc dictionaries, preventing runtime errors and       ║
+║      ░   improving editor autocompletion.                                    ║
+║      ░ ■ Refactored `AudioManager.gd` and `GlobalHUD` to be event-driven,    ║
+║      ░   subscribing to a new `audio_settings_changed` signal instead of     ║
+║      ░   polling for changes every frame.                                    ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved all memory leaks by implementing proper cleanup in         ║
+║      ░   `_exit_tree` for the Player, Boss, and HealthComponent to break     ║
+║      ░   cyclical references.                                                ║
+║      ░ ■ Resolved a memory leak caused by creating orphaned nodes in         ║
+║      ░   `ArenaBuilder` by accessing script constants directly.              ║
+║      ░ ■ Corrected `Config.gd` to sort JSON filenames before loading,        ║
+║      ░   ensuring a deterministic and platform-agnostic configuration merge. ║
+║      ░ ■ Fixed a critical crash in `EventBus.gd` by using the robust global  ║
+║      ░   `is_instance_of()` for polymorphic type checking.                   ║
+║      ░ ■ Resolved all remaining static analysis warnings for a clean build.  ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -1063,26 +1132,26 @@ FILE: ./docs/BRAINSTORM.txt
 ║   modern web design (Framer) and arcade games (Geometry Wars).               ║
 ║                                                                              ║
 ║   █  Animation & Motion                                                      ║
-║      ░ ■ Entrance Stack: Slide, scale, and fade-in menu items with a        ║
+║      ░ ■ Entrance Stack: Slide, scale, and fade-in menu items with a         ║
 ║      ░   slight overshoot and a staggered delay for a cascading reveal.      ║
 ║      ░   (Technique: `create_tween()` with `TRANS_BACK`)                     ║
-║      ░ ■ Micro-motion / Idle Breathing: Subtle, slow, looping scale or      ║
+║      ░ ■ Micro-motion / Idle Breathing: Subtle, slow, looping scale or       ║
 ║      ░   rotation animations on UI panels to keep the screen feeling alive.  ║
 ║      ░   (Technique: `AnimationPlayer` or looping `Tween`)                   ║
-║      ░ ■ Directional Hover Parallax: Make text/icon layers on a button      ║
+║      ░ ■ Directional Hover Parallax: Make text/icon layers on a button       ║
 ║      ░   shift slightly in the opposite direction of the mouse cursor.       ║
 ║      ░   (Technique: Child `Control` nodes, `Input.get_local_mouse_position()` + `lerp`)║
 ║      ░ ■ Energy Bursts on Click: A small burst of particles on button press. ║
 ║      ░   (Technique: `GPUParticles2D` with a low-count, short-lived emission)║
 ║                                                                              ║
 ║   █  Shape & Form (Procedural Drawing)                                       ║
-║      ░ ■ Animated Rounded Corners: Tween the corner radius of a procedurally║
+║      ░ ■ Animated Rounded Corners: Tween the corner radius of a procedurally ║
 ║      ░   drawn shape on hover for a fluid morphing effect.                   ║
 ║      ░   (Technique: `_draw()` with `draw_circle` + `draw_rect`, property tween)║
-║      ░ ■ Inset / Layered Borders: Use multiple `draw_rect` calls with       ║
-║      ░   different palette colors and slight offsets to create a 2.5D bevel.║
+║      ░ ■ Inset / Layered Borders: Use multiple `draw_rect` calls with        ║
+║      ░   different palette colors and slight offsets to create a 2.5D bevel. ║
 ║      ░ ■ Chamfered Corners: Use `draw_polygon()` to create geometric cutouts.║
-║      ░ ■ Dynamic Clipping Mask: Reveal content by animating the size of a   ║
+║      ░ ■ Dynamic Clipping Mask: Reveal content by animating the size of a    ║
 ║      ░   parent `Control` node with `clip_contents` enabled.                 ║
 ║                                                                              ║
 ║   █  Interactivity & Feedback                                                ║
@@ -1099,7 +1168,7 @@ FILE: ./docs/BRAINSTORM.txt
 ║      ░   (Technique: `ShaderMaterial` with a `smoothstep` ramp, driven by `TIME`)║
 ║      ░ ■ Noise Grain Overlay: A subtle, low-alpha tiling noise texture to add║
 ║      ░   surface detail without blurring. (Technique: `TextureRect` with `BLEND_MODE_ADD`)║
-║      ░ ■ Vertex Displacement Parallax: A very cheap shader that slightly    ║
+║      ░ ■ Vertex Displacement Parallax: A very cheap shader that slightly     ║
 ║      ░   offsets vertices based on mouse position for a subtle 3D effect.    ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
@@ -1638,7 +1707,7 @@ FILE: ./src/ui/global_hud/global_hud.gd
 # src/ui/global_hud/global_hud.gd
 #
 # This autoloaded scene is always present. Its main job is to manage the
-# global mute button that appears in the top-right corner of menu screens.
+# global mute button. It is now event-driven to prevent race conditions.
 extends Control
 
 # Preload icons into constants for performance and safety.
@@ -1660,11 +1729,7 @@ func _ready():
 	add_child(mute_button)
 
 	var padding = 40
-	# Wait for the viewport to be ready before positioning.
 	await get_tree().process_frame
-
-	# FIX: Revert to the original, correct positioning logic.
-	# The dynamic calculation was flawed because the button's size is 0 before its texture is set.
 	mute_button.position = Vector2(get_viewport_rect().size.x - 120, padding)
 
 	# Connect signals for interaction.
@@ -1672,31 +1737,27 @@ func _ready():
 	mute_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 	mute_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 
-	# Set the initial icon state.
+	# Connect to the Settings signal to react to changes.
+	Settings.audio_settings_changed.connect(_update_icon)
+	
+	# Set the initial icon state once on startup.
 	_update_icon()
 
+# This loop is now only responsible for VISIBILITY.
 func _process(_delta):
 	if not get_tree().current_scene: return
 
 	var current_scene_path = get_tree().current_scene.scene_file_path
 	mute_button.visible = current_scene_path in MENU_SCENES
 
-	if mute_button.visible:
-		var is_muted_in_settings = Settings.music_muted
-		var icon_is_off = mute_button.texture_normal == ICON_SOUND_OFF
-
-		# If the setting and the icon are out of sync, update the icon.
-		if is_muted_in_settings != icon_is_off:
-			_update_icon()
-
 func _on_mute_button_pressed():
-	# Toggle the setting, play a sound, and update the icon.
+	# Toggle the setting. This emits the 'audio_settings_changed' signal,
+	# which our _update_icon function is connected to.
 	Settings.music_muted = not Settings.music_muted
 	AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
-	_update_icon()
 
+# The _update_icon function is now called automatically by the signal from Settings.gd.
 func _update_icon():
-	# Set the button's texture based on the current setting.
 	if Settings.music_muted:
 		mute_button.texture_normal = ICON_SOUND_OFF
 	else:
@@ -2974,37 +3035,57 @@ FILE: ./src/core/settings.gd
 # src/core/settings.gd
 #
 # This script is a "Singleton" (also known as an "Autoload" in Godot).
-# A singleton is a script that Godot loads once at the very start of the game
-# and is always available globally. We can access its variables from any other
-# script in the project, which makes it perfect for managing game-wide settings.
-#
-# We defined this as a singleton in: Project -> Project Settings -> Autoload
+# It now emits a signal whenever an audio setting is changed, allowing other
+# systems like the AudioManager to react efficiently without polling.
 extends Node
 
+# NEW: A signal that is emitted whenever any audio setting is changed.
+signal audio_settings_changed
+
 # --- Audio Settings ---
-# These variables store the current sound settings for the game.
-# The '@export' keyword tells Godot to show this variable in the Inspector panel
-# when this node is viewed in the editor. While we don't edit it there for a
-# singleton, it's a common way to mark important, configurable variables.
+# The variables have been converted to properties with setters. This allows us
+# to run code (emitting the signal) whenever their values are changed.
 
-# A 'float' is a number that can have a decimal point (e.g., 0.5, 1.0).
-# Volume values typically range from 0.0 (silent) to 1.0 (full volume).
-@export var master_volume: float = 1.0
-@export var music_volume: float = 1.0
-@export var sfx_volume: float = 1.0
+@export var master_volume: float = 1.0:
+	set(value):
+		if not is_equal_approx(master_volume, value):
+			master_volume = value
+			audio_settings_changed.emit()
 
-# A 'bool' is a boolean value, which can only be 'true' or 'false'.
-# We use these to track whether a sound category is muted.
-@export var master_muted: bool = false
-@export var music_muted: bool = true # Start with music muted by default.
-@export var sfx_muted: bool = false
+@export var music_volume: float = 1.0:
+	set(value):
+		if not is_equal_approx(music_volume, value):
+			music_volume = value
+			audio_settings_changed.emit()
+
+@export var sfx_volume: float = 1.0:
+	set(value):
+		if not is_equal_approx(sfx_volume, value):
+			sfx_volume = value
+			audio_settings_changed.emit()
+
+@export var master_muted: bool = false:
+	set(value):
+		if master_muted != value:
+			master_muted = value
+			audio_settings_changed.emit()
+
+@export var music_muted: bool = true:
+	set(value):
+		if music_muted != value:
+			music_muted = value
+			audio_settings_changed.emit()
+
+@export var sfx_muted: bool = false:
+	set(value):
+		if sfx_muted != value:
+			sfx_muted = value
+			audio_settings_changed.emit()
 
 =====================================
 FILE: ./src/core/event_bus.gd
 =====================================
 # src/core/event_bus.gd
-# --- VERSION 4: FINAL - Explicitly Type-Safe and Cleaned ---
-# This is the autoloaded singleton that manages all decoupled communication.
 extends Node
 
 var _subscribers: Dictionary = {}
@@ -3090,12 +3171,21 @@ func _emit_internal(event_name: String, payload, source: Object) -> void:
 			off(sub.id); continue
 		
 		var expected_type = sub.type
-		if expected_type and not (payload is Resource and payload.get_script() == expected_type):
+		if expected_type and not is_instance_of(payload, expected_type):
 			if debug_enabled:
 				var type_path = expected_type.resource_path if expected_type is Script else str(expected_type)
-				push_warning("[EventBus] Subscriber for '%s' expected type %s but got %s. Skipping." % [event_name, type_path, payload.get_class()])
-			continue
+				
+				# IMPROVED DEBUG MESSAGE: Get the specific script name if available.
+				var payload_type_name = "null"
+				if payload:
+					if payload is Resource and payload.get_script():
+						payload_type_name = payload.get_script().resource_path
+					else:
+						payload_type_name = payload.get_class()
 
+				print("EventBus: Subscriber for '%s' expected type %s but got %s. Skipping." % [event_name, type_path, payload_type_name])
+			continue
+		
 		sub.callback.call(payload)
 		
 		if sub.once: off(sub.id)
@@ -3135,14 +3225,17 @@ FILE: ./src/core/builders/level_parser.gd
 class_name LevelParser
 extends RefCounted
 
-# FIX: Removed redundant preload. We can now use the global class name directly.
-
-# The single public method of this class. It takes the instantiated arena
-# scripts and returns a complete LevelBuildData resource.
-func parse_level_data(layout_script: Object, encounter_script: Object) -> LevelBuildData:
+# The single public method of this class. It takes the arena script resources
+# and returns a complete LevelBuildData resource.
+#
+# CORRECTED: The function signature now correctly expects Script resources,
+# not instantiated Objects.
+func parse_level_data(layout_script: Script, encounter_script: Script) -> LevelBuildData:
 	var data = LevelBuildData.new()
+	# We can still store the script resource for later use.
 	data.encounter_script_object = encounter_script
 
+	# Constants can be accessed directly from the script resource.
 	for y in range(layout_script.TERRAIN_DATA.size()):
 		var row_string: String = layout_script.TERRAIN_DATA[y]
 		for x in range(row_string.length()):
@@ -3348,40 +3441,27 @@ func _spawn_hud_async() -> void:
 
 # Defines and runs the sequence for the boss's grand entrance.
 func run_intro_sequence() -> void:
-	# This sequence is a great example of the Sequencer's power.
-	# It's a readable, step-by-step recipe for what should happen.
-	var intro_steps = [
-		# Step 1: Pause the game to build tension.
-		{ "type": "emit", "event": EventCatalog.GAME_PAUSED },
+	# Create typed SequenceStep objects for a robust, type-safe sequence.
+	var pause_step = EmitStep.new()
+	pause_step.event_name = EventCatalog.GAME_PAUSED
 
-		# Step 2: A short dramatic pause.
-		{ "type": "wait", "duration": 0.5 },
+	var wait_step = WaitStep.new()
+	wait_step.duration = 0.5
 
-		# Step 3: Spawn the boss entity into the world.
-		# Note: We can't use "call" here because we need the boss node reference
-		# for the next step. So we call our helper and await its completion.
-	]
-
-	# Run the first part of the sequence.
+	var intro_steps: Array[SequenceStep] = [pause_step, wait_step]
 	await Sequencer.run_sequence(intro_steps)
 
 	# Manually spawn the boss to get the node reference.
-	# THE FIX IS HERE: Add an underscore to silence the UNUSED_VARIABLE warning.
 	var _boss_node = await _spawn_boss_async()
 
-	# Define the rest of the sequence. We will use the _boss_node variable later.
-	var outro_steps = [
-		# Step 4: Add a visual/audio cue here later (e.g., spawn VFX).
-		# { "type": "call", "node": vfx_manager, "function": "spawn_effect", "args": ["boss_spawn", _boss_node.global_position] }
+	# Define the rest of the sequence.
+	var final_wait_step = WaitStep.new()
+	final_wait_step.duration = 1.0
 
-		# Step 5: Wait for the spawn effect to finish.
-		{ "type": "wait", "duration": 1.0 },
-
-		# Step 6: Resume the game.
-		{ "type": "emit", "event": EventCatalog.GAME_RESUMED }
-	]
-
-	# Run the final part of the sequence.
+	var resume_step = EmitStep.new()
+	resume_step.event_name = EventCatalog.GAME_RESUMED
+	
+	var outro_steps: Array[SequenceStep] = [final_wait_step, resume_step]
 	await Sequencer.run_sequence(outro_steps)
 
 
@@ -3415,18 +3495,32 @@ func get_value(key: String, default = null):
 
 # --- Internal Functions ---
 
+# MODIFIED: This function now reads all filenames into a list first, sorts that
+# list alphabetically, and then loads the files. This guarantees a stable,
+# deterministic loading order, preventing platform-specific bugs where
+# config values might be overridden inconsistently.
 func _load_all_configs() -> void:
 	var dir = DirAccess.open("res://data")
 	if not dir:
 		push_error("Config: Could not open 'res://data/' directory. Make sure it exists.")
 		return
 
+	var file_names: Array[String] = []
 	dir.list_dir_begin()
 	var file_name = dir.get_next()
 	while file_name != "":
 		if not dir.current_is_dir() and file_name.ends_with(".json"):
-			_load_and_parse_file("res://data/" + file_name)
+			file_names.append(file_name)
 		file_name = dir.get_next()
+	
+	# The critical fix: Sort the filenames to ensure deterministic load order.
+	file_names.sort()
+	
+	# CORRECTED: Renamed loop variable from "name" to "config_filename" to
+	# resolve the SHADOWED_VARIABLE_BASE_CLASS warning.
+	for config_filename in file_names:
+		_load_and_parse_file("res://data/" + config_filename)
+
 
 func _load_and_parse_file(file_path: String) -> void:
 	var file = FileAccess.open(file_path, FileAccess.READ)
@@ -3467,95 +3561,29 @@ FILE: ./src/core/sequencer.gd
 =====================================
 # src/core/sequencer.gd
 #
-# An autoloaded singleton that runs sequences of timed events. This provides a
-# clean, data-driven way to script boss intros, multi-stage attacks, and any
-# other "cutscene-like" behavior without cluttering game logic with timers.
-#
-# It is designed to be called with 'await' for easy integration into async flows.
-# Example: await Sequencer.run_sequence(my_steps_array)
-#
+# An autoloaded singleton that runs sequences of timed events. This version has
+# been refactored to use type-safe `SequenceStep` resources and now uses a more
+# robust await pattern that satisfies the static analyzer.
 extends Node
-# CLASS NAME REMOVED TO PREVENT CONFLICT WITH AUTOLOAD NAME
-
-# --- EXAMPLE STEP FORMATS ---
-# { "type": "wait", "duration": 2.0 }
-# { "type": "emit", "event": EventCatalog.BOSS_SPAWNED, "payload": { ... } }
-# { "type": "call", "node": some_node, "function": "do_super_attack", "args": [arg1, arg2] }
-# { "type": "await_signal", "node": some_node, "signal_name": "animation_finished" }
-#
-
-# --- PUBLIC API ---
 
 # The primary function of the sequencer. It iterates through an array of
-# dictionaries, executing each step in order.
-func run_sequence(steps: Array) -> void:
+# SequenceStep objects, executing each one in order.
+func run_sequence(steps: Array[SequenceStep]) -> void:
 	if steps.is_empty():
 		return
 
 	for step in steps:
-		# Ensure the step is a valid dictionary before processing.
-		if not step is Dictionary:
-			push_warning("Sequencer: Invalid step found (not a Dictionary). Skipping.")
+		if not step is SequenceStep:
+			push_warning("Sequencer: Invalid step found (not a SequenceStep resource). Skipping.")
 			continue
+		
+		# CORRECTED: The step's execute method now returns an awaitable object
+		# (like a Signal) if it needs to pause the sequence. We check for this
+		# and only await if necessary. This resolves the REDUNDANT_AWAIT warning.
+		var awaitable = step.execute(self)
+		if awaitable:
+			await awaitable
 
-		var type = step.get("type", "")
-		match type:
-			"wait":
-				await _execute_wait(step)
-			"emit":
-				_execute_emit(step)
-			"call":
-				_execute_call(step)
-			"await_signal":
-				await _execute_await_signal(step)
-			_:
-				push_warning("Sequencer: Unknown step type encountered: '%s'" % type)
-
-# --- INTERNAL STEP HANDLERS ---
-
-func _execute_wait(step: Dictionary) -> void:
-	var duration = float(step.get("duration", 0.0))
-	if duration > 0.0:
-		await get_tree().create_timer(duration).timeout
-
-func _execute_emit(step: Dictionary) -> void:
-	var event_name = step.get("event", "")
-	if event_name.is_empty():
-		push_warning("Sequencer: 'emit' step is missing 'event' name.")
-		return
-	var payload = step.get("payload", null)
-	# Use the existing EventBus to broadcast the event system-wide.
-	EventBus.emit(event_name, payload)
-
-func _execute_call(step: Dictionary) -> void:
-	var node = step.get("node", null)
-	var function_name = step.get("function", "")
-	var args = step.get("args", [])
-
-	if not is_instance_valid(node):
-		push_warning("Sequencer: 'call' step has an invalid or null node.")
-		return
-	if function_name.is_empty() or not node.has_method(function_name):
-		push_warning("Sequencer: 'call' step has an invalid function name: '%s' on node %s" % [function_name, node.name])
-		return
-
-	# Call the function on the target node with the provided arguments.
-	node.callv(function_name, args)
-
-func _execute_await_signal(step: Dictionary) -> void:
-	var node = step.get("node", null)
-	var signal_name = step.get("signal_name", "")
-
-	if not is_instance_valid(node):
-		push_warning("Sequencer: 'await_signal' step has an invalid or null node.")
-		return
-	if signal_name.is_empty():
-		push_warning("Sequencer: 'await_signal' step is missing 'signal_name'.")
-		return
-
-	# This powerful one-liner pauses the sequence until the specified node
-	# emits the specified signal.
-	await node[signal_name]
 
 =====================================
 FILE: ./src/core/event_catalog.gd
@@ -3581,6 +3609,66 @@ const BOSS_DIED = "boss.died"
 # NEWLY ADDED:
 const GAME_PAUSED = "game.paused"
 const GAME_RESUMED = "game.resumed"
+
+=====================================
+FILE: ./src/core/sequencer/sequence_step.gd
+=====================================
+# src/core/sequencer/sequence_step.gd
+# The abstract base class for all steps in a sequence.
+# It defines the contract that all steps must follow: an `execute` method.
+@tool
+class_name SequenceStep
+extends Resource
+
+# This method will be implemented by all concrete step classes.
+# It contains the logic for what the step actually does.
+# It should return a Signal or Coroutine object if the sequence needs to pause.
+#
+# CORRECTED: The parameter is prefixed with an underscore to resolve the
+# UNUSED_PARAMETER warning in this base class.
+func execute(_sequencer_node: Node) -> Variant:
+	return null
+
+
+=====================================
+FILE: ./src/core/sequencer/steps/emit_step.gd
+=====================================
+# src/core/sequencer/steps/emit_step.gd
+# A sequence step that emits an event on the global EventBus.
+@tool
+class_name EmitStep
+extends SequenceStep
+
+@export var event_name: StringName = &""
+@export var payload: Variant = null
+
+# CORRECTED: The function signature now returns '-> Variant' to match its parent,
+# SequenceStep. Since this step completes instantly, it returns null.
+func execute(_sequencer_node: Node) -> Variant:
+	if event_name == &"":
+		push_warning("EmitStep: 'event_name' is not set.")
+		return null
+	EventBus.emit(event_name, payload)
+	return null
+
+
+=====================================
+FILE: ./src/core/sequencer/steps/wait_step.gd
+=====================================
+# src/core/sequencer/steps/wait_step.gd
+# A sequence step that pauses execution for a set duration.
+@tool
+class_name WaitStep
+extends SequenceStep
+
+@export var duration: float = 1.0
+
+# CORRECTED: This function now returns the timer's 'timeout' signal.
+# The sequencer will await this signal, making the pause explicit.
+func execute(sequencer_node: Node) -> Variant:
+	if duration > 0.0:
+		return sequencer_node.get_tree().create_timer(duration).timeout
+	return null
 
 =====================================
 FILE: ./src/core/arena_builder.gd
@@ -3614,18 +3702,18 @@ func build_level_async() -> Node:
 
 	# --- 2. Parse Data ---
 	var parser = LevelParser.new()
-	var build_data = parser.parse_level_data(layout_script.new(), encounter_script.new())
+	# CORRECTED: Pass the script resources directly instead of creating orphaned
+	# Node instances with .new(). This prevents memory leaks.
+	var build_data = parser.parse_level_data(layout_script, encounter_script)
 	
 	await get_tree().process_frame
 
 	# --- 3. Build Terrain ---
 	var terrain_builder = TerrainBuilder.new()
-	# FIX: Pass the SceneTree reference to the builder.
 	await terrain_builder.build_terrain_async(level_container, build_data, get_tree())
 
 	# --- 4. Spawn Entities ---
 	var encounter_director = EncounterDirector.new()
-	# FIX: Pass the SceneTree reference to the director.
 	await encounter_director.spawn_entities_async(level_container, build_data, get_tree())
 
 	# --- 5. Finalize ---
@@ -3639,9 +3727,9 @@ FILE: ./src/core/audio_manager.gd
 =====================================
 # src/core/audio_manager.gd
 #
-# This singleton is responsible for all audio playback. By centralizing all
-# audio logic here, any other script can simply call `AudioManager.play_sfx()`
-# without worrying about the implementation details.
+# This singleton is responsible for all audio playback. It is now event-driven,
+# only updating the AudioServer when settings actually change, which is much
+# more performant than polling every frame.
 extends Node
 
 var sfx_players = []
@@ -3649,6 +3737,7 @@ var sfx_player_index = 0
 var music_player: AudioStreamPlayer
 
 func _ready():
+	# --- Setup Audio Players ---
 	for i in range(Constants.NUM_SFX_PLAYERS):
 		var player = AudioStreamPlayer.new()
 		add_child(player)
@@ -3659,7 +3748,20 @@ func _ready():
 	add_child(music_player)
 	music_player.bus = "Music"
 
-func _process(_delta):
+	# --- MODIFICATION ---
+	# Connect to the settings signal. Now, _on_audio_settings_changed will be
+	# called automatically whenever a relevant setting is modified.
+	Settings.audio_settings_changed.connect(_on_audio_settings_changed)
+
+	# Call the update function once at the start to set the initial volume.
+	_on_audio_settings_changed()
+
+# REMOVED: The _process(_delta) function has been deleted. No more polling!
+
+# --- NEW: Signal Handler ---
+# This function now holds the logic that used to be in _process().
+# It only runs when the 'audio_settings_changed' signal is received from Settings.gd.
+func _on_audio_settings_changed():
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(Settings.master_volume))
 	AudioServer.set_bus_mute(AudioServer.get_bus_index("Master"), Settings.master_muted)
 
@@ -3669,7 +3771,8 @@ func _process(_delta):
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("SFX"), linear_to_db(Settings.sfx_volume))
 	AudioServer.set_bus_mute(AudioServer.get_bus_index("SFX"), Settings.sfx_muted)
 
-# --- Public Functions ---
+
+# --- Public Functions (Unchanged) ---
 
 func play_sfx(sound_path: String):
 	var player = sfx_players[sfx_player_index]
@@ -3678,8 +3781,6 @@ func play_sfx(sound_path: String):
 	sfx_player_index = (sfx_player_index + 1) % Constants.NUM_SFX_PLAYERS
 
 func play_music(music_path: String):
-	# ROBUSTNESS FIX: Check the resource path instead of the instance.
-	# This correctly prevents the music from restarting if it's already playing.
 	if music_player.stream and music_player.stream.resource_path == music_path and music_player.playing:
 		return
 
@@ -4285,6 +4386,8 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 
 # --- Preloads ---
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
+# REMOVED: The following const preloads are no longer needed as the states
+# are now global classes via `class_name`.
 
 # --- State Machine ---
 var states: Dictionary
@@ -4303,13 +4406,13 @@ func _ready():
 	health = Config.get_value("boss.stats.health", 30)
 	patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
 
-	# PALETTE INTEGRATION: Set the boss's color from the Palette.
 	original_color = Palette.COLOR_BOSS_PRIMARY
 	visual_sprite.color = original_color
 
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
 	
+	# CORRECTED: Instantiate states using their global class names directly.
 	states = {
 		State.IDLE: BossStateIdle.new(self),
 		State.ATTACK: BossStateAttack.new(self),
@@ -4331,6 +4434,10 @@ func _physics_process(delta):
 	
 	if states.find_key(current_state) == State.PATROL and is_on_wall():
 		facing_direction *= -1.0
+
+func _exit_tree():
+	EventBus.off_owner(self)
+	states.clear()
 
 func change_state(new_state_key: State):
 	if not states.has(new_state_key): return
@@ -4375,7 +4482,6 @@ func die():
 	queue_free()
 
 func _trigger_hit_flash():
-	# PALETTE INTEGRATION: Use a palette color for the hit flash.
 	visual_sprite.color = Palette.get_color(16)
 	hit_flash_timer.start()
 
@@ -4392,11 +4498,113 @@ func _on_patrol_timer_timeout():
 
 
 =====================================
+FILE: ./src/entities/components/health_component.gd
+=====================================
+# src/entities/components/health_component.gd
+#
+# A component responsible for managing an entity's health, damage intake,
+# invincibility, and death.
+class_name HealthComponent
+extends Node
+
+signal health_changed(current_health: int, max_health: int)
+signal died
+
+# --- Dependencies ---
+var p_data: PlayerStateData
+var owner_node: CharacterBody2D
+
+# --- Node References ---
+@onready var invincibility_timer: Timer = Timer.new()
+@onready var hit_flash_timer: Timer = Timer.new()
+
+# --- Config ---
+var max_health: int
+var invincibility_duration: float
+
+# --- Internal State ---
+var original_color: Color
+
+func _ready():
+	add_child(invincibility_timer)
+	add_child(hit_flash_timer)
+	invincibility_timer.one_shot = true
+	hit_flash_timer.one_shot = true
+	hit_flash_timer.wait_time = 0.4
+	
+	invincibility_timer.timeout.connect(func(): p_data.is_invincible = false)
+	hit_flash_timer.timeout.connect(func(): 
+		if is_instance_valid(get_visual_sprite()):
+			get_visual_sprite().color = original_color
+	)
+
+# NEW: This is the critical fix. When the component is about to be freed,
+# it explicitly nullifies its references to external objects, breaking any
+# potential reference cycles and allowing the p_data resource to be freed.
+func _exit_tree():
+	p_data = null
+	owner_node = null
+	EventBus.off_owner(self)
+
+func setup(player_data: PlayerStateData, p_owner_node: CharacterBody2D):
+	self.p_data = player_data
+	self.owner_node = p_owner_node
+	
+	max_health = Config.get_value("player.health.max_health", 5)
+	invincibility_duration = Config.get_value("player.health.invincibility_duration", 1.5)
+	
+	p_data.health = max_health
+	original_color = get_visual_sprite().color
+	
+	health_changed.emit(p_data.health, max_health)
+
+func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
+	if p_data.is_invincible or p_data.is_dash_invincible:
+		return {"was_damaged": false}
+
+	p_data.health -= damage_amount
+	health_changed.emit(p_data.health, max_health)
+	
+	_trigger_hit_flash()
+	p_data.is_invincible = true
+	invincibility_timer.start(invincibility_duration)
+	
+	var knockback_info = _calculate_knockback(damage_source)
+	
+	if p_data.health <= 0:
+		died.emit()
+		
+	return {"was_damaged": true, "knockback_velocity": knockback_info}
+
+func _calculate_knockback(damage_source: Node) -> Vector2:
+	if not damage_source:
+		return Vector2.ZERO
+		
+	var knockback_dir = (owner_node.global_position - damage_source.global_position).normalized()
+	var knockback_str = Config.get_value("player.combat.knockback_speed")
+	if damage_source.is_in_group("hazard"):
+		knockback_str = Config.get_value("player.combat.hazard_knockback_speed")
+		
+	return (knockback_dir + Vector2.UP * 0.5).normalized() * knockback_str
+
+func _trigger_hit_flash():
+	if is_instance_valid(get_visual_sprite()):
+		get_visual_sprite().color = Palette.get_color(16)
+		hit_flash_timer.start()
+
+func get_visual_sprite() -> ColorRect:
+	if is_instance_valid(owner_node):
+		return owner_node.get_node_or_null("ColorRect")
+	return null
+
+
+=====================================
 FILE: ./src/entities/player/player.tscn
 =====================================
-[gd_scene load_steps=4 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=5 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
+[ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_hcomp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -4434,25 +4642,21 @@ collision_mask = 28
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 shape = SubResource("RectangleShape2D_playerbody")
 
-[node name="InvincibilityTimer" type="Timer" parent="."]
-one_shot = true
-
 [node name="HealingTimer" type="Timer" parent="."]
 one_shot = true
 
-[node name="HitFlashTimer" type="Timer" parent="."]
-wait_time = 0.4
-one_shot = true
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_hcomp")
 
-[connection signal="timeout" from="InvincibilityTimer" to="." method="_on_invincibility_timer_timeout"]
 [connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]
-[connection signal="timeout" from="HitFlashTimer" to="." method="_on_hit_flash_timer_timeout"]
 
 =====================================
 FILE: ./src/entities/player/player.gd
 =====================================
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine.
+# This script is the "Context" for the State Machine. Its responsibilities
+# have been reduced to managing the state machine, handling inputs, and
+# coordinating its components.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -4467,10 +4671,9 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var visual_sprite: ColorRect = $ColorRect
 @onready var hitbox: Area2D = $Hitbox
 @onready var hurtbox: Area2D = $Hurtbox
-@onready var invincibility_timer: Timer = $InvincibilityTimer
 @onready var healing_timer: Timer = $HealingTimer
-@onready var hit_flash_timer: Timer = $HitFlashTimer
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
+@onready var health_component: HealthComponent = $HealthComponent
 
 # --- Preloads ---
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
@@ -4483,57 +4686,36 @@ const AttackState = preload("res://src/entities/player/states/state_attack.gd")
 const HurtState = preload("res://src/entities/player/states/state_hurt.gd")
 const HealState = preload("res://src/entities/player/states/state_heal.gd")
 
-# --- State Machine ---
+# --- State Machine & Data ---
 var states: Dictionary
 var current_state: PlayerState
+var p_data: PlayerStateData
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
-
-# --- Player Stats & Timers (Shared Data) ---
-var health: int
-var air_jumps_left = 0
-var coyote_timer = 0.0
-var jump_buffer_timer = 0.0
-var wall_coyote_timer = 0.0
-var knockback_timer = 0.0
-var is_invincible = false
-var is_dash_invincible = false
-var facing_direction = 1
-var last_wall_normal = Vector2.ZERO
-var determination_counter = 0
-var healing_charges = 0
-var dash_duration_timer = 0.0
-var dash_cooldown_timer = 0.0
-var attack_duration_timer = 0.0
-var attack_cooldown_timer = 0.0
-var is_charging = false
-var charge_timer = 0.0
-var is_pogo_attack = false
-var can_dash = true
-var original_color: Color
 
 # --- Engine Functions ---
 func _ready():
-	health = Config.get_value("player.health.max_health", 5)
+	p_data = PlayerStateData.new()
 	
-	# PALETTE INTEGRATION: Set the player's color from the Palette.
-	original_color = Palette.COLOR_PLAYER
-	visual_sprite.color = original_color
+	visual_sprite.color = Palette.COLOR_PLAYER
 	
 	add_to_group("player")
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
+	health_component.setup(p_data, self)
+	health_component.health_changed.connect(_on_health_component_health_changed)
+	health_component.died.connect(_on_health_component_died)
+
 	states = {
-		State.MOVE: MoveState.new(self), State.FALL: FallState.new(self),
-		State.JUMP: JumpState.new(self), State.DASH: DashState.new(self),
-		State.WALL_SLIDE: WallSlideState.new(self), State.ATTACK: AttackState.new(self),
-		State.HURT: HurtState.new(self), State.HEAL: HealState.new(self),
+		State.MOVE: MoveState.new(self, p_data), State.FALL: FallState.new(self, p_data),
+		State.JUMP: JumpState.new(self, p_data), State.DASH: DashState.new(self, p_data),
+		State.WALL_SLIDE: WallSlideState.new(self, p_data), State.ATTACK: AttackState.new(self, p_data),
+		State.HURT: HurtState.new(self, p_data), State.HEAL: HealState.new(self, p_data),
 	}
 	current_state = states[State.FALL]
 	current_state.enter()
 	
-	_emit_health_changed_event()
 	_emit_healing_charges_changed_event()
 
 func _physics_process(delta):
@@ -4543,38 +4725,46 @@ func _physics_process(delta):
 	move_and_slide()
 	_check_for_contact_damage()
 	if is_on_wall() and not is_on_floor():
-		wall_coyote_timer = Config.get_value("player.physics.wall_coyote_time")
-		last_wall_normal = get_wall_normal()
+		p_data.wall_coyote_timer = Config.get_value("player.physics.wall_coyote_time")
+		p_data.last_wall_normal = get_wall_normal()
 
 func _unhandled_input(event: InputEvent):
 	current_state.process_input(event)
+	
+func _exit_tree():
+	# NEW: Unsubscribe this node from all EventBus events.
+	EventBus.off_owner(self)
+	
+	states.clear()
+	p_data = null
+	health_component = null
 
 func _update_timers(delta):
-	coyote_timer = max(0.0, coyote_timer - delta)
-	jump_buffer_timer = max(0.0, jump_buffer_timer - delta)
-	dash_cooldown_timer = max(0.0, dash_cooldown_timer - delta)
-	dash_duration_timer = max(0.0, dash_duration_timer - delta)
-	attack_duration_timer = max(0.0, attack_duration_timer - delta)
-	attack_cooldown_timer = max(0.0, attack_cooldown_timer - delta)
-	knockback_timer = max(0.0, knockback_timer - delta)
-	wall_coyote_timer = max(0.0, wall_coyote_timer - delta)
-	if is_charging and Input.is_action_pressed("ui_attack"):
-		charge_timer += delta
+	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
+	p_data.jump_buffer_timer = max(0.0, p_data.jump_buffer_timer - delta)
+	p_data.dash_cooldown_timer = max(0.0, p_data.dash_cooldown_timer - delta)
+	p_data.dash_duration_timer = max(0.0, p_data.dash_duration_timer - delta)
+	p_data.attack_duration_timer = max(0.0, p_data.attack_duration_timer - delta)
+	p_data.attack_cooldown_timer = max(0.0, p_data.attack_cooldown_timer - delta)
+	p_data.knockback_timer = max(0.0, p_data.knockback_timer - delta)
+	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
+	if p_data.is_charging and Input.is_action_pressed("ui_attack"):
+		p_data.charge_timer += delta
 
 func _poll_global_inputs():
 	if Input.is_action_just_pressed("ui_jump"):
-		jump_buffer_timer = Config.get_value("player.physics.jump_buffer")
+		p_data.jump_buffer_timer = Config.get_value("player.physics.jump_buffer")
 	if not states.find_key(current_state) in ACTION_ALLOWED_STATES: return
-	if Input.is_action_just_pressed("ui_attack") and attack_cooldown_timer <= 0:
-		is_charging = true; charge_timer = 0.0
+	if Input.is_action_just_pressed("ui_attack") and p_data.attack_cooldown_timer <= 0:
+		p_data.is_charging = true; p_data.charge_timer = 0.0
 	if Input.is_action_just_released("ui_attack"):
-		if is_charging:
-			if charge_timer >= Config.get_value("player.combat.charge_time"): _fire_shot()
+		if p_data.is_charging:
+			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"): _fire_shot()
 			else: change_state(State.ATTACK)
-			is_charging = false
-	if Input.is_action_just_pressed("ui_dash") and can_dash and dash_cooldown_timer <= 0:
+			p_data.is_charging = false
+	if Input.is_action_just_pressed("ui_dash") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
 		change_state(State.DASH)
-	if is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and healing_charges > 0 and is_zero_approx(velocity.x):
+	if is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and p_data.healing_charges > 0 and is_zero_approx(velocity.x):
 		change_state(State.HEAL)
 
 func change_state(new_state_key: State):
@@ -4586,64 +4776,38 @@ func change_state(new_state_key: State):
 func apply_horizontal_movement():
 	velocity.x = Input.get_axis("ui_left", "ui_right") * Config.get_value("player.physics.speed")
 	if not is_zero_approx(velocity.x):
-		facing_direction = sign(velocity.x)
-
-func _emit_health_changed_event():
-	var ev = PlayerHealthChangedEvent.new()
-	ev.current_health = health
-	ev.max_health = Config.get_value("player.health.max_health")
-	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)
-	health_changed.emit(health, Config.get_value("player.health.max_health"))
+		p_data.facing_direction = sign(velocity.x)
 
 func _emit_healing_charges_changed_event():
 	var ev = PlayerHealingChargesChangedEvent.new()
-	ev.current_charges = healing_charges
+	ev.current_charges = p_data.healing_charges
 	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev, self)
-	healing_charges_changed.emit(healing_charges)
-
-func take_damage(damage_amount: int, damage_source = null):
-	if is_invincible or is_dash_invincible: return
-	health -= damage_amount
-	_emit_health_changed_event()
-	_trigger_hit_flash()
-	is_invincible = true
-	invincibility_timer.start(Config.get_value("player.health.invincibility_duration"))
-	if damage_source:
-		var knockback_dir = (global_position - damage_source.global_position).normalized()
-		var knockback_str = Config.get_value("player.combat.knockback_speed")
-		if damage_source.is_in_group("hazard"): knockback_str = Config.get_value("player.combat.hazard_knockback_speed")
-		velocity = (knockback_dir + Vector2.UP * 0.5).normalized() * knockback_str
-	change_state(State.HURT)
-	if health <= 0: die()
-
-func die(): died.emit()
+	healing_charges_changed.emit(p_data.healing_charges)
 
 func _check_for_contact_damage():
 	for i in range(get_slide_collision_count()):
 		var col = get_slide_collision(i)
 		if col and (col.get_collider().is_in_group("enemy") or col.get_collider().is_in_group("hazard")):
-			take_damage(1, col.get_collider()); break
+			var damage_result = health_component.take_damage(1, col.get_collider())
+			if damage_result.was_damaged:
+				velocity = damage_result.knockback_velocity
+				change_state(State.HURT)
+			break
 
 func _on_damage_dealt():
-	if healing_charges >= Config.get_value("player.health.max_healing_charges"): return
-	determination_counter += 1
-	if determination_counter >= Config.get_value("player.combat.determination_per_charge"):
-		determination_counter = 0; healing_charges += 1
+	if p_data.healing_charges >= Config.get_value("player.health.max_healing_charges"): return
+	p_data.determination_counter += 1
+	if p_data.determination_counter >= Config.get_value("player.combat.determination_per_charge"):
+		p_data.determination_counter = 0; p_data.healing_charges += 1
 		_emit_healing_charges_changed_event()
 
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 	
-func _trigger_hit_flash():
-	# PALETTE INTEGRATION: Use a palette color for the hit flash.
-	# A mid-gray provides a clear but not jarring feedback color.
-	visual_sprite.color = Palette.get_color(16) # Using an index for a generic "feedback" color
-	hit_flash_timer.start()
-
 func _fire_shot():
-	attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
-	var shot_dir = Vector2(facing_direction, 0)
+	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	var shot_dir = Vector2(p_data.facing_direction, 0)
 	if Input.is_action_pressed("ui_up"): shot_dir = Vector2.UP
 	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
 	var shot = PlayerShotScene.instantiate(); shot.direction = shot_dir
@@ -4652,8 +4816,8 @@ func _fire_shot():
 
 func _trigger_pogo(pogo_target):
 	velocity.y = -Config.get_value("player.physics.pogo_force")
-	position.y -= 1; can_dash = true
-	air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	position.y -= 1; p_data.can_dash = true
+	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 	change_state(State.FALL)
 	if pogo_target:
 		if pogo_target.has_method("take_damage"):
@@ -4661,30 +4825,41 @@ func _trigger_pogo(pogo_target):
 		elif pogo_target.is_in_group("enemy_projectile"):
 			pogo_target.queue_free()
 
-func _on_hit_flash_timer_timeout():
-	visual_sprite.color = original_color
-
 func _on_hitbox_body_entered(body):
-	if is_pogo_attack: _trigger_pogo(body)
+	if p_data.is_pogo_attack: _trigger_pogo(body)
 	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		if is_pogo_attack: _trigger_pogo(area)
+		if p_data.is_pogo_attack: _trigger_pogo(area)
 		else: area.queue_free()
 
 func _on_hurtbox_area_entered(area):
-	if area.is_in_group("enemy_projectile"): take_damage(1, area); area.queue_free()
-
-func _on_invincibility_timer_timeout():
-	is_invincible = false
+	if area.is_in_group("enemy_projectile"):
+		var damage_result = health_component.take_damage(1, area)
+		if damage_result.was_damaged:
+			velocity = damage_result.knockback_velocity
+			change_state(State.HURT)
+		area.queue_free()
 
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
-		health = min(health + 1, Config.get_value("player.health.max_health")); healing_charges -= 1
-		_emit_health_changed_event()
+		p_data.health = min(p_data.health + 1, health_component.max_health)
+		p_data.healing_charges -= 1
+		health_component.health_changed.emit(p_data.health, health_component.max_health)
 		_emit_healing_charges_changed_event()
 		change_state(State.MOVE)
+
+# --- Signal handlers for HealthComponent ---
+func _on_health_component_health_changed(current, max_val):
+	var ev = PlayerHealthChangedEvent.new()
+	ev.current_health = current
+	ev.max_health = max_val
+	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)
+	health_changed.emit(current, max_val)
+
+func _on_health_component_died():
+	died.emit()
 
 
 =====================================
@@ -4696,8 +4871,9 @@ extends PlayerState
 
 func enter():
 	player.velocity.y = -Config.get_value("player.physics.jump_force")
-	player.coyote_timer = 0
-	player.jump_buffer_timer = 0
+	# MODIFIED: Reset timers in the p_data resource.
+	p_data.coyote_timer = 0
+	p_data.jump_buffer_timer = 0
 
 func process_physics(delta: float):
 	player.apply_horizontal_movement()
@@ -4719,7 +4895,8 @@ func _apply_gravity(delta):
 		player.change_state(player.State.FALL)
 
 func _check_for_wall_slide():
-	if player.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -player.last_wall_normal.x:
+	# MODIFIED: All state variables now read from/write to p_data.
+	if p_data.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -p_data.last_wall_normal.x:
 		player.change_state(player.State.WALL_SLIDE)
 
 
@@ -4731,24 +4908,27 @@ FILE: ./src/entities/player/states/state_dash.gd
 extends PlayerState
 
 func enter():
-	player.is_dash_invincible = true
-	player.can_dash = false
-	player.dash_duration_timer = Config.get_value("player.physics.dash_duration")
-	player.dash_cooldown_timer = Config.get_value("player.physics.dash_cooldown")
+	# MODIFIED: All state variables now read from/write to p_data.
+	p_data.is_dash_invincible = true
+	p_data.can_dash = false
+	p_data.dash_duration_timer = Config.get_value("player.physics.dash_duration")
+	p_data.dash_cooldown_timer = Config.get_value("player.physics.dash_cooldown")
 	player.velocity = _get_dash_direction() * Config.get_value("player.physics.dash_speed")
 
 func exit():
-	player.is_dash_invincible = false
+	p_data.is_dash_invincible = false
 	player.velocity = player.velocity * 0.5 
 
 func process_physics(_delta: float):
-	if player.dash_duration_timer <= 0:
+	# MODIFIED: Check timer from p_data.
+	if p_data.dash_duration_timer <= 0:
 		player.change_state(player.State.FALL)
 
 func _get_dash_direction():
 	if Input.is_action_pressed("ui_up"): return Vector2.UP
 	if Input.is_action_pressed("ui_down"): return Vector2.DOWN
-	return Vector2(player.facing_direction, 0)
+	# MODIFIED: Read facing direction from p_data.
+	return Vector2(p_data.facing_direction, 0)
 
 
 =====================================
@@ -4776,14 +4956,16 @@ FILE: ./src/entities/player/states/state_base.gd
 =====================================
 # src/entities/player/states/state_base.gd
 # This is the parent class for all Player states. It defines the "contract"
-# that every state must adhere to. It ensures that every state has the necessary
-# functions, even if they don't do anything in a particular state.
+# that every state must adhere to.
 class_name PlayerState
 
 var player: CharacterBody2D
+var p_data: PlayerStateData # NEW: Reference to the shared state data
 
-func _init(player_node: CharacterBody2D):
+# MODIFIED: The constructor now accepts the state data resource.
+func _init(player_node: CharacterBody2D, player_data: PlayerStateData):
 	self.player = player_node
+	self.p_data = player_data
 
 func enter():
 	pass
@@ -4794,8 +4976,6 @@ func exit():
 func process_physics(_delta: float):
 	pass
 
-# This function is now used for state-specific input that isn't global,
-# like checking for jump release to dampen jump height.
 func process_input(_event: InputEvent):
 	pass
 
@@ -4808,28 +4988,30 @@ FILE: ./src/entities/player/states/state_wall_slide.gd
 extends PlayerState
 
 func enter():
-	player.can_dash = true
-	player.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	p_data.can_dash = true
+	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 
 func exit():
-	if player.last_wall_normal != Vector2.ZERO:
-		player.facing_direction = player.last_wall_normal.x
+	if p_data.last_wall_normal != Vector2.ZERO:
+		p_data.facing_direction = sign(p_data.last_wall_normal.x)
 
 func process_physics(delta: float):
 	var gravity = Config.get_value("general.physics.gravity")
 	var wall_slide_speed = Config.get_value("player.physics.wall_slide_speed")
 	player.velocity.y = min(player.velocity.y + gravity * delta, wall_slide_speed)
-	player.facing_direction = -player.last_wall_normal.x
 	
-	if player.jump_buffer_timer > 0:
+	# CORRECTED: Use sign() to prevent a narrowing conversion warning.
+	p_data.facing_direction = sign(-p_data.last_wall_normal.x)
+	
+	if p_data.jump_buffer_timer > 0:
 		_perform_wall_jump()
 		return
 	
-	if Input.get_axis("ui_left", "ui_right") * -player.last_wall_normal.x < 0.8:
+	if Input.get_axis("ui_left", "ui_right") * -p_data.last_wall_normal.x < 0.8:
 		player.change_state(player.State.FALL)
 		return
 		
-	if player.wall_coyote_timer <= 0:
+	if p_data.wall_coyote_timer <= 0:
 		player.change_state(player.State.FALL)
 		return
 
@@ -4839,11 +5021,12 @@ func process_physics(delta: float):
 
 func _perform_wall_jump():
 	player.velocity.y = -Config.get_value("player.physics.wall_jump_force_y")
-	player.velocity.x = player.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
-	player.jump_buffer_timer = 0
-	player.coyote_timer = 0
-	player.wall_coyote_timer = 0
+	player.velocity.x = p_data.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
+	p_data.jump_buffer_timer = 0
+	p_data.coyote_timer = 0
+	p_data.wall_coyote_timer = 0
 	player.change_state(player.State.JUMP)
+
 
 =====================================
 FILE: ./src/entities/player/states/state_attack.gd
@@ -4853,13 +5036,14 @@ FILE: ./src/entities/player/states/state_attack.gd
 extends PlayerState
 
 func enter():
-	player.attack_duration_timer = Config.get_value("player.combat.attack_duration")
-	player.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	# MODIFIED: All state variables now read from/write to p_data.
+	p_data.attack_duration_timer = Config.get_value("player.combat.attack_duration")
+	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
 	player.hitbox_shape.disabled = false
-	player.is_pogo_attack = false
+	p_data.is_pogo_attack = false
 	
 	if Input.is_action_pressed("ui_down"):
-		player.is_pogo_attack = true
+		p_data.is_pogo_attack = true
 		player.hitbox.position = Vector2(0, 60)
 		
 		if player.is_on_floor():
@@ -4872,18 +5056,19 @@ func enter():
 	elif Input.is_action_pressed("ui_up"):
 		player.hitbox.position = Vector2(0, -60)
 	else:
-		player.hitbox.position = Vector2(player.facing_direction * 60, 0)
+		player.hitbox.position = Vector2(p_data.facing_direction * 60, 0)
 
 func exit():
 	player.hitbox_shape.call_deferred("set", "disabled", true)
-	player.is_pogo_attack = false
+	p_data.is_pogo_attack = false
 
 func process_physics(delta: float):
-	if not player.is_pogo_attack:
+	# MODIFIED: Check state variable from p_data.
+	if not p_data.is_pogo_attack:
 		var friction = Config.get_value("player.combat.attack_friction")
 		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
-	if player.attack_duration_timer <= 0:
+	if p_data.attack_duration_timer <= 0:
 		player.change_state(player.State.FALL)
 
 func _check_for_immediate_pogo() -> bool:
@@ -4910,14 +5095,14 @@ FILE: ./src/entities/player/states/state_hurt.gd
 extends PlayerState
 
 func enter():
-	player.is_charging = false
+	p_data.is_charging = false
 	player._cancel_heal()
-	player.knockback_timer = Config.get_value("player.combat.knockback_duration")
+	p_data.knockback_timer = Config.get_value("player.combat.knockback_duration")
 
 func process_physics(delta):
 	player.velocity.y += Config.get_value("general.physics.gravity") * delta
 	
-	if player.knockback_timer <= 0:
+	if p_data.knockback_timer <= 0:
 		player.change_state(player.State.FALL)
 
 =====================================
@@ -4937,12 +5122,13 @@ func process_physics(delta: float):
 
 	_check_for_wall_slide()
 
-	if player.jump_buffer_timer > 0:
-		if player.wall_coyote_timer > 0:
+	# MODIFIED: All timer checks now use the p_data resource.
+	if p_data.jump_buffer_timer > 0:
+		if p_data.wall_coyote_timer > 0:
 			_perform_wall_jump()
-		elif player.coyote_timer > 0:
+		elif p_data.coyote_timer > 0:
 			player.change_state(player.State.JUMP)
-		elif player.air_jumps_left > 0:
+		elif p_data.air_jumps_left > 0:
 			_perform_air_jump()
 
 func _apply_gravity(delta):
@@ -4952,17 +5138,18 @@ func _apply_gravity(delta):
 	player.velocity.y += Config.get_value("general.physics.gravity") * gravity_multiplier * delta
 
 func _check_for_wall_slide():
-	if player.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -player.last_wall_normal.x:
+	# MODIFIED: All state variables now read from/write to p_data.
+	if p_data.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -p_data.last_wall_normal.x:
 		player.change_state(player.State.WALL_SLIDE)
 
 func _perform_air_jump():
-	player.air_jumps_left -= 1
+	p_data.air_jumps_left -= 1
 	player.change_state(player.State.JUMP)
 	
 func _perform_wall_jump():
-	player.velocity.x = player.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
-	player.coyote_timer = 0
-	player.wall_coyote_timer = 0
+	player.velocity.x = p_data.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
+	p_data.coyote_timer = 0
+	p_data.wall_coyote_timer = 0
 	player.change_state(player.State.JUMP)
 
 
@@ -4974,11 +5161,11 @@ FILE: ./src/entities/player/states/state_move.gd
 extends PlayerState
 
 func enter():
-	player.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
-	player.can_dash = true
+	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	p_data.can_dash = true
 
 func process_physics(delta: float):
-	player.coyote_timer = Config.get_value("player.physics.coyote_time")
+	p_data.coyote_timer = Config.get_value("player.physics.coyote_time")
 	
 	player.velocity.y += Config.get_value("general.physics.gravity") * delta
 	player.apply_horizontal_movement()
@@ -4992,12 +5179,51 @@ func process_physics(delta: float):
 			var floor_collider = player.get_last_slide_collision().get_collider()
 			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
 				player.position.y += 2
-				player.jump_buffer_timer = 0
+				p_data.jump_buffer_timer = 0
 				player.change_state(player.State.FALL)
 				return
 	
-	if player.jump_buffer_timer > 0:
+	if p_data.jump_buffer_timer > 0:
 		player.change_state(player.State.JUMP)
 		return
 
+
+=====================================
+FILE: ./src/entities/player/data/player_state_data.gd
+=====================================
+# src/entities/player/data/player_state_data.gd
+#
+# A Resource that holds all shared state data for the Player. This allows
+# components and states to operate on the data without being tightly coupled
+# to the Player node itself.
+class_name PlayerStateData
+extends Resource
+
+# --- Health & Combat ---
+var health: int = 5
+var healing_charges: int = 0
+var determination_counter: int = 0
+var is_invincible: bool = false
+var is_dash_invincible: bool = false
+
+# --- Physics & Movement ---
+var air_jumps_left: int = 0
+var facing_direction: int = 1
+var last_wall_normal: Vector2 = Vector2.ZERO
+var can_dash: bool = true
+
+# --- Timers ---
+var coyote_timer: float = 0.0
+var jump_buffer_timer: float = 0.0
+var wall_coyote_timer: float = 0.0
+var dash_duration_timer: float = 0.0
+var dash_cooldown_timer: float = 0.0
+var attack_duration_timer: float = 0.0
+var attack_cooldown_timer: float = 0.0
+var knockback_timer: float = 0.0
+
+# --- State Flags ---
+var is_charging: bool = false
+var charge_timer: float = 0.0
+var is_pogo_attack: bool = false
 

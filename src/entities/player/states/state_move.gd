@@ -3,11 +3,11 @@
 extends PlayerState
 
 func enter():
-	player.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
-	player.can_dash = true
+	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	p_data.can_dash = true
 
 func process_physics(delta: float):
-	player.coyote_timer = Config.get_value("player.physics.coyote_time")
+	p_data.coyote_timer = Config.get_value("player.physics.coyote_time")
 	
 	player.velocity.y += Config.get_value("general.physics.gravity") * delta
 	player.apply_horizontal_movement()
@@ -21,10 +21,10 @@ func process_physics(delta: float):
 			var floor_collider = player.get_last_slide_collision().get_collider()
 			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
 				player.position.y += 2
-				player.jump_buffer_timer = 0
+				p_data.jump_buffer_timer = 0
 				player.change_state(player.State.FALL)
 				return
 	
-	if player.jump_buffer_timer > 0:
+	if p_data.jump_buffer_timer > 0:
 		player.change_state(player.State.JUMP)
 		return

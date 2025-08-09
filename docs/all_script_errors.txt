@@ -1,4 +1,4 @@
 Run in Box Battle folder for all errors in Terminal
 
 
-"/Applications/Godot.app/Contents/MacOS/Godot" --check-only "/Users/stevencasteel/Desktop/GODOT/BOX BATTLE" > all_script_errors.txt
+"/Applications/Godot.app/Contents/MacOS/Godot" --verbose --check-only "/Users/stevencasteel/Desktop/GODOT/BOX BATTLE" > all_script_errors.txt

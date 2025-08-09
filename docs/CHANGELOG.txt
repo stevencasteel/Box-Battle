@@ -15,23 +15,32 @@
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `player.gd` script into a component-based ║
+║      ░   architecture, adhering to the Single Responsibility Principle.      ║
+║      ░ ■ Created a `HealthComponent` to manage all health, damage, and       ║
+║      ░   invincibility logic, making it reusable for other entities.         ║
+║      ░ ■ Created a `PlayerStateData` resource to act as a central data       ║
+║      ░   container, decoupling state from the Player node itself.            ║
+║                                                                              ║
 ║   █  Changed                                                                 ║
 ║      ░ ■ Refactored `Sequencer.gd` to use type-safe `SequenceStep` resources ║
 ║      ░   instead of ad-hoc dictionaries, preventing runtime errors and       ║
 ║      ░   improving editor autocompletion.                                    ║
-║      ░ ■ Refactored `AudioManager.gd` to be event-driven. It now subscribes  ║
-║      ░   to a new `audio_settings_changed` signal from `Settings.gd` instead ║
-║      ░   of polling for changes every frame, improving performance.          ║
-║      ░ ■ The `GlobalHUD` mute icon is now also event-driven, fixing a race   ║
-║      ░   condition bug that occurred during scene transitions.               ║
+║      ░ ■ Refactored `AudioManager.gd` and `GlobalHUD` to be event-driven,    ║
+║      ░   subscribing to a new `audio_settings_changed` signal instead of     ║
+║      ░   polling for changes every frame.                                    ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved all memory leaks by implementing proper cleanup in         ║
+║      ░   `_exit_tree` for the Player, Boss, and HealthComponent to break     ║
+║      ░   cyclical references.                                                ║
+║      ░ ■ Resolved a memory leak caused by creating orphaned nodes in         ║
+║      ░   `ArenaBuilder` by accessing script constants directly.              ║
 ║      ░ ■ Corrected `Config.gd` to sort JSON filenames before loading,        ║
 ║      ░   ensuring a deterministic and platform-agnostic configuration merge. ║
 ║      ░ ■ Fixed a critical crash in `EventBus.gd` by using the robust global  ║
-║      ░   `is_instance_of()` for polymorphic type checking, allowing it to    ║
-║      ░   safely handle event payload subclassing.                            ║
-║      ░ ■ Resolved multiple static analysis warnings (SHADOWED_VARIABLE,      ║
-║      ░   UNUSED_PARAMETER, REDUNDANT_AWAIT) for a cleaner codebase.          ║
+║      ░   `is_instance_of()` for polymorphic type checking.                   ║
+║      ░ ■ Resolved all remaining static analysis warnings for a clean build.  ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

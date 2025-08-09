@@ -18,6 +18,8 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 
 # --- Preloads ---
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
+# REMOVED: The following const preloads are no longer needed as the states
+# are now global classes via `class_name`.
 
 # --- State Machine ---
 var states: Dictionary
@@ -36,13 +38,13 @@ func _ready():
 	health = Config.get_value("boss.stats.health", 30)
 	patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
 
-	# PALETTE INTEGRATION: Set the boss's color from the Palette.
 	original_color = Palette.COLOR_BOSS_PRIMARY
 	visual_sprite.color = original_color
 
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
 	
+	# CORRECTED: Instantiate states using their global class names directly.
 	states = {
 		State.IDLE: BossStateIdle.new(self),
 		State.ATTACK: BossStateAttack.new(self),
@@ -64,6 +66,10 @@ func _physics_process(delta):
 	
 	if states.find_key(current_state) == State.PATROL and is_on_wall():
 		facing_direction *= -1.0
+
+func _exit_tree():
+	EventBus.off_owner(self)
+	states.clear()
 
 func change_state(new_state_key: State):
 	if not states.has(new_state_key): return
@@ -108,7 +114,6 @@ func die():
 	queue_free()
 
 func _trigger_hit_flash():
-	# PALETTE INTEGRATION: Use a palette color for the hit flash.
 	visual_sprite.color = Palette.get_color(16)
 	hit_flash_timer.start()
 

@@ -27,18 +27,18 @@ func build_level_async() -> Node:
 
 	# --- 2. Parse Data ---
 	var parser = LevelParser.new()
-	var build_data = parser.parse_level_data(layout_script.new(), encounter_script.new())
+	# CORRECTED: Pass the script resources directly instead of creating orphaned
+	# Node instances with .new(). This prevents memory leaks.
+	var build_data = parser.parse_level_data(layout_script, encounter_script)
 	
 	await get_tree().process_frame
 
 	# --- 3. Build Terrain ---
 	var terrain_builder = TerrainBuilder.new()
-	# FIX: Pass the SceneTree reference to the builder.
 	await terrain_builder.build_terrain_async(level_container, build_data, get_tree())
 
 	# --- 4. Spawn Entities ---
 	var encounter_director = EncounterDirector.new()
-	# FIX: Pass the SceneTree reference to the director.
 	await encounter_director.spawn_entities_async(level_container, build_data, get_tree())
 
 	# --- 5. Finalize ---
