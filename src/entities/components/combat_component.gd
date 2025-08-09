@@ -38,7 +38,8 @@ func trigger_pogo(pogo_target):
 	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 	owner_node.change_state(owner_node.State.FALL)
 	
-	if p_ogo_target:
+	# CORRECTED: Fixed the typo from "p_ogo_target" to "pogo_target".
+	if pogo_target:
 		if pogo_target.has_method("take_damage"):
 			pogo_target.take_damage(1)
 			# The owner is still responsible for its own game logic (like gaining charges).

@@ -2,14 +2,13 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 17:55:59 CDT 2025
+Generated on: Sat Aug  9 18:28:16 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
 ├── README.md
-├── all_script_errors.txt
 ├── data
 │   └── combat_config.json
 ├── default_bus_layout.tres
@@ -152,113 +151,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-39 directories, 105 files
-
-
-=====================================
-FILE: ./all_script_errors.txt
-=====================================
-WorkerThreadPool: 8 threads, 2 max low-priority.
-Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
-TextServer: Added interface "Dummy"
-TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
-Devices:
-  #0: Apple Apple M1 (Apple7) - Supported, Integrated
-- Metal multiview supported:
-  max view count: 16
-  max instances: 4294967295
-Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
-Using "default" pen tablet driver...
-Shader 'CanvasSdfShaderRD' (group 0) SHA256: 97dc9fb2f592cd02d8b1f8fd33df8aec73849d2fbafcfeaa6e99b9c3678c221d
-Shader 'SkeletonShaderRD' (group 0) SHA256: a7e5115c09793f8e950720a2ab8906bff195e9b508eec01af7aeb363da2bf75b
-Shader 'SortShaderRD' (group 0) SHA256: e184fb752fd6b1f86c536cb9dff20977fee019403e1025080eca44e6bfa11ef1
-Shader 'ParticlesShaderRD' (group 0) SHA256: 9797916f926fab4024422fe6c75cc0d8d517705d90802882fb9efa6dda0af392
-Shader 'ParticlesCopyShaderRD' (group 0) SHA256: 1a312a6797c1ba217655b41d33ce357ac226cba8d65d4daab9278d88c57d6468
-Shader 'CanvasShaderRD' (group 0) SHA256: 908e609e1337d67f8799155a57f03a3de33fcdba22b574595e90da921079b33d
-Shader 'CanvasOcclusionShaderRD' (group 0) SHA256: f9d6c9d569cf2f40595061ee84efd5fe34d68284e1f7273f62a4ac36de8852ee
-Shader 'SceneForwardMobileShaderRD' (group 0) SHA256: 1c5d16b1f4d38d016026900999bd209a9f901f70f04136d9fdd669f9601e2db3
-Shader 'SkyShaderRD' (group 0) SHA256: 34c03a8e46624b5ab7488ca0527d4f733272c048f0dd61258a69b9bf419225bd
-Shader 'BokehDofRasterShaderRD' (group 0) SHA256: a5ed26e5b86fb1a016f61f719fa3ba45119a0bda505dcc038bfd26e718ef956d
-Shader 'BlurRasterShaderRD' (group 0) SHA256: 193d80f293dc88299ae7ef003640f13fa7cab1fd1a57de366b53029265639146
-Shader 'CopyShaderRD' (group 0) SHA256: aaaaf4bfa2e7bd72bdafaa25005b56152e2e738422178c95ce5ed4976f964862
-Shader 'CopyToFbShaderRD' (group 0) SHA256: f113ba1d923f38bcf263af4dbc168573e755be83c1d3616fc49b7588aa9fffa4
-Shader 'CubeToDpShaderRD' (group 0) SHA256: 37d76ea0432d00e86934ff9eab83ce63c9c7feffafd96809773e109c5a078e17
-Shader 'CubemapDownsamplerRasterShaderRD' (group 0) SHA256: 20c48704e5817755c17d80b22e7c39d99270bd1e95c54446d742753abc03db33
-Shader 'CubemapFilterRasterShaderRD' (group 0) SHA256: de06c7a642b6af01caa44a65e94daa5dfafbdda1a6111bdd975c28e8c1fe4c1a
-Shader 'CubemapRoughnessRasterShaderRD' (group 0) SHA256: 3efae0638df891d7ec5aaa17ead03d3243a3fdc9f5920d95e16f92a0aeccfd04
-Shader 'SpecularMergeShaderRD' (group 0) SHA256: 8d06f9bec87ae4177f0a49133608f41313ebad2d0d81a5c074db1541cd396ddc
-Shader 'ShadowFrustumShaderRD' (group 0) SHA256: b73466659c6c1252aff41d1d117370efac3ed69d2ee89bb6e036036557afb5bd
-Shader 'MotionVectorsShaderRD' (group 0) SHA256: 548f1c61370fbba7d8bacec2827d86adc6984d8874d31cb21b7bb5f78e6d4335
-Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e6003b5a0c97bd615d1990a7012076a61e11cb05df558
-Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
-Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
-CoreAudio: detected 2 channels
-CoreAudio: output sampling rate: 44100 Hz
-CoreAudio: output audio buffer frames: 512 calculated latency: 11ms
-
-TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
-CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
-Loading resource: res://default_bus_layout.tres
-CORE API HASH: 4052744068
-EDITOR API HASH: 910296392
-Loading resource: res://src/core/settings.gd
-Loading resource: res://src/core/audio_manager.gd
-Loading resource: res://src/core/cursor_manager.gd
-Loading resource: res://assets/sprites/ui/cursors/cursor_default.png
-Loading resource: res://.godot/imported/cursor_default.png-adc7f5ed4336e28008b129c5a66cab2e.ctex
-Loading resource: res://assets/sprites/ui/cursors/cursor_pointer.png
-Loading resource: res://.godot/imported/cursor_pointer.png-90e307ad4e06d49b3b74ef9b44e078f4.ctex
-Loading resource: res://src/ui/global_hud/global_hud.tscn
-Loading resource: res://src/ui/global_hud/global_hud.gd
-Loading resource: res://assets/sprites/ui/icons/icon-sound-on.png
-Loading resource: res://.godot/imported/icon-sound-on.png-e846c5d97e3d706214419caf8e828d71.ctex
-Loading resource: res://assets/sprites/ui/icons/icon-sound-off.png
-Loading resource: res://.godot/imported/icon-sound-off.png-6ce140963307e6f579be834adb53f1a0.ctex
-Loading resource: res://src/core/game_manager.gd
-Loading resource: res://src/core/arena_builder.gd
-Loading resource: res://src/core/Config.gd
-Loading resource: res://src/core/object_pool.gd
-Loading resource: res://src/projectiles/player_shot.tscn
-Loading resource: res://src/projectiles/player_shot.gd
-Loading resource: res://src/projectiles/boss_shot.tscn
-Loading resource: res://src/projectiles/boss_shot.gd
-Loaded system CA certificates
-Loading resource: res://src/scenes/main/main.tscn
-Loading resource: res://src/scenes/main/main.gd
-Loading resource: res://src/ui/screens/title_screen/title_screen.tscn
-Loading resource: res://src/ui/screens/title_screen/title_screen.gd
-Loading resource: res://assets/audio/music/title-screen-loop.mp3
-Loading resource: res://.godot/imported/title-screen-loop.mp3-7ec904333b11a47509751ae22a703854.mp3str
-Loading resource: res://assets/sprites/ui/title/box_battle_title.png
-Loading resource: res://.godot/imported/box_battle_title.png-b9353d8af8deadfd04d4db0e868561f1.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-item-start.png
-Loading resource: res://.godot/imported/menu-item-start.png-32e538bb682d9a1b639fc2dc41f90bed.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-item-options.png
-Loading resource: res://.godot/imported/menu-item-options.png-0a5f7fa3c76e43a264f366e36bedb5f1.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-cursor.png
-Loading resource: res://.godot/imported/menu-cursor.png-3bbc1015f1afec795ab061c5256925a7.ctex
-Loading resource: res://src/scenes/loading/loading_screen.tscn
-Loading resource: res://src/scenes/loading/loading_screen.gd
-Loading resource: res://assets/audio/sfx/start-chime.mp3
-Loading resource: res://.godot/imported/start-chime.mp3-d648111bc9ecb7811859947d2e9fa808.mp3str
-Starting shader pre-warming...
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/entities/player/player.gd
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/entities/boss/base_boss.gd
-Shader pre-warming complete.
-Loading resource: res://src/arenas/arena_00_layout.gd
-Loading resource: res://src/arenas/arena_00_encounter.gd
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/ui/game_hud/game_hud.tscn
-Loading resource: res://src/ui/game_hud/game_hud.gd
-Loading resource: res://src/scenes/game/game.tscn
-Loading resource: res://src/scenes/game/game.gd
-Boss chose attack: SINGLE_SHOT
-XR: Clearing primary interface
-XR: Removed interface "Native mobile"
-XR: Removed interface "OpenXR"
+39 directories, 104 files
 
 
 =====================================
@@ -727,49 +620,6 @@ FILE: ./docs/PLAYTESTING.txt
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
-
-
-
-║                                                                                                            ║
-║                     A log of all playtesting sessions and resulting feedback.                             ║
-║                                                                                                            ║
-╠════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║                                                                                                            ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                               PLAYTEST SESSION LOG                                               ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                                                            ║
-║   (New playtest session reports should be added here, most recent at top.)                               ║
-║                                                                                                            ║
-║  --------------------------------------------------------------------------------------------------      ║
-║                                                                                                            ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                               TEST SESSION TEMPLATE                                              ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                                                            ║
-║   █  Date: YYYY-MM-DD                                                                                     ║
-║   █  Tester: [Name or description, e.g., "Developer," "Friend A"]                                        ║
-║   █  Build Version: [e.g., 0.1.0]                                                                        ║
-║   █  Session Goal: [e.g., "Test boss fight fairness", "Check menu UI"]                                   ║
-║                                                                                                            ║
-║   ▓  General Observations & Player Behavior                                                               ║
-║      ░  What did the player do? Did they understand the goals? Where did                                 ║
-║      ░  they go first? (e.g., "Tester immediately tried to wall-jump.")                                  ║
-║                                                                                                            ║
-║   ▓  Issues & Bugs Found                                                                                  ║
-║      ░  List any bugs, crashes, or moments of confusion. Was anything                                    ║
-║      ░  frustrating or unfair?                                                                            ║
-║                                                                                                            ║
-║   ▓  Positive Feedback                                                                                    ║
-║      ░  What did the player say they enjoyed? What felt good to them?                                    ║
-║      ░  (e.g., "Player audibly said 'nice' after a successful pogo.")                                    ║
-║                                                                                                            ║
-║   ▓  Suggestions & Ideas                                                                                  ║
-║      ░  What did the player suggest? Did they have any ideas for new                                     ║
-║      ░  features or changes?                                                                              ║
-║                                                                                                            ║
-╚════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-
 =====================================
 FILE: ./docs/BUGS.txt
 =====================================
@@ -1124,6 +974,9 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored `ArenaBuilder` to be data-driven, reading the layout file║
+║      ░   path from a constant in the encounter script, removing brittle      ║
+║      ░   string manipulation logic.                                          ║
 ║      ░ ■ Decoupled `GlobalHUD` from specific menu scenes by making its       ║
 ║      ░   visibility fully event-driven (`MENU_OPENED`, `MENU_CLOSED`),       ║
 ║      ░   resolving an Open/Closed Principle violation.                       ║
@@ -1158,6 +1011,8 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   polling for changes every frame.                                    ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Fixed a visual bug where the Boss's hit-flash color would not reset ║
+║      ░   correctly by ensuring the correct initialization order in `base_boss.gd`.║
 ║      ░ ■ Resolved an audio stream memory leak on exit by implementing a      ║
 ║      ░   robust cleanup handler for `NOTIFICATION_WM_CLOSE_REQUEST`.         ║
 ║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
@@ -3844,18 +3699,28 @@ func build_level_async() -> Node:
 		push_error("ArenaBuilder: No encounter script specified in GameManager.")
 		return level_container
 		
-	var layout_path: String = encounter_path.replace("encounter.gd", "layout.gd")
-	var layout_script: Script = load(layout_path)
 	var encounter_script: Script = load(encounter_path)
+	if not encounter_script:
+		push_error("ArenaBuilder: Failed to load encounter script at: %s" % encounter_path)
+		return level_container
+		
+	# Use get_script_constant_map() to safely read the constant
+	# from the script resource itself, without creating a temporary instance.
+	var constants_map = encounter_script.get_script_constant_map()
+	if not constants_map.has("LAYOUT_SCRIPT_PATH"):
+		push_error("ArenaBuilder: Encounter script '%s' is missing 'LAYOUT_SCRIPT_PATH' constant." % encounter_path)
+		return level_container
+		
+	var layout_path: String = constants_map["LAYOUT_SCRIPT_PATH"]
+	
+	var layout_script: Script = load(layout_path)
 
-	if not layout_script or not encounter_script:
-		push_error("ArenaBuilder: Failed to load layout or encounter script.")
+	if not layout_script:
+		push_error("ArenaBuilder: Failed to load layout script defined in encounter: %s" % layout_path)
 		return level_container
 
 	# --- 2. Parse Data ---
 	var parser = LevelParser.new()
-	# CORRECTED: Pass the script resources directly instead of creating orphaned
-	# Node instances with .new(). This prevents memory leaks.
 	var build_data = parser.parse_level_data(layout_script, encounter_script)
 	
 	await get_tree().process_frame
@@ -4298,10 +4163,14 @@ FILE: ./src/arenas/arena_00_encounter.gd
 # It acts as a "level script" or "director" for the fight.
 extends Node
 
+# --- NEW: DATA-DRIVEN LAYOUT ---
+# This constant explicitly defines which layout file this encounter uses.
+# The ArenaBuilder will read this path directly, removing any assumptions
+# about file naming conventions.
+const LAYOUT_SCRIPT_PATH = "res://src/arenas/arena_00_layout.gd"
+
 # --- BOSS DATA ---
-# Preload the boss scene using the safe path from our singleton.
 const BOSS_SCENE = preload(AssetPaths.SCENE_BASE_BOSS)
-# The character in the layout that marks the boss's spawn point.
 const BOSS_SPAWN_MARKER = "&"
 
 # --- PLAYER DATA ---
@@ -4648,13 +4517,16 @@ var b_data: BossStateData
 
 # --- Boss Properties ---
 var player: CharacterBody2D = null
-var original_color: Color
 
 # --- Engine Functions ---
 func _ready():
 	b_data = BossStateData.new()
 	b_data.patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
 	
+	# CORRECTED ORDER: Set the visual color FIRST.
+	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
+	
+	# THEN, set up the component so it captures the correct original color.
 	var boss_health_configs = {
 		"max_health": "boss.stats.health"
 	}
@@ -4662,13 +4534,9 @@ func _ready():
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
-	original_color = Palette.COLOR_BOSS_PRIMARY
-	visual_sprite.color = original_color
-
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
 	
-	# CORRECTED: Use the global class names directly for instantiation.
 	states = {
 		State.IDLE: BossStateIdle.new(self, b_data),
 		State.ATTACK: BossStateAttack.new(self, b_data),
@@ -4797,7 +4665,8 @@ func trigger_pogo(pogo_target):
 	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 	owner_node.change_state(owner_node.State.FALL)
 	
-	if p_ogo_target:
+	# CORRECTED: Fixed the typo from "p_ogo_target" to "pogo_target".
+	if pogo_target:
 		if pogo_target.has_method("take_damage"):
 			pogo_target.take_damage(1)
 			# The owner is still responsible for its own game logic (like gaining charges).
@@ -4829,6 +4698,7 @@ var owner_node: CharacterBody2D
 # --- Config ---
 var max_health: int
 var invincibility_duration: float
+var _knockback_config: Dictionary = {}
 
 # --- Internal State ---
 var original_color: Color
@@ -4836,15 +4706,13 @@ var original_color: Color
 func _ready():
 	add_child(invincibility_timer)
 	add_child(hit_flash_timer)
+	
 	invincibility_timer.one_shot = true
 	hit_flash_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
 	
 	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
-	hit_flash_timer.timeout.connect(func(): 
-		if is_instance_valid(get_visual_sprite()):
-			get_visual_sprite().color = original_color
-	)
+	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
 
 func _exit_tree():
 	entity_data = null
@@ -4856,7 +4724,10 @@ func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, config_paths:
 	self.owner_node = p_owner_node
 	
 	max_health = Config.get_value(config_paths.max_health, 10)
-	invincibility_duration = Config.get_value(config_paths.get("invincibility", "player.health.invincibility_duration"), 1.0) # Graceful fallback
+	invincibility_duration = Config.get_value(config_paths.get("invincibility", "player.health.invincibility_duration"), 1.0)
+	
+	if config_paths.has("knockback"):
+		_knockback_config = config_paths.knockback
 	
 	entity_data.health = max_health
 	if is_instance_valid(get_visual_sprite()):
@@ -4884,15 +4755,16 @@ func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
 	return {"was_damaged": true, "knockback_velocity": knockback_info}
 
 func _calculate_knockback(damage_source: Node) -> Vector2:
-	if not damage_source or not owner_node.is_in_group("player"):
+	if _knockback_config.is_empty() or not damage_source:
 		return Vector2.ZERO
 		
 	var knockback_dir = (owner_node.global_position - damage_source.global_position).normalized()
-	var knockback_str = Config.get_value("player.combat.knockback_speed")
+	
+	var knockback_speed = Config.get_value(_knockback_config.speed, 400.0)
 	if damage_source.is_in_group("hazard"):
-		knockback_str = Config.get_value("player.combat.hazard_knockback_speed")
+		knockback_speed = Config.get_value(_knockback_config.hazard_speed, knockback_speed)
 		
-	return (knockback_dir + Vector2.UP * 0.5).normalized() * knockback_str
+	return (knockback_dir + Vector2.UP * 0.5).normalized() * knockback_speed
 
 func _trigger_hit_flash():
 	if is_instance_valid(get_visual_sprite()):
@@ -4903,6 +4775,10 @@ func get_visual_sprite() -> ColorRect:
 	if is_instance_valid(owner_node):
 		return owner_node.get_node_or_null("ColorRect")
 	return null
+
+func _on_hit_flash_timer_timeout():
+	if is_instance_valid(get_visual_sprite()):
+		get_visual_sprite().color = original_color
 
 
 =====================================
@@ -5014,15 +4890,19 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
+	# MODIFIED: Provide a "knockback" sub-dictionary with config paths.
 	var player_health_configs = {
 		"max_health": "player.health.max_health",
-		"invincibility": "player.health.invincibility_duration"
+		"invincibility": "player.health.invincibility_duration",
+		"knockback": {
+			"speed": "player.combat.knockback_speed",
+			"hazard_speed": "player.combat.hazard_knockback_speed"
+		}
 	}
 	health_component.setup(p_data, self, player_health_configs)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
-	# NEW: Setup the CombatComponent
 	combat_component.setup(self, p_data)
 
 	states = {
@@ -5054,7 +4934,7 @@ func _exit_tree():
 	states.clear()
 	p_data = null
 	health_component = null
-	combat_component = null # Clean up component reference
+	combat_component = null
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -5076,7 +4956,6 @@ func _poll_global_inputs():
 		p_data.is_charging = true; p_data.charge_timer = 0.0
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
-			# MODIFIED: Delegate call to the component
 			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"): combat_component.fire_shot()
 			else: change_state(State.ATTACK)
 			p_data.is_charging = false
@@ -5122,18 +5001,13 @@ func _on_damage_dealt():
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
-	
-# REMOVED: _fire_shot() method. Now handled by CombatComponent.
-# REMOVED: _trigger_pogo() method. Now handled by CombatComponent.
 
 func _on_hitbox_body_entered(body):
-	# MODIFIED: Delegate call to the component
 	if p_data.is_pogo_attack: combat_component.trigger_pogo(body)
 	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		# MODIFIED: Delegate call to the component
 		if p_data.is_pogo_attack: combat_component.trigger_pogo(area)
 		else: ObjectPool.return_instance(area)
 
@@ -5162,6 +5036,7 @@ func _on_health_component_health_changed(current, max_val):
 
 func _on_health_component_died():
 	died.emit()
+
 
 =====================================
 FILE: ./src/entities/player/states/state_jump.gd
@@ -5386,6 +5261,7 @@ func _check_for_immediate_pogo() -> bool:
 		return true
 		
 	return false
+
 
 =====================================
 FILE: ./src/entities/player/states/state_hurt.gd

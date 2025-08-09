@@ -24,13 +24,16 @@ var b_data: BossStateData
 
 # --- Boss Properties ---
 var player: CharacterBody2D = null
-var original_color: Color
 
 # --- Engine Functions ---
 func _ready():
 	b_data = BossStateData.new()
 	b_data.patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
 	
+	# CORRECTED ORDER: Set the visual color FIRST.
+	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
+	
+	# THEN, set up the component so it captures the correct original color.
 	var boss_health_configs = {
 		"max_health": "boss.stats.health"
 	}
@@ -38,13 +41,9 @@ func _ready():
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
-	original_color = Palette.COLOR_BOSS_PRIMARY
-	visual_sprite.color = original_color
-
 	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
 	
-	# CORRECTED: Use the global class names directly for instantiation.
 	states = {
 		State.IDLE: BossStateIdle.new(self, b_data),
 		State.ATTACK: BossStateAttack.new(self, b_data),

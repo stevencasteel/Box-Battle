@@ -16,6 +16,9 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored `ArenaBuilder` to be data-driven, reading the layout file║
+║      ░   path from a constant in the encounter script, removing brittle      ║
+║      ░   string manipulation logic.                                          ║
 ║      ░ ■ Decoupled `GlobalHUD` from specific menu scenes by making its       ║
 ║      ░   visibility fully event-driven (`MENU_OPENED`, `MENU_CLOSED`),       ║
 ║      ░   resolving an Open/Closed Principle violation.                       ║
@@ -50,6 +53,8 @@
 ║      ░   polling for changes every frame.                                    ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Fixed a visual bug where the Boss's hit-flash color would not reset ║
+║      ░   correctly by ensuring the correct initialization order in `base_boss.gd`.║
 ║      ░ ■ Resolved an audio stream memory leak on exit by implementing a      ║
 ║      ░   robust cleanup handler for `NOTIFICATION_WM_CLOSE_REQUEST`.         ║
 ║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║

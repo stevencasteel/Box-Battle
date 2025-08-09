@@ -17,18 +17,28 @@ func build_level_async() -> Node:
 		push_error("ArenaBuilder: No encounter script specified in GameManager.")
 		return level_container
 		
-	var layout_path: String = encounter_path.replace("encounter.gd", "layout.gd")
-	var layout_script: Script = load(layout_path)
 	var encounter_script: Script = load(encounter_path)
+	if not encounter_script:
+		push_error("ArenaBuilder: Failed to load encounter script at: %s" % encounter_path)
+		return level_container
+		
+	# Use get_script_constant_map() to safely read the constant
+	# from the script resource itself, without creating a temporary instance.
+	var constants_map = encounter_script.get_script_constant_map()
+	if not constants_map.has("LAYOUT_SCRIPT_PATH"):
+		push_error("ArenaBuilder: Encounter script '%s' is missing 'LAYOUT_SCRIPT_PATH' constant." % encounter_path)
+		return level_container
+		
+	var layout_path: String = constants_map["LAYOUT_SCRIPT_PATH"]
+	
+	var layout_script: Script = load(layout_path)
 
-	if not layout_script or not encounter_script:
-		push_error("ArenaBuilder: Failed to load layout or encounter script.")
+	if not layout_script:
+		push_error("ArenaBuilder: Failed to load layout script defined in encounter: %s" % layout_path)
 		return level_container
 
 	# --- 2. Parse Data ---
 	var parser = LevelParser.new()
-	# CORRECTED: Pass the script resources directly instead of creating orphaned
-	# Node instances with .new(). This prevents memory leaks.
 	var build_data = parser.parse_level_data(layout_script, encounter_script)
 	
 	await get_tree().process_frame

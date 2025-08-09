@@ -4,10 +4,14 @@
 # It acts as a "level script" or "director" for the fight.
 extends Node
 
+# --- NEW: DATA-DRIVEN LAYOUT ---
+# This constant explicitly defines which layout file this encounter uses.
+# The ArenaBuilder will read this path directly, removing any assumptions
+# about file naming conventions.
+const LAYOUT_SCRIPT_PATH = "res://src/arenas/arena_00_layout.gd"
+
 # --- BOSS DATA ---
-# Preload the boss scene using the safe path from our singleton.
 const BOSS_SCENE = preload(AssetPaths.SCENE_BASE_BOSS)
-# The character in the layout that marks the boss's spawn point.
 const BOSS_SPAWN_MARKER = "&"
 
 # --- PLAYER DATA ---

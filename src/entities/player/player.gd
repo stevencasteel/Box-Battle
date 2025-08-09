@@ -48,15 +48,19 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
+	# MODIFIED: Provide a "knockback" sub-dictionary with config paths.
 	var player_health_configs = {
 		"max_health": "player.health.max_health",
-		"invincibility": "player.health.invincibility_duration"
+		"invincibility": "player.health.invincibility_duration",
+		"knockback": {
+			"speed": "player.combat.knockback_speed",
+			"hazard_speed": "player.combat.hazard_knockback_speed"
+		}
 	}
 	health_component.setup(p_data, self, player_health_configs)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
-	# NEW: Setup the CombatComponent
 	combat_component.setup(self, p_data)
 
 	states = {
@@ -88,7 +92,7 @@ func _exit_tree():
 	states.clear()
 	p_data = null
 	health_component = null
-	combat_component = null # Clean up component reference
+	combat_component = null
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -110,7 +114,6 @@ func _poll_global_inputs():
 		p_data.is_charging = true; p_data.charge_timer = 0.0
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
-			# MODIFIED: Delegate call to the component
 			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"): combat_component.fire_shot()
 			else: change_state(State.ATTACK)
 			p_data.is_charging = false
@@ -156,18 +159,13 @@ func _on_damage_dealt():
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
-	
-# REMOVED: _fire_shot() method. Now handled by CombatComponent.
-# REMOVED: _trigger_pogo() method. Now handled by CombatComponent.
 
 func _on_hitbox_body_entered(body):
-	# MODIFIED: Delegate call to the component
 	if p_data.is_pogo_attack: combat_component.trigger_pogo(body)
 	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		# MODIFIED: Delegate call to the component
 		if p_data.is_pogo_attack: combat_component.trigger_pogo(area)
 		else: ObjectPool.return_instance(area)
 
