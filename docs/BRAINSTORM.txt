@@ -84,26 +84,26 @@
 ║   modern web design (Framer) and arcade games (Geometry Wars).               ║
 ║                                                                              ║
 ║   █  Animation & Motion                                                      ║
-║      ░ ■ Entrance Stack: Slide, scale, and fade-in menu items with a        ║
+║      ░ ■ Entrance Stack: Slide, scale, and fade-in menu items with a         ║
 ║      ░   slight overshoot and a staggered delay for a cascading reveal.      ║
 ║      ░   (Technique: `create_tween()` with `TRANS_BACK`)                     ║
-║      ░ ■ Micro-motion / Idle Breathing: Subtle, slow, looping scale or      ║
+║      ░ ■ Micro-motion / Idle Breathing: Subtle, slow, looping scale or       ║
 ║      ░   rotation animations on UI panels to keep the screen feeling alive.  ║
 ║      ░   (Technique: `AnimationPlayer` or looping `Tween`)                   ║
-║      ░ ■ Directional Hover Parallax: Make text/icon layers on a button      ║
+║      ░ ■ Directional Hover Parallax: Make text/icon layers on a button       ║
 ║      ░   shift slightly in the opposite direction of the mouse cursor.       ║
 ║      ░   (Technique: Child `Control` nodes, `Input.get_local_mouse_position()` + `lerp`)║
 ║      ░ ■ Energy Bursts on Click: A small burst of particles on button press. ║
 ║      ░   (Technique: `GPUParticles2D` with a low-count, short-lived emission)║
 ║                                                                              ║
 ║   █  Shape & Form (Procedural Drawing)                                       ║
-║      ░ ■ Animated Rounded Corners: Tween the corner radius of a procedurally║
+║      ░ ■ Animated Rounded Corners: Tween the corner radius of a procedurally ║
 ║      ░   drawn shape on hover for a fluid morphing effect.                   ║
 ║      ░   (Technique: `_draw()` with `draw_circle` + `draw_rect`, property tween)║
-║      ░ ■ Inset / Layered Borders: Use multiple `draw_rect` calls with       ║
-║      ░   different palette colors and slight offsets to create a 2.5D bevel.║
+║      ░ ■ Inset / Layered Borders: Use multiple `draw_rect` calls with        ║
+║      ░   different palette colors and slight offsets to create a 2.5D bevel. ║
 ║      ░ ■ Chamfered Corners: Use `draw_polygon()` to create geometric cutouts.║
-║      ░ ■ Dynamic Clipping Mask: Reveal content by animating the size of a   ║
+║      ░ ■ Dynamic Clipping Mask: Reveal content by animating the size of a    ║
 ║      ░   parent `Control` node with `clip_contents` enabled.                 ║
 ║                                                                              ║
 ║   █  Interactivity & Feedback                                                ║
@@ -120,7 +120,7 @@
 ║      ░   (Technique: `ShaderMaterial` with a `smoothstep` ramp, driven by `TIME`)║
 ║      ░ ■ Noise Grain Overlay: A subtle, low-alpha tiling noise texture to add║
 ║      ░   surface detail without blurring. (Technique: `TextureRect` with `BLEND_MODE_ADD`)║
-║      ░ ■ Vertex Displacement Parallax: A very cheap shader that slightly    ║
+║      ░ ■ Vertex Displacement Parallax: A very cheap shader that slightly     ║
 ║      ░   offsets vertices based on mouse position for a subtle 3D effect.    ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

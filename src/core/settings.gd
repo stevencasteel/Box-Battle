@@ -1,27 +1,49 @@
 # src/core/settings.gd
 #
 # This script is a "Singleton" (also known as an "Autoload" in Godot).
-# A singleton is a script that Godot loads once at the very start of the game
-# and is always available globally. We can access its variables from any other
-# script in the project, which makes it perfect for managing game-wide settings.
-#
-# We defined this as a singleton in: Project -> Project Settings -> Autoload
+# It now emits a signal whenever an audio setting is changed, allowing other
+# systems like the AudioManager to react efficiently without polling.
 extends Node
 
+# NEW: A signal that is emitted whenever any audio setting is changed.
+signal audio_settings_changed
+
 # --- Audio Settings ---
-# These variables store the current sound settings for the game.
-# The '@export' keyword tells Godot to show this variable in the Inspector panel
-# when this node is viewed in the editor. While we don't edit it there for a
-# singleton, it's a common way to mark important, configurable variables.
+# The variables have been converted to properties with setters. This allows us
+# to run code (emitting the signal) whenever their values are changed.
 
-# A 'float' is a number that can have a decimal point (e.g., 0.5, 1.0).
-# Volume values typically range from 0.0 (silent) to 1.0 (full volume).
-@export var master_volume: float = 1.0
-@export var music_volume: float = 1.0
-@export var sfx_volume: float = 1.0
+@export var master_volume: float = 1.0:
+	set(value):
+		if not is_equal_approx(master_volume, value):
+			master_volume = value
+			audio_settings_changed.emit()
 
-# A 'bool' is a boolean value, which can only be 'true' or 'false'.
-# We use these to track whether a sound category is muted.
-@export var master_muted: bool = false
-@export var music_muted: bool = true # Start with music muted by default.
-@export var sfx_muted: bool = false
+@export var music_volume: float = 1.0:
+	set(value):
+		if not is_equal_approx(music_volume, value):
+			music_volume = value
+			audio_settings_changed.emit()
+
+@export var sfx_volume: float = 1.0:
+	set(value):
+		if not is_equal_approx(sfx_volume, value):
+			sfx_volume = value
+			audio_settings_changed.emit()
+
+@export var master_muted: bool = false:
+	set(value):
+		if master_muted != value:
+			master_muted = value
+			audio_settings_changed.emit()
+
+@export var music_muted: bool = true:
+	set(value):
+		if music_muted != value:
+			music_muted = value
+			audio_settings_changed.emit()
+
+@export var sfx_muted: bool = false:
+	set(value):
+		if sfx_muted != value:
+			sfx_muted = value
+			audio_settings_changed.emit()

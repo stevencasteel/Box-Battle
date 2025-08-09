@@ -56,38 +56,25 @@ func _spawn_hud_async() -> void:
 
 # Defines and runs the sequence for the boss's grand entrance.
 func run_intro_sequence() -> void:
-	# This sequence is a great example of the Sequencer's power.
-	# It's a readable, step-by-step recipe for what should happen.
-	var intro_steps = [
-		# Step 1: Pause the game to build tension.
-		{ "type": "emit", "event": EventCatalog.GAME_PAUSED },
+	# Create typed SequenceStep objects for a robust, type-safe sequence.
+	var pause_step = EmitStep.new()
+	pause_step.event_name = EventCatalog.GAME_PAUSED
 
-		# Step 2: A short dramatic pause.
-		{ "type": "wait", "duration": 0.5 },
+	var wait_step = WaitStep.new()
+	wait_step.duration = 0.5
 
-		# Step 3: Spawn the boss entity into the world.
-		# Note: We can't use "call" here because we need the boss node reference
-		# for the next step. So we call our helper and await its completion.
-	]
-
-	# Run the first part of the sequence.
+	var intro_steps: Array[SequenceStep] = [pause_step, wait_step]
 	await Sequencer.run_sequence(intro_steps)
 
 	# Manually spawn the boss to get the node reference.
-	# THE FIX IS HERE: Add an underscore to silence the UNUSED_VARIABLE warning.
 	var _boss_node = await _spawn_boss_async()
 
-	# Define the rest of the sequence. We will use the _boss_node variable later.
-	var outro_steps = [
-		# Step 4: Add a visual/audio cue here later (e.g., spawn VFX).
-		# { "type": "call", "node": vfx_manager, "function": "spawn_effect", "args": ["boss_spawn", _boss_node.global_position] }
+	# Define the rest of the sequence.
+	var final_wait_step = WaitStep.new()
+	final_wait_step.duration = 1.0
 
-		# Step 5: Wait for the spawn effect to finish.
-		{ "type": "wait", "duration": 1.0 },
-
-		# Step 6: Resume the game.
-		{ "type": "emit", "event": EventCatalog.GAME_RESUMED }
-	]
-
-	# Run the final part of the sequence.
+	var resume_step = EmitStep.new()
+	resume_step.event_name = EventCatalog.GAME_RESUMED
+	
+	var outro_steps: Array[SequenceStep] = [final_wait_step, resume_step]
 	await Sequencer.run_sequence(outro_steps)

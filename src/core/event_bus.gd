@@ -1,6 +1,4 @@
 # src/core/event_bus.gd
-# --- VERSION 4: FINAL - Explicitly Type-Safe and Cleaned ---
-# This is the autoloaded singleton that manages all decoupled communication.
 extends Node
 
 var _subscribers: Dictionary = {}
@@ -86,12 +84,21 @@ func _emit_internal(event_name: String, payload, source: Object) -> void:
 			off(sub.id); continue
 		
 		var expected_type = sub.type
-		if expected_type and not (payload is Resource and payload.get_script() == expected_type):
+		if expected_type and not is_instance_of(payload, expected_type):
 			if debug_enabled:
 				var type_path = expected_type.resource_path if expected_type is Script else str(expected_type)
-				push_warning("[EventBus] Subscriber for '%s' expected type %s but got %s. Skipping." % [event_name, type_path, payload.get_class()])
-			continue
+				
+				# IMPROVED DEBUG MESSAGE: Get the specific script name if available.
+				var payload_type_name = "null"
+				if payload:
+					if payload is Resource and payload.get_script():
+						payload_type_name = payload.get_script().resource_path
+					else:
+						payload_type_name = payload.get_class()
 
+				print("EventBus: Subscriber for '%s' expected type %s but got %s. Skipping." % [event_name, type_path, payload_type_name])
+			continue
+		
 		sub.callback.call(payload)
 		
 		if sub.once: off(sub.id)

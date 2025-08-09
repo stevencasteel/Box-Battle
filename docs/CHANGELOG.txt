@@ -1,12 +1,12 @@
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ║
-║    ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ██████╗  ██████╗                ║
-║   ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔══██╗██╔════╝                ║
-║   ██║     ███████║███████║██╔██╗ ██║██║  ███╗██████╔╝███████╗                ║
-║   ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══██╗██╔════╝                ║
-║   ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝██║  ██║███████╗                ║
-║    ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝                ║
-║                                                                              ║
+║                                                                              ╚═╗
+║   ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ███████╗██╗      ██████╗  ██████╗  ║
+║  ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔════╝██║     ██╔═══██╗██╔════╝  ║
+║  ██║     ███████║███████║██╔██╗ ██║██║  ███╗█████╗  ██║     ██║   ██║██║  ███╗ ║
+║  ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██║     ██║   ██║██║   ██║ ║
+║  ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝███████╗███████╗╚██████╔╝╚██████╔╝ ║
+║   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚═════╝  ║
+║                                                                              ╔═╝
 ║                  A log of all notable changes to the project.                ║
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
@@ -15,6 +15,23 @@
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   (Changes for the next version will be logged here.)                        ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored `Sequencer.gd` to use type-safe `SequenceStep` resources ║
+║      ░   instead of ad-hoc dictionaries, preventing runtime errors and       ║
+║      ░   improving editor autocompletion.                                    ║
+║      ░ ■ Refactored `AudioManager.gd` to be event-driven. It now subscribes  ║
+║      ░   to a new `audio_settings_changed` signal from `Settings.gd` instead ║
+║      ░   of polling for changes every frame, improving performance.          ║
+║      ░ ■ The `GlobalHUD` mute icon is now also event-driven, fixing a race   ║
+║      ░   condition bug that occurred during scene transitions.               ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Corrected `Config.gd` to sort JSON filenames before loading,        ║
+║      ░   ensuring a deterministic and platform-agnostic configuration merge. ║
+║      ░ ■ Fixed a critical crash in `EventBus.gd` by using the robust global  ║
+║      ░   `is_instance_of()` for polymorphic type checking, allowing it to    ║
+║      ░   safely handle event payload subclassing.                            ║
+║      ░ ■ Resolved multiple static analysis warnings (SHADOWED_VARIABLE,      ║
+║      ░   UNUSED_PARAMETER, REDUNDANT_AWAIT) for a cleaner codebase.          ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

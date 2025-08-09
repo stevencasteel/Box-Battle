@@ -25,18 +25,32 @@ func get_value(key: String, default = null):
 
 # --- Internal Functions ---
 
+# MODIFIED: This function now reads all filenames into a list first, sorts that
+# list alphabetically, and then loads the files. This guarantees a stable,
+# deterministic loading order, preventing platform-specific bugs where
+# config values might be overridden inconsistently.
 func _load_all_configs() -> void:
 	var dir = DirAccess.open("res://data")
 	if not dir:
 		push_error("Config: Could not open 'res://data/' directory. Make sure it exists.")
 		return
 
+	var file_names: Array[String] = []
 	dir.list_dir_begin()
 	var file_name = dir.get_next()
 	while file_name != "":
 		if not dir.current_is_dir() and file_name.ends_with(".json"):
-			_load_and_parse_file("res://data/" + file_name)
+			file_names.append(file_name)
 		file_name = dir.get_next()
+	
+	# The critical fix: Sort the filenames to ensure deterministic load order.
+	file_names.sort()
+	
+	# CORRECTED: Renamed loop variable from "name" to "config_filename" to
+	# resolve the SHADOWED_VARIABLE_BASE_CLASS warning.
+	for config_filename in file_names:
+		_load_and_parse_file("res://data/" + config_filename)
+
 
 func _load_and_parse_file(file_path: String) -> void:
 	var file = FileAccess.open(file_path, FileAccess.READ)
