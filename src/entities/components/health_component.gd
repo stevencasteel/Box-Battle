@@ -1,9 +1,9 @@
 # src/entities/components/health_component.gd
 #
 # A component responsible for managing an entity's health, damage intake,
-# invincibility, and death. Made generic to work with both Player and Boss.
+# invincibility, and death. It now implements the ComponentInterface standard.
 class_name HealthComponent
-extends Node
+extends ComponentInterface
 
 signal health_changed(current_health: int, max_health: int)
 signal died
@@ -36,29 +36,23 @@ func _ready():
 	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
 
-func _exit_tree():
-	entity_data = null
-	owner_node = null
-	EventBus.off_owner(self)
-
-# MODIFIED: Changed p_config type from CombatConfig to generic Resource
-func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, p_config: Resource) -> void:
-	self.entity_data = p_entity_data
-	self.owner_node = p_owner_node
-
-	# MODIFIED: Perform a safe runtime cast
-	var cfg: CombatConfig = p_config as CombatConfig
+func setup(owner: Node, config: Resource = null, services = null) -> void:
+	self.owner_node = owner as CharacterBody2D
+	
+	var cfg: CombatConfig = config as CombatConfig
 	if not cfg:
-		push_error("HealthComponent.setup: passed p_config is not a CombatConfig resource.")
+		push_error("HealthComponent.setup: passed config is not a CombatConfig resource.")
 		return
 
-	# We check if the owner is the player to know which config properties to use.
-	if p_owner_node.is_in_group("player"):
+	# CORRECTED: Use the robust `is_in_group` check to determine entity type and get the correct data resource.
+	if owner_node.is_in_group("player"):
+		self.entity_data = owner_node.p_data
 		max_health = cfg.player_max_health
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
 	else: # Assumes it's a boss/enemy
+		self.entity_data = owner_node.b_data
 		max_health = cfg.boss_health
 		invincibility_duration = cfg.boss_invincibility_duration
 		knockback_speed = 0
@@ -69,6 +63,11 @@ func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, p_config: Res
 		original_color = get_visual_sprite().color
 	
 	health_changed.emit(entity_data.health, max_health)
+
+func teardown() -> void:
+	entity_data = null
+	owner_node = null
+	EventBus.off_owner(self)
 
 func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false

@@ -28,13 +28,12 @@ var player: CharacterBody2D = null
 # --- Engine Functions ---
 func _ready():
 	b_data = BossStateData.new()
-	# MODIFIED: Get value from the new CombatDB resource.
 	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
 	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	# MODIFIED: Pass the typed resource directly to the component.
-	health_component.setup(b_data, self, CombatDB.config)
+	# CORRECTED: Arguments are now passed in the correct order as defined by the interface.
+	health_component.setup(self, CombatDB.config)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
@@ -52,7 +51,6 @@ func _ready():
 
 func _physics_process(delta):
 	if not is_on_floor():
-		# MODIFIED: Get value from the new CombatDB resource.
 		velocity.y += CombatDB.config.gravity * delta
 
 	if current_state:
@@ -67,7 +65,8 @@ func _exit_tree():
 	EventBus.off_owner(self)
 	states.clear()
 	b_data = null
-	health_component = null
+	# Call teardown on components that have it.
+	if health_component: health_component.teardown()
 
 func change_state(new_state_key: State):
 	if not states.has(new_state_key): return

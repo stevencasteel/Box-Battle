@@ -16,6 +16,8 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Created a formal `ComponentInterface` to act as a standardized      ║
+║      ░   blueprint for all entity components, enforcing a consistent API.    ║
 ║      ░ ■ Refactored `GameManager` to use a `GameStateData` resource,         ║
 ║      ░   eliminating the "dual architecture" of stateful singletons. All     ║
 ║      ░   runtime state is now consistently managed through `Resource` objects.║
@@ -31,11 +33,13 @@
 ║      ░   subdirectories for typed configs and events (`data/config`, `events/typed_events`).║
 ║      ░ ■ Standardized script filenames to snake_case (e.g., `Config.gd` ->   ║
 ║      ░   `config.gd`) for project-wide consistency.                          ║
-║      ░ ■ Reorganized the monolithic `src/core` directory into purpose-driven ║
+║      ░ ■ Reorganized the monolithic `src` directory into purpose-driven      ║
 ║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
 ║      ░   improve project modularity and scalability.                         ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored `HealthComponent` to extend the new `ComponentInterface` ║
+║      ░   and use a more robust `is_in_group` check for its setup logic.      ║
 ║      ░ ■ Reorganized `AssetPaths.gd` by feature/system for improved clarity. ║
 ║      ░ ■ Added a validation system to `AssetPaths.gd` that checks for missing║
 ║      ░   files at startup, preventing runtime "file not found" errors.       ║
@@ -58,6 +62,13 @@
 ║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a crash caused by using the non-existent `has()` method in ║
+║      ░   `HealthComponent`; replaced with a more robust `is_in_group()` check.║
+║      ░ ■ Corrected invalid GDScript 4 dictionary access syntax in `player.gd`.║
+║      ░ ■ Removed the invalid `override` keyword from `HealthComponent`, which ║
+║      ░   was causing a critical parse error.                                 ║
+║      ░ ■ Corrected the argument order in `HealthComponent.setup` calls to    ║
+║      ░   match the newly defined `ComponentInterface` contract.              ║
 ║      ░ ■ Resolved a parse-time dependency error by ensuring `GameStateData`  ║
 ║      ░   is loaded at runtime in `GameManager`, preventing a startup crash.  ║
 ║      ░ ■ Resolved a cascade of parse errors by correcting the implementation ║

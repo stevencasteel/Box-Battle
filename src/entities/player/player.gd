@@ -23,7 +23,6 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var input_component: InputComponent = $InputComponent
 
 # --- State Scripts (Loaded at Runtime) ---
-# We use vars instead of const preloads to break parse-time circular dependencies.
 var MoveStateScript: Script
 var FallStateScript: Script
 var JumpStateScript: Script
@@ -43,7 +42,6 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 func _ready():
 	p_data = PlayerStateData.new()
 	
-	# --- MODIFIED: Load state scripts at runtime ---
 	MoveStateScript = load("res://src/entities/player/states/state_move.gd")
 	FallStateScript = load("res://src/entities/player/states/state_fall.gd")
 	JumpStateScript = load("res://src/entities/player/states/state_jump.gd")
@@ -63,7 +61,6 @@ func _ready():
 		State.HURT: HurtStateScript.new(self, p_data),
 		State.HEAL: HealStateScript.new(self, p_data),
 	}
-	# --- End of Runtime Loading ---
 
 	visual_sprite.color = Palette.COLOR_PLAYER
 	
@@ -72,7 +69,7 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	health_component.setup(p_data, self, CombatDB.config)
+	health_component.setup(self, CombatDB.config)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
@@ -103,7 +100,8 @@ func _exit_tree():
 	EventBus.off_owner(self)
 	states.clear()
 	p_data = null
-	health_component = null
+	# Call teardown on components that have it.
+	if health_component: health_component.teardown()
 	combat_component = null
 	input_component = null
 
@@ -143,8 +141,9 @@ func _check_for_contact_damage():
 			var collider = col.get_collider()
 			if collider.is_in_group("enemy") or collider.is_in_group("hazard"):
 				var damage_result = health_component.take_damage(1, collider)
-				if damage_result.was_damaged:
-					velocity = damage_result.knockback_velocity
+				# CORRECTED: Use GDScript 4 dictionary access syntax.
+				if damage_result["was_damaged"]:
+					velocity = damage_result["knockback_velocity"]
 					change_state(State.HURT)
 				break
 
@@ -179,8 +178,9 @@ func _on_hitbox_area_entered(area):
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		var damage_result = health_component.take_damage(1, area)
-		if damage_result.was_damaged:
-			velocity = damage_result.knockback_velocity
+		# CORRECTED: Use GDScript 4 dictionary access syntax.
+		if damage_result["was_damaged"]:
+			velocity = damage_result["knockback_velocity"]
 			change_state(State.HURT)
 		ObjectPool.return_instance(area)
 
