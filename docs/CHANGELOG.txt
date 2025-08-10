@@ -16,6 +16,8 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Created a new `SceneManager` autoload to centralize all scene       ║
+║      ░   transition logic, providing a single, robust API for navigation.    ║
 ║      ░ ■ Implemented state validation in `PlayerStateData` and `BossStateData`║
 ║      ░   using property setters. This makes the data resources self-validating
 ║      ░   and prevents invalid states (e.g., health > max_health).            ║
@@ -44,6 +46,8 @@
 ║      ░   implementation.                                                     ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored all UI screens and core game scripts to use the new      ║
+║      ░   `SceneManager`, removing scattered `get_tree().change_scene` calls. ║
 ║      ░ ■ Refactored `HealthComponent` to initialize the new self-validating  ║
 ║      ░   data resources, simplifying its internal logic.                     ║
 ║      ░ ■ Refactored `CombatComponent` and `InputComponent` to extend the new ║
@@ -78,6 +82,10 @@
 ║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a memory leak by ensuring the `GameManager` frees its      ║
+║      ░   `GameStateData` resource in `_exit_tree`.                           ║
+║      ░ ■ Fixed a critical parse error by removing a conflicting `class_name` ║
+║      ░   from the `SceneManager` autoload script.                            ║
 ║      ░ ■ Added missing `max_health` property to `BossStateData` to resolve a ║
 ║      ░   crash when the boss took damage.                                    ║
 ║      ░ ■ Resolved a crash caused by using the non-existent `has()` method in ║

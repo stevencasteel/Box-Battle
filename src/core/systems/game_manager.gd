@@ -4,13 +4,20 @@
 # a reference to a GameStateData resource, standardizing our state pattern.
 extends Node
 
-# MODIFIED: Removed the parse-time type hint to break the dependency cycle.
 var state = null
 
-# Preload the script resource itself. This is safe.
 const GameStateDataScript = preload("res://src/core/data/game_state_data.gd")
 
 func _ready():
-	# Create a new, clean instance of the game state at runtime,
-	# when all scripts have been parsed and registered.
+	# Create a new, clean instance of the game state every time the
+	# GameManager is initialized.
 	state = GameStateDataScript.new()
+
+# NEW: Implement _exit_tree for proper cleanup.
+# This function is called automatically by the engine when the game is closing.
+func _exit_tree():
+	# Manually release our reference to the state resource. This allows
+	# Godot's garbage collector to free it and any nodes it might be holding,
+	# preventing memory leaks on exit.
+	if is_instance_valid(state):
+		state = null

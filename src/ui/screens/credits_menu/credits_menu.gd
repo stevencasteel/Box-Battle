@@ -1,5 +1,4 @@
 # src/ui/screens/credits_menu/credits_menu.gd
-#
 # Displays game credits using a RichTextLabel to handle formatted text and URLs.
 extends Control
 
@@ -18,7 +17,6 @@ func _ready():
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.position.y = 80
 
-	# --- Credits RichTextLabel ---
 	var credits_label = RichTextLabel.new()
 	add_child(credits_label)
 	credits_label.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -28,7 +26,7 @@ func _ready():
 	credits_label.position = Vector2(0, 220)
 	credits_label.size.x = get_viewport_rect().size.x
 	credits_label.size.y = 550
-	credits_label.bbcode_enabled = true # This MUST be true to parse the [url] tags.
+	credits_label.bbcode_enabled = true
 
 	credits_label.text = """
 [center]A Game By Steven Casteel[/center]
@@ -39,12 +37,10 @@ func _ready():
 
 [center]Find me on [url=https://www.youtube.com/@stevencasteel]YouTube[/url] and [url=http://github.com/stevencasteel]GitHub[/url][/center]
 """
-	# --- Connect Signals for RichTextLabel ---
 	credits_label.meta_clicked.connect(_on_meta_clicked)
 	credits_label.meta_hover_started.connect(func(_meta): CursorManager.set_pointer_state(true))
 	credits_label.meta_hover_ended.connect(func(_meta): CursorManager.set_pointer_state(false))
 
-	# --- Back Button ---
 	var back_button = TextureButton.new()
 	back_button.texture_normal = load(AssetPaths.SPRITE_MENU_ITEM_BACK)
 	add_child(back_button)
@@ -59,9 +55,9 @@ func _ready():
 func _exit_tree():
 	EventBus.emit(EventCatalog.MENU_CLOSED)
 
-# Called when a URL inside the RichTextLabel is clicked.
 func _on_meta_clicked(meta):
 	OS.shell_open(str(meta))
 
 func _on_back_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_MENU)

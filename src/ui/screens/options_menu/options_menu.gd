@@ -1,5 +1,4 @@
 # src/ui/screens/options_menu/options_menu.gd
-#
 # Manages the Options menu, which acts as a hub to navigate to other screens.
 extends Control
 
@@ -9,7 +8,6 @@ func _ready():
 	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 	
-	# --- Create UI Elements ---
 	var title_label = Label.new()
 	title_label.text = "Options"
 	add_child(title_label)
@@ -39,13 +37,11 @@ func _ready():
 	add_child(back_button)
 	back_button.position = Vector2((get_viewport_rect().size.x - back_button.size.x) / 2, 800)
 	
-	# --- Connect Signals ---
 	sound_button.pressed.connect(_on_sound_button_pressed)
 	controls_button.pressed.connect(_on_controls_button_pressed)
 	credits_button.pressed.connect(_on_credits_button_pressed)
 	back_button.pressed.connect(_on_back_button_pressed)
 	
-	# --- Initialize Menu Navigation ---
 	var menu = MenuManager.new()
 	add_child(menu)
 	
@@ -60,16 +56,14 @@ func _ready():
 func _exit_tree():
 	EventBus.emit(EventCatalog.MENU_CLOSED)
 
-# --- Button Press Handlers ---
-
 func _on_sound_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_SOUND_MENU)
+	SceneManager.go_to_scene(AssetPaths.SCENE_SOUND_MENU)
 
 func _on_controls_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_CONTROLS_MENU)
+	SceneManager.go_to_scene(AssetPaths.SCENE_CONTROLS_MENU)
 
 func _on_credits_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_CREDITS_MENU)
+	SceneManager.go_to_scene(AssetPaths.SCENE_CREDITS_MENU)
 
 func _on_back_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
+	SceneManager.go_to_title_screen()

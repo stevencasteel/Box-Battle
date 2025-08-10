@@ -1,13 +1,11 @@
 # src/ui/screens/title_screen/title_screen.gd
-#
-# This script controls the main title screen. It displays the game title, menu
-# buttons, plays the title music, and sets up menu navigation.
+# This script controls the main title screen.
 extends Control
 
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
-	EventBus.emit(EventCatalog.MENU_OPENED) # Announce that a menu is open
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	await get_tree().process_frame
 	AudioManager.play_music(AssetPaths.AUDIO_MUSIC_TITLE)
 
@@ -39,12 +37,12 @@ func _ready():
 	menu.setup_menu(menu_items)
 
 func _exit_tree():
-	EventBus.emit(EventCatalog.MENU_CLOSED) # Announce that the menu is closing
+	EventBus.emit(EventCatalog.MENU_CLOSED)
 
 func _on_start_button_pressed():
-	# MODIFIED: Access the state object on GameManager
-	GameManager.state.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
-	get_tree().change_scene_to_file(AssetPaths.SCENE_LOADING_SCREEN)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.start_game(AssetPaths.SCRIPT_ARENA_00_ENCOUNTER)
 
 func _on_options_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_OPTIONS_MENU)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_MENU)
