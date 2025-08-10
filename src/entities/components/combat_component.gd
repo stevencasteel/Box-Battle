@@ -4,13 +4,11 @@
 class_name CombatComponent
 extends ComponentInterface
 
-# CORRECTED: The signal is now used again.
 signal damage_dealt
 
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 
-# CORRECTED: Renamed `owner` to `p_owner` and added underscores to unused parameters.
 func setup(p_owner: Node, _config: Resource = null, _services = null) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.p_data = owner_node.p_data
@@ -33,16 +31,14 @@ func fire_shot():
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
 	shot.activate()
 
-# POGO BUG FIX: This function is now fully responsible for the pogo action.
 func trigger_pogo(pogo_target):
-	# First, deal damage and emit the signal if the target is an enemy.
 	if pogo_target and pogo_target.is_in_group("enemy"):
 		var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
 		if enemy_health_comp:
-			enemy_health_comp.take_damage(1, owner_node)
+			# MODIFIED: Pass `true` to bypass invincibility frames for pogo hits.
+			enemy_health_comp.take_damage(1, owner_node, true)
 			damage_dealt.emit()
 	
-	# Then, execute the bounce physics.
 	owner_node.velocity.y = -CombatDB.config.player_pogo_force
 	owner_node.position.y -= 1
 	p_data.can_dash = true

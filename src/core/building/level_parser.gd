@@ -1,22 +1,36 @@
-# src/core/builders/level_parser.gd
+# src/core/building/level_parser.gd
 #
 # Responsibility: To parse the raw data from layout and encounter scripts and
-# organize it into a structured LevelBuildData object. This class does not
-# create any nodes; it only processes data.
+# organize it into a structured LevelBuildData object. This class is now also
+# responsible for loading the layout script and validating the data.
 class_name LevelParser
 extends RefCounted
 
-# The single public method of this class. It takes the arena script resources
-# and returns a complete LevelBuildData resource.
-#
-# CORRECTED: The function signature now correctly expects Script resources,
-# not instantiated Objects.
-func parse_level_data(layout_script: Script, encounter_script: Script) -> LevelBuildData:
+# MODIFIED: This function is now smarter and more robust. It only needs the
+# encounter_script and will handle loading and validating the layout script itself.
+func parse_level_data(encounter_script: Script) -> LevelBuildData:
 	var data = LevelBuildData.new()
-	# We can still store the script resource for later use.
+	if not is_instance_valid(encounter_script):
+		push_error("LevelParser: Received an invalid encounter script.")
+		return data # Return empty data object
+
 	data.encounter_script_object = encounter_script
 
-	# Constants can be accessed directly from the script resource.
+	# --- NEW: Validation Step 1: Get Layout Path ---
+	var constants_map = encounter_script.get_script_constant_map()
+	if not constants_map.has("LAYOUT_SCRIPT_PATH"):
+		push_error("LevelParser: Encounter script '%s' is missing 'LAYOUT_SCRIPT_PATH' constant." % encounter_script.resource_path)
+		return data
+
+	var layout_path: String = constants_map["LAYOUT_SCRIPT_PATH"]
+
+	# --- NEW: Validation Step 2: Load Layout Script ---
+	var layout_script: Script = load(layout_path)
+	if not is_instance_valid(layout_script):
+		push_error("LevelParser: Failed to load layout script at path defined in encounter: %s" % layout_path)
+		return data
+
+	# --- Original Parsing Logic (now guaranteed to have valid data) ---
 	for y in range(layout_script.TERRAIN_DATA.size()):
 		var row_string: String = layout_script.TERRAIN_DATA[y]
 		for x in range(row_string.length()):

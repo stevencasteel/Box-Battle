@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 10 16:22:19 CDT 2025
+Generated on: Sun Aug 10 17:49:44 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -89,7 +89,8 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── audio_manager.gd
     │   │   ├── cursor_manager.gd
     │   │   ├── game_manager.gd
-    │   │   └── object_pool.gd
+    │   │   ├── object_pool.gd
+    │   │   └── scene_manager.gd
     │   └── util
     │       ├── asset_paths.gd
     │       ├── constants.gd
@@ -183,7 +184,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-48 directories, 127 files
+48 directories, 128 files
 
 
 =====================================
@@ -1605,6 +1606,8 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Created a new `SceneManager` autoload to centralize all scene       ║
+║      ░   transition logic, providing a single, robust API for navigation.    ║
 ║      ░ ■ Implemented state validation in `PlayerStateData` and `BossStateData`║
 ║      ░   using property setters. This makes the data resources self-validating
 ║      ░   and prevents invalid states (e.g., health > max_health).            ║
@@ -1633,6 +1636,8 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   implementation.                                                     ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored all UI screens and core game scripts to use the new      ║
+║      ░   `SceneManager`, removing scattered `get_tree().change_scene` calls. ║
 ║      ░ ■ Refactored `HealthComponent` to initialize the new self-validating  ║
 ║      ░   data resources, simplifying its internal logic.                     ║
 ║      ░ ■ Refactored `CombatComponent` and `InputComponent` to extend the new ║
@@ -1667,6 +1672,10 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a memory leak by ensuring the `GameManager` frees its      ║
+║      ░   `GameStateData` resource in `_exit_tree`.                           ║
+║      ░ ■ Fixed a critical parse error by removing a conflicting `class_name` ║
+║      ░   from the `SceneManager` autoload script.                            ║
 ║      ░ ■ Added missing `max_health` property to `BossStateData` to resolve a ║
 ║      ░   crash when the boss took damage.                                    ║
 ║      ░ ■ Resolved a crash caused by using the non-existent `has()` method in ║
@@ -2106,6 +2115,7 @@ Constants="*res://src/core/util/constants.gd"
 AssetPaths="*res://src/core/util/asset_paths.gd"
 GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
 GameManager="*res://src/core/systems/game_manager.gd"
+SceneManager="*res://src/core/systems/scene_manager.gd"
 ArenaBuilder="*res://src/core/building/arena_builder.gd"
 EventBus="*res://src/core/events/event_bus.gd"
 Sequencer="*res://src/core/sequencing/sequencer.gd"
@@ -2639,7 +2649,6 @@ func _on_return_button_pressed():
 FILE: ./src/ui/screens/controls_menu/controls_menu.gd
 =====================================
 # src/ui/screens/controls_menu/controls_menu.gd
-#
 # Displays a static list of the game's controls.
 extends Control
 
@@ -2651,7 +2660,6 @@ func _ready():
 	var bold_font = load(AssetPaths.FONT_BOLD)
 	var regular_font = load(AssetPaths.FONT_REGULAR)
 
-	# --- Title ---
 	var title_label = Label.new()
 	title_label.text = "Controls"
 	add_child(title_label)
@@ -2661,7 +2669,6 @@ func _ready():
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.position.y = 80
 
-	# --- Controls List ---
 	var controls_data = [
 		{ "action": "Movement", "keys": "Arrow Keys / WASD / Mouse" },
 		{ "action": "Primary Action", "keys": "X / . / Space / Left-Click" },
@@ -2694,7 +2701,6 @@ func _ready():
 		keys_label.add_theme_font_size_override("font_size", 36)
 		keys_label.position = Vector2(460, y_pos)
 
-	# --- Back Button ---
 	var back_button = TextureButton.new()
 	back_button.texture_normal = load(AssetPaths.SPRITE_MENU_ITEM_BACK)
 	add_child(back_button)
@@ -2710,7 +2716,8 @@ func _exit_tree():
 	EventBus.emit(EventCatalog.MENU_CLOSED)
 
 func _on_back_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_MENU)
 
 =====================================
 FILE: ./src/ui/screens/controls_menu/controls_menu.tscn
@@ -2733,7 +2740,6 @@ script = ExtResource("1_controls_script")
 FILE: ./src/ui/screens/credits_menu/credits_menu.gd
 =====================================
 # src/ui/screens/credits_menu/credits_menu.gd
-#
 # Displays game credits using a RichTextLabel to handle formatted text and URLs.
 extends Control
 
@@ -2752,7 +2758,6 @@ func _ready():
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.position.y = 80
 
-	# --- Credits RichTextLabel ---
 	var credits_label = RichTextLabel.new()
 	add_child(credits_label)
 	credits_label.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -2762,7 +2767,7 @@ func _ready():
 	credits_label.position = Vector2(0, 220)
 	credits_label.size.x = get_viewport_rect().size.x
 	credits_label.size.y = 550
-	credits_label.bbcode_enabled = true # This MUST be true to parse the [url] tags.
+	credits_label.bbcode_enabled = true
 
 	credits_label.text = """
 [center]A Game By Steven Casteel[/center]
@@ -2773,12 +2778,10 @@ func _ready():
 
 [center]Find me on [url=https://www.youtube.com/@stevencasteel]YouTube[/url] and [url=http://github.com/stevencasteel]GitHub[/url][/center]
 """
-	# --- Connect Signals for RichTextLabel ---
 	credits_label.meta_clicked.connect(_on_meta_clicked)
 	credits_label.meta_hover_started.connect(func(_meta): CursorManager.set_pointer_state(true))
 	credits_label.meta_hover_ended.connect(func(_meta): CursorManager.set_pointer_state(false))
 
-	# --- Back Button ---
 	var back_button = TextureButton.new()
 	back_button.texture_normal = load(AssetPaths.SPRITE_MENU_ITEM_BACK)
 	add_child(back_button)
@@ -2793,12 +2796,12 @@ func _ready():
 func _exit_tree():
 	EventBus.emit(EventCatalog.MENU_CLOSED)
 
-# Called when a URL inside the RichTextLabel is clicked.
 func _on_meta_clicked(meta):
 	OS.shell_open(str(meta))
 
 func _on_back_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_MENU)
 
 =====================================
 FILE: ./src/ui/screens/credits_menu/credits_menu.tscn
@@ -2838,7 +2841,6 @@ script = ExtResource("1_options_script")
 FILE: ./src/ui/screens/options_menu/options_menu.gd
 =====================================
 # src/ui/screens/options_menu/options_menu.gd
-#
 # Manages the Options menu, which acts as a hub to navigate to other screens.
 extends Control
 
@@ -2848,7 +2850,6 @@ func _ready():
 	EventBus.emit(EventCatalog.MENU_OPENED)
 	var title_font = load(AssetPaths.FONT_BLACK)
 	
-	# --- Create UI Elements ---
 	var title_label = Label.new()
 	title_label.text = "Options"
 	add_child(title_label)
@@ -2878,13 +2879,11 @@ func _ready():
 	add_child(back_button)
 	back_button.position = Vector2((get_viewport_rect().size.x - back_button.size.x) / 2, 800)
 	
-	# --- Connect Signals ---
 	sound_button.pressed.connect(_on_sound_button_pressed)
 	controls_button.pressed.connect(_on_controls_button_pressed)
 	credits_button.pressed.connect(_on_credits_button_pressed)
 	back_button.pressed.connect(_on_back_button_pressed)
 	
-	# --- Initialize Menu Navigation ---
 	var menu = MenuManager.new()
 	add_child(menu)
 	
@@ -2899,33 +2898,28 @@ func _ready():
 func _exit_tree():
 	EventBus.emit(EventCatalog.MENU_CLOSED)
 
-# --- Button Press Handlers ---
-
 func _on_sound_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_SOUND_MENU)
+	SceneManager.go_to_scene(AssetPaths.SCENE_SOUND_MENU)
 
 func _on_controls_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_CONTROLS_MENU)
+	SceneManager.go_to_scene(AssetPaths.SCENE_CONTROLS_MENU)
 
 func _on_credits_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_CREDITS_MENU)
+	SceneManager.go_to_scene(AssetPaths.SCENE_CREDITS_MENU)
 
 func _on_back_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
+	SceneManager.go_to_title_screen()
 
 =====================================
 FILE: ./src/ui/screens/sound_menu/sound_menu.gd
 =====================================
 # src/ui/screens/sound_menu/sound_menu.gd
-#
-# Manages the sound settings screen, connecting UI elements to the global
-# Settings singleton so changes are applied in real-time.
+# Manages the sound settings screen.
 extends Control
 
 const CustomSliderScript = preload(AssetPaths.SCRIPT_CUSTOM_SLIDER)
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
-# We need to store references to our UI elements to update them in _process
 var master_volume_label: Label
 var music_volume_label: Label
 var sfx_volume_label: Label
@@ -2965,17 +2959,16 @@ func _exit_tree():
 	EventBus.emit(EventCatalog.MENU_CLOSED)
 
 func _process(_delta):
-	# Sync volume labels
 	master_volume_label.text = str(int(Settings.master_volume * 100))
 	music_volume_label.text = str(int(Settings.music_volume * 100))
 	sfx_volume_label.text = str(int(Settings.sfx_volume * 100))
 	
-	# Sync checkboxes
 	_update_checkbox_texture(master_mute_checkbox, Settings.master_muted)
 	_update_checkbox_texture(music_mute_checkbox, Settings.music_muted)
 	_update_checkbox_texture(sfx_mute_checkbox, Settings.sfx_muted)
 
 func _create_volume_row(label_text: String, y_pos: int, initial_volume: float, type: String):
+	# ... (This function remains unchanged)
 	var row_label = Label.new()
 	row_label.text = label_text
 	add_child(row_label)
@@ -3028,7 +3021,30 @@ func _update_checkbox_texture(button_ref: TextureButton, is_muted: bool):
 		button_ref.texture_normal = new_texture
 
 func _on_back_button_pressed():
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_OPTIONS_MENU)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_MENU)```
+
+**File to Update:** `src/ui/screens/game_over_screen/game_over_screen.gd`
+```gdscript
+# src/ui/screens/game_over_screen/game_over_screen.gd
+# This screen is shown when the player's health reaches zero.
+extends Control
+
+@onready var return_button: TextureButton = $VBoxContainer/ReturnButton
+
+const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+
+func _ready():
+	return_button.texture_normal = load(AssetPaths.SPRITE_MENU_ITEM_BACK)
+	return_button.pressed.connect(_on_return_button_pressed)
+
+	var menu = MenuManager.new()
+	add_child(menu)
+	menu.setup_menu([MenuManager.MenuItem.new(return_button, "BACK")])
+
+func _on_return_button_pressed():
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_title_screen()
 
 
 =====================================
@@ -3097,7 +3113,6 @@ layout_mode = 2
 FILE: ./src/ui/screens/victory_screen/victory_screen.gd
 =====================================
 # src/ui/screens/victory_screen/victory_screen.gd
-#
 # This screen is shown when the player defeats the boss.
 extends Control
 
@@ -3106,17 +3121,16 @@ extends Control
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
-	# Configure the button and connect its signal.
 	return_button.texture_normal = load(AssetPaths.SPRITE_MENU_ITEM_BACK)
 	return_button.pressed.connect(_on_return_button_pressed)
 
-	# Set up the menu manager for keyboard/controller navigation.
 	var menu = MenuManager.new()
 	add_child(menu)
 	menu.setup_menu([MenuManager.MenuItem.new(return_button, "BACK")])
 
 func _on_return_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_title_screen()
 
 =====================================
 FILE: ./src/ui/screens/title_screen/title_screen.tscn
@@ -3139,15 +3153,13 @@ script = ExtResource("1_title_script")
 FILE: ./src/ui/screens/title_screen/title_screen.gd
 =====================================
 # src/ui/screens/title_screen/title_screen.gd
-#
-# This script controls the main title screen. It displays the game title, menu
-# buttons, plays the title music, and sets up menu navigation.
+# This script controls the main title screen.
 extends Control
 
 const MenuManager = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 func _ready():
-	EventBus.emit(EventCatalog.MENU_OPENED) # Announce that a menu is open
+	EventBus.emit(EventCatalog.MENU_OPENED)
 	await get_tree().process_frame
 	AudioManager.play_music(AssetPaths.AUDIO_MUSIC_TITLE)
 
@@ -3179,15 +3191,15 @@ func _ready():
 	menu.setup_menu(menu_items)
 
 func _exit_tree():
-	EventBus.emit(EventCatalog.MENU_CLOSED) # Announce that the menu is closing
+	EventBus.emit(EventCatalog.MENU_CLOSED)
 
 func _on_start_button_pressed():
-	# MODIFIED: Access the state object on GameManager
-	GameManager.state.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
-	get_tree().change_scene_to_file(AssetPaths.SCENE_LOADING_SCREEN)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.start_game(AssetPaths.SCRIPT_ARENA_00_ENCOUNTER)
 
 func _on_options_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_OPTIONS_MENU)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_MENU)
 
 
 =====================================
@@ -3547,20 +3559,13 @@ script = ExtResource("1_game_script")
 FILE: ./src/scenes/game/game.gd
 =====================================
 # src/scenes/game/game.gd
-#
-# This script orchestrates the setup of an arena battle. It now also manages
-# the overall game flow by listening for signals.
+# This script orchestrates the setup of an arena battle and game flow.
 extends Node
 
 var player_node: Node = null
 var boss_node: Node = null
 
-# REMOVED: No longer need subscription tokens as we are not using the EventBus here.
-
 func _ready():
-	# REMOVED: The game scene no longer subscribes to pause events.
-	# Pause logic will be handled differently if implemented later.
-
 	if GameManager.state.prebuilt_level:
 		add_child(GameManager.state.prebuilt_level)
 		GameManager.state.prebuilt_level = null
@@ -3571,7 +3576,8 @@ func _ready():
 		await get_tree().process_frame
 	else:
 		print("ERROR: Game scene loaded without a pre-built level or encounter path. Returning to title.")
-		get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
+		# MODIFIED: Use the new SceneManager.
+		SceneManager.go_to_title_screen()
 		return
 
 	player_node = get_tree().get_first_node_in_group("player")
@@ -3585,19 +3591,19 @@ func _ready():
 		final_boss_node.died.connect(_on_boss_died)
 
 func _exit_tree():
-	# Unpause the game when this scene is exited. This is a safeguard.
 	get_tree().paused = false
-
 
 # --- Signal Handlers ---
 
 func _on_player_died():
 	print("Game Manager: Player death detected. Initiating Game Over.")
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_GAME_OVER_SCREEN)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_game_over()
 
 func _on_boss_died():
 	print("Game Manager: Boss death detected. Initiating Victory.")
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_VICTORY_SCREEN)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_victory()
 
 
 =====================================
@@ -3672,21 +3678,16 @@ FILE: ./src/scenes/main/main.gd
 =====================================
 # src/scenes/main/main.gd
 # This is the main entry point for the game, as defined in project.godot.
-# Its only job is to immediately load and switch to the first real scene,
-# which is our title screen.
+# Its only job is to immediately delegate to the SceneManager.
 extends Node
 
 func _ready():
-	# NEW: Validate all asset paths on startup in debug builds.
+	# Validate asset paths in debug builds.
 	if OS.is_debug_build():
 		AssetPaths.validate_all_paths()
 
-	# Using AssetPaths makes this transition type-safe and easy to manage.
-	# CRITICAL FIX: 'call_deferred' is REQUIRED here. The main scene cannot be
-	# replaced immediately in its own _ready function, as the scene tree is
-	# busy being set up. This defers the change to a safe point after the
-	# current frame's processing.
-	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_TITLE_SCREEN)
+	# Delegate the initial scene load to our new centralized manager.
+	SceneManager.go_to_title_screen()
 
 
 =====================================
@@ -4128,16 +4129,61 @@ FILE: ./src/core/systems/game_manager.gd
 # a reference to a GameStateData resource, standardizing our state pattern.
 extends Node
 
-# MODIFIED: Removed the parse-time type hint to break the dependency cycle.
 var state = null
 
-# Preload the script resource itself. This is safe.
 const GameStateDataScript = preload("res://src/core/data/game_state_data.gd")
 
 func _ready():
-	# Create a new, clean instance of the game state at runtime,
-	# when all scripts have been parsed and registered.
+	# Create a new, clean instance of the game state every time the
+	# GameManager is initialized.
 	state = GameStateDataScript.new()
+
+# NEW: Implement _exit_tree for proper cleanup.
+# This function is called automatically by the engine when the game is closing.
+func _exit_tree():
+	# Manually release our reference to the state resource. This allows
+	# Godot's garbage collector to free it and any nodes it might be holding,
+	# preventing memory leaks on exit.
+	if is_instance_valid(state):
+		state = null
+
+=====================================
+FILE: ./src/core/systems/scene_manager.gd
+=====================================
+# src/core/systems/scene_manager.gd
+#
+# A centralized singleton for handling all scene transitions. This provides a
+# safe, high-level API for changing scenes and prevents scene path strings
+# from being scattered across the codebase.
+extends Node
+
+# --- Private Methods ---
+
+# The core, private function that handles the actual scene change.
+# It uses 'call_deferred' to ensure the change happens at a safe time.
+func _switch_to_scene(path: String) -> void:
+	get_tree().call_deferred("change_scene_to_file", path)
+
+
+# --- Public API ---
+
+func go_to_title_screen() -> void:
+	_switch_to_scene(AssetPaths.SCENE_TITLE_SCREEN)
+
+func start_game(encounter_path: String) -> void:
+	GameManager.state.current_encounter_script_path = encounter_path
+	_switch_to_scene(AssetPaths.SCENE_LOADING_SCREEN)
+
+func go_to_game_over() -> void:
+	_switch_to_scene(AssetPaths.SCENE_GAME_OVER_SCREEN)
+
+func go_to_victory() -> void:
+	_switch_to_scene(AssetPaths.SCENE_VICTORY_SCREEN)
+
+# A generic function for simple menu navigation.
+func go_to_scene(path: String) -> void:
+	_switch_to_scene(path)
+
 
 =====================================
 FILE: ./src/core/systems/object_pool.gd
@@ -4473,25 +4519,39 @@ This document tracks file renames and moves specifically within `src/core`.
 =====================================
 FILE: ./src/core/building/level_parser.gd
 =====================================
-# src/core/builders/level_parser.gd
+# src/core/building/level_parser.gd
 #
 # Responsibility: To parse the raw data from layout and encounter scripts and
-# organize it into a structured LevelBuildData object. This class does not
-# create any nodes; it only processes data.
+# organize it into a structured LevelBuildData object. This class is now also
+# responsible for loading the layout script and validating the data.
 class_name LevelParser
 extends RefCounted
 
-# The single public method of this class. It takes the arena script resources
-# and returns a complete LevelBuildData resource.
-#
-# CORRECTED: The function signature now correctly expects Script resources,
-# not instantiated Objects.
-func parse_level_data(layout_script: Script, encounter_script: Script) -> LevelBuildData:
+# MODIFIED: This function is now smarter and more robust. It only needs the
+# encounter_script and will handle loading and validating the layout script itself.
+func parse_level_data(encounter_script: Script) -> LevelBuildData:
 	var data = LevelBuildData.new()
-	# We can still store the script resource for later use.
+	if not is_instance_valid(encounter_script):
+		push_error("LevelParser: Received an invalid encounter script.")
+		return data # Return empty data object
+
 	data.encounter_script_object = encounter_script
 
-	# Constants can be accessed directly from the script resource.
+	# --- NEW: Validation Step 1: Get Layout Path ---
+	var constants_map = encounter_script.get_script_constant_map()
+	if not constants_map.has("LAYOUT_SCRIPT_PATH"):
+		push_error("LevelParser: Encounter script '%s' is missing 'LAYOUT_SCRIPT_PATH' constant." % encounter_script.resource_path)
+		return data
+
+	var layout_path: String = constants_map["LAYOUT_SCRIPT_PATH"]
+
+	# --- NEW: Validation Step 2: Load Layout Script ---
+	var layout_script: Script = load(layout_path)
+	if not is_instance_valid(layout_script):
+		push_error("LevelParser: Failed to load layout script at path defined in encounter: %s" % layout_path)
+		return data
+
+	# --- Original Parsing Logic (now guaranteed to have valid data) ---
 	for y in range(layout_script.TERRAIN_DATA.size()):
 		var row_string: String = layout_script.TERRAIN_DATA[y]
 		for x in range(row_string.length()):
@@ -4512,7 +4572,6 @@ func parse_level_data(layout_script: Script, encounter_script: Script) -> LevelB
 						data.boss_spawn_pos = tile_pos
 	
 	return data
-
 
 =====================================
 FILE: ./src/core/building/terrain_builder.gd
@@ -4711,49 +4770,32 @@ func run_intro_sequence() -> void:
 =====================================
 FILE: ./src/core/building/arena_builder.gd
 =====================================
-# src/core/arena_builder.gd
+# src/core/building/arena_builder.gd
 #
 # This singleton is now a high-level "Coordinator". Its single responsibility
 # is to manage the overall process of level construction by delegating tasks
 # to specialized builder classes.
 extends Node
 
-# This function is now much cleaner and easier to read. It's a clear,
-# step-by-step recipe for building a level.
 func build_level_async() -> Node:
 	var level_container := Node.new()
 	level_container.name = "LevelContainer"
 
-	# --- 1. Load Raw Data ---
-	# CORRECTED: Access the state object on GameManager to get the path.
+	# --- 1. Load Encounter Data ---
 	var encounter_path: String = GameManager.state.current_encounter_script_path
 	if encounter_path.is_empty():
 		push_error("ArenaBuilder: No encounter script specified in GameManager.")
 		return level_container
 		
 	var encounter_script: Script = load(encounter_path)
-	if not encounter_script:
+	if not is_instance_valid(encounter_script):
 		push_error("ArenaBuilder: Failed to load encounter script at: %s" % encounter_path)
 		return level_container
 		
-	# Use get_script_constant_map() to safely read the constant
-	# from the script resource itself, without creating a temporary instance.
-	var constants_map = encounter_script.get_script_constant_map()
-	if not constants_map.has("LAYOUT_SCRIPT_PATH"):
-		push_error("ArenaBuilder: Encounter script '%s' is missing 'LAYOUT_SCRIPT_PATH' constant." % encounter_path)
-		return level_container
-		
-	var layout_path: String = constants_map["LAYOUT_SCRIPT_PATH"]
-	
-	var layout_script: Script = load(layout_path)
-
-	if not layout_script:
-		push_error("ArenaBuilder: Failed to load layout script defined in encounter: %s" % layout_path)
-		return level_container
-
-	# --- 2. Parse Data ---
+	# --- 2. Parse Data (Now much simpler) ---
+	# The parser now handles all the sub-loading and validation.
 	var parser = LevelParser.new()
-	var build_data = parser.parse_level_data(layout_script, encounter_script)
+	var build_data = parser.parse_level_data(encounter_script)
 	
 	await get_tree().process_frame
 
@@ -5357,13 +5399,11 @@ FILE: ./src/entities/components/combat_component.gd
 class_name CombatComponent
 extends ComponentInterface
 
-# CORRECTED: The signal is now used again.
 signal damage_dealt
 
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 
-# CORRECTED: Renamed `owner` to `p_owner` and added underscores to unused parameters.
 func setup(p_owner: Node, _config: Resource = null, _services = null) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.p_data = owner_node.p_data
@@ -5386,16 +5426,14 @@ func fire_shot():
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
 	shot.activate()
 
-# POGO BUG FIX: This function is now fully responsible for the pogo action.
 func trigger_pogo(pogo_target):
-	# First, deal damage and emit the signal if the target is an enemy.
 	if pogo_target and pogo_target.is_in_group("enemy"):
 		var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
 		if enemy_health_comp:
-			enemy_health_comp.take_damage(1, owner_node)
+			# MODIFIED: Pass `true` to bypass invincibility frames for pogo hits.
+			enemy_health_comp.take_damage(1, owner_node, true)
 			damage_dealt.emit()
 	
-	# Then, execute the bounce physics.
 	owner_node.velocity.y = -CombatDB.config.player_pogo_force
 	owner_node.position.y -= 1
 	p_data.can_dash = true
@@ -5437,7 +5475,6 @@ func _ready():
 	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
 
-# CORRECTED: Renamed `owner` to `p_owner` and added underscore to `_services`.
 func setup(p_owner: Node, config: Resource = null, _services = null) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	
@@ -5469,13 +5506,16 @@ func teardown() -> void:
 	entity_data = null
 	owner_node = null
 
-func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
+# MODIFIED: Added p_bypass_invincibility parameter
+func take_damage(damage_amount: int, damage_source: Node = null, p_bypass_invincibility: bool = false) -> Dictionary:
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
-	if entity_data.is_invincible or is_dash_invincible:
+	
+	# MODIFIED: Check the bypass flag
+	if (entity_data.is_invincible or is_dash_invincible) and not p_bypass_invincibility:
 		return {"was_damaged": false}
 
 	entity_data.health -= damage_amount
-	health_changed.emit(entity_data.health, max_health)
+	health_changed.emit(entity_data.health, entity_data.max_health)
 	
 	_trigger_hit_flash()
 	entity_data.is_invincible = true
@@ -5768,8 +5808,6 @@ func _emit_healing_charges_changed_event():
 	healing_charges_changed.emit(p_data.healing_charges)
 
 func _check_for_contact_damage():
-	# POGO BUG FIX: If we are in a pogo attack, disable contact damage.
-	# This gives the pogo's hitbox priority and prevents the race condition.
 	if p_data.is_pogo_attack:
 		return
 
@@ -5796,6 +5834,8 @@ func _cancel_heal():
 	healing_timer.stop()
 
 func _on_hitbox_body_entered(body):
+	# --- DEBUG PRINT ---
+	print("[DEBUG] Hitbox collided with: ", body.name, " | In Groups: ", body.get_groups())
 	if p_data.is_pogo_attack:
 		combat_component.trigger_pogo(body)
 	elif body.is_in_group("enemy"):
@@ -6022,6 +6062,8 @@ func enter():
 	
 	if Input.is_action_pressed("ui_down"):
 		p_data.is_pogo_attack = true
+		# --- DEBUG PRINT ---
+		print("[DEBUG] Pogo Attack Initiated in AttackState.")
 		player.hitbox.position = Vector2(0, 60)
 		
 		if player.is_on_floor():
@@ -6052,7 +6094,6 @@ func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = player.hitbox_shape.shape
 	query.transform = player.global_transform * player.hitbox.transform
-	# CORRECTED: Fixed the typo from "HAZ-ARD" to "HAZARD"
 	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [player]
 	

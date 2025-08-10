@@ -29,7 +29,6 @@ func _ready():
 	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
 
-# CORRECTED: Renamed `owner` to `p_owner` and added underscore to `_services`.
 func setup(p_owner: Node, config: Resource = null, _services = null) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	
@@ -61,13 +60,16 @@ func teardown() -> void:
 	entity_data = null
 	owner_node = null
 
-func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
+# MODIFIED: Added p_bypass_invincibility parameter
+func take_damage(damage_amount: int, damage_source: Node = null, p_bypass_invincibility: bool = false) -> Dictionary:
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
-	if entity_data.is_invincible or is_dash_invincible:
+	
+	# MODIFIED: Check the bypass flag
+	if (entity_data.is_invincible or is_dash_invincible) and not p_bypass_invincibility:
 		return {"was_damaged": false}
 
 	entity_data.health -= damage_amount
-	health_changed.emit(entity_data.health, max_health)
+	health_changed.emit(entity_data.health, entity_data.max_health)
 	
 	_trigger_hit_flash()
 	entity_data.is_invincible = true

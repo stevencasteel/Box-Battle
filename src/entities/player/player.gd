@@ -131,8 +131,6 @@ func _emit_healing_charges_changed_event():
 	healing_charges_changed.emit(p_data.healing_charges)
 
 func _check_for_contact_damage():
-	# POGO BUG FIX: If we are in a pogo attack, disable contact damage.
-	# This gives the pogo's hitbox priority and prevents the race condition.
 	if p_data.is_pogo_attack:
 		return
 
@@ -159,6 +157,8 @@ func _cancel_heal():
 	healing_timer.stop()
 
 func _on_hitbox_body_entered(body):
+	# --- DEBUG PRINT ---
+	print("[DEBUG] Hitbox collided with: ", body.name, " | In Groups: ", body.get_groups())
 	if p_data.is_pogo_attack:
 		combat_component.trigger_pogo(body)
 	elif body.is_in_group("enemy"):

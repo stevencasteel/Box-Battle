@@ -10,6 +10,8 @@ func enter():
 	
 	if Input.is_action_pressed("ui_down"):
 		p_data.is_pogo_attack = true
+		# --- DEBUG PRINT ---
+		print("[DEBUG] Pogo Attack Initiated in AttackState.")
 		player.hitbox.position = Vector2(0, 60)
 		
 		if player.is_on_floor():
@@ -40,7 +42,6 @@ func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = player.hitbox_shape.shape
 	query.transform = player.global_transform * player.hitbox.transform
-	# CORRECTED: Fixed the typo from "HAZ-ARD" to "HAZARD"
 	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [player]
 	
