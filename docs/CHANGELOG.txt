@@ -24,19 +24,6 @@
 ║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
 ║      ░   improve project modularity and scalability.                         ║
 ║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Added placeholder `README.md` and `DEPRECATION.md` files to `core`, ║
-║      ░   `entities`, and `docs` to establish a documentation framework.      ║
-║                                                                              ║
-║   █  Documentation                                                           ║
-║      ░ ■ Completed Sprint 0 architectural audit.                             ║
-║      ░ ■ Added `docs/sprint_0_audit` directory to house analysis files.      ║
-║      ░ ■ Generated audit reports for singletons, event usage, and config usage.║
-║      ░ ■ Added `ADR-001` to formally document the existing Service Locator pattern.║
-║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
-║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
-║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
-║                                                                              ║
 ║   █  Fixed                                                                   ║
 ║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
 ║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
