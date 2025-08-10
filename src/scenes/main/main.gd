@@ -5,6 +5,10 @@
 extends Node
 
 func _ready():
+	# NEW: Validate all asset paths on startup in debug builds.
+	if OS.is_debug_build():
+		AssetPaths.validate_all_paths()
+
 	# Using AssetPaths makes this transition type-safe and easy to manage.
 	# CRITICAL FIX: 'call_deferred' is REQUIRED here. The main scene cannot be
 	# replaced immediately in its own _ready function, as the scene tree is

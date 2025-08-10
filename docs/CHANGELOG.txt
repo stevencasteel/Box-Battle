@@ -36,6 +36,9 @@
 ║      ░   improve project modularity and scalability.                         ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Reorganized `AssetPaths.gd` by feature/system for improved clarity. ║
+║      ░ ■ Added a validation system to `AssetPaths.gd` that checks for missing║
+║      ░   files at startup, preventing runtime "file not found" errors.       ║
 ║      ░ ■ Added validation to `Settings.gd` property setters to clamp audio   ║
 ║      ░   volume values, making the system more robust against invalid data.  ║
 ║                                                                              ║
@@ -44,12 +47,14 @@
 ║      ░   `entities`, and `docs` to establish a documentation framework.      ║
 ║                                                                              ║
 ║   █  Documentation                                                           ║
+║      ░ ■ Improved header comments in `Constants.gd` and `PhysicsLayers.gd`   ║
+║      ░   to clarify their intended purpose and prevent architectural drift.  ║
 ║      ░ ■ Completed Sprint 0 architectural audit.                             ║
 ║      ░ ■ Added `docs/sprint_0_audit` directory to house analysis files.      ║
 ║      ░ ■ Generated audit reports for singletons, event usage, and config usage.║
 ║      ░ ■ Added `ADR-001` to formally document the existing Service Locator pattern.║
 ║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
-║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring ║
+║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
 ║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
