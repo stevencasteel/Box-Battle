@@ -19,7 +19,8 @@ var owner_node: CharacterBody2D
 # --- Config ---
 var max_health: int
 var invincibility_duration: float
-var _knockback_config: Dictionary = {}
+var knockback_speed: float
+var hazard_knockback_speed: float
 
 # --- Internal State ---
 var original_color: Color
@@ -40,15 +41,28 @@ func _exit_tree():
 	owner_node = null
 	EventBus.off_owner(self)
 
-func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, config_paths: Dictionary):
+# MODIFIED: Changed p_config type from CombatConfig to generic Resource
+func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, p_config: Resource) -> void:
 	self.entity_data = p_entity_data
 	self.owner_node = p_owner_node
-	
-	max_health = Config.get_value(config_paths.max_health, 10)
-	invincibility_duration = Config.get_value(config_paths.get("invincibility", "player.health.invincibility_duration"), 1.0)
-	
-	if config_paths.has("knockback"):
-		_knockback_config = config_paths.knockback
+
+	# MODIFIED: Perform a safe runtime cast
+	var cfg: CombatConfig = p_config as CombatConfig
+	if not cfg:
+		push_error("HealthComponent.setup: passed p_config is not a CombatConfig resource.")
+		return
+
+	# We check if the owner is the player to know which config properties to use.
+	if p_owner_node.is_in_group("player"):
+		max_health = cfg.player_max_health
+		invincibility_duration = cfg.player_invincibility_duration
+		knockback_speed = cfg.player_knockback_speed
+		hazard_knockback_speed = cfg.player_hazard_knockback_speed
+	else: # Assumes it's a boss/enemy
+		max_health = cfg.boss_health
+		invincibility_duration = cfg.boss_invincibility_duration
+		knockback_speed = 0
+		hazard_knockback_speed = 0
 	
 	entity_data.health = max_health
 	if is_instance_valid(get_visual_sprite()):
@@ -76,16 +90,16 @@ func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
 	return {"was_damaged": true, "knockback_velocity": knockback_info}
 
 func _calculate_knockback(damage_source: Node) -> Vector2:
-	if _knockback_config.is_empty() or not damage_source:
+	if knockback_speed == 0 or not damage_source:
 		return Vector2.ZERO
 		
 	var knockback_dir = (owner_node.global_position - damage_source.global_position).normalized()
 	
-	var knockback_speed = Config.get_value(_knockback_config.speed, 400.0)
+	var speed = knockback_speed
 	if damage_source.is_in_group("hazard"):
-		knockback_speed = Config.get_value(_knockback_config.hazard_speed, knockback_speed)
+		speed = hazard_knockback_speed
 		
-	return (knockback_dir + Vector2.UP * 0.5).normalized() * knockback_speed
+	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
 
 func _trigger_hit_flash():
 	if is_instance_valid(get_visual_sprite()):

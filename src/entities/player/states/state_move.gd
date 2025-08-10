@@ -3,13 +3,15 @@
 extends PlayerState
 
 func enter():
-	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	# MODIFIED: Get value from the new CombatDB resource.
+	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
 	p_data.can_dash = true
 
 func process_physics(delta: float):
-	p_data.coyote_timer = Config.get_value("player.physics.coyote_time")
+	# MODIFIED: Get value from the new CombatDB resource.
+	p_data.coyote_timer = CombatDB.config.player_coyote_time
 	
-	player.velocity.y += Config.get_value("general.physics.gravity") * delta
+	player.velocity.y += CombatDB.config.gravity * delta
 	player.apply_horizontal_movement()
 
 	if not player.is_on_floor():

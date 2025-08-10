@@ -12,7 +12,6 @@ func process_physics(delta: float):
 
 	_check_for_wall_slide()
 
-	# MODIFIED: All timer checks now use the p_data resource.
 	if p_data.jump_buffer_timer > 0:
 		if p_data.wall_coyote_timer > 0:
 			_perform_wall_jump()
@@ -23,12 +22,12 @@ func process_physics(delta: float):
 
 func _apply_gravity(delta):
 	var gravity_multiplier = 1.0
+	# MODIFIED: Get value from the new CombatDB resource.
 	if Input.is_action_pressed("ui_down"):
-		gravity_multiplier = Config.get_value("player.physics.fast_fall_gravity_multiplier")
-	player.velocity.y += Config.get_value("general.physics.gravity") * gravity_multiplier * delta
+		gravity_multiplier = CombatDB.config.player_fast_fall_gravity_multiplier
+	player.velocity.y += CombatDB.config.gravity * gravity_multiplier * delta
 
 func _check_for_wall_slide():
-	# MODIFIED: All state variables now read from/write to p_data.
 	if p_data.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -p_data.last_wall_normal.x:
 		player.change_state(player.State.WALL_SLIDE)
 
@@ -37,7 +36,8 @@ func _perform_air_jump():
 	player.change_state(player.State.JUMP)
 	
 func _perform_wall_jump():
-	player.velocity.x = p_data.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
+	# MODIFIED: Get value from the new CombatDB resource.
+	player.velocity.x = p_data.last_wall_normal.x * CombatDB.config.player_wall_jump_force_x
 	p_data.coyote_timer = 0
 	p_data.wall_coyote_timer = 0
 	player.change_state(player.State.JUMP)

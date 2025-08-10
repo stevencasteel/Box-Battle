@@ -16,6 +16,14 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Replaced the JSON-based `Config.gd` system with a type-safe,        ║
+║      ░   `Resource`-based system (`CombatConfig.tres` and `CombatDB.gd`).    ║
+║      ░   This provides compile-time safety against typos and enables direct  ║
+║      ░   gameplay value tuning in the Godot editor's Inspector.              ║
+║      ░ ■ Refactored the Player's state machine to load its state scripts at  ║
+║      ░   runtime in `_ready()` instead of using `preload()`. This breaks a   ║
+║      ░   brittle parse-time dependency cycle, making the game's startup      ║
+║      ░   sequence significantly more robust.                                 ║
 ║      ░ ■ Further refined the `src/core` directory structure, creating new    ║
 ║      ░   subdirectories for typed configs and events (`data/config`, `events/typed_events`).║
 ║      ░ ■ Standardized script filenames to snake_case (e.g., `Config.gd` ->   ║
@@ -24,7 +32,25 @@
 ║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
 ║      ░   improve project modularity and scalability.                         ║
 ║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Added placeholder `README.md` and `DEPRECATION.md` files to `core`, ║
+║      ░   `entities`, and `docs` to establish a documentation framework.      ║
+║                                                                              ║
+║   █  Documentation                                                           ║
+║      ░ ■ Completed Sprint 0 architectural audit.                             ║
+║      ░ ■ Added `docs/sprint_0_audit` directory to house analysis files.      ║
+║      ░ ■ Generated audit reports for singletons, event usage, and config usage.║
+║      ░ ■ Added `ADR-001` to formally document the existing Service Locator pattern.║
+║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
+║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
+║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
+║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a cascade of parse errors by correcting the implementation ║
+║      ░   of the new `CombatConfig` resource and refactoring dependent scripts.║
+║      ░ ■ Corrected multiple typos and syntax errors in player state scripts  ║
+║      ░   (`state_attack.gd`, `state_hurt.gd`, `state_wall_slide.gd`) that    ║
+║      ░   were causing crashes during gameplay.                               ║
 ║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
 ║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
 ║                                                                              ║

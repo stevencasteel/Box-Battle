@@ -4,7 +4,8 @@ extends PlayerState
 
 func enter():
 	player.velocity = Vector2.ZERO
-	player.healing_timer.start(Config.get_value("player.health.heal_duration"))
+	# MODIFIED: Get value from the new CombatDB resource.
+	player.healing_timer.start(CombatDB.config.player_heal_duration)
 	print("Healing started...")
 
 func exit():

@@ -22,15 +22,16 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var combat_component: CombatComponent = $CombatComponent
 @onready var input_component: InputComponent = $InputComponent
 
-# --- Preloads ---
-const MoveState = preload("res://src/entities/player/states/state_move.gd")
-const FallState = preload("res://src/entities/player/states/state_fall.gd")
-const JumpState = preload("res://src/entities/player/states/state_jump.gd")
-const DashState = preload("res://src/entities/player/states/state_dash.gd")
-const WallSlideState = preload("res://src/entities/player/states/state_wall_slide.gd")
-const AttackState = preload("res://src/entities/player/states/state_attack.gd")
-const HurtState = preload("res://src/entities/player/states/state_hurt.gd")
-const HealState = preload("res://src/entities/player/states/state_heal.gd")
+# --- State Scripts (Loaded at Runtime) ---
+# We use vars instead of const preloads to break parse-time circular dependencies.
+var MoveStateScript: Script
+var FallStateScript: Script
+var JumpStateScript: Script
+var DashStateScript: Script
+var WallSlideStateScript: Script
+var AttackStateScript: Script
+var HurtStateScript: Script
+var HealStateScript: Script
 
 # --- State Machine & Data ---
 var states: Dictionary
@@ -42,6 +43,28 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 func _ready():
 	p_data = PlayerStateData.new()
 	
+	# --- MODIFIED: Load state scripts at runtime ---
+	MoveStateScript = load("res://src/entities/player/states/state_move.gd")
+	FallStateScript = load("res://src/entities/player/states/state_fall.gd")
+	JumpStateScript = load("res://src/entities/player/states/state_jump.gd")
+	DashStateScript = load("res://src/entities/player/states/state_dash.gd")
+	WallSlideStateScript = load("res://src/entities/player/states/state_wall_slide.gd")
+	AttackStateScript = load("res://src/entities/player/states/state_attack.gd")
+	HurtStateScript = load("res://src/entities/player/states/state_hurt.gd")
+	HealStateScript = load("res://src/entities/player/states/state_heal.gd")
+
+	states = {
+		State.MOVE: MoveStateScript.new(self, p_data),
+		State.FALL: FallStateScript.new(self, p_data),
+		State.JUMP: JumpStateScript.new(self, p_data),
+		State.DASH: DashStateScript.new(self, p_data),
+		State.WALL_SLIDE: WallSlideStateScript.new(self, p_data),
+		State.ATTACK: AttackStateScript.new(self, p_data),
+		State.HURT: HurtStateScript.new(self, p_data),
+		State.HEAL: HealStateScript.new(self, p_data),
+	}
+	# --- End of Runtime Loading ---
+
 	visual_sprite.color = Palette.COLOR_PLAYER
 	
 	add_to_group("player")
@@ -49,15 +72,7 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	var player_health_configs = {
-		"max_health": "player.health.max_health",
-		"invincibility": "player.health.invincibility_duration",
-		"knockback": {
-			"speed": "player.combat.knockback_speed",
-			"hazard_speed": "player.combat.hazard_knockback_speed"
-		}
-	}
-	health_component.setup(p_data, self, player_health_configs)
+	health_component.setup(p_data, self, CombatDB.config)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
@@ -66,12 +81,6 @@ func _ready():
 	
 	input_component.setup(self, p_data, combat_component)
 
-	states = {
-		State.MOVE: MoveState.new(self, p_data), State.FALL: FallState.new(self, p_data),
-		State.JUMP: JumpState.new(self, p_data), State.DASH: DashState.new(self, p_data),
-		State.WALL_SLIDE: WallSlideState.new(self, p_data), State.ATTACK: AttackState.new(self, p_data),
-		State.HURT: HurtState.new(self, p_data), State.HEAL: HealState.new(self, p_data),
-	}
 	current_state = states[State.FALL]
 	current_state.enter()
 	
@@ -84,7 +93,7 @@ func _physics_process(delta):
 	move_and_slide()
 	_check_for_contact_damage()
 	if is_on_wall() and not is_on_floor():
-		p_data.wall_coyote_timer = Config.get_value("player.physics.wall_coyote_time")
+		p_data.wall_coyote_timer = CombatDB.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
 
 func _unhandled_input(event: InputEvent):
@@ -117,7 +126,7 @@ func change_state(new_state_key: State):
 	current_state.enter()
 
 func apply_horizontal_movement():
-	velocity.x = Input.get_axis("ui_left", "ui_right") * Config.get_value("player.physics.speed")
+	velocity.x = Input.get_axis("ui_left", "ui_right") * CombatDB.config.player_speed
 	if not is_zero_approx(velocity.x):
 		p_data.facing_direction = sign(velocity.x)
 
@@ -141,9 +150,9 @@ func _check_for_contact_damage():
 
 
 func _on_damage_dealt():
-	if p_data.healing_charges >= Config.get_value("player.health.max_healing_charges"): return
+	if p_data.healing_charges >= CombatDB.config.player_max_healing_charges: return
 	p_data.determination_counter += 1
-	if p_data.determination_counter >= Config.get_value("player.combat.determination_per_charge"):
+	if p_data.determination_counter >= CombatDB.config.player_determination_per_charge:
 		p_data.determination_counter = 0; p_data.healing_charges += 1
 		_emit_healing_charges_changed_event()
 
@@ -157,7 +166,6 @@ func _on_hitbox_body_entered(body):
 	elif body.is_in_group("enemy"):
 		var enemy_health_comp = body.get_node_or_null("HealthComponent")
 		if enemy_health_comp:
-			# SOLUTION: Pass 'self' (the player) as the second argument.
 			enemy_health_comp.take_damage(1, self)
 			_on_damage_dealt()
 

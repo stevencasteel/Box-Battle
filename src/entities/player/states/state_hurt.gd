@@ -5,10 +5,12 @@ extends PlayerState
 func enter():
 	p_data.is_charging = false
 	player._cancel_heal()
-	p_data.knockback_timer = Config.get_value("player.combat.knockback_duration")
+	# CORRECTED: Use the flat config path: "player_knockback_duration"
+	p_data.knockback_timer = CombatDB.config.player_knockback_duration
 
 func process_physics(delta):
-	player.velocity.y += Config.get_value("general.physics.gravity") * delta
+	# CORRECTED: Use the flat config path: "gravity"
+	player.velocity.y += CombatDB.config.gravity * delta
 	
 	if p_data.knockback_timer <= 0:
 		player.change_state(player.State.FALL)

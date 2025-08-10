@@ -20,8 +20,9 @@ func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData, p_combat
 
 # This function is called by the player's _physics_process loop.
 func process_physics():
+	# MODIFIED: Get value from the new CombatDB resource.
 	if Input.is_action_just_pressed("ui_jump"):
-		p_data.jump_buffer_timer = Config.get_value("player.physics.jump_buffer")
+		p_data.jump_buffer_timer = CombatDB.config.player_jump_buffer
 	
 	if not owner_node.states.find_key(owner_node.current_state) in owner_node.ACTION_ALLOWED_STATES:
 		return
@@ -32,7 +33,8 @@ func process_physics():
 	
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
-			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"):
+			# MODIFIED: Get value from the new CombatDB resource.
+			if p_data.charge_timer >= CombatDB.config.player_charge_time:
 				combat_component.fire_shot()
 			else:
 				owner_node.change_state(owner_node.State.ATTACK)

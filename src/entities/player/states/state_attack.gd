@@ -3,8 +3,8 @@
 extends PlayerState
 
 func enter():
-	p_data.attack_duration_timer = Config.get_value("player.combat.attack_duration")
-	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	p_data.attack_duration_timer = CombatDB.config.player_attack_duration
+	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 	player.hitbox_shape.disabled = false
 	p_data.is_pogo_attack = false
 	
@@ -30,7 +30,7 @@ func exit():
 
 func process_physics(delta: float):
 	if not p_data.is_pogo_attack:
-		var friction = Config.get_value("player.combat.attack_friction")
+		var friction = CombatDB.config.player_attack_friction
 		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
 	if p_data.attack_duration_timer <= 0:
@@ -40,6 +40,7 @@ func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = player.hitbox_shape.shape
 	query.transform = player.global_transform * player.hitbox.transform
+	# CORRECTED: Fixed the typo from "HAZ-ARD" to "HAZARD"
 	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [player]
 	

@@ -2,15 +2,18 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 21:53:57 CDT 2025
+Generated on: Sun Aug 10 12:08:11 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
 ├── README.md
+├── all_script_errors.txt
+├── create_plan_docs.sh
+├── create_test_docs.sh
 ├── data
-│   └── combat_config.json
+│   └── combat_config.tres
 ├── default_bus_layout.tres
 ├── docs
 │   ├── ARCHITECTURE.txt
@@ -20,6 +23,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── BUGS.txt
 │   ├── CHANGELOG.txt
 │   ├── CHANGELOG_archive_pre-0.4.0.txt
+│   ├── DEPRECATION.md
 │   ├── DESIGN.txt
 │   ├── DOCS_PROTOCOL.txt
 │   ├── LICENSE
@@ -29,17 +33,35 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── all_godot_source_code.txt
 │   ├── all_script_errors.txt
 │   ├── create_all_godot_source_code_txt.command
-│   └── create_all_godot_source_code_txt.sh
+│   ├── create_all_godot_source_code_txt.sh
+│   └── sprint_0_audit
+│       ├── ADR.md
+│       ├── ADR.mdADR-001_Service_Locator_Pattern.md
+│       ├── ARCH-001_Refactoring_Principles.md
+│       ├── ARCH-002_Acceptance_Criteria.md
+│       ├── FSM-001_Entity_State_Flows.md
+│       ├── TEST-001_Baseline_Metrics.md
+│       ├── TEST-002_Smoke_Tests.md
+│       ├── TEST-003_Regression_Checklist.md
+│       ├── config_usage.txt
+│       ├── event_usage.txt
+│       ├── singleton_map.txt
+│       └── state_machine_flow.md
 ├── final_reorganize.sh
 ├── icon.svg
+├── pico.save
 ├── progess
 │   └── progress_001-1.jpg
 ├── project.godot
+├── refactor_phase2.sh
+├── sprint_0_audit.sh
 └── src
     ├── arenas
     │   ├── arena_00_encounter.gd
     │   └── arena_00_layout.gd
     ├── core
+    │   ├── DEPRECATION.md
+    │   ├── README.md
     │   ├── building
     │   │   ├── arena_builder.gd
     │   │   ├── encounter_director.gd
@@ -47,14 +69,17 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── level_parser.gd
     │   │   └── terrain_builder.gd
     │   ├── data
-    │   │   ├── Config.gd
-    │   │   └── settings.gd
+    │   │   ├── combat_db.gd
+    │   │   └── config
+    │   │       ├── combat_config.gd
+    │   │       └── settings.gd
     │   ├── events
-    │   │   ├── boss_health_changed_event.gd
     │   │   ├── event_bus.gd
     │   │   ├── event_catalog.gd
-    │   │   ├── player_healing_charges_changed_event.gd
-    │   │   └── player_health_changed_event.gd
+    │   │   └── typed_events
+    │   │       ├── boss_health_changed_event.gd
+    │   │       ├── player_healing_charges_changed_event.gd
+    │   │       └── player_health_changed_event.gd
     │   ├── sequencing
     │   │   ├── sequence_step.gd
     │   │   ├── sequencer.gd
@@ -72,6 +97,7 @@ PROJECT DIRECTORY STRUCTURE:
     │       ├── palette.gd
     │       └── physics_layers.gd
     ├── entities
+    │   ├── README.md
     │   ├── boss
     │   │   ├── base_boss.gd
     │   │   ├── base_boss.tscn
@@ -119,6 +145,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   └── main
     │       ├── main.gd
     │       └── main.tscn
+    ├── tests
     └── ui
         ├── components
         │   ├── custom_slider
@@ -157,7 +184,117 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-42 directories, 107 files
+46 directories, 130 files
+
+
+=====================================
+FILE: ./all_script_errors.txt
+=====================================
+WorkerThreadPool: 8 threads, 2 max low-priority.
+Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Devices:
+  #0: Apple Apple M1 (Apple7) - Supported, Integrated
+- Metal multiview supported:
+  max view count: 16
+  max instances: 4294967295
+Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
+Using "default" pen tablet driver...
+Shader 'CanvasSdfShaderRD' (group 0) SHA256: 97dc9fb2f592cd02d8b1f8fd33df8aec73849d2fbafcfeaa6e99b9c3678c221d
+Shader 'SkeletonShaderRD' (group 0) SHA256: a7e5115c09793f8e950720a2ab8906bff195e9b508eec01af7aeb363da2bf75b
+Shader 'SortShaderRD' (group 0) SHA256: e184fb752fd6b1f86c536cb9dff20977fee019403e1025080eca44e6bfa11ef1
+Shader 'ParticlesShaderRD' (group 0) SHA256: 9797916f926fab4024422fe6c75cc0d8d517705d90802882fb9efa6dda0af392
+Shader 'ParticlesCopyShaderRD' (group 0) SHA256: 1a312a6797c1ba217655b41d33ce357ac226cba8d65d4daab9278d88c57d6468
+Shader 'CanvasShaderRD' (group 0) SHA256: 908e609e1337d67f8799155a57f03a3de33fcdba22b574595e90da921079b33d
+Shader 'CanvasOcclusionShaderRD' (group 0) SHA256: f9d6c9d569cf2f40595061ee84efd5fe34d68284e1f7273f62a4ac36de8852ee
+Shader 'SceneForwardMobileShaderRD' (group 0) SHA256: 1c5d16b1f4d38d016026900999bd209a9f901f70f04136d9fdd669f9601e2db3
+Shader 'SkyShaderRD' (group 0) SHA256: 34c03a8e46624b5ab7488ca0527d4f733272c048f0dd61258a69b9bf419225bd
+Shader 'BokehDofRasterShaderRD' (group 0) SHA256: a5ed26e5b86fb1a016f61f719fa3ba45119a0bda505dcc038bfd26e718ef956d
+Shader 'BlurRasterShaderRD' (group 0) SHA256: 193d80f293dc88299ae7ef003640f13fa7cab1fd1a57de366b53029265639146
+Shader 'CopyShaderRD' (group 0) SHA256: aaaaf4bfa2e7bd72bdafaa25005b56152e2e738422178c95ce5ed4976f964862
+Shader 'CopyToFbShaderRD' (group 0) SHA256: f113ba1d923f38bcf263af4dbc168573e755be83c1d3616fc49b7588aa9fffa4
+Shader 'CubeToDpShaderRD' (group 0) SHA256: 37d76ea0432d00e86934ff9eab83ce63c9c7feffafd96809773e109c5a078e17
+Shader 'CubemapDownsamplerRasterShaderRD' (group 0) SHA256: 20c48704e5817755c17d80b22e7c39d99270bd1e95c54446d742753abc03db33
+Shader 'CubemapFilterRasterShaderRD' (group 0) SHA256: de06c7a642b6af01caa44a65e94daa5dfafbdda1a6111bdd975c28e8c1fe4c1a
+Shader 'CubemapRoughnessRasterShaderRD' (group 0) SHA256: 3efae0638df891d7ec5aaa17ead03d3243a3fdc9f5920d95e16f92a0aeccfd04
+Shader 'SpecularMergeShaderRD' (group 0) SHA256: 8d06f9bec87ae4177f0a49133608f41313ebad2d0d81a5c074db1541cd396ddc
+Shader 'ShadowFrustumShaderRD' (group 0) SHA256: b73466659c6c1252aff41d1d117370efac3ed69d2ee89bb6e036036557afb5bd
+Shader 'MotionVectorsShaderRD' (group 0) SHA256: 548f1c61370fbba7d8bacec2827d86adc6984d8874d31cb21b7bb5f78e6d4335
+Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e6003b5a0c97bd615d1990a7012076a61e11cb05df558
+Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
+Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
+CoreAudio: detected 2 channels
+CoreAudio: output sampling rate: 44100 Hz
+CoreAudio: output audio buffer frames: 512 calculated latency: 11ms
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
+Loading resource: res://default_bus_layout.tres
+CORE API HASH: 4052744068
+EDITOR API HASH: 910296392
+Loading resource: res://src/core/data/config/settings.gd
+Loading resource: res://src/core/systems/audio_manager.gd
+Loading resource: res://src/core/systems/cursor_manager.gd
+Loading resource: res://assets/sprites/ui/cursors/cursor_default.png
+Loading resource: res://.godot/imported/cursor_default.png-adc7f5ed4336e28008b129c5a66cab2e.ctex
+Loading resource: res://assets/sprites/ui/cursors/cursor_pointer.png
+Loading resource: res://.godot/imported/cursor_pointer.png-90e307ad4e06d49b3b74ef9b44e078f4.ctex
+Loading resource: res://src/ui/global_hud/global_hud.tscn
+Loading resource: res://src/ui/global_hud/global_hud.gd
+Loading resource: res://assets/sprites/ui/icons/icon-sound-on.png
+Loading resource: res://.godot/imported/icon-sound-on.png-e846c5d97e3d706214419caf8e828d71.ctex
+Loading resource: res://assets/sprites/ui/icons/icon-sound-off.png
+Loading resource: res://.godot/imported/icon-sound-off.png-6ce140963307e6f579be834adb53f1a0.ctex
+Loading resource: res://src/core/systems/game_manager.gd
+Loading resource: res://src/core/building/arena_builder.gd
+Loading resource: res://src/core/data/combat_db.gd
+Loading resource: res://src/core/systems/object_pool.gd
+Loading resource: res://src/projectiles/player_shot.tscn
+Loading resource: res://src/projectiles/player_shot.gd
+Loading resource: res://src/projectiles/boss_shot.tscn
+Loading resource: res://src/projectiles/boss_shot.gd
+Loading resource: res://src/core/util/physics_layers.gd
+Loaded system CA certificates
+Loading resource: res://src/scenes/main/main.tscn
+Loading resource: res://src/scenes/main/main.gd
+Loading resource: res://data/combat_config.tres
+Loading resource: res://src/ui/screens/title_screen/title_screen.tscn
+Loading resource: res://src/ui/screens/title_screen/title_screen.gd
+Loading resource: res://assets/audio/music/title-screen-loop.mp3
+Loading resource: res://.godot/imported/title-screen-loop.mp3-7ec904333b11a47509751ae22a703854.mp3str
+Loading resource: res://assets/sprites/ui/title/box_battle_title.png
+Loading resource: res://.godot/imported/box_battle_title.png-b9353d8af8deadfd04d4db0e868561f1.ctex
+Loading resource: res://assets/sprites/ui/menu/menu-item-start.png
+Loading resource: res://.godot/imported/menu-item-start.png-32e538bb682d9a1b639fc2dc41f90bed.ctex
+Loading resource: res://assets/sprites/ui/menu/menu-item-options.png
+Loading resource: res://.godot/imported/menu-item-options.png-0a5f7fa3c76e43a264f366e36bedb5f1.ctex
+Loading resource: res://assets/sprites/ui/menu/menu-cursor.png
+Loading resource: res://.godot/imported/menu-cursor.png-3bbc1015f1afec795ab061c5256925a7.ctex
+Loading resource: res://src/scenes/loading/loading_screen.tscn
+Loading resource: res://src/scenes/loading/loading_screen.gd
+Loading resource: res://assets/audio/sfx/start-chime.mp3
+Loading resource: res://.godot/imported/start-chime.mp3-d648111bc9ecb7811859947d2e9fa808.mp3str
+Starting shader pre-warming...
+Loading resource: res://src/entities/player/player.tscn
+Loading resource: res://src/entities/player/player.gd
+Loading resource: res://src/entities/components/health_component.gd
+Loading resource: res://src/entities/components/combat_component.gd
+Loading resource: res://src/entities/components/input_component.gd
+Loading resource: res://src/entities/boss/base_boss.tscn
+Loading resource: res://src/entities/boss/base_boss.gd
+Shader pre-warming complete.
+Loading resource: res://src/arenas/arena_00_encounter.gd
+Loading resource: res://src/entities/boss/base_boss.tscn
+Loading resource: res://src/arenas/arena_00_layout.gd
+Loading resource: res://src/entities/player/player.tscn
+Loading resource: res://src/ui/game_hud/game_hud.tscn
+Loading resource: res://src/ui/game_hud/game_hud.gd
+Loading resource: res://src/scenes/game/game.tscn
+Loading resource: res://src/scenes/game/game.gd
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
 
 
 =====================================
@@ -886,6 +1023,357 @@ FILE: ./docs/DOCS_PROTOCOL.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
+FILE: ./docs/sprint_0_audit/TEST-002_Smoke_Tests.md
+=====================================
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/TEST-001_Baseline_Metrics.md
+=====================================
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/FSM-001_Entity_State_Flows.md
+=====================================
+# State Machine Flow Diagrams
+
+**Date:** 2025-08-10
+
+**Status:** Documented
+
+---
+
+This document provides a visual representation of the Finite State Machines (FSMs) for the core entities in the game. These diagrams are generated using Mermaid syntax and represent the logical flow of states based on player input and game physics.
+
+## Player State Machine
+
+The Player FSM is complex and responsive, designed to facilitate a fluid and expressive moveset. The core loop revolves around the `Move`, `Fall`, and `Jump` states, with multiple entry points into action states like `Dash` and `Attack`.
+
+```mermaid
+graph TD
+    subgraph Core Movement
+        MOVE <-->|Gravity/On Floor| FALL;
+        MOVE -->|Jump Input| JUMP;
+        FALL -->|Coyote Time Jump| JUMP;
+        JUMP -->|Apex Reached| FALL;
+    end
+
+    subgraph Wall Interaction
+        FALL -->|Holding Direction into Wall| WALL_SLIDE;
+        JUMP -->|Holding Direction into Wall| WALL_SLIDE;
+        WALL_SLIDE -->|Jump Input| JUMP;
+        WALL_SLIDE -->|Not Holding Direction| FALL;
+    end
+
+    subgraph Action States
+        MOVE --> DASH;
+        FALL --> DASH;
+        JUMP --> DASH;
+        WALL_SLIDE --> DASH;
+        DASH -->|Duration Ends| FALL;
+
+        MOVE --> ATTACK;
+        FALL --> ATTACK;
+        JUMP --> ATTACK;
+        WALL_SLIDE --> ATTACK;
+        ATTACK -->|Duration Ends| FALL;
+    end
+
+    subgraph Special States
+        ANY_STATE[Any State] -->|Takes Damage| HURT;
+        HURT -->|Knockback Ends| FALL;
+        MOVE -->|Hold Heal Buttons| HEAL;
+        HEAL -->|Buttons Released| MOVE;
+    end
+
+    style MOVE fill:#cde4f0,stroke:#333,stroke-width:2px
+    style FALL fill:#cde4f0,stroke:#333,stroke-width:2px
+    style JUMP fill:#cde4f0,stroke:#333,stroke-width:2px
+    style WALL_SLIDE fill:#e8d1e8,stroke:#333,stroke-width:2px
+    style DASH fill:#f0e4cd,stroke:#333,stroke-width:2px
+    style ATTACK fill:#f0e4cd,stroke:#333,stroke-width:2px
+    style HURT fill:#f8cbcb,stroke:#333,stroke-width:2px
+    style HEAL fill:#d1e8d1,stroke:#333,stroke-width:2px
+
+
+## Boss State Machine
+
+The Base Boss FSM is a simple, predictable loop designed as a template for more complex behaviors. It cycles cleanly through its states based on timers.
+
+
+graph TD
+    COOLDOWN -->|Cooldown Timer Finishes| PATROL;
+    PATROL -->|Patrol Timer Finishes| IDLE;
+    IDLE -->|Immediately| ATTACK;
+    ATTACK -->|Immediately| COOLDOWN;
+
+    style COOLDOWN fill:#cde4f0,stroke:#333,stroke-width:2px
+    style PATROL fill:#e8d1e8,stroke:#333,stroke-width:2px
+    style IDLE fill:#f0e4cd,stroke:#333,stroke-width:2px
+    style ATTACK fill:#f8cbcb,stroke:#333,stroke-width:2px
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/event_usage.txt
+=====================================
+--- EventCatalog.gd ---
+# src/core/event_catalog.gd
+# This script serves as the canonical, central list of all event names in the project.
+# By using these constants instead of raw strings, we gain IDE autocompletion and
+# prevent typos that would lead to silent runtime failures.
+extends Object
+class_name EventCatalog
+
+# --- Player Events ---
+const PLAYER_HEALTH_CHANGED = "player.health_changed"
+const PLAYER_HEALING_CHARGES_CHANGED = "player.healing_charges_changed"
+const PLAYER_TOOK_DAMAGE = "player.took_damage"
+const PLAYER_DIED = "player.died"
+
+# --- Boss / Entity Events ---
+const BOSS_HEALTH_CHANGED = "boss.health_changed"
+const BOSS_DIED = "boss.died"
+
+# --- Game State Events ---
+const GAME_PAUSED = "game.paused"
+const GAME_RESUMED = "game.resumed"
+
+# --- UI State Events ---
+const MENU_OPENED = "ui.menu_opened"
+const MENU_CLOSED = "ui.menu_closed"
+
+--- EventBus.on() Subscriptions ---
+src/ui/game_hud/game_hud.gd:17:	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
+src/ui/game_hud/game_hud.gd:18:	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
+src/ui/game_hud/game_hud.gd:19:	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
+src/ui/global_hud/global_hud.gd:35:	_menu_opened_token = EventBus.on(EventCatalog.MENU_OPENED, _on_menu_opened)
+src/ui/global_hud/global_hud.gd:36:	_menu_closed_token = EventBus.on(EventCatalog.MENU_CLOSED, _on_menu_closed)
+src/scenes/game/game.gd:17:	_pause_token = EventBus.on(EventCatalog.GAME_PAUSED, _on_game_paused)
+src/scenes/game/game.gd:18:	_resume_token = EventBus.on(EventCatalog.GAME_RESUMED, _on_game_resumed)
+
+
+--- EventBus.emit() Emissions ---
+src/ui/screens/controls_menu/controls_menu.gd:9:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/controls_menu/controls_menu.gd:70:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/credits_menu/credits_menu.gd:9:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/credits_menu/credits_menu.gd:60:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/options_menu/options_menu.gd:9:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/options_menu/options_menu.gd:61:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/sound_menu/sound_menu.gd:19:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/sound_menu/sound_menu.gd:47:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/title_screen/title_screen.gd:10:	EventBus.emit(EventCatalog.MENU_OPENED) # Announce that a menu is open
+src/ui/screens/title_screen/title_screen.gd:42:	EventBus.emit(EventCatalog.MENU_CLOSED) # Announce that the menu is closing
+src/core/sequencing/steps/emit_step.gd:16:	EventBus.emit(event_name, payload)
+src/entities/boss/base_boss.gd:121:	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
+src/entities/player/player.gd:127:	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev, self)
+src/entities/player/player.gd:191:	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/ARCH-002_Acceptance_Criteria.md
+=====================================
+# ARCH-002: Refactoring Acceptance Criteria
+
+**Date:** 2025-08-10
+
+**Status:** Adopted
+
+---
+
+## Context
+
+This document serves as a high-level checklist for our entire refactoring initiative. A sprint's work is considered "done" when it meets its specific criteria, and the entire initiative is "done" when all items on this list are checked.
+
+## Global Acceptance Criteria
+
+The refactoring is complete when all of the following are true:
+
+### Architectural Health
+- [ ] **Single Source of State:** All mutable runtime state (player data, game state) is managed via `Resource`-based data containers, eliminating the "dual architecture" of stateful singletons.
+- [ ] **Standardized Configuration:** All tunable gameplay values are sourced from `.tres` `Resource` files, not `Constants.gd` or hardcoded magic numbers. A validation system checks for missing configs at startup.
+- [ ] **Explicit Dependencies:** Core components (`HealthComponent`, `CombatComponent`, etc.) receive their dependencies via a `setup(config, services)` method, not by calling global singletons directly.
+- [ ] **Clear Communication Rules:** The `EventBus` is used for global, cross-system messages. Godot signals are used for local, intra-scene communication. Direct calls between components are minimized or eliminated.
+
+### Testing & Verification
+- [ ] **Baseline Metrics Met:** The refactored game performs equal to or better than the baseline metrics established in `TEST-001_Baseline_Metrics.md`.
+- [ ] **Regression Tests Pass:** The game successfully passes all manual checks in the `TEST-003_Regression_Checklist.md`.
+- [ ] **Smoke Tests Pass:** The game is verifiably stable and key systems are functional as defined in `TEST-002_Smoke_Tests.md`.
+
+### Code Quality & Documentation
+- [ ] **No Dead Code:** All old, replaced systems and scripts have been safely removed from the project.
+- [ ] **Documentation Updated:** All relevant architectural documents (`README.md`, ADRs) have been updated to reflect the new patterns.
+- [ ] **Linter/Formatter Clean:** The entire codebase is formatted consistently and passes static analysis checks without warnings.
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/ARCH-001_Refactoring_Principles.md
+=====================================
+# ARCH-001: Refactoring Principles
+
+**Date:** 2025-08-10
+
+**Status:** Adopted
+
+---
+
+## Context
+
+To ensure our refactoring effort is focused, consistent, and successful, we must operate from a shared set of guiding principles. These principles will act as a tie-breaker when design decisions are unclear and will define the target state of our architecture.
+
+## Guiding Principles
+
+1.  **Work *With* the Engine, Not Against It.**
+    *   **Rationale:** Our attempt to force a classic DI pattern failed because it fought Godot's startup lifecycle. All future architectural decisions must respect and leverage Godot's idiomatic patterns (nodes, scenes, signals, resources).
+    *   **In Practice:** We will prefer solutions that feel natural in Godot over patterns that require complex workarounds to function.
+
+2.  **Every Change Must Be Verifiable.**
+    *   **Rationale:** Refactoring without testing is just moving code around. To prevent regressions, every significant change must be accompanied by a clear method of verification.
+    *   **In Practice:** This means creating smoke tests, regression checklists, and eventually, automated unit tests. We will use the documents `TEST-002` and `TEST-003` to track this.
+
+3.  **Prioritize Decoupling and Explicit Dependencies.**
+    *   **Rationale:** The primary weakness of the current Service Locator pattern is that dependencies are hidden. Our goal is to make dependencies explicit.
+    *   **In Practice:** Components and systems should receive their dependencies through a `setup()` method where possible, rather than calling global singletons in their internal logic. Communication should favor events (`EventBus`) for global messages and signals for local, parent-child messages.
+
+4.  **Standardize Patterns; Eliminate "Dual Architectures".**
+    *   **Rationale:** The audit identified several areas (state management, configuration) where two different patterns exist to solve the same problem. This increases cognitive load and maintenance cost.
+    *   **In Practice:** We will choose a single, standard way to manage state (the `Resource`-based data pattern) and a single way to manage configuration (`tres` config resources), and migrate all existing code to these standards.
+
+5.  **The Strangler Fig Pattern: Migrate Incrementally.**
+    *   **Rationale:** Big-bang rewrites are risky and prone to failure. We will adopt the Strangler Fig pattern.
+    *   **In Practice:** We will create the new, improved system alongside the old one. We will then migrate dependencies one by one to the new system. Once all dependencies are migrated, we can safely delete the old system. This ensures the game remains functional throughout the entire process.
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/config_usage.txt
+=====================================
+src/ui/game_hud/game_hud.gd:22:	var max_health = Config.get_value("player.health.max_health", 5)
+src/ui/game_hud/game_hud.gd:25:	boss_health_bar.max_value = Config.get_value("boss.stats.health", 30)
+src/core/data/config/config.gd:14:# Example: Config.get_value("player.physics.speed")
+src/entities/boss/base_boss.gd:31:	b_data.patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
+src/entities/boss/base_boss.gd:57:		velocity.y += Config.get_value("general.physics.gravity") * delta
+src/entities/components/combat_component.gd:23:	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+src/entities/components/combat_component.gd:37:	owner_node.velocity.y = -Config.get_value("player.physics.pogo_force")
+src/entities/components/combat_component.gd:40:	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+src/entities/components/health_component.gd:47:	max_health = Config.get_value(config_paths.max_health, 10)
+src/entities/components/health_component.gd:48:	invincibility_duration = Config.get_value(config_paths.get("invincibility", "player.health.invincibility_duration"), 1.0)
+src/entities/components/health_component.gd:84:	var knockback_speed = Config.get_value(_knockback_config.speed, 400.0)
+src/entities/components/health_component.gd:86:		knockback_speed = Config.get_value(_knockback_config.hazard_speed, knockback_speed)
+src/entities/components/input_component.gd:24:		p_data.jump_buffer_timer = Config.get_value("player.physics.jump_buffer")
+src/entities/components/input_component.gd:35:			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"):
+src/entities/player/player.gd:87:		p_data.wall_coyote_timer = Config.get_value("player.physics.wall_coyote_time")
+src/entities/player/player.gd:120:	velocity.x = Input.get_axis("ui_left", "ui_right") * Config.get_value("player.physics.speed")
+src/entities/player/player.gd:144:	if p_data.healing_charges >= Config.get_value("player.health.max_healing_charges"): return
+src/entities/player/player.gd:146:	if p_data.determination_counter >= Config.get_value("player.combat.determination_per_charge"):
+src/entities/player/states/state_jump.gd:6:	player.velocity.y = -Config.get_value("player.physics.jump_force")
+src/entities/player/states/state_jump.gd:15:		player.velocity.y *= Config.get_value("player.physics.jump_release_dampener")
+src/entities/player/states/state_jump.gd:26:	player.velocity.y += Config.get_value("general.physics.gravity") * delta
+src/entities/player/states/state_dash.gd:9:	p_data.dash_duration_timer = Config.get_value("player.physics.dash_duration")
+src/entities/player/states/state_dash.gd:10:	p_data.dash_cooldown_timer = Config.get_value("player.physics.dash_cooldown")
+src/entities/player/states/state_dash.gd:11:	player.velocity = _get_dash_direction() * Config.get_value("player.physics.dash_speed")
+src/entities/player/states/state_heal.gd:7:	player.healing_timer.start(Config.get_value("player.health.heal_duration"))
+src/entities/player/states/state_wall_slide.gd:7:	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+src/entities/player/states/state_wall_slide.gd:14:	var gravity = Config.get_value("general.physics.gravity")
+src/entities/player/states/state_wall_slide.gd:15:	var wall_slide_speed = Config.get_value("player.physics.wall_slide_speed")
+src/entities/player/states/state_wall_slide.gd:38:	player.velocity.y = -Config.get_value("player.physics.wall_jump_force_y")
+src/entities/player/states/state_wall_slide.gd:39:	player.velocity.x = p_data.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
+src/entities/player/states/state_attack.gd:6:	p_data.attack_duration_timer = Config.get_value("player.combat.attack_duration")
+src/entities/player/states/state_attack.gd:7:	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+src/entities/player/states/state_attack.gd:33:		var friction = Config.get_value("player.combat.attack_friction")
+src/entities/player/states/state_hurt.gd:8:	p_data.knockback_timer = Config.get_value("player.combat.knockback_duration")
+src/entities/player/states/state_hurt.gd:11:	player.velocity.y += Config.get_value("general.physics.gravity") * delta
+src/entities/player/states/state_fall.gd:27:		gravity_multiplier = Config.get_value("player.physics.fast_fall_gravity_multiplier")
+src/entities/player/states/state_fall.gd:28:	player.velocity.y += Config.get_value("general.physics.gravity") * gravity_multiplier * delta
+src/entities/player/states/state_fall.gd:40:	player.velocity.x = p_data.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
+src/entities/player/states/state_move.gd:6:	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+src/entities/player/states/state_move.gd:10:	p_data.coyote_timer = Config.get_value("player.physics.coyote_time")
+src/entities/player/states/state_move.gd:12:	player.velocity.y += Config.get_value("general.physics.gravity") * delta
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/singleton_map.txt
+=====================================
+
+Settings="*res://src/core/data/config/settings.gd"
+AudioManager="*res://src/core/systems/audio_manager.gd"
+CursorManager="*res://src/core/systems/cursor_manager.gd"
+Constants="*res://src/core/util/constants.gd"
+AssetPaths="*res://src/core/util/asset_paths.gd"
+GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
+GameManager="*res://src/core/systems/game_manager.gd"
+ArenaBuilder="*res://src/core/building/arena_builder.gd"
+EventBus="*res://src/core/events/event_bus.gd"
+Sequencer="*res://src/core/sequencing/sequencer.gd"
+Config="*res://src/core/data/config/config.gd"
+Palette="*res://src/core/util/palette.gd"
+ObjectPool="*res://src/core/systems/object_pool.gd"
+PhysicsLayers="*res://src/core/util/physics_layers.gd"
+
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/state_machine_flow.md
+=====================================
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/TEST-003_Regression_Checklist.md
+=====================================
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/ADR.mdADR-001_Service_Locator_Pattern.md
+=====================================
+# ADR-001: Global System Access via Autoload Singletons (Service Locator)
+
+**Date:** 2025-08-10
+
+**Status:** Accepted (Existing Pattern)
+
+---
+
+## Context
+
+The project requires numerous cross-cutting services that need to be accessible from various parts of the codebase. These include core systems (EventBus, AudioManager, ObjectPool), data providers (Config, Settings, Palette), and utility services (AssetPaths, PhysicsLayers).
+
+A simple and idiomatic way to achieve this in Godot is by using the **Autoload** feature, which creates a globally accessible singleton instance of a script or scene. This effectively implements the **Service Locator** design pattern, where any node in the game can directly access a service by its global name (e.g., `EventBus.emit()`, `Config.get_value()`).
+
+## Decision
+
+We will use the Godot Autoload (Service Locator) pattern as the primary mechanism for providing global services throughout the application.
+
+This decision was made because it is the most direct, performant, and engine-idiomatic way to solve the problem of global access in Godot 4. It avoids the need for complex dependency injection frameworks or manual "prop-drilling" of dependencies through the node tree.
+
+The audit file `singleton_map.txt` confirms there are currently 14 such services registered in `project.godot`.
+
+## Consequences
+
+### Positive:
+-   **Simplicity & Speed:** Accessing a service is trivial (`ServiceName.method()`). There is no setup boilerplate required in consumer scripts.
+-   **Performance:** Autoloads are instantiated once at startup, providing fast and reliable access.
+-   **Decoupling:** Systems can communicate through a central service like `EventBus` without needing direct references to each other, as shown in `event_usage.txt`.
+
+### Negative (Risks & Architectural Debt):
+-   **Hidden Dependencies:** The dependencies of a script are not explicitly declared in its API. To know that `player.gd` depends on `Config`, one must read the entire script body. This makes the code harder to reason about.
+-   **Difficult to Test:** This is the most significant drawback. It is very difficult to unit-test a script that calls a global singleton. You cannot easily replace `EventBus` with a "mock" or "fake" version for a test, which was the root cause of the failed DI refactor attempt.
+-   **Risk of Tight Coupling:** Because services are so easy to access, it can encourage developers to create a "spaghetti" architecture where everything calls everything else, bypassing more structured communication patterns.
+-   **Configuration Fragility:** The heavy reliance on string-based keys for services like `Config` and `EventBus` is fragile. A typo will result in a runtime error, not a compile-time one. The `config_usage.txt` file shows dozens of such calls, each being a potential point of failure.
+
+---
+
+## Next Steps (Refactoring Plan)
+
+This pattern, while accepted, is the primary target for refinement in our upcoming refactoring sprints. The plan is not to eliminate autoloads, but to mitigate their negative consequences by:
+1.  **Standardizing Configuration (Sprint 1):** Introduce validation to catch bad config paths at startup.
+2.  **Unifying Data Architecture (Sprint 2):** Reduce the number of singletons that hold mutable state.
+3.  **Refining Communication (Sprint 3):** Clarify when to use `EventBus` versus other patterns to reduce the risk of "spaghetti" code.
+
+
+=====================================
+FILE: ./docs/sprint_0_audit/ADR.md
+=====================================
+
+
+=====================================
 FILE: ./docs/ARCHITECTURE.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -1046,6 +1534,10 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Further refined the `src/core` directory structure, creating new    ║
+║      ░   subdirectories for typed configs and events (`data/config`, `events/typed_events`).║
+║      ░ ■ Standardized script filenames to snake_case (e.g., `Config.gd` ->   ║
+║      ░   `config.gd`) for project-wide consistency.                          ║
 ║      ░ ■ Reorganized the monolithic `src/core` directory into purpose-driven ║
 ║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
 ║      ░   improve project modularity and scalability.                         ║
@@ -1329,6 +1821,19 @@ FILE: ./docs/ARENA_CONCEPTS.txt
 
 
 =====================================
+FILE: ./docs/DEPRECATION.md
+=====================================
+# Project Deprecation Map
+
+This document tracks major file renames and moves across the entire project.
+
+| Old Path | New Path | Reason | Date | Migration Note |
+|---|---|---|---|---|
+| `res://src/core/Config.gd` | `res://src/core/data/config/config.gd` | Architectural refactor | 2025-08-10 | Autoload path updated in `project.godot`. No script changes required. |
+| `res://src/core/settings.gd` | `res://src/core/data/config/settings.gd` | Architectural refactor | 2025-08-10 | Autoload path updated in `project.godot`. No script changes required. |
+| `res://src/core/events/*_event.gd` | `res://src/core/events/typed_events/*_event.gd` | Architectural refactor | 2025-08-10 | Update `preload` or `load` paths in scripts if referenced directly. |
+
+=====================================
 FILE: ./README.md
 =====================================
 # BOX BATTLE
@@ -1452,7 +1957,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Settings="*res://src/core/data/settings.gd"
+Settings="*res://src/core/data/config/settings.gd"
 AudioManager="*res://src/core/systems/audio_manager.gd"
 CursorManager="*res://src/core/systems/cursor_manager.gd"
 Constants="*res://src/core/util/constants.gd"
@@ -1462,7 +1967,7 @@ GameManager="*res://src/core/systems/game_manager.gd"
 ArenaBuilder="*res://src/core/building/arena_builder.gd"
 EventBus="*res://src/core/events/event_bus.gd"
 Sequencer="*res://src/core/sequencing/sequencer.gd"
-Config="*res://src/core/data/Config.gd"
+CombatDB="*res://src/core/data/combat_db.gd"
 Palette="*res://src/core/util/palette.gd"
 ObjectPool="*res://src/core/systems/object_pool.gd"
 PhysicsLayers="*res://src/core/util/physics_layers.gd"
@@ -1549,57 +2054,45 @@ environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 
 
 =====================================
-FILE: ./data/combat_config.json
+FILE: ./data/combat_config.tres
 =====================================
-{
-    "general": {
-        "physics": {
-            "gravity": 1200.0
-        }
-    },
-    "player": {
-        "physics": {
-            "speed": 450.0,
-            "jump_force": 680.0,
-            "pogo_force": 450.0,
-            "coyote_time": 0.1,
-            "jump_buffer": 0.1,
-            "jump_release_dampener": 0.4,
-            "wall_coyote_time": 0.05,
-            "fast_fall_gravity_multiplier": 1.4,
-            "max_air_jumps": 0,
-            "dash_speed": 1400.0,
-            "dash_duration": 0.15,
-            "dash_cooldown": 0.5,
-            "wall_slide_speed": 120.0,
-            "wall_jump_force_x": 1650.0,
-            "wall_jump_force_y": 680.0
-        },
-        "combat": {
-            "attack_cooldown": 0.12,
-            "charge_time": 0.35,
-            "attack_duration": 0.1,
-            "attack_friction": 2000.0,
-            "knockback_speed": 700.0,
-            "knockback_duration": 0.1,
-            "hazard_knockback_speed": 400.0,
-            "determination_per_charge": 10
-        },
-        "health": {
-            "max_health": 5,
-            "heal_duration": 2.0,
-            "max_healing_charges": 1,
-            "invincibility_duration": 1.5
-        }
-    },
-    "boss": {
-        "stats": {
-            "health": 30,
-            "patrol_speed": 100.0,
-            "invincibility_duration": 0.1
-        }
-    }
-}
+[gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/data/config/combat_config.gd" id="1_config"]
+
+[resource]
+script = ExtResource("1_config")
+gravity = 1200.0
+player_speed = 450.0
+player_jump_force = 680.0
+player_pogo_force = 450.0
+player_coyote_time = 0.1
+player_jump_buffer = 0.1
+player_jump_release_dampener = 0.4
+player_wall_coyote_time = 0.05
+player_fast_fall_gravity_multiplier = 1.4
+player_max_air_jumps = 0
+player_dash_speed = 1400.0
+player_dash_duration = 0.15
+player_dash_cooldown = 0.5
+player_wall_slide_speed = 120.0
+player_wall_jump_force_x = 1650.0
+player_wall_jump_force_y = 680.0
+player_attack_cooldown = 0.12
+player_charge_time = 0.35
+player_attack_duration = 0.1
+player_attack_friction = 2000.0
+player_knockback_speed = 700.0
+player_knockback_duration = 0.1
+player_hazard_knockback_speed = 400.0
+player_determination_per_charge = 10
+player_max_health = 5
+player_heal_duration = 2.0
+player_max_healing_charges = 1
+player_invincibility_duration = 1.5
+boss_health = 30
+boss_patrol_speed = 100.0
+boss_invincibility_duration = 0.1
 
 =====================================
 FILE: ./src/ui/game_hud/game_hud.gd
@@ -1624,11 +2117,11 @@ func _ready():
 	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
 	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
 	
-	# Set initial state from config, as events may not have fired yet.
-	var max_health = Config.get_value("player.health.max_health", 5)
+	# MODIFIED: Get initial state from the new CombatDB resource.
+	var max_health = CombatDB.config.player_max_health
 	player_health_value.text = "%d / %d" % [max_health, max_health]
 	player_heal_charges_value.text = "0"
-	boss_health_bar.max_value = Config.get_value("boss.stats.health", 30)
+	boss_health_bar.max_value = CombatDB.config.boss_health
 	boss_health_bar.value = boss_health_bar.max_value
 
 
@@ -3311,6 +3804,45 @@ const NUM_SFX_PLAYERS = 8 # The number of sound effects that can play at once.
 const TILE_SIZE = 50
 
 =====================================
+FILE: ./src/core/README.md
+=====================================
+# Core Subsystem
+
+This directory contains all of the project's global systems, singletons, and core logic that is not specific to a single entity or scene.
+
+## Subdirectories
+
+-   **/building**: Contains the classes responsible for procedural level generation (`ArenaBuilder`, `LevelParser`, etc.).
+-   **/data**: Manages game data, including the new `Resource`-based configurations.
+-   **/events**: Contains the global `EventBus` and all typed event definitions.
+-   **/sequencing**: Manages the `Sequencer` for creating scripted, timed events.
+-   **/systems**: Contains the primary global managers (`AudioManager`, `GameManager`, etc.).
+-   **/util**: A collection of stateless utility singletons like `AssetPaths` and `Palette`.
+
+## Autoloaded Singletons (Global Access)
+
+The following scripts are registered as autoloads in `project.godot` and can be accessed globally:
+
+-   `Settings`: Manages persistent game settings.
+-   `AudioManager`: Controls all audio playback.
+-   `CursorManager`: Manages the custom mouse cursor.
+-   `Constants`: Holds engine-level constants.
+-   `AssetPaths`: Provides safe, static paths to all project assets.
+-   `GlobalHud`: The persistent UI layer for global elements.
+-   `GameManager`: Manages game state and scene flow.
+-   `ArenaBuilder`: The main entry point for level construction.
+-   `EventBus`: The global event dispatcher.
+-   `Sequencer`: Manages timed event sequences.
+-   `Config`: Handles loading data from `Resource`-based configs.
+-   `Palette`: Defines the global color scheme.
+-   `ObjectPool`: Manages reusable nodes to improve performance.
+-   `PhysicsLayers`: Provides named constants for physics collision layers.
+
+## Public API
+
+The primary public API for inter-system communication is the `EventBus`. Systems should emit events to signal state changes and listen for events to react to them, rather than calling each other directly.
+
+=====================================
 FILE: ./src/core/events/event_bus.gd
 =====================================
 # src/core/event_bus.gd
@@ -3443,7 +3975,7 @@ func dump_subscribers(event_name: String = "") -> Dictionary:
 
 
 =====================================
-FILE: ./src/core/events/boss_health_changed_event.gd
+FILE: ./src/core/events/typed_events/boss_health_changed_event.gd
 =====================================
 # src/core/events/boss_health_changed_event.gd
 # A typed payload for the BOSS_HEALTH_CHANGED event.
@@ -3454,7 +3986,7 @@ class_name BossHealthChangedEvent
 @export var max_health: int = 0
 
 =====================================
-FILE: ./src/core/events/player_health_changed_event.gd
+FILE: ./src/core/events/typed_events/player_health_changed_event.gd
 =====================================
 # src/core/events/player_health_changed_event.gd
 # A typed payload for the PLAYER_HEALTH_CHANGED event. Using a Resource allows
@@ -3466,7 +3998,7 @@ class_name PlayerHealthChangedEvent
 @export var max_health: int = 0
 
 =====================================
-FILE: ./src/core/events/player_healing_charges_changed_event.gd
+FILE: ./src/core/events/typed_events/player_healing_charges_changed_event.gd
 =====================================
 # src/core/events/player_healing_charges_changed_event.gd
 # A typed payload for the PLAYER_HEALING_CHARGES_CHANGED event.
@@ -3698,7 +4230,23 @@ func set_pointer_state(is_pointing: bool):
 		cursor_sprite.texture = CURSOR_DEFAULT
 
 =====================================
-FILE: ./src/core/data/settings.gd
+FILE: ./src/core/data/combat_db.gd
+=====================================
+# src/core/data/combat_db.gd
+# This autoload provides global access to the combat config resource.
+# It loads the config at runtime in _ready() to be robust against parse-order issues.
+extends Node
+
+const CONFIG_PATH: String = "res://data/combat_config.tres"
+var config: CombatConfig = null
+
+func _ready() -> void:
+	config = load(CONFIG_PATH) as CombatConfig
+	if not config:
+		push_error("CombatDB: Failed to load CombatConfig at %s" % CONFIG_PATH)
+
+=====================================
+FILE: ./src/core/data/config/settings.gd
 =====================================
 # src/core/settings.gd
 #
@@ -3751,78 +4299,65 @@ signal audio_settings_changed
 			audio_settings_changed.emit()
 
 =====================================
-FILE: ./src/core/data/Config.gd
+FILE: ./src/core/data/config/combat_config.gd
 =====================================
-# src/core/Config.gd
-#
-# An autoloaded singleton responsible for loading all configuration files
-# from the res://data/ directory at startup. It provides a simple dot-notation
-# getter to access nested configuration values from anywhere in the project.
-extends Node
+# src/core/data/config/combat_config.gd
+# A single, flat Resource that exposes all combat tuning values.
+class_name CombatConfig
+extends Resource
 
-var _config_data: Dictionary = {}
+@export_group("General Physics")
+@export var gravity: float = 1200.0
 
-func _ready() -> void:
-	_load_all_configs()
+@export_group("Player Physics")
+@export var player_speed: float = 450.0
+@export var player_jump_force: float = 680.0
+@export var player_pogo_force: float = 450.0
+@export var player_coyote_time: float = 0.1
+@export var player_jump_buffer: float = 0.1
+@export var player_jump_release_dampener: float = 0.4
+@export var player_wall_coyote_time: float = 0.05
+@export var player_fast_fall_gravity_multiplier: float = 1.4
+@export var player_max_air_jumps: int = 0
+@export var player_dash_speed: float = 1400.0
+@export var player_dash_duration: float = 0.15
+@export var player_dash_cooldown: float = 0.5
+@export var player_wall_slide_speed: float = 120.0
+@export var player_wall_jump_force_x: float = 1650.0
+@export var player_wall_jump_force_y: float = 680.0
 
-# Public getter to retrieve a config value using a dot-separated key.
-# Example: Config.get_value("player.physics.speed")
-func get_value(key: String, default = null):
-	var parts = key.split(".")
-	var current_level = _config_data
-	for part in parts:
-		if current_level is Dictionary and current_level.has(part):
-			current_level = current_level[part]
-		else:
-			push_warning("Config.get_value: Key '%s' not found." % key)
-			return default
-	return current_level
+@export_group("Player Combat")
+@export var player_attack_cooldown: float = 0.12
+@export var player_charge_time: float = 0.35
+@export var player_attack_duration: float = 0.1
+@export var player_attack_friction: float = 2000.0
+@export var player_knockback_speed: float = 700.0
+@export var player_knockback_duration: float = 0.1
+@export var player_hazard_knockback_speed: float = 400.0
+@export var player_determination_per_charge: int = 10
 
-# --- Internal Functions ---
+@export_group("Player Health / Healing")
+@export var player_max_health: int = 5
+@export var player_heal_duration: float = 2.0
+@export var player_max_healing_charges: int = 1
+@export var player_invincibility_duration: float = 1.5
 
-# MODIFIED: This function now reads all filenames into a list first, sorts that
-# list alphabetically, and then loads the files. This guarantees a stable,
-# deterministic loading order, preventing platform-specific bugs where
-# config values might be overridden inconsistently.
-func _load_all_configs() -> void:
-	var dir = DirAccess.open("res://data")
-	if not dir:
-		push_error("Config: Could not open 'res://data/' directory. Make sure it exists.")
-		return
+@export_group("Boss")
+@export var boss_health: int = 30
+@export var boss_patrol_speed: float = 100.0
+@export var boss_invincibility_duration: float = 0.1
 
-	var file_names: Array[String] = []
-	dir.list_dir_begin()
-	var file_name = dir.get_next()
-	while file_name != "":
-		if not dir.current_is_dir() and file_name.ends_with(".json"):
-			file_names.append(file_name)
-		file_name = dir.get_next()
-	
-	# The critical fix: Sort the filenames to ensure deterministic load order.
-	file_names.sort()
-	
-	# CORRECTED: Renamed loop variable from "name" to "config_filename" to
-	# resolve the SHADOWED_VARIABLE_BASE_CLASS warning.
-	for config_filename in file_names:
-		_load_and_parse_file("res://data/" + config_filename)
+=====================================
+FILE: ./src/core/DEPRECATION.md
+=====================================
+# Core Subsystem Deprecation Map
 
+This document tracks file renames and moves specifically within `src/core`.
 
-func _load_and_parse_file(file_path: String) -> void:
-	var file = FileAccess.open(file_path, FileAccess.READ)
-	if not file:
-		push_error("Config: Failed to open config file: %s" % file_path)
-		return
-
-	var content = file.get_as_text()
-	var json = JSON.new()
-	var error = json.parse(content)
-	if error != OK:
-		push_error("Config: Failed to parse JSON in %s. Error: %s at line %d" % [file_path, json.get_error_message(), json.get_error_line()])
-		return
-
-	# Merge the data from this file into our main dictionary.
-	_config_data.merge(json.data, true)
-
+| Old Path | New Path | Reason | Date | Migration Note |
+|---|---|---|---|---|
+| `res://src/core/data/Config.gd` | `res://src/core/data/config/config.gd` | Naming convention and grouping. | 2025-08-10 | Autoload path was updated in `project.godot`. |
+| `res://src/core/data/settings.gd` | `res://src/core/data/config/settings.gd` | Grouped with other data configs. | 2025-08-10 | Autoload path was updated in `project.godot`. |
 
 =====================================
 FILE: ./src/core/building/level_parser.gd
@@ -4577,15 +5112,13 @@ var player: CharacterBody2D = null
 # --- Engine Functions ---
 func _ready():
 	b_data = BossStateData.new()
-	b_data.patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
+	# MODIFIED: Get value from the new CombatDB resource.
+	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
 	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	var boss_health_configs = {
-		"max_health": "boss.stats.health",
-		"invincibility": "boss.stats.invincibility_duration"
-	}
-	health_component.setup(b_data, self, boss_health_configs)
+	# MODIFIED: Pass the typed resource directly to the component.
+	health_component.setup(b_data, self, CombatDB.config)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
@@ -4603,7 +5136,8 @@ func _ready():
 
 func _physics_process(delta):
 	if not is_on_floor():
-		velocity.y += Config.get_value("general.physics.gravity") * delta
+		# MODIFIED: Get value from the new CombatDB resource.
+		velocity.y += CombatDB.config.gravity * delta
 
 	if current_state:
 		current_state.process_physics(delta)
@@ -4628,7 +5162,6 @@ func change_state(new_state_key: State):
 	current_state.enter()
 
 # --- Public Methods ---
-# SOLUTION: The take_damage function is now removed.
 func die():
 	died.emit()
 	queue_free()
@@ -4675,6 +5208,30 @@ func _on_health_component_died():
 
 
 =====================================
+FILE: ./src/entities/README.md
+=====================================
+# Entities
+
+This directory contains the logic for all dynamic game objects, such as the Player and Bosses.
+
+## Architecture
+
+Entities follow a **Component-Based Architecture** combined with a **State Machine**.
+
+-   **Context Node (`player.gd`, `base_boss.gd`)**: The root node of the entity scene. Its primary job is to hold the components and manage the current state. It delegates all logic to its children.
+-   **Data Resource (`player_state_data.gd`)**: A `Resource` file that holds all of the entity's state variables (health, timers, flags). This allows states and components to share data without needing a direct reference to the main node or each other.
+-   **Components (`health_component.gd`, etc.)**: Child nodes that encapsulate a single area of responsibility (e.g., managing health, handling input). They operate on the shared `Data Resource`.
+-   **States (`state_move.gd`, etc.)**: Classes that define specific behaviors. The active state is managed by the Context Node.
+
+## Adding a New State
+
+1.  Create a new script in the entity's `states` directory that inherits from `PlayerState` or `BossState`.
+2.  Implement the required `enter()`, `exit()`, and `process_physics()` methods.
+3.  Add the new state to the `State` enum in the context node script (`player.gd`).
+4.  Instantiate the new state in the `states` dictionary in the context node's `_ready()` function.
+5.  Call `change_state(State.YOUR_NEW_STATE)` from another state to transition to it.
+
+=====================================
 FILE: ./src/entities/components/combat_component.gd
 =====================================
 # src/entities/components/combat_component.gd
@@ -4699,7 +5256,8 @@ func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData):
 # --- Public Combat Methods ---
 
 func fire_shot():
-	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	# MODIFIED: Get value from the new CombatDB resource.
+	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 	
 	var shot = ObjectPool.get_instance(&"player_shots")
 	if not shot: return
@@ -4713,10 +5271,11 @@ func fire_shot():
 	shot.activate()
 
 func trigger_pogo(pogo_target):
-	owner_node.velocity.y = -Config.get_value("player.physics.pogo_force")
+	# MODIFIED: Get values from the new CombatDB resource.
+	owner_node.velocity.y = -CombatDB.config.player_pogo_force
 	owner_node.position.y -= 1
 	p_data.can_dash = true
-	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
 	owner_node.change_state(owner_node.State.FALL)
 	
 	if pogo_target:
@@ -4753,7 +5312,8 @@ var owner_node: CharacterBody2D
 # --- Config ---
 var max_health: int
 var invincibility_duration: float
-var _knockback_config: Dictionary = {}
+var knockback_speed: float
+var hazard_knockback_speed: float
 
 # --- Internal State ---
 var original_color: Color
@@ -4774,15 +5334,28 @@ func _exit_tree():
 	owner_node = null
 	EventBus.off_owner(self)
 
-func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, config_paths: Dictionary):
+# MODIFIED: Changed p_config type from CombatConfig to generic Resource
+func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, p_config: Resource) -> void:
 	self.entity_data = p_entity_data
 	self.owner_node = p_owner_node
-	
-	max_health = Config.get_value(config_paths.max_health, 10)
-	invincibility_duration = Config.get_value(config_paths.get("invincibility", "player.health.invincibility_duration"), 1.0)
-	
-	if config_paths.has("knockback"):
-		_knockback_config = config_paths.knockback
+
+	# MODIFIED: Perform a safe runtime cast
+	var cfg: CombatConfig = p_config as CombatConfig
+	if not cfg:
+		push_error("HealthComponent.setup: passed p_config is not a CombatConfig resource.")
+		return
+
+	# We check if the owner is the player to know which config properties to use.
+	if p_owner_node.is_in_group("player"):
+		max_health = cfg.player_max_health
+		invincibility_duration = cfg.player_invincibility_duration
+		knockback_speed = cfg.player_knockback_speed
+		hazard_knockback_speed = cfg.player_hazard_knockback_speed
+	else: # Assumes it's a boss/enemy
+		max_health = cfg.boss_health
+		invincibility_duration = cfg.boss_invincibility_duration
+		knockback_speed = 0
+		hazard_knockback_speed = 0
 	
 	entity_data.health = max_health
 	if is_instance_valid(get_visual_sprite()):
@@ -4810,16 +5383,16 @@ func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
 	return {"was_damaged": true, "knockback_velocity": knockback_info}
 
 func _calculate_knockback(damage_source: Node) -> Vector2:
-	if _knockback_config.is_empty() or not damage_source:
+	if knockback_speed == 0 or not damage_source:
 		return Vector2.ZERO
 		
 	var knockback_dir = (owner_node.global_position - damage_source.global_position).normalized()
 	
-	var knockback_speed = Config.get_value(_knockback_config.speed, 400.0)
+	var speed = knockback_speed
 	if damage_source.is_in_group("hazard"):
-		knockback_speed = Config.get_value(_knockback_config.hazard_speed, knockback_speed)
+		speed = hazard_knockback_speed
 		
-	return (knockback_dir + Vector2.UP * 0.5).normalized() * knockback_speed
+	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
 
 func _trigger_hit_flash():
 	if is_instance_valid(get_visual_sprite()):
@@ -4861,8 +5434,9 @@ func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData, p_combat
 
 # This function is called by the player's _physics_process loop.
 func process_physics():
+	# MODIFIED: Get value from the new CombatDB resource.
 	if Input.is_action_just_pressed("ui_jump"):
-		p_data.jump_buffer_timer = Config.get_value("player.physics.jump_buffer")
+		p_data.jump_buffer_timer = CombatDB.config.player_jump_buffer
 	
 	if not owner_node.states.find_key(owner_node.current_state) in owner_node.ACTION_ALLOWED_STATES:
 		return
@@ -4873,7 +5447,8 @@ func process_physics():
 	
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
-			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"):
+			# MODIFIED: Get value from the new CombatDB resource.
+			if p_data.charge_timer >= CombatDB.config.player_charge_time:
 				combat_component.fire_shot()
 			else:
 				owner_node.change_state(owner_node.State.ATTACK)
@@ -5004,15 +5579,8 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	var player_health_configs = {
-		"max_health": "player.health.max_health",
-		"invincibility": "player.health.invincibility_duration",
-		"knockback": {
-			"speed": "player.combat.knockback_speed",
-			"hazard_speed": "player.combat.hazard_knockback_speed"
-		}
-	}
-	health_component.setup(p_data, self, player_health_configs)
+	# MODIFIED: Pass the typed player config resource directly to the component.
+	health_component.setup(p_data, self, CombatDB.config)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
@@ -5039,7 +5607,8 @@ func _physics_process(delta):
 	move_and_slide()
 	_check_for_contact_damage()
 	if is_on_wall() and not is_on_floor():
-		p_data.wall_coyote_timer = Config.get_value("player.physics.wall_coyote_time")
+		# MODIFIED: Get value from the new CombatDB resource.
+		p_data.wall_coyote_timer = CombatDB.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
 
 func _unhandled_input(event: InputEvent):
@@ -5072,7 +5641,8 @@ func change_state(new_state_key: State):
 	current_state.enter()
 
 func apply_horizontal_movement():
-	velocity.x = Input.get_axis("ui_left", "ui_right") * Config.get_value("player.physics.speed")
+	# MODIFIED: Get value from the new CombatDB resource.
+	velocity.x = Input.get_axis("ui_left", "ui_right") * CombatDB.config.player_speed
 	if not is_zero_approx(velocity.x):
 		p_data.facing_direction = sign(velocity.x)
 
@@ -5096,9 +5666,10 @@ func _check_for_contact_damage():
 
 
 func _on_damage_dealt():
-	if p_data.healing_charges >= Config.get_value("player.health.max_healing_charges"): return
+	# MODIFIED: Get values from the new CombatDB resource.
+	if p_data.healing_charges >= CombatDB.config.player_max_healing_charges: return
 	p_data.determination_counter += 1
-	if p_data.determination_counter >= Config.get_value("player.combat.determination_per_charge"):
+	if p_data.determination_counter >= CombatDB.config.player_determination_per_charge:
 		p_data.determination_counter = 0; p_data.healing_charges += 1
 		_emit_healing_charges_changed_event()
 
@@ -5158,16 +5729,17 @@ FILE: ./src/entities/player/states/state_jump.gd
 extends PlayerState
 
 func enter():
-	player.velocity.y = -Config.get_value("player.physics.jump_force")
-	# MODIFIED: Reset timers in the p_data resource.
+	# MODIFIED: Get value from the new CombatDB resource.
+	player.velocity.y = -CombatDB.config.player_jump_force
 	p_data.coyote_timer = 0
 	p_data.jump_buffer_timer = 0
 
 func process_physics(delta: float):
 	player.apply_horizontal_movement()
 	
+	# MODIFIED: Get value from the new CombatDB resource.
 	if Input.is_action_just_released("ui_jump") and player.velocity.y < 0:
-		player.velocity.y *= Config.get_value("player.physics.jump_release_dampener")
+		player.velocity.y *= CombatDB.config.player_jump_release_dampener
 
 	_apply_gravity(delta)
 	
@@ -5178,12 +5750,12 @@ func process_physics(delta: float):
 	_check_for_wall_slide()
 
 func _apply_gravity(delta):
-	player.velocity.y += Config.get_value("general.physics.gravity") * delta
+	# MODIFIED: Get value from the new CombatDB resource.
+	player.velocity.y += CombatDB.config.gravity * delta
 	if player.velocity.y > 0.0:
 		player.change_state(player.State.FALL)
 
 func _check_for_wall_slide():
-	# MODIFIED: All state variables now read from/write to p_data.
 	if p_data.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -p_data.last_wall_normal.x:
 		player.change_state(player.State.WALL_SLIDE)
 
@@ -5196,26 +5768,24 @@ FILE: ./src/entities/player/states/state_dash.gd
 extends PlayerState
 
 func enter():
-	# MODIFIED: All state variables now read from/write to p_data.
+	# MODIFIED: Get values from the new CombatDB resource.
 	p_data.is_dash_invincible = true
 	p_data.can_dash = false
-	p_data.dash_duration_timer = Config.get_value("player.physics.dash_duration")
-	p_data.dash_cooldown_timer = Config.get_value("player.physics.dash_cooldown")
-	player.velocity = _get_dash_direction() * Config.get_value("player.physics.dash_speed")
+	p_data.dash_duration_timer = CombatDB.config.player_dash_duration
+	p_data.dash_cooldown_timer = CombatDB.config.player_dash_cooldown
+	player.velocity = _get_dash_direction() * CombatDB.config.player_dash_speed
 
 func exit():
 	p_data.is_dash_invincible = false
 	player.velocity = player.velocity * 0.5 
 
 func process_physics(_delta: float):
-	# MODIFIED: Check timer from p_data.
 	if p_data.dash_duration_timer <= 0:
 		player.change_state(player.State.FALL)
 
 func _get_dash_direction():
 	if Input.is_action_pressed("ui_up"): return Vector2.UP
 	if Input.is_action_pressed("ui_down"): return Vector2.DOWN
-	# MODIFIED: Read facing direction from p_data.
 	return Vector2(p_data.facing_direction, 0)
 
 
@@ -5228,7 +5798,8 @@ extends PlayerState
 
 func enter():
 	player.velocity = Vector2.ZERO
-	player.healing_timer.start(Config.get_value("player.health.heal_duration"))
+	# MODIFIED: Get value from the new CombatDB resource.
+	player.healing_timer.start(CombatDB.config.player_heal_duration)
 	print("Healing started...")
 
 func exit():
@@ -5277,18 +5848,19 @@ extends PlayerState
 
 func enter():
 	p_data.can_dash = true
-	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	# MODIFIED: Get value from the new CombatDB resource.
+	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
 
 func exit():
 	if p_data.last_wall_normal != Vector2.ZERO:
 		p_data.facing_direction = sign(p_data.last_wall_normal.x)
 
 func process_physics(delta: float):
-	var gravity = Config.get_value("general.physics.gravity")
-	var wall_slide_speed = Config.get_value("player.physics.wall_slide_speed")
+	# MODIFIED: Get values from the new CombatDB resource.
+	var gravity = CombatDB.config.gravity
+	var wall_slide_speed = CombatDB.config.player_wall_slide_speed
 	player.velocity.y = min(player.velocity.y + gravity * delta, wall_slide_speed)
 	
-	# CORRECTED: Use sign() to prevent a narrowing conversion warning.
 	p_data.facing_direction = sign(-p_data.last_wall_normal.x)
 	
 	if p_data.jump_buffer_timer > 0:
@@ -5308,24 +5880,25 @@ func process_physics(delta: float):
 		return
 
 func _perform_wall_jump():
-	player.velocity.y = -Config.get_value("player.physics.wall_jump_force_y")
-	player.velocity.x = p_data.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
+	# MODIFIED: Get values from the new CombatDB resource.
+	player.velocity.y = -CombatDB.config.player_wall_jump_force_y
+	player.velocity.x = p_data.last_wall_normal.x * CombatDB.config.player_wall_jump_force_x
 	p_data.jump_buffer_timer = 0
 	p_data.coyote_timer = 0
 	p_data.wall_coyote_timer = 0
-	player.change_state(player.State.JUMP)
+	player.change_state(player.State.JUMP)```
 
-
-=====================================
-FILE: ./src/entities/player/states/state_attack.gd
-=====================================
+---
+**File to Update:** `src/entities/player/states/state_attack.gd`
+```gdscript
 # src/entities/player/states/state_attack.gd
 # Handles the player's melee attack.
 extends PlayerState
 
 func enter():
-	p_data.attack_duration_timer = Config.get_value("player.combat.attack_duration")
-	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	# MODIFIED: Get values from the new CombatDB resource.
+	p_data.attack_duration_timer = CombatDB.config.player_attack_duration
+	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 	player.hitbox_shape.disabled = false
 	p_data.is_pogo_attack = false
 	
@@ -5351,7 +5924,87 @@ func exit():
 
 func process_physics(delta: float):
 	if not p_data.is_pogo_attack:
-		var friction = Config.get_value("player.combat.attack_friction")
+		# MODIFIED: Get value from the new CombatDB resource.
+		var friction = CombatDB.config.player_attack_friction
+		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
+	
+	if p_data.attack_duration_timer <= 0:
+		player.change_state(player.State.FALL)
+
+func _check_for_immediate_pogo() -> bool:
+	var query = PhysicsShapeQueryParameters2D.new()
+	query.shape = player.hitbox_shape.shape
+	query.transform = player.global_transform * player.hitbox.transform
+	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
+	query.exclude = [player]
+	
+	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
+	
+	if not results.is_empty():
+		player.combat_component.trigger_pogo(results[0].collider)
+		return true
+		
+	return false```
+
+---
+**File to Update:** `src/entities/player/states/state_hurt.gd`
+```gdscript
+# src/entities/player/states/state_hurt.gd
+# Handles player knockback and invincibility.
+extends PlayerState
+
+func enter():
+	p_data.is_charging = false
+	player._cancel_heal()
+	# MODIFIED: Get value from the new CombatDB resource.
+	p_data.knockback_timer = CombatDB.config.player_knockback_duration
+
+func process_physics(delta):
+	# MODIFIED: Get value from the new CombatDB resource.
+	player.velocity.y += CombatDB.config.gravity * delta
+	
+	if p_data.knockback_timer <= 0:
+		player.change_state(player.State.FALL)
+
+
+=====================================
+FILE: ./src/entities/player/states/state_attack.gd
+=====================================
+# src/entities/player/states/state_attack.gd
+# Handles the player's melee attack.
+extends PlayerState
+
+func enter():
+	# MODIFIED: Get values from the new CombatDB resource.
+	p_data.attack_duration_timer = CombatDB.config.player.combat.attack_duration
+	p_data.attack_cooldown_timer = CombatDB.config.player.combat.attack_cooldown
+	player.hitbox_shape.disabled = false
+	p_data.is_pogo_attack = false
+	
+	if Input.is_action_pressed("ui_down"):
+		p_data.is_pogo_attack = true
+		player.hitbox.position = Vector2(0, 60)
+		
+		if player.is_on_floor():
+			player.combat_component.trigger_pogo(null)
+			return
+		
+		if _check_for_immediate_pogo():
+			return
+			
+	elif Input.is_action_pressed("ui_up"):
+		player.hitbox.position = Vector2(0, -60)
+	else:
+		player.hitbox.position = Vector2(p_data.facing_direction * 60, 0)
+
+func exit():
+	player.hitbox_shape.call_deferred("set", "disabled", true)
+	p_data.is_pogo_attack = false
+
+func process_physics(delta: float):
+	if not p_data.is_pogo_attack:
+		# MODIFIED: Get value from the new CombatDB resource.
+		var friction = CombatDB.config.player.combat.attack_friction
 		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
 	if p_data.attack_duration_timer <= 0:
@@ -5383,10 +6036,12 @@ extends PlayerState
 func enter():
 	p_data.is_charging = false
 	player._cancel_heal()
-	p_data.knockback_timer = Config.get_value("player.combat.knockback_duration")
+	# MODIFIED: Get value from the new CombatDB resource.
+	p_data.knockback_timer = CombatDB.config.player.combat.knockback_duration
 
 func process_physics(delta):
-	player.velocity.y += Config.get_value("general.physics.gravity") * delta
+	# MODIFIED: Get value from the new CombatDB resource.
+	player.velocity.y += CombatDB.config.general.gravity * delta
 	
 	if p_data.knockback_timer <= 0:
 		player.change_state(player.State.FALL)
@@ -5408,7 +6063,6 @@ func process_physics(delta: float):
 
 	_check_for_wall_slide()
 
-	# MODIFIED: All timer checks now use the p_data resource.
 	if p_data.jump_buffer_timer > 0:
 		if p_data.wall_coyote_timer > 0:
 			_perform_wall_jump()
@@ -5419,12 +6073,12 @@ func process_physics(delta: float):
 
 func _apply_gravity(delta):
 	var gravity_multiplier = 1.0
+	# MODIFIED: Get value from the new CombatDB resource.
 	if Input.is_action_pressed("ui_down"):
-		gravity_multiplier = Config.get_value("player.physics.fast_fall_gravity_multiplier")
-	player.velocity.y += Config.get_value("general.physics.gravity") * gravity_multiplier * delta
+		gravity_multiplier = CombatDB.config.player_fast_fall_gravity_multiplier
+	player.velocity.y += CombatDB.config.gravity * gravity_multiplier * delta
 
 func _check_for_wall_slide():
-	# MODIFIED: All state variables now read from/write to p_data.
 	if p_data.wall_coyote_timer > 0 and not player.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -p_data.last_wall_normal.x:
 		player.change_state(player.State.WALL_SLIDE)
 
@@ -5433,7 +6087,8 @@ func _perform_air_jump():
 	player.change_state(player.State.JUMP)
 	
 func _perform_wall_jump():
-	player.velocity.x = p_data.last_wall_normal.x * Config.get_value("player.physics.wall_jump_force_x")
+	# MODIFIED: Get value from the new CombatDB resource.
+	player.velocity.x = p_data.last_wall_normal.x * CombatDB.config.player_wall_jump_force_x
 	p_data.coyote_timer = 0
 	p_data.wall_coyote_timer = 0
 	player.change_state(player.State.JUMP)
@@ -5447,13 +6102,15 @@ FILE: ./src/entities/player/states/state_move.gd
 extends PlayerState
 
 func enter():
-	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	# MODIFIED: Get value from the new CombatDB resource.
+	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
 	p_data.can_dash = true
 
 func process_physics(delta: float):
-	p_data.coyote_timer = Config.get_value("player.physics.coyote_time")
+	# MODIFIED: Get value from the new CombatDB resource.
+	p_data.coyote_timer = CombatDB.config.player_coyote_time
 	
-	player.velocity.y += Config.get_value("general.physics.gravity") * delta
+	player.velocity.y += CombatDB.config.gravity * delta
 	player.apply_horizontal_movement()
 
 	if not player.is_on_floor():

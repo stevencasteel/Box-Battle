@@ -20,7 +20,8 @@ func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData):
 # --- Public Combat Methods ---
 
 func fire_shot():
-	p_data.attack_cooldown_timer = Config.get_value("player.combat.attack_cooldown")
+	# MODIFIED: Get value from the new CombatDB resource.
+	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 	
 	var shot = ObjectPool.get_instance(&"player_shots")
 	if not shot: return
@@ -34,10 +35,11 @@ func fire_shot():
 	shot.activate()
 
 func trigger_pogo(pogo_target):
-	owner_node.velocity.y = -Config.get_value("player.physics.pogo_force")
+	# MODIFIED: Get values from the new CombatDB resource.
+	owner_node.velocity.y = -CombatDB.config.player_pogo_force
 	owner_node.position.y -= 1
 	p_data.can_dash = true
-	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
+	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
 	owner_node.change_state(owner_node.State.FALL)
 	
 	if pogo_target:

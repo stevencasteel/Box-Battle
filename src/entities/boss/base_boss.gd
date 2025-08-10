@@ -28,15 +28,13 @@ var player: CharacterBody2D = null
 # --- Engine Functions ---
 func _ready():
 	b_data = BossStateData.new()
-	b_data.patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
+	# MODIFIED: Get value from the new CombatDB resource.
+	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
 	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	var boss_health_configs = {
-		"max_health": "boss.stats.health",
-		"invincibility": "boss.stats.invincibility_duration"
-	}
-	health_component.setup(b_data, self, boss_health_configs)
+	# MODIFIED: Pass the typed resource directly to the component.
+	health_component.setup(b_data, self, CombatDB.config)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
@@ -54,7 +52,8 @@ func _ready():
 
 func _physics_process(delta):
 	if not is_on_floor():
-		velocity.y += Config.get_value("general.physics.gravity") * delta
+		# MODIFIED: Get value from the new CombatDB resource.
+		velocity.y += CombatDB.config.gravity * delta
 
 	if current_state:
 		current_state.process_physics(delta)
@@ -79,7 +78,6 @@ func change_state(new_state_key: State):
 	current_state.enter()
 
 # --- Public Methods ---
-# SOLUTION: The take_damage function is now removed.
 func die():
 	died.emit()
 	queue_free()

@@ -18,11 +18,11 @@ func _ready():
 	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
 	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
 	
-	# Set initial state from config, as events may not have fired yet.
-	var max_health = Config.get_value("player.health.max_health", 5)
+	# MODIFIED: Get initial state from the new CombatDB resource.
+	var max_health = CombatDB.config.player_max_health
 	player_health_value.text = "%d / %d" % [max_health, max_health]
 	player_heal_charges_value.text = "0"
-	boss_health_bar.max_value = Config.get_value("boss.stats.health", 30)
+	boss_health_bar.max_value = CombatDB.config.boss_health
 	boss_health_bar.value = boss_health_bar.max_value
 
 
