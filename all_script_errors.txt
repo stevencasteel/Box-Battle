@@ -105,20 +105,13 @@ Loading resource: res://src/ui/game_hud/game_hud.tscn
 Loading resource: res://src/ui/game_hud/game_hud.gd
 Loading resource: res://src/scenes/game/game.tscn
 Loading resource: res://src/scenes/game/game.gd
-Boss chose attack: VOLLEY_SHOT
-Boss chose attack: VOLLEY_SHOT
 Boss chose attack: SINGLE_SHOT
 Boss chose attack: VOLLEY_SHOT
-Boss chose attack: VOLLEY_SHOT
 Boss chose attack: SINGLE_SHOT
-Boss chose attack: VOLLEY_SHOT
-Boss chose attack: VOLLEY_SHOT
-Boss chose attack: VOLLEY_SHOT
-Boss chose attack: SINGLE_SHOT
-Boss chose attack: VOLLEY_SHOT
 Boss chose attack: SINGLE_SHOT
 Healing started...
 Boss chose attack: SINGLE_SHOT
+Boss chose attack: VOLLEY_SHOT
 Boss chose attack: VOLLEY_SHOT
 Boss chose attack: VOLLEY_SHOT
 Boss chose attack: VOLLEY_SHOT

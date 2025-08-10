@@ -17,11 +17,12 @@ func _ready():
 	_pause_token = EventBus.on(EventCatalog.GAME_PAUSED, _on_game_paused)
 	_resume_token = EventBus.on(EventCatalog.GAME_RESUMED, _on_game_resumed)
 
-	if GameManager.prebuilt_level:
-		add_child(GameManager.prebuilt_level)
-		GameManager.prebuilt_level = null
+	# MODIFIED: Access the state object on GameManager
+	if GameManager.state.prebuilt_level:
+		add_child(GameManager.state.prebuilt_level)
+		GameManager.state.prebuilt_level = null
 		await get_tree().process_frame
-	elif not GameManager.current_encounter_script_path.is_empty():
+	elif not GameManager.state.current_encounter_script_path.is_empty():
 		var level_container = await ArenaBuilder.build_level_async()
 		add_child(level_container)
 		await get_tree().process_frame

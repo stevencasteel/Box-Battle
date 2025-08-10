@@ -18,7 +18,8 @@ const SHADER_PREWARM_SCENES = [
 ]
 
 func _ready():
-	if GameManager.current_encounter_script_path.is_empty():
+	# MODIFIED: Access the state object on GameManager
+	if GameManager.state.current_encounter_script_path.is_empty():
 		print("ERROR: No encounter script specified in GameManager. Returning to title.")
 		get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
 		return
@@ -34,7 +35,8 @@ func _load_level():
 	await _prewarm_shaders()
 	
 	# Tell the ArenaBuilder to construct the level asynchronously.
-	GameManager.prebuilt_level = await ArenaBuilder.build_level_async()
+	# MODIFIED: Access the state object on GameManager
+	GameManager.state.prebuilt_level = await ArenaBuilder.build_level_async()
 	
 	# Yield to ensure all creation processes are finalized before we switch.
 	await get_tree().process_frame

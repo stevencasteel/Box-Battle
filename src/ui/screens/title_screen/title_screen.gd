@@ -42,7 +42,8 @@ func _exit_tree():
 	EventBus.emit(EventCatalog.MENU_CLOSED) # Announce that the menu is closing
 
 func _on_start_button_pressed():
-	GameManager.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
+	# MODIFIED: Access the state object on GameManager
+	GameManager.state.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
 	get_tree().change_scene_to_file(AssetPaths.SCENE_LOADING_SCREEN)
 
 func _on_options_button_pressed():

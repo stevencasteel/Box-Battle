@@ -12,7 +12,8 @@ func build_level_async() -> Node:
 	level_container.name = "LevelContainer"
 
 	# --- 1. Load Raw Data ---
-	var encounter_path: String = GameManager.current_encounter_script_path
+	# CORRECTED: Access the state object on GameManager to get the path.
+	var encounter_path: String = GameManager.state.current_encounter_script_path
 	if encounter_path.is_empty():
 		push_error("ArenaBuilder: No encounter script specified in GameManager.")
 		return level_container

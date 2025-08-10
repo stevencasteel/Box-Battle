@@ -16,6 +16,9 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored `GameManager` to use a `GameStateData` resource,         ║
+║      ░   eliminating the "dual architecture" of stateful singletons. All     ║
+║      ░   runtime state is now consistently managed through `Resource` objects.║
 ║      ░ ■ Replaced the JSON-based `Config.gd` system with a type-safe,        ║
 ║      ░   `Resource`-based system (`CombatConfig.tres` and `CombatDB.gd`).    ║
 ║      ░   This provides compile-time safety against typos and enables direct  ║
@@ -32,6 +35,10 @@
 ║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
 ║      ░   improve project modularity and scalability.                         ║
 ║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Added validation to `Settings.gd` property setters to clamp audio   ║
+║      ░   volume values, making the system more robust against invalid data.  ║
+║                                                                              ║
 ║   █  Added                                                                   ║
 ║      ░ ■ Added placeholder `README.md` and `DEPRECATION.md` files to `core`, ║
 ║      ░   `entities`, and `docs` to establish a documentation framework.      ║
@@ -42,10 +49,12 @@
 ║      ░ ■ Generated audit reports for singletons, event usage, and config usage.║
 ║      ░ ■ Added `ADR-001` to formally document the existing Service Locator pattern.║
 ║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
-║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
+║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring ║
 ║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a parse-time dependency error by ensuring `GameStateData`  ║
+║      ░   is loaded at runtime in `GameManager`, preventing a startup crash.  ║
 ║      ░ ■ Resolved a cascade of parse errors by correcting the implementation ║
 ║      ░   of the new `CombatConfig` resource and refactoring dependent scripts.║
 ║      ░ ■ Corrected multiple typos and syntax errors in player state scripts  ║

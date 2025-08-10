@@ -1,13 +1,16 @@
-# src/core/game_manager.gd
+# src/core/systems/game_manager.gd
 #
-# A simple singleton to manage the state of the game session, such as
-# which level is currently being loaded or played.
+# A simple singleton to manage the state of the game session. It now holds
+# a reference to a GameStateData resource, standardizing our state pattern.
 extends Node
 
-# This variable will hold the resource path to the encounter script for the
-# level that the player has chosen to play.
-var current_encounter_script_path: String = ""
+# MODIFIED: Removed the parse-time type hint to break the dependency cycle.
+var state = null
 
-# --- NEW VARIABLE ---
-# This will hold the fully constructed, but currently hidden, level node.
-var prebuilt_level: Node = null
+# Preload the script resource itself. This is safe.
+const GameStateDataScript = preload("res://src/core/data/game_state_data.gd")
+
+func _ready():
+	# Create a new, clean instance of the game state at runtime,
+	# when all scripts have been parsed and registered.
+	state = GameStateDataScript.new()
