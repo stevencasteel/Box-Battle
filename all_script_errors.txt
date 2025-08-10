@@ -41,35 +41,37 @@ CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at i
 Loading resource: res://default_bus_layout.tres
 CORE API HASH: 4052744068
 EDITOR API HASH: 910296392
-Loading resource: res://src/core/settings.gd
-Failed loading resource: res://src/core/settings.gd
-Loading resource: res://src/core/audio_manager.gd
-Failed loading resource: res://src/core/audio_manager.gd
-Loading resource: res://src/core/cursor_manager.gd
-Failed loading resource: res://src/core/cursor_manager.gd
-Loading resource: res://src/core/constants.gd
-Failed loading resource: res://src/core/constants.gd
-Loading resource: res://src/core/asset_paths.gd
-Failed loading resource: res://src/core/asset_paths.gd
+Loading resource: res://src/core/data/settings.gd
+Loading resource: res://src/core/systems/audio_manager.gd
+Loading resource: res://src/core/systems/cursor_manager.gd
+Loading resource: res://assets/sprites/ui/cursors/cursor_default.png
+Loading resource: res://.godot/imported/cursor_default.png-adc7f5ed4336e28008b129c5a66cab2e.ctex
+Loading resource: res://assets/sprites/ui/cursors/cursor_pointer.png
+Loading resource: res://.godot/imported/cursor_pointer.png-90e307ad4e06d49b3b74ef9b44e078f4.ctex
 Loading resource: res://src/ui/global_hud/global_hud.tscn
 Loading resource: res://src/ui/global_hud/global_hud.gd
-Loading resource: res://src/core/game_manager.gd
-Failed loading resource: res://src/core/game_manager.gd
-Loading resource: res://src/core/arena_builder.gd
-Failed loading resource: res://src/core/arena_builder.gd
+Loading resource: res://assets/sprites/ui/icons/icon-sound-on.png
+Loading resource: res://.godot/imported/icon-sound-on.png-e846c5d97e3d706214419caf8e828d71.ctex
+Loading resource: res://assets/sprites/ui/icons/icon-sound-off.png
+Loading resource: res://.godot/imported/icon-sound-off.png-6ce140963307e6f579be834adb53f1a0.ctex
+Loading resource: res://src/core/systems/game_manager.gd
+Loading resource: res://src/core/building/arena_builder.gd
 Loading resource: res://src/core/event_bus.gd
+Failed loading resource: res://src/core/event_bus.gd
 Loading resource: res://src/core/sequencer.gd
-Loading resource: res://src/core/Config.gd
-Failed loading resource: res://src/core/Config.gd
-Loading resource: res://src/core/palette.gd
-Failed loading resource: res://src/core/palette.gd
-Loading resource: res://src/core/object_pool.gd
-Failed loading resource: res://src/core/object_pool.gd
-Loading resource: res://src/core/physics_layers.gd
-Failed loading resource: res://src/core/physics_layers.gd
+Failed loading resource: res://src/core/sequencer.gd
+Loading resource: res://src/core/data/Config.gd
+Loading resource: res://src/core/systems/object_pool.gd
+Loading resource: res://src/projectiles/player_shot.tscn
+Loading resource: res://src/projectiles/player_shot.gd
+Loading resource: res://src/projectiles/boss_shot.tscn
+Loading resource: res://src/projectiles/boss_shot.gd
+Loading resource: res://src/core/util/physics_layers.gd
 Loaded system CA certificates
 Loading resource: res://src/scenes/main/main.tscn
 Loading resource: res://src/scenes/main/main.gd
+Loading resource: res://src/ui/screens/title_screen/title_screen.tscn
+Loading resource: res://src/ui/screens/title_screen/title_screen.gd
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
 XR: Removed interface "OpenXR"

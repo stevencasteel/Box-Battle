@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 20:54:20 CDT 2025
+Generated on: Sat Aug  9 21:25:11 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -34,7 +34,6 @@ PROJECT DIRECTORY STRUCTURE:
 ├── progess
 │   └── progress_001-1.jpg
 ├── project.godot
-├── reorganize_core.sh
 └── src
     ├── arenas
     │   ├── arena_00_encounter.gd
@@ -157,7 +156,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-42 directories, 107 files
+42 directories, 106 files
 
 
 =====================================
@@ -1045,7 +1044,14 @@ FILE: ./docs/CHANGELOG.txt
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   (All new changes will be logged here.)                                     ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Reorganized the monolithic `src/core` directory into purpose-driven ║
+║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
+║      ░   improve project modularity and scalability.                         ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
+║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -1445,20 +1451,20 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Settings="*res://src/core/settings.gd"
-AudioManager="*res://src/core/audio_manager.gd"
-CursorManager="*res://src/core/cursor_manager.gd"
-Constants="*res://src/core/constants.gd"
-AssetPaths="*res://src/core/asset_paths.gd"
+Settings="*res://src/core/data/settings.gd"
+AudioManager="*res://src/core/systems/audio_manager.gd"
+CursorManager="*res://src/core/systems/cursor_manager.gd"
+Constants="*res://src/core/util/constants.gd"
+AssetPaths="*res://src/core/util/asset_paths.gd"
 GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
-GameManager="*res://src/core/game_manager.gd"
-ArenaBuilder="*res://src/core/arena_builder.gd"
+GameManager="*res://src/core/systems/game_manager.gd"
+ArenaBuilder="*res://src/core/building/arena_builder.gd"
 EventBus="*res://src/core/event_bus.gd"
 Sequencer="*res://src/core/sequencer.gd"
-Config="*res://src/core/Config.gd"
-Palette="*res://src/core/palette.gd"
-ObjectPool="*res://src/core/object_pool.gd"
-PhysicsLayers="*res://src/core/physics_layers.gd"
+Config="*res://src/core/data/Config.gd"
+Palette="*res://src/core/util/palette.gd"
+ObjectPool="*res://src/core/systems/object_pool.gd"
+PhysicsLayers="*res://src/core/util/physics_layers.gd"
 
 [display]
 
@@ -1780,6 +1786,7 @@ func _update_icon():
 		mute_button.texture_normal = ICON_SOUND_OFF
 	else:
 		mute_button.texture_normal = ICON_SOUND_ON
+
 
 =====================================
 FILE: ./src/ui/global_hud/global_hud.tscn
