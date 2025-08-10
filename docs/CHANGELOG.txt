@@ -16,9 +16,17 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Further refined the `src/core` directory structure, creating new    ║
+║      ░   subdirectories for typed configs and events (`data/config`, `events/typed_events`).║
+║      ░ ■ Standardized script filenames to snake_case (e.g., `Config.gd` ->   ║
+║      ░   `config.gd`) for project-wide consistency.                          ║
 ║      ░ ■ Reorganized the monolithic `src/core` directory into purpose-driven ║
 ║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
 ║      ░   improve project modularity and scalability.                         ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Added placeholder `README.md` and `DEPRECATION.md` files to `core`, ║
+║      ░   `entities`, and `docs` to establish a documentation framework.      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
 ║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
