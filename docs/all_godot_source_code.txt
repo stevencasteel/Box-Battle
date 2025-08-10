@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 21:25:11 CDT 2025
+Generated on: Sat Aug  9 21:53:57 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -30,6 +30,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── all_script_errors.txt
 │   ├── create_all_godot_source_code_txt.command
 │   └── create_all_godot_source_code_txt.sh
+├── final_reorganize.sh
 ├── icon.svg
 ├── progess
 │   └── progress_001-1.jpg
@@ -48,18 +49,18 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── data
     │   │   ├── Config.gd
     │   │   └── settings.gd
-    │   ├── event_bus.gd
-    │   ├── event_catalog.gd
     │   ├── events
     │   │   ├── boss_health_changed_event.gd
+    │   │   ├── event_bus.gd
+    │   │   ├── event_catalog.gd
     │   │   ├── player_healing_charges_changed_event.gd
     │   │   └── player_health_changed_event.gd
-    │   ├── sequencer
+    │   ├── sequencing
     │   │   ├── sequence_step.gd
+    │   │   ├── sequencer.gd
     │   │   └── steps
     │   │       ├── emit_step.gd
     │   │       └── wait_step.gd
-    │   ├── sequencer.gd
     │   ├── systems
     │   │   ├── audio_manager.gd
     │   │   ├── cursor_manager.gd
@@ -156,7 +157,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-42 directories, 106 files
+42 directories, 107 files
 
 
 =====================================
@@ -1459,8 +1460,8 @@ AssetPaths="*res://src/core/util/asset_paths.gd"
 GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
 GameManager="*res://src/core/systems/game_manager.gd"
 ArenaBuilder="*res://src/core/building/arena_builder.gd"
-EventBus="*res://src/core/event_bus.gd"
-Sequencer="*res://src/core/sequencer.gd"
+EventBus="*res://src/core/events/event_bus.gd"
+Sequencer="*res://src/core/sequencing/sequencer.gd"
 Config="*res://src/core/data/Config.gd"
 Palette="*res://src/core/util/palette.gd"
 ObjectPool="*res://src/core/systems/object_pool.gd"
@@ -3063,136 +3064,93 @@ func _ready():
 
 
 =====================================
-FILE: ./src/core/event_bus.gd
+FILE: ./src/core/sequencing/sequence_step.gd
 =====================================
-# src/core/event_bus.gd
+# src/core/sequencer/sequence_step.gd
+# The abstract base class for all steps in a sequence.
+# It defines the contract that all steps must follow: an `execute` method.
+@tool
+class_name SequenceStep
+extends Resource
+
+# This method will be implemented by all concrete step classes.
+# It contains the logic for what the step actually does.
+# It should return a Signal or Coroutine object if the sequence needs to pause.
+#
+# CORRECTED: The parameter is prefixed with an underscore to resolve the
+# UNUSED_PARAMETER warning in this base class.
+func execute(_sequencer_node: Node) -> Variant:
+	return null
+
+
+=====================================
+FILE: ./src/core/sequencing/sequencer.gd
+=====================================
+# src/core/sequencer.gd
+#
+# An autoloaded singleton that runs sequences of timed events. This version has
+# been refactored to use type-safe `SequenceStep` resources and now uses a more
+# robust await pattern that satisfies the static analyzer.
 extends Node
 
-var _subscribers: Dictionary = {}
-var _by_id: Dictionary = {}
-var _next_id: int = 1
-var _event_queue: Array = []
-var _trace_capacity: int = 200
-var _trace: Array = []
+# The primary function of the sequencer. It iterates through an array of
+# SequenceStep objects, executing each one in order.
+func run_sequence(steps: Array[SequenceStep]) -> void:
+	if steps.is_empty():
+		return
 
-var debug_enabled: bool = OS.is_debug_build()
-
-func _process(_delta: float) -> void:
-	if _event_queue.is_empty(): return
-	var q = _event_queue.duplicate()
-	_event_queue.clear()
-	for item in q:
-		_emit_internal(item["event"], item["payload"], item["source"])
-
-func on(event_name: String, callback: Callable, opts: Dictionary = {}) -> int:
-	assert(callback.is_valid(), "EventBus.on: callback must be a valid Callable")
-	var subs: Array = _subscribers.get(event_name, [])
-	var owner_node = callback.get_object()
-	var weak_ref = weakref(owner_node) if owner_node is Node else null
-
-	var entry := {
-		"id": _next_id, "callback": callback, "owner_weak": weak_ref,
-		"once": opts.get("once", false), "priority": opts.get("priority", 0),
-		"type": opts.get("type", null)
-	}
-	subs.append(entry)
-	subs.sort_custom(func(a, b): return a.priority > b.priority)
-	_subscribers[event_name] = subs
-	_by_id[_next_id] = event_name
-	_next_id += 1
-	return entry.id
-
-func off(token: int) -> void:
-	if not _by_id.has(token): return
-	var event_name: String = _by_id[token]
-	if _subscribers.has(event_name):
-		for i in range(_subscribers[event_name].size() - 1, -1, -1):
-			if _subscribers[event_name][i].id == token:
-				_subscribers[event_name].remove_at(i)
-				break
-		if _subscribers[event_name].is_empty():
-			_subscribers.erase(event_name)
-	_by_id.erase(token)
-
-func off_owner(owner_node: Node) -> void:
-	if owner_node == null: return
-	var tokens_to_remove: Array[int] = []
-	for token in _by_id.keys():
-		var event_name = _by_id[token]
-		if _subscribers.has(event_name):
-			var subs = _subscribers[event_name]
-			for sub in subs:
-				if sub.id == token and sub.owner_weak and sub.owner_weak.get_ref() == owner_node:
-					tokens_to_remove.append(token)
-	for token in tokens_to_remove:
-		off(token)
-
-func emit(event_name: String, payload = null, source: Object = null) -> void:
-	_emit_internal(event_name, payload, source)
-
-func emit_async(event_name: String, payload = null, source: Object = null) -> void:
-	_event_queue.append({"event": event_name, "payload": payload, "source": source})
-
-func _emit_internal(event_name: String, payload, source: Object) -> void:
-	if debug_enabled:
-		var payload_class = "null"
-		if payload != null: payload_class = payload.get_class()
-		var source_str = "invalid"
-		if is_instance_valid(source): source_str = str(source)
-		
-		_trace.append({ "time": Time.get_ticks_msec(), "event": event_name,
-			"payload_type": payload_class, "source": source_str })
-		if _trace.size() > _trace_capacity: _trace.pop_front()
-
-	if not _subscribers.has(event_name): return
-
-	for sub in _subscribers[event_name].duplicate():
-		if sub.owner_weak and not sub.owner_weak.get_ref():
-			off(sub.id); continue
-		
-		var expected_type = sub.type
-		if expected_type and not is_instance_of(payload, expected_type):
-			if debug_enabled:
-				var type_path = expected_type.resource_path if expected_type is Script else str(expected_type)
-				
-				# IMPROVED DEBUG MESSAGE: Get the specific script name if available.
-				var payload_type_name = "null"
-				if payload:
-					if payload is Resource and payload.get_script():
-						payload_type_name = payload.get_script().resource_path
-					else:
-						payload_type_name = payload.get_class()
-
-				print("EventBus: Subscriber for '%s' expected type %s but got %s. Skipping." % [event_name, type_path, payload_type_name])
+	for step in steps:
+		if not step is SequenceStep:
+			push_warning("Sequencer: Invalid step found (not a SequenceStep resource). Skipping.")
 			continue
 		
-		sub.callback.call(payload)
-		
-		if sub.once: off(sub.id)
+		# CORRECTED: The step's execute method now returns an awaitable object
+		# (like a Signal) if it needs to pause the sequence. We check for this
+		# and only await if necessary. This resolves the REDUNDANT_AWAIT warning.
+		var awaitable = step.execute(self)
+		if awaitable:
+			await awaitable
 
-# --- Debugging Tools ---
-func debug_recent_events() -> Array: return _trace.duplicate()
 
-func dump_subscribers(event_name: String = "") -> Dictionary:
-	var output := {}
-	var events_to_dump: Array = _subscribers.keys() if event_name.is_empty() else [event_name]
+=====================================
+FILE: ./src/core/sequencing/steps/emit_step.gd
+=====================================
+# src/core/sequencer/steps/emit_step.gd
+# A sequence step that emits an event on the global EventBus.
+@tool
+class_name EmitStep
+extends SequenceStep
 
-	for ev in events_to_dump:
-		if _subscribers.has(ev):
-			output[ev] = []
-			for sub in _subscribers[ev]:
-				var owner_desc := "null"
-				if sub.owner_weak and sub.owner_weak.get_ref():
-					owner_desc = str(sub.owner_weak.get_ref())
-				
-				var type_desc := "any"
-				if sub.type and sub.type is Script:
-					type_desc = sub.type.resource_path
-				
-				output[ev].append({ "id": sub.id, "owner": owner_desc, "priority": sub.priority,
-					"once": sub.once, "type": type_desc })
-	return output
+@export var event_name: StringName = &""
+@export var payload: Variant = null
 
+# CORRECTED: The function signature now returns '-> Variant' to match its parent,
+# SequenceStep. Since this step completes instantly, it returns null.
+func execute(_sequencer_node: Node) -> Variant:
+	if event_name == &"":
+		push_warning("EmitStep: 'event_name' is not set.")
+		return null
+	EventBus.emit(event_name, payload)
+	return null
+
+
+=====================================
+FILE: ./src/core/sequencing/steps/wait_step.gd
+=====================================
+# src/core/sequencer/steps/wait_step.gd
+# A sequence step that pauses execution for a set duration.
+@tool
+class_name WaitStep
+extends SequenceStep
+
+@export var duration: float = 1.0
+
+# CORRECTED: This function now returns the timer's 'timeout' signal.
+# The sequencer will await this signal, making the pause explicit.
+func execute(sequencer_node: Node) -> Variant:
+	if duration > 0.0:
+		return sequencer_node.get_tree().create_timer(duration).timeout
+	return null
 
 =====================================
 FILE: ./src/core/util/physics_layers.gd
@@ -3353,121 +3311,136 @@ const NUM_SFX_PLAYERS = 8 # The number of sound effects that can play at once.
 const TILE_SIZE = 50
 
 =====================================
-FILE: ./src/core/sequencer.gd
+FILE: ./src/core/events/event_bus.gd
 =====================================
-# src/core/sequencer.gd
-#
-# An autoloaded singleton that runs sequences of timed events. This version has
-# been refactored to use type-safe `SequenceStep` resources and now uses a more
-# robust await pattern that satisfies the static analyzer.
+# src/core/event_bus.gd
 extends Node
 
-# The primary function of the sequencer. It iterates through an array of
-# SequenceStep objects, executing each one in order.
-func run_sequence(steps: Array[SequenceStep]) -> void:
-	if steps.is_empty():
-		return
+var _subscribers: Dictionary = {}
+var _by_id: Dictionary = {}
+var _next_id: int = 1
+var _event_queue: Array = []
+var _trace_capacity: int = 200
+var _trace: Array = []
 
-	for step in steps:
-		if not step is SequenceStep:
-			push_warning("Sequencer: Invalid step found (not a SequenceStep resource). Skipping.")
+var debug_enabled: bool = OS.is_debug_build()
+
+func _process(_delta: float) -> void:
+	if _event_queue.is_empty(): return
+	var q = _event_queue.duplicate()
+	_event_queue.clear()
+	for item in q:
+		_emit_internal(item["event"], item["payload"], item["source"])
+
+func on(event_name: String, callback: Callable, opts: Dictionary = {}) -> int:
+	assert(callback.is_valid(), "EventBus.on: callback must be a valid Callable")
+	var subs: Array = _subscribers.get(event_name, [])
+	var owner_node = callback.get_object()
+	var weak_ref = weakref(owner_node) if owner_node is Node else null
+
+	var entry := {
+		"id": _next_id, "callback": callback, "owner_weak": weak_ref,
+		"once": opts.get("once", false), "priority": opts.get("priority", 0),
+		"type": opts.get("type", null)
+	}
+	subs.append(entry)
+	subs.sort_custom(func(a, b): return a.priority > b.priority)
+	_subscribers[event_name] = subs
+	_by_id[_next_id] = event_name
+	_next_id += 1
+	return entry.id
+
+func off(token: int) -> void:
+	if not _by_id.has(token): return
+	var event_name: String = _by_id[token]
+	if _subscribers.has(event_name):
+		for i in range(_subscribers[event_name].size() - 1, -1, -1):
+			if _subscribers[event_name][i].id == token:
+				_subscribers[event_name].remove_at(i)
+				break
+		if _subscribers[event_name].is_empty():
+			_subscribers.erase(event_name)
+	_by_id.erase(token)
+
+func off_owner(owner_node: Node) -> void:
+	if owner_node == null: return
+	var tokens_to_remove: Array[int] = []
+	for token in _by_id.keys():
+		var event_name = _by_id[token]
+		if _subscribers.has(event_name):
+			var subs = _subscribers[event_name]
+			for sub in subs:
+				if sub.id == token and sub.owner_weak and sub.owner_weak.get_ref() == owner_node:
+					tokens_to_remove.append(token)
+	for token in tokens_to_remove:
+		off(token)
+
+func emit(event_name: String, payload = null, source: Object = null) -> void:
+	_emit_internal(event_name, payload, source)
+
+func emit_async(event_name: String, payload = null, source: Object = null) -> void:
+	_event_queue.append({"event": event_name, "payload": payload, "source": source})
+
+func _emit_internal(event_name: String, payload, source: Object) -> void:
+	if debug_enabled:
+		var payload_class = "null"
+		if payload != null: payload_class = payload.get_class()
+		var source_str = "invalid"
+		if is_instance_valid(source): source_str = str(source)
+		
+		_trace.append({ "time": Time.get_ticks_msec(), "event": event_name,
+			"payload_type": payload_class, "source": source_str })
+		if _trace.size() > _trace_capacity: _trace.pop_front()
+
+	if not _subscribers.has(event_name): return
+
+	for sub in _subscribers[event_name].duplicate():
+		if sub.owner_weak and not sub.owner_weak.get_ref():
+			off(sub.id); continue
+		
+		var expected_type = sub.type
+		if expected_type and not is_instance_of(payload, expected_type):
+			if debug_enabled:
+				var type_path = expected_type.resource_path if expected_type is Script else str(expected_type)
+				
+				# IMPROVED DEBUG MESSAGE: Get the specific script name if available.
+				var payload_type_name = "null"
+				if payload:
+					if payload is Resource and payload.get_script():
+						payload_type_name = payload.get_script().resource_path
+					else:
+						payload_type_name = payload.get_class()
+
+				print("EventBus: Subscriber for '%s' expected type %s but got %s. Skipping." % [event_name, type_path, payload_type_name])
 			continue
 		
-		# CORRECTED: The step's execute method now returns an awaitable object
-		# (like a Signal) if it needs to pause the sequence. We check for this
-		# and only await if necessary. This resolves the REDUNDANT_AWAIT warning.
-		var awaitable = step.execute(self)
-		if awaitable:
-			await awaitable
+		sub.callback.call(payload)
+		
+		if sub.once: off(sub.id)
 
+# --- Debugging Tools ---
+func debug_recent_events() -> Array: return _trace.duplicate()
 
-=====================================
-FILE: ./src/core/event_catalog.gd
-=====================================
-# src/core/event_catalog.gd
-# This script serves as the canonical, central list of all event names in the project.
-# By using these constants instead of raw strings, we gain IDE autocompletion and
-# prevent typos that would lead to silent runtime failures.
-extends Object
-class_name EventCatalog
+func dump_subscribers(event_name: String = "") -> Dictionary:
+	var output := {}
+	var events_to_dump: Array = _subscribers.keys() if event_name.is_empty() else [event_name]
 
-# --- Player Events ---
-const PLAYER_HEALTH_CHANGED = "player.health_changed"
-const PLAYER_HEALING_CHARGES_CHANGED = "player.healing_charges_changed"
-const PLAYER_TOOK_DAMAGE = "player.took_damage"
-const PLAYER_DIED = "player.died"
+	for ev in events_to_dump:
+		if _subscribers.has(ev):
+			output[ev] = []
+			for sub in _subscribers[ev]:
+				var owner_desc := "null"
+				if sub.owner_weak and sub.owner_weak.get_ref():
+					owner_desc = str(sub.owner_weak.get_ref())
+				
+				var type_desc := "any"
+				if sub.type and sub.type is Script:
+					type_desc = sub.type.resource_path
+				
+				output[ev].append({ "id": sub.id, "owner": owner_desc, "priority": sub.priority,
+					"once": sub.once, "type": type_desc })
+	return output
 
-# --- Boss / Entity Events ---
-const BOSS_HEALTH_CHANGED = "boss.health_changed"
-const BOSS_DIED = "boss.died"
-
-# --- Game State Events ---
-const GAME_PAUSED = "game.paused"
-const GAME_RESUMED = "game.resumed"
-
-# --- UI State Events ---
-const MENU_OPENED = "ui.menu_opened"
-const MENU_CLOSED = "ui.menu_closed"
-
-=====================================
-FILE: ./src/core/sequencer/sequence_step.gd
-=====================================
-# src/core/sequencer/sequence_step.gd
-# The abstract base class for all steps in a sequence.
-# It defines the contract that all steps must follow: an `execute` method.
-@tool
-class_name SequenceStep
-extends Resource
-
-# This method will be implemented by all concrete step classes.
-# It contains the logic for what the step actually does.
-# It should return a Signal or Coroutine object if the sequence needs to pause.
-#
-# CORRECTED: The parameter is prefixed with an underscore to resolve the
-# UNUSED_PARAMETER warning in this base class.
-func execute(_sequencer_node: Node) -> Variant:
-	return null
-
-
-=====================================
-FILE: ./src/core/sequencer/steps/emit_step.gd
-=====================================
-# src/core/sequencer/steps/emit_step.gd
-# A sequence step that emits an event on the global EventBus.
-@tool
-class_name EmitStep
-extends SequenceStep
-
-@export var event_name: StringName = &""
-@export var payload: Variant = null
-
-# CORRECTED: The function signature now returns '-> Variant' to match its parent,
-# SequenceStep. Since this step completes instantly, it returns null.
-func execute(_sequencer_node: Node) -> Variant:
-	if event_name == &"":
-		push_warning("EmitStep: 'event_name' is not set.")
-		return null
-	EventBus.emit(event_name, payload)
-	return null
-
-
-=====================================
-FILE: ./src/core/sequencer/steps/wait_step.gd
-=====================================
-# src/core/sequencer/steps/wait_step.gd
-# A sequence step that pauses execution for a set duration.
-@tool
-class_name WaitStep
-extends SequenceStep
-
-@export var duration: float = 1.0
-
-# CORRECTED: This function now returns the timer's 'timeout' signal.
-# The sequencer will await this signal, making the pause explicit.
-func execute(sequencer_node: Node) -> Variant:
-	if duration > 0.0:
-		return sequencer_node.get_tree().create_timer(duration).timeout
-	return null
 
 =====================================
 FILE: ./src/core/events/boss_health_changed_event.gd
@@ -3501,6 +3474,34 @@ extends Resource
 class_name PlayerHealingChargesChangedEvent
 
 @export var current_charges: int = 0
+
+=====================================
+FILE: ./src/core/events/event_catalog.gd
+=====================================
+# src/core/event_catalog.gd
+# This script serves as the canonical, central list of all event names in the project.
+# By using these constants instead of raw strings, we gain IDE autocompletion and
+# prevent typos that would lead to silent runtime failures.
+extends Object
+class_name EventCatalog
+
+# --- Player Events ---
+const PLAYER_HEALTH_CHANGED = "player.health_changed"
+const PLAYER_HEALING_CHARGES_CHANGED = "player.healing_charges_changed"
+const PLAYER_TOOK_DAMAGE = "player.took_damage"
+const PLAYER_DIED = "player.died"
+
+# --- Boss / Entity Events ---
+const BOSS_HEALTH_CHANGED = "boss.health_changed"
+const BOSS_DIED = "boss.died"
+
+# --- Game State Events ---
+const GAME_PAUSED = "game.paused"
+const GAME_RESUMED = "game.resumed"
+
+# --- UI State Events ---
+const MENU_OPENED = "ui.menu_opened"
+const MENU_CLOSED = "ui.menu_closed"
 
 =====================================
 FILE: ./src/core/systems/game_manager.gd

@@ -1,0 +1,16 @@
+
+Settings="*res://src/core/data/config/settings.gd"
+AudioManager="*res://src/core/systems/audio_manager.gd"
+CursorManager="*res://src/core/systems/cursor_manager.gd"
+Constants="*res://src/core/util/constants.gd"
+AssetPaths="*res://src/core/util/asset_paths.gd"
+GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
+GameManager="*res://src/core/systems/game_manager.gd"
+ArenaBuilder="*res://src/core/building/arena_builder.gd"
+EventBus="*res://src/core/events/event_bus.gd"
+Sequencer="*res://src/core/sequencing/sequencer.gd"
+Config="*res://src/core/data/config/config.gd"
+Palette="*res://src/core/util/palette.gd"
+ObjectPool="*res://src/core/systems/object_pool.gd"
+PhysicsLayers="*res://src/core/util/physics_layers.gd"
+

@@ -1,0 +1,51 @@
+--- EventCatalog.gd ---
+# src/core/event_catalog.gd
+# This script serves as the canonical, central list of all event names in the project.
+# By using these constants instead of raw strings, we gain IDE autocompletion and
+# prevent typos that would lead to silent runtime failures.
+extends Object
+class_name EventCatalog
+
+# --- Player Events ---
+const PLAYER_HEALTH_CHANGED = "player.health_changed"
+const PLAYER_HEALING_CHARGES_CHANGED = "player.healing_charges_changed"
+const PLAYER_TOOK_DAMAGE = "player.took_damage"
+const PLAYER_DIED = "player.died"
+
+# --- Boss / Entity Events ---
+const BOSS_HEALTH_CHANGED = "boss.health_changed"
+const BOSS_DIED = "boss.died"
+
+# --- Game State Events ---
+const GAME_PAUSED = "game.paused"
+const GAME_RESUMED = "game.resumed"
+
+# --- UI State Events ---
+const MENU_OPENED = "ui.menu_opened"
+const MENU_CLOSED = "ui.menu_closed"
+
+--- EventBus.on() Subscriptions ---
+src/ui/game_hud/game_hud.gd:17:	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
+src/ui/game_hud/game_hud.gd:18:	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
+src/ui/game_hud/game_hud.gd:19:	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
+src/ui/global_hud/global_hud.gd:35:	_menu_opened_token = EventBus.on(EventCatalog.MENU_OPENED, _on_menu_opened)
+src/ui/global_hud/global_hud.gd:36:	_menu_closed_token = EventBus.on(EventCatalog.MENU_CLOSED, _on_menu_closed)
+src/scenes/game/game.gd:17:	_pause_token = EventBus.on(EventCatalog.GAME_PAUSED, _on_game_paused)
+src/scenes/game/game.gd:18:	_resume_token = EventBus.on(EventCatalog.GAME_RESUMED, _on_game_resumed)
+
+
+--- EventBus.emit() Emissions ---
+src/ui/screens/controls_menu/controls_menu.gd:9:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/controls_menu/controls_menu.gd:70:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/credits_menu/credits_menu.gd:9:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/credits_menu/credits_menu.gd:60:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/options_menu/options_menu.gd:9:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/options_menu/options_menu.gd:61:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/sound_menu/sound_menu.gd:19:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/sound_menu/sound_menu.gd:47:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/title_screen/title_screen.gd:10:	EventBus.emit(EventCatalog.MENU_OPENED) # Announce that a menu is open
+src/ui/screens/title_screen/title_screen.gd:42:	EventBus.emit(EventCatalog.MENU_CLOSED) # Announce that the menu is closing
+src/core/sequencing/steps/emit_step.gd:16:	EventBus.emit(event_name, payload)
+src/entities/boss/base_boss.gd:121:	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
+src/entities/player/player.gd:127:	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev, self)
+src/entities/player/player.gd:191:	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)

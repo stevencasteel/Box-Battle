@@ -17,7 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-Settings="*res://src/core/data/settings.gd"
+Settings="*res://src/core/data/config/settings.gd"
 AudioManager="*res://src/core/systems/audio_manager.gd"
 CursorManager="*res://src/core/systems/cursor_manager.gd"
 Constants="*res://src/core/util/constants.gd"
@@ -27,7 +27,7 @@ GameManager="*res://src/core/systems/game_manager.gd"
 ArenaBuilder="*res://src/core/building/arena_builder.gd"
 EventBus="*res://src/core/events/event_bus.gd"
 Sequencer="*res://src/core/sequencing/sequencer.gd"
-Config="*res://src/core/data/Config.gd"
+Config="*res://src/core/data/config/config.gd"
 Palette="*res://src/core/util/palette.gd"
 ObjectPool="*res://src/core/systems/object_pool.gd"
 PhysicsLayers="*res://src/core/util/physics_layers.gd"
