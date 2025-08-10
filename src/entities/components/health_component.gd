@@ -17,7 +17,7 @@ var owner_node: CharacterBody2D
 @onready var hit_flash_timer: Timer = Timer.new()
 
 # --- Config ---
-var max_health: int
+# REMOVED: No longer need to store max_health here.
 var invincibility_duration: float
 var knockback_speed: float
 var hazard_knockback_speed: float
@@ -44,25 +44,26 @@ func setup(owner: Node, config: Resource = null, services = null) -> void:
 		push_error("HealthComponent.setup: passed config is not a CombatConfig resource.")
 		return
 
-	# CORRECTED: Use the robust `is_in_group` check to determine entity type and get the correct data resource.
 	if owner_node.is_in_group("player"):
 		self.entity_data = owner_node.p_data
-		max_health = cfg.player_max_health
+		# MODIFIED: Initialize the max values *within* the data resource.
+		entity_data.max_health = cfg.player_max_health
+		entity_data.max_healing_charges = cfg.player_max_healing_charges
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
 	else: # Assumes it's a boss/enemy
 		self.entity_data = owner_node.b_data
-		max_health = cfg.boss_health
+		entity_data.max_health = cfg.boss_health
 		invincibility_duration = cfg.boss_invincibility_duration
 		knockback_speed = 0
 		hazard_knockback_speed = 0
 	
-	entity_data.health = max_health
+	entity_data.health = entity_data.max_health # Start at full health
 	if is_instance_valid(get_visual_sprite()):
 		original_color = get_visual_sprite().color
 	
-	health_changed.emit(entity_data.health, max_health)
+	health_changed.emit(entity_data.health, entity_data.max_health)
 
 func teardown() -> void:
 	entity_data = null
@@ -75,7 +76,7 @@ func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
 		return {"was_damaged": false}
 
 	entity_data.health -= damage_amount
-	health_changed.emit(entity_data.health, max_health)
+	health_changed.emit(entity_data.health, entity_data.max_health)
 	
 	_trigger_hit_flash()
 	entity_data.is_invincible = true

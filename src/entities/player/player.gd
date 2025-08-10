@@ -69,7 +69,6 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	# MODIFIED: Call the standardized setup methods for all components.
 	health_component.setup(self, CombatDB.config)
 	combat_component.setup(self)
 	input_component.setup(self, null, null, combat_component) # Pass combat_component as the extra arg
@@ -101,7 +100,6 @@ func _exit_tree():
 	states.clear()
 	p_data = null
 	
-	# MODIFIED: Call teardown on all components for proper cleanup.
 	if health_component: health_component.teardown()
 	if combat_component: combat_component.teardown()
 	if input_component: input_component.teardown()
@@ -184,9 +182,11 @@ func _on_hurtbox_area_entered(area):
 
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
-		p_data.health = min(p_data.health + 1, health_component.max_health)
+		# SIMPLIFIED: We no longer need to clamp the health value here.
+		# The PlayerStateData resource's setter handles that automatically.
+		p_data.health += 1
 		p_data.healing_charges -= 1
-		health_component.health_changed.emit(p_data.health, health_component.max_health)
+		health_component.health_changed.emit(p_data.health, p_data.max_health)
 		_emit_healing_charges_changed_event()
 		change_state(State.MOVE)
 
