@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 18:28:16 CDT 2025
+Generated on: Sat Aug  9 19:11:15 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -59,6 +59,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── game_manager.gd
     │   ├── object_pool.gd
     │   ├── palette.gd
+    │   ├── physics_layers.gd
     │   ├── sequencer
     │   │   ├── sequence_step.gd
     │   │   └── steps
@@ -79,7 +80,8 @@ PROJECT DIRECTORY STRUCTURE:
     │   │       └── state_boss_patrol.gd
     │   ├── components
     │   │   ├── combat_component.gd
-    │   │   └── health_component.gd
+    │   │   ├── health_component.gd
+    │   │   └── input_component.gd
     │   └── player
     │       ├── data
     │       │   └── player_state_data.gd
@@ -151,7 +153,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-39 directories, 104 files
+39 directories, 106 files
 
 
 =====================================
@@ -1438,6 +1440,7 @@ Sequencer="*res://src/core/sequencer.gd"
 Config="*res://src/core/Config.gd"
 Palette="*res://src/core/palette.gd"
 ObjectPool="*res://src/core/object_pool.gd"
+PhysicsLayers="*res://src/core/physics_layers.gd"
 
 [display]
 
@@ -1518,7 +1521,6 @@ ui_dash={
 
 renderer/rendering_method="mobile"
 environment/defaults/default_clear_color=Color(0, 0, 0, 1)
-
 
 =====================================
 FILE: ./data/combat_config.json
@@ -3678,6 +3680,26 @@ func execute(sequencer_node: Node) -> Variant:
 	return null
 
 =====================================
+FILE: ./src/core/physics_layers.gd
+=====================================
+# src/core/physics_layers.gd
+#
+# An autoloaded singleton that provides named constants for the 2D physics
+# layers defined in the project settings. This prevents the use of "magic
+# numbers" for collision layers and masks, making the code more readable
+# and easier to maintain.
+extends Node
+
+# The bitmask value for each layer (2^n).
+const PLAYER = 1
+const WORLD = 2
+const ENEMY = 4
+const HAZARD = 8
+const ENEMY_PROJECTILE = 16
+const PLAYER_HITBOX = 32
+const PLAYER_HURTBOX = 64
+
+=====================================
 FILE: ./src/core/arena_builder.gd
 =====================================
 # src/core/arena_builder.gd
@@ -4186,7 +4208,7 @@ FILE: ./src/projectiles/player_shot.tscn
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playershot"]
 size = Vector2(40, 40)
 
-[node name="PlayerShot" type="Area2D"]
+[node name="PlayerShot" type="Area2D" groups=["player_projectile"]]
 collision_layer = 0
 collision_mask = 22
 script = ExtResource("1_4wg7x")
@@ -4196,7 +4218,7 @@ offset_left = -20.0
 offset_top = -20.0
 offset_right = 20.0
 offset_bottom = 20.0
-color = Color(0.5, 0.8, 1, 1)
+color = Color(0.92549, 0.92549, 0.92549, 1)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_playershot")
@@ -4782,13 +4804,66 @@ func _on_hit_flash_timer_timeout():
 
 
 =====================================
+FILE: ./src/entities/components/input_component.gd
+=====================================
+# src/entities/components/input_component.gd
+#
+# A component that centralizes all input polling and processing for the player.
+# It reads raw input and updates the PlayerStateData resource, decoupling the
+# main player node from the Input singleton.
+class_name InputComponent
+extends Node
+
+# --- Dependencies ---
+var owner_node: CharacterBody2D
+var p_data: PlayerStateData
+var combat_component: CombatComponent
+
+func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData, p_combat_component: CombatComponent):
+	self.owner_node = p_owner_node
+	self.p_data = player_data
+	self.combat_component = p_combat_component
+
+# This function is called by the player's _physics_process loop.
+func process_physics():
+	if Input.is_action_just_pressed("ui_jump"):
+		p_data.jump_buffer_timer = Config.get_value("player.physics.jump_buffer")
+	
+	if not owner_node.states.find_key(owner_node.current_state) in owner_node.ACTION_ALLOWED_STATES:
+		return
+	
+	if Input.is_action_just_pressed("ui_attack") and p_data.attack_cooldown_timer <= 0:
+		p_data.is_charging = true
+		p_data.charge_timer = 0.0
+	
+	if Input.is_action_just_released("ui_attack"):
+		if p_data.is_charging:
+			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"):
+				combat_component.fire_shot()
+			else:
+				owner_node.change_state(owner_node.State.ATTACK)
+			p_data.is_charging = false
+	
+	if Input.is_action_just_pressed("ui_dash") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
+		owner_node.change_state(owner_node.State.DASH)
+	
+	if owner_node.is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and p_data.healing_charges > 0 and is_zero_approx(owner_node.velocity.x):
+		owner_node.change_state(owner_node.State.HEAL)
+
+# This function is called by the player's _unhandled_input function.
+func process_unhandled_input(event: InputEvent):
+	if is_instance_valid(owner_node) and is_instance_valid(owner_node.current_state):
+		owner_node.current_state.process_input(event)
+
+=====================================
 FILE: ./src/entities/player/player.tscn
 =====================================
-[gd_scene load_steps=6 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=7 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_hcomp"]
 [ext_resource type="Script" path="res://src/entities/components/combat_component.gd" id="3_combat_comp"]
+[ext_resource type="Script" path="res://src/entities/components/input_component.gd" id="4_input_comp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -4835,15 +4910,18 @@ script = ExtResource("2_hcomp")
 [node name="CombatComponent" type="Node" parent="."]
 script = ExtResource("3_combat_comp")
 
+[node name="InputComponent" type="Node" parent="."]
+script = ExtResource("4_input_comp")
+
 [connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]
 
 =====================================
 FILE: ./src/entities/player/player.gd
 =====================================
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine. Its responsibilities
-# have been reduced to managing the state machine, handling inputs, and
-# coordinating its components.
+# This script is the "Context" for the State Machine. Its responsibilities are
+# now almost entirely focused on managing the state machine and delegating
+# work to its various components.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -4862,6 +4940,8 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var combat_component: CombatComponent = $CombatComponent
+# MODIFIED: Use a generic Node type to avoid the parse-time dependency.
+@onready var input_component: Node = $InputComponent
 
 # --- Preloads ---
 const MoveState = preload("res://src/entities/player/states/state_move.gd")
@@ -4881,6 +4961,11 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 
 # --- Engine Functions ---
 func _ready():
+	# MODIFIED: Perform a safe, runtime cast of the InputComponent.
+	if not input_component is InputComponent:
+		push_warning("Player _ready: Node at path $InputComponent is not a valid InputComponent. Input will not work.")
+		input_component = null # Ensure it's null if the cast fails.
+	
 	p_data = PlayerStateData.new()
 	
 	visual_sprite.color = Palette.COLOR_PLAYER
@@ -4890,7 +4975,6 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	# MODIFIED: Provide a "knockback" sub-dictionary with config paths.
 	var player_health_configs = {
 		"max_health": "player.health.max_health",
 		"invincibility": "player.health.invincibility_duration",
@@ -4904,6 +4988,14 @@ func _ready():
 	health_component.died.connect(_on_health_component_died)
 
 	combat_component.setup(self, p_data)
+	
+	# MODIFIED: Guard the setup call.
+	if is_instance_valid(input_component):
+		print("[VERIFICATION] InputComponent is valid, calling setup.")
+		input_component.setup(self, p_data, combat_component)
+	else:
+		print("[VERIFICATION ERROR] InputComponent is NOT valid.")
+
 
 	states = {
 		State.MOVE: MoveState.new(self, p_data), State.FALL: FallState.new(self, p_data),
@@ -4918,7 +5010,8 @@ func _ready():
 
 func _physics_process(delta):
 	_update_timers(delta)
-	_poll_global_inputs()
+	if is_instance_valid(input_component):
+		input_component.process_physics()
 	current_state.process_physics(delta)
 	move_and_slide()
 	_check_for_contact_damage()
@@ -4927,7 +5020,8 @@ func _physics_process(delta):
 		p_data.last_wall_normal = get_wall_normal()
 
 func _unhandled_input(event: InputEvent):
-	current_state.process_input(event)
+	if is_instance_valid(input_component):
+		input_component.process_unhandled_input(event)
 	
 func _exit_tree():
 	EventBus.off_owner(self)
@@ -4935,6 +5029,7 @@ func _exit_tree():
 	p_data = null
 	health_component = null
 	combat_component = null
+	input_component = null
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -4947,22 +5042,6 @@ func _update_timers(delta):
 	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
 	if p_data.is_charging and Input.is_action_pressed("ui_attack"):
 		p_data.charge_timer += delta
-
-func _poll_global_inputs():
-	if Input.is_action_just_pressed("ui_jump"):
-		p_data.jump_buffer_timer = Config.get_value("player.physics.jump_buffer")
-	if not states.find_key(current_state) in ACTION_ALLOWED_STATES: return
-	if Input.is_action_just_pressed("ui_attack") and p_data.attack_cooldown_timer <= 0:
-		p_data.is_charging = true; p_data.charge_timer = 0.0
-	if Input.is_action_just_released("ui_attack"):
-		if p_data.is_charging:
-			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"): combat_component.fire_shot()
-			else: change_state(State.ATTACK)
-			p_data.is_charging = false
-	if Input.is_action_just_pressed("ui_dash") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
-		change_state(State.DASH)
-	if is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and p_data.healing_charges > 0 and is_zero_approx(velocity.x):
-		change_state(State.HEAL)
 
 func change_state(new_state_key: State):
 	if not states.has(new_state_key) or current_state == states[new_state_key]: return
@@ -5036,7 +5115,6 @@ func _on_health_component_health_changed(current, max_val):
 
 func _on_health_component_died():
 	died.emit()
-
 
 =====================================
 FILE: ./src/entities/player/states/state_jump.gd
@@ -5222,7 +5300,6 @@ func enter():
 		player.hitbox.position = Vector2(0, 60)
 		
 		if player.is_on_floor():
-			# MODIFIED: Call the component's method
 			player.combat_component.trigger_pogo(null)
 			return
 		
@@ -5250,18 +5327,16 @@ func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = player.hitbox_shape.shape
 	query.transform = player.global_transform * player.hitbox.transform
-	query.collision_mask = 2 | 4 | 8 | 16
+	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [player]
 	
 	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
 	
 	if not results.is_empty():
-		# MODIFIED: Call the component's method
 		player.combat_component.trigger_pogo(results[0].collider)
 		return true
 		
 	return false
-
 
 =====================================
 FILE: ./src/entities/player/states/state_hurt.gd

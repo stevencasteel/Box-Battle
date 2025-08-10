@@ -12,6 +12,72 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██            [0.4.0] - THE COMPONENT REFACTOR - 2025-08-09             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version completes the migration to a fully component-based entity     ║
+║   architecture, enhances performance, and resolves all known bugs for a      ║
+║   stable, production-ready foundation.                                       ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `player.gd` script into a component-based ║
+║      ░   architecture, adhering to the Single Responsibility Principle.      ║
+║      ░ ■ Created a `HealthComponent` to manage all health, damage, and       ║
+║      ░   invincibility logic, making it reusable for other entities.         ║
+║      ░ ■ Created a `CombatComponent` to centralize player attack logic.      ║
+║      ░ ■ Created an `InputComponent` to decouple input polling from the player.║
+║      ░ ■ Created a `PlayerStateData` resource to act as a central data       ║
+║      ░   container, decoupling state from the Player node itself.            ║
+║      ░ ■ Refactored `ArenaBuilder` to be data-driven, reading the layout file║
+║      ░   path from a constant in the encounter script, removing brittle      ║
+║      ░   string manipulation logic.                                          ║
+║      ░ ■ Decoupled `GlobalHUD` from specific menu scenes by making its       ║
+║      ░   visibility fully event-driven (`MENU_OPENED`, `MENU_CLOSED`),       ║
+║      ░   resolving an Open/Closed Principle violation.                       ║
+║      ░ ■ Refactored the monolithic `base_boss.gd` script into a component-   ║
+║      ░   based architecture, adhering to SRP and mirroring the Player's design.║
+║      ░ ■ Created `BossStateData.gd` resource to act as a central data        ║
+║      ░   container, decoupling the boss's state from the node itself.        ║
+║                                                                              ║
+║   █  Performance                                                             ║
+║      ░ ■ Implemented a robust, generic `ObjectPool` singleton to manage      ║
+║      ░   reusable nodes like projectiles.                                    ║
+║      ░ ■ Refactored Player and Boss to get/return projectiles from the pool, ║
+║      ░   eliminating runtime instantiation to prevent GC spikes and stutter. ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored `Sequencer.gd` to use type-safe `SequenceStep` resources ║
+║      ░   instead of ad-hoc dictionaries, preventing runtime errors and       ║
+║      ░   improving editor autocompletion.                                    ║
+║      ░ ■ Refactored `AudioManager.gd` and `GlobalHUD` to be event-driven,    ║
+║      ░   subscribing to a new `audio_settings_changed` signal instead of     ║
+║      ░   polling for changes every frame.                                    ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a complex circular dependency parse error between the Player║
+║      ░   and its new components by fully decoupling them with signals.       ║
+║      ░ ■ Fixed a bug where the boss was immune to rapid attacks by giving it ║
+║      ░   a unique, shorter invincibility duration in the project config.     ║
+║      ░ ■ Fixed a bug where player's body dealt rapid contact damage to the boss.║
+║      ░ ■ Unified all damage-dealing logic (melee, pogo, projectile, contact) ║
+║      ░   to consistently and correctly interact with the target's HealthComponent.║
+║      ░ ■ Fixed a visual bug where the Boss's hit-flash color would not reset ║
+║      ░   correctly by ensuring the correct initialization order in `base_boss.gd`.║
+║      ░ ■ Resolved an audio stream memory leak on exit by implementing a      ║
+║      ░   robust cleanup handler for `NOTIFICATION_WM_CLOSE_REQUEST`.         ║
+║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
+║      ░   unnecessary `preload` calls for scripts with a `class_name`.        ║
+║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║
+║      ░   use a signal-based, non-re-parenting architecture that is immune to ║
+║      ░   race conditions.                                                    ║
+║      ░ ■ Resolved all memory leaks by implementing proper cleanup in         ║
+║      ░   `_exit_tree` for all state machines, components, and singletons.    ║
+║      ░ ■ Resolved a leak caused by creating orphaned nodes in `ArenaBuilder`.║
+║      ░ ■ Corrected `Config.gd` to ensure deterministic config loading.       ║
+║      ░ ■ Fixed a critical crash in the `EventBus` related to polymorphism.   ║
+║      ░ ■ Resolved all remaining static analysis warnings for a clean build.  ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██             [0.3.0] - THE VISUAL FOUNDATION - 2025-08-08             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║

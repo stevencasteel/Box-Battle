@@ -30,12 +30,11 @@ func _ready():
 	b_data = BossStateData.new()
 	b_data.patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
 	
-	# CORRECTED ORDER: Set the visual color FIRST.
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	# THEN, set up the component so it captures the correct original color.
 	var boss_health_configs = {
-		"max_health": "boss.stats.health"
+		"max_health": "boss.stats.health",
+		"invincibility": "boss.stats.invincibility_duration"
 	}
 	health_component.setup(b_data, self, boss_health_configs)
 	health_component.health_changed.connect(_on_health_component_health_changed)
@@ -80,10 +79,7 @@ func change_state(new_state_key: State):
 	current_state.enter()
 
 # --- Public Methods ---
-func take_damage(damage_amount: int):
-	# Delegate the call to the component.
-	health_component.take_damage(damage_amount, self)
-
+# SOLUTION: The take_damage function is now removed.
 func die():
 	died.emit()
 	queue_free()

@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=7 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_hcomp"]
 [ext_resource type="Script" path="res://src/entities/components/combat_component.gd" id="3_combat_comp"]
+[ext_resource type="Script" path="res://src/entities/components/input_component.gd" id="4_input_comp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -48,5 +49,8 @@ script = ExtResource("2_hcomp")
 
 [node name="CombatComponent" type="Node" parent="."]
 script = ExtResource("3_combat_comp")
+
+[node name="InputComponent" type="Node" parent="."]
+script = ExtResource("4_input_comp")
 
 [connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]

@@ -13,7 +13,6 @@ func enter():
 		player.hitbox.position = Vector2(0, 60)
 		
 		if player.is_on_floor():
-			# MODIFIED: Call the component's method
 			player.combat_component.trigger_pogo(null)
 			return
 		
@@ -41,13 +40,12 @@ func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = player.hitbox_shape.shape
 	query.transform = player.global_transform * player.hitbox.transform
-	query.collision_mask = 2 | 4 | 8 | 16
+	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [player]
 	
 	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
 	
 	if not results.is_empty():
-		# MODIFIED: Call the component's method
 		player.combat_component.trigger_pogo(results[0].collider)
 		return true
 		

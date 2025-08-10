@@ -30,6 +30,7 @@ Sequencer="*res://src/core/sequencer.gd"
 Config="*res://src/core/Config.gd"
 Palette="*res://src/core/palette.gd"
 ObjectPool="*res://src/core/object_pool.gd"
+PhysicsLayers="*res://src/core/physics_layers.gd"
 
 [display]
 

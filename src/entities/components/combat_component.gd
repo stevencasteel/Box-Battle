@@ -5,6 +5,8 @@
 class_name CombatComponent
 extends Node
 
+signal damage_dealt
+
 # --- Dependencies ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
@@ -38,11 +40,12 @@ func trigger_pogo(pogo_target):
 	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 	owner_node.change_state(owner_node.State.FALL)
 	
-	# CORRECTED: Fixed the typo from "p_ogo_target" to "pogo_target".
 	if pogo_target:
-		if pogo_target.has_method("take_damage"):
-			pogo_target.take_damage(1)
-			# The owner is still responsible for its own game logic (like gaining charges).
-			owner_node._on_damage_dealt() 
+		if pogo_target.is_in_group("enemy"):
+			var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
+			if enemy_health_comp:
+				# SOLUTION: Pass 'owner_node' (the player) as the second argument.
+				enemy_health_comp.take_damage(1, owner_node)
+				damage_dealt.emit()
 		elif pogo_target.is_in_group("enemy_projectile"):
 			ObjectPool.return_instance(pogo_target)

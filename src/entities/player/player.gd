@@ -1,7 +1,7 @@
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine. Its responsibilities
-# have been reduced to managing the state machine, handling inputs, and
-# coordinating its components.
+# This script is the "Context" for the State Machine. Its responsibilities are
+# now almost entirely focused on managing the state machine and delegating
+# work to its various components.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -20,6 +20,7 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var combat_component: CombatComponent = $CombatComponent
+@onready var input_component: InputComponent = $InputComponent
 
 # --- Preloads ---
 const MoveState = preload("res://src/entities/player/states/state_move.gd")
@@ -48,7 +49,6 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	# MODIFIED: Provide a "knockback" sub-dictionary with config paths.
 	var player_health_configs = {
 		"max_health": "player.health.max_health",
 		"invincibility": "player.health.invincibility_duration",
@@ -62,6 +62,9 @@ func _ready():
 	health_component.died.connect(_on_health_component_died)
 
 	combat_component.setup(self, p_data)
+	combat_component.damage_dealt.connect(_on_damage_dealt)
+	
+	input_component.setup(self, p_data, combat_component)
 
 	states = {
 		State.MOVE: MoveState.new(self, p_data), State.FALL: FallState.new(self, p_data),
@@ -76,7 +79,7 @@ func _ready():
 
 func _physics_process(delta):
 	_update_timers(delta)
-	_poll_global_inputs()
+	input_component.process_physics()
 	current_state.process_physics(delta)
 	move_and_slide()
 	_check_for_contact_damage()
@@ -85,7 +88,7 @@ func _physics_process(delta):
 		p_data.last_wall_normal = get_wall_normal()
 
 func _unhandled_input(event: InputEvent):
-	current_state.process_input(event)
+	input_component.process_unhandled_input(event)
 	
 func _exit_tree():
 	EventBus.off_owner(self)
@@ -93,6 +96,7 @@ func _exit_tree():
 	p_data = null
 	health_component = null
 	combat_component = null
+	input_component = null
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -105,22 +109,6 @@ func _update_timers(delta):
 	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
 	if p_data.is_charging and Input.is_action_pressed("ui_attack"):
 		p_data.charge_timer += delta
-
-func _poll_global_inputs():
-	if Input.is_action_just_pressed("ui_jump"):
-		p_data.jump_buffer_timer = Config.get_value("player.physics.jump_buffer")
-	if not states.find_key(current_state) in ACTION_ALLOWED_STATES: return
-	if Input.is_action_just_pressed("ui_attack") and p_data.attack_cooldown_timer <= 0:
-		p_data.is_charging = true; p_data.charge_timer = 0.0
-	if Input.is_action_just_released("ui_attack"):
-		if p_data.is_charging:
-			if p_data.charge_timer >= Config.get_value("player.combat.charge_time"): combat_component.fire_shot()
-			else: change_state(State.ATTACK)
-			p_data.is_charging = false
-	if Input.is_action_just_pressed("ui_dash") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
-		change_state(State.DASH)
-	if is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and p_data.healing_charges > 0 and is_zero_approx(velocity.x):
-		change_state(State.HEAL)
 
 func change_state(new_state_key: State):
 	if not states.has(new_state_key) or current_state == states[new_state_key]: return
@@ -142,12 +130,15 @@ func _emit_healing_charges_changed_event():
 func _check_for_contact_damage():
 	for i in range(get_slide_collision_count()):
 		var col = get_slide_collision(i)
-		if col and (col.get_collider().is_in_group("enemy") or col.get_collider().is_in_group("hazard")):
-			var damage_result = health_component.take_damage(1, col.get_collider())
-			if damage_result.was_damaged:
-				velocity = damage_result.knockback_velocity
-				change_state(State.HURT)
-			break
+		if col:
+			var collider = col.get_collider()
+			if collider.is_in_group("enemy") or collider.is_in_group("hazard"):
+				var damage_result = health_component.take_damage(1, collider)
+				if damage_result.was_damaged:
+					velocity = damage_result.knockback_velocity
+					change_state(State.HURT)
+				break
+
 
 func _on_damage_dealt():
 	if p_data.healing_charges >= Config.get_value("player.health.max_healing_charges"): return
@@ -161,13 +152,21 @@ func _cancel_heal():
 	healing_timer.stop()
 
 func _on_hitbox_body_entered(body):
-	if p_data.is_pogo_attack: combat_component.trigger_pogo(body)
-	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt()
+	if p_data.is_pogo_attack:
+		combat_component.trigger_pogo(body)
+	elif body.is_in_group("enemy"):
+		var enemy_health_comp = body.get_node_or_null("HealthComponent")
+		if enemy_health_comp:
+			# SOLUTION: Pass 'self' (the player) as the second argument.
+			enemy_health_comp.take_damage(1, self)
+			_on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		if p_data.is_pogo_attack: combat_component.trigger_pogo(area)
-		else: ObjectPool.return_instance(area)
+		if p_data.is_pogo_attack:
+			combat_component.trigger_pogo(area)
+		else:
+			ObjectPool.return_instance(area)
 
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):

@@ -42,7 +42,8 @@
     "boss": {
         "stats": {
             "health": 30,
-            "patrol_speed": 100.0
+            "patrol_speed": 100.0,
+            "invincibility_duration": 0.1
         }
     }
 }
