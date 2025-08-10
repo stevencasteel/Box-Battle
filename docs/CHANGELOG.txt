@@ -38,6 +38,10 @@
 ║      ░   improve project modularity and scalability.                         ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Refactored `CombatComponent` and `InputComponent` to extend the new ║
+║      ░   `ComponentInterface`, standardizing the entire component architecture.║
+║      ░ ■ Updated `player.gd` to use the standardized `setup` and `teardown`  ║
+║      ░   methods for all its components.                                     ║
 ║      ░ ■ Refactored `HealthComponent` to extend the new `ComponentInterface` ║
 ║      ░   and use a more robust `is_in_group` check for its setup logic.      ║
 ║      ░ ■ Reorganized `AssetPaths.gd` by feature/system for improved clarity. ║

@@ -1,26 +1,33 @@
 # src/entities/components/input_component.gd
 #
 # A component that centralizes all input polling and processing for the player.
-# It reads raw input and updates the PlayerStateData resource, decoupling the
-# main player node from the Input singleton.
+# It now implements the ComponentInterface standard.
 class_name InputComponent
-extends Node
+extends ComponentInterface
 
 # --- Dependencies ---
-# SOLUTION: Use the generic, built-in CharacterBody2D type for the owner node.
-# This breaks the circular dependency back to the 'Player' script.
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 var combat_component: CombatComponent
 
-func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData, p_combat_component: CombatComponent):
-	self.owner_node = p_owner_node
-	self.p_data = player_data
+# MODIFIED: The setup function signature is now based on the ComponentInterface,
+# with an additional required parameter.
+func setup(owner: Node, config: Resource = null, services = null, p_combat_component: CombatComponent = null) -> void:
+	self.owner_node = owner as CharacterBody2D
+	self.p_data = owner.p_data
 	self.combat_component = p_combat_component
+	
+	if not combat_component:
+		push_error("InputComponent requires a valid CombatComponent to be provided.")
+
+# NEW: Added the teardown function to fulfill the ComponentInterface contract.
+func teardown() -> void:
+	owner_node = null
+	p_data = null
+	combat_component = null
 
 # This function is called by the player's _physics_process loop.
 func process_physics():
-	# MODIFIED: Get value from the new CombatDB resource.
 	if Input.is_action_just_pressed("ui_jump"):
 		p_data.jump_buffer_timer = CombatDB.config.player_jump_buffer
 	
@@ -33,7 +40,6 @@ func process_physics():
 	
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
-			# MODIFIED: Get value from the new CombatDB resource.
 			if p_data.charge_timer >= CombatDB.config.player_charge_time:
 				combat_component.fire_shot()
 			else:

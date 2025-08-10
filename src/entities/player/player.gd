@@ -69,14 +69,14 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
+	# MODIFIED: Call the standardized setup methods for all components.
 	health_component.setup(self, CombatDB.config)
+	combat_component.setup(self)
+	input_component.setup(self, null, null, combat_component) # Pass combat_component as the extra arg
+
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
-
-	combat_component.setup(self, p_data)
 	combat_component.damage_dealt.connect(_on_damage_dealt)
-	
-	input_component.setup(self, p_data, combat_component)
 
 	current_state = states[State.FALL]
 	current_state.enter()
@@ -100,10 +100,11 @@ func _exit_tree():
 	EventBus.off_owner(self)
 	states.clear()
 	p_data = null
-	# Call teardown on components that have it.
+	
+	# MODIFIED: Call teardown on all components for proper cleanup.
 	if health_component: health_component.teardown()
-	combat_component = null
-	input_component = null
+	if combat_component: combat_component.teardown()
+	if input_component: input_component.teardown()
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -141,12 +142,10 @@ func _check_for_contact_damage():
 			var collider = col.get_collider()
 			if collider.is_in_group("enemy") or collider.is_in_group("hazard"):
 				var damage_result = health_component.take_damage(1, collider)
-				# CORRECTED: Use GDScript 4 dictionary access syntax.
 				if damage_result["was_damaged"]:
 					velocity = damage_result["knockback_velocity"]
 					change_state(State.HURT)
 				break
-
 
 func _on_damage_dealt():
 	if p_data.healing_charges >= CombatDB.config.player_max_healing_charges: return
@@ -178,7 +177,6 @@ func _on_hitbox_area_entered(area):
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		var damage_result = health_component.take_damage(1, area)
-		# CORRECTED: Use GDScript 4 dictionary access syntax.
 		if damage_result["was_damaged"]:
 			velocity = damage_result["knockback_velocity"]
 			change_state(State.HURT)

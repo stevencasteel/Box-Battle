@@ -1,9 +1,9 @@
 # src/entities/components/combat_component.gd
 #
-# A component that handles the execution of the player's combat abilities,
-# such as firing projectiles and performing pogo attacks.
+# A component that handles the execution of the player's combat abilities.
+# It now implements the ComponentInterface standard.
 class_name CombatComponent
-extends Node
+extends ComponentInterface
 
 signal damage_dealt
 
@@ -11,16 +11,19 @@ signal damage_dealt
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 
-# This setup function is called by the owner (the Player) to provide the
-# component with the references it needs to do its job.
-func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData):
-	self.owner_node = p_owner_node
-	self.p_data = player_data
+# MODIFIED: The setup function signature now matches the ComponentInterface.
+func setup(owner: Node, config: Resource = null, services = null) -> void:
+	self.owner_node = owner as CharacterBody2D
+	self.p_data = owner.p_data
+
+# NEW: Added the teardown function to fulfill the ComponentInterface contract.
+func teardown() -> void:
+	owner_node = null
+	p_data = null
 
 # --- Public Combat Methods ---
 
 func fire_shot():
-	# MODIFIED: Get value from the new CombatDB resource.
 	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 	
 	var shot = ObjectPool.get_instance(&"player_shots")
@@ -35,7 +38,6 @@ func fire_shot():
 	shot.activate()
 
 func trigger_pogo(pogo_target):
-	# MODIFIED: Get values from the new CombatDB resource.
 	owner_node.velocity.y = -CombatDB.config.player_pogo_force
 	owner_node.position.y -= 1
 	p_data.can_dash = true
@@ -46,7 +48,6 @@ func trigger_pogo(pogo_target):
 		if pogo_target.is_in_group("enemy"):
 			var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
 			if enemy_health_comp:
-				# SOLUTION: Pass 'owner_node' (the player) as the second argument.
 				enemy_health_comp.take_damage(1, owner_node)
 				damage_dealt.emit()
 		elif pogo_target.is_in_group("enemy_projectile"):
