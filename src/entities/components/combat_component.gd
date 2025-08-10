@@ -1,27 +1,23 @@
 # src/entities/components/combat_component.gd
 #
 # A component that handles the execution of the player's combat abilities.
-# It now implements the ComponentInterface standard.
 class_name CombatComponent
 extends ComponentInterface
 
+# CORRECTED: The signal is now used again.
 signal damage_dealt
 
-# --- Dependencies ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 
-# MODIFIED: The setup function signature now matches the ComponentInterface.
-func setup(owner: Node, config: Resource = null, services = null) -> void:
-	self.owner_node = owner as CharacterBody2D
-	self.p_data = owner.p_data
+# CORRECTED: Renamed `owner` to `p_owner` and added underscores to unused parameters.
+func setup(p_owner: Node, _config: Resource = null, _services = null) -> void:
+	self.owner_node = p_owner as CharacterBody2D
+	self.p_data = owner_node.p_data
 
-# NEW: Added the teardown function to fulfill the ComponentInterface contract.
 func teardown() -> void:
 	owner_node = null
 	p_data = null
-
-# --- Public Combat Methods ---
 
 func fire_shot():
 	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
@@ -37,18 +33,18 @@ func fire_shot():
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
 	shot.activate()
 
+# POGO BUG FIX: This function is now fully responsible for the pogo action.
 func trigger_pogo(pogo_target):
+	# First, deal damage and emit the signal if the target is an enemy.
+	if pogo_target and pogo_target.is_in_group("enemy"):
+		var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
+		if enemy_health_comp:
+			enemy_health_comp.take_damage(1, owner_node)
+			damage_dealt.emit()
+	
+	# Then, execute the bounce physics.
 	owner_node.velocity.y = -CombatDB.config.player_pogo_force
 	owner_node.position.y -= 1
 	p_data.can_dash = true
 	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
 	owner_node.change_state(owner_node.State.FALL)
-	
-	if pogo_target:
-		if pogo_target.is_in_group("enemy"):
-			var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
-			if enemy_health_comp:
-				enemy_health_comp.take_damage(1, owner_node)
-				damage_dealt.emit()
-		elif pogo_target.is_in_group("enemy_projectile"):
-			ObjectPool.return_instance(pogo_target)

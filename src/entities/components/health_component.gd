@@ -8,36 +8,30 @@ extends ComponentInterface
 signal health_changed(current_health: int, max_health: int)
 signal died
 
-# --- Dependencies ---
-var entity_data: Resource # Can be PlayerStateData or BossStateData
+var entity_data: Resource
 var owner_node: CharacterBody2D
 
-# --- Node References ---
 @onready var invincibility_timer: Timer = Timer.new()
 @onready var hit_flash_timer: Timer = Timer.new()
 
-# --- Config ---
-# REMOVED: No longer need to store max_health here.
+var max_health: int
 var invincibility_duration: float
 var knockback_speed: float
 var hazard_knockback_speed: float
-
-# --- Internal State ---
 var original_color: Color
 
 func _ready():
 	add_child(invincibility_timer)
 	add_child(hit_flash_timer)
-	
 	invincibility_timer.one_shot = true
 	hit_flash_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
-	
 	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
 
-func setup(owner: Node, config: Resource = null, services = null) -> void:
-	self.owner_node = owner as CharacterBody2D
+# CORRECTED: Renamed `owner` to `p_owner` and added underscore to `_services`.
+func setup(p_owner: Node, config: Resource = null, _services = null) -> void:
+	self.owner_node = p_owner as CharacterBody2D
 	
 	var cfg: CombatConfig = config as CombatConfig
 	if not cfg:
@@ -46,29 +40,26 @@ func setup(owner: Node, config: Resource = null, services = null) -> void:
 
 	if owner_node.is_in_group("player"):
 		self.entity_data = owner_node.p_data
-		# MODIFIED: Initialize the max values *within* the data resource.
-		entity_data.max_health = cfg.player_max_health
-		entity_data.max_healing_charges = cfg.player_max_healing_charges
+		max_health = cfg.player_max_health
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
-	else: # Assumes it's a boss/enemy
+	else:
 		self.entity_data = owner_node.b_data
-		entity_data.max_health = cfg.boss_health
+		max_health = cfg.boss_health
 		invincibility_duration = cfg.boss_invincibility_duration
 		knockback_speed = 0
 		hazard_knockback_speed = 0
 	
-	entity_data.health = entity_data.max_health # Start at full health
+	entity_data.health = max_health
 	if is_instance_valid(get_visual_sprite()):
 		original_color = get_visual_sprite().color
 	
-	health_changed.emit(entity_data.health, entity_data.max_health)
+	health_changed.emit(entity_data.health, max_health)
 
 func teardown() -> void:
 	entity_data = null
 	owner_node = null
-	EventBus.off_owner(self)
 
 func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
@@ -76,7 +67,7 @@ func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
 		return {"was_damaged": false}
 
 	entity_data.health -= damage_amount
-	health_changed.emit(entity_data.health, entity_data.max_health)
+	health_changed.emit(entity_data.health, max_health)
 	
 	_trigger_hit_flash()
 	entity_data.is_invincible = true

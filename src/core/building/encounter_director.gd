@@ -1,4 +1,4 @@
-# src/core/builders/encounter_director.gd
+# src/core/building/encounter_director.gd
 #
 # Responsibility: To spawn all dynamic entities (Player, Boss, HUD) and to
 # direct the flow of the encounter, such as running an intro sequence.
@@ -56,25 +56,13 @@ func _spawn_hud_async() -> void:
 
 # Defines and runs the sequence for the boss's grand entrance.
 func run_intro_sequence() -> void:
-	# Create typed SequenceStep objects for a robust, type-safe sequence.
-	var pause_step = EmitStep.new()
-	pause_step.event_name = EventCatalog.GAME_PAUSED
-
+	# SIMPLIFIED: The pause/resume logic was a broken feature and has been removed.
+	# The intro now simply waits before spawning the boss.
 	var wait_step = WaitStep.new()
 	wait_step.duration = 0.5
 
-	var intro_steps: Array[SequenceStep] = [pause_step, wait_step]
+	var intro_steps: Array[SequenceStep] = [wait_step]
 	await Sequencer.run_sequence(intro_steps)
 
 	# Manually spawn the boss to get the node reference.
 	var _boss_node = await _spawn_boss_async()
-
-	# Define the rest of the sequence.
-	var final_wait_step = WaitStep.new()
-	final_wait_step.duration = 1.0
-
-	var resume_step = EmitStep.new()
-	resume_step.event_name = EventCatalog.GAME_RESUMED
-	
-	var outro_steps: Array[SequenceStep] = [final_wait_step, resume_step]
-	await Sequencer.run_sequence(outro_steps)

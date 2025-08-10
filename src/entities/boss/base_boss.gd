@@ -32,7 +32,6 @@ func _ready():
 	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	# CORRECTED: Arguments are now passed in the correct order as defined by the interface.
 	health_component.setup(self, CombatDB.config)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
@@ -62,10 +61,10 @@ func _physics_process(delta):
 		b_data.facing_direction *= -1.0
 
 func _exit_tree():
-	EventBus.off_owner(self)
+	# REMOVED: The simplified EventBus no longer has `off_owner`.
+	# Weakrefs handle cleanup automatically when the owner is freed.
 	states.clear()
 	b_data = null
-	# Call teardown on components that have it.
 	if health_component: health_component.teardown()
 
 func change_state(new_state_key: State):

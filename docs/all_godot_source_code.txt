@@ -2,16 +2,13 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 10 12:08:11 CDT 2025
+Generated on: Sun Aug 10 16:22:19 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
 ├── README.md
-├── all_script_errors.txt
-├── create_plan_docs.sh
-├── create_test_docs.sh
 ├── data
 │   └── combat_config.tres
 ├── default_bus_layout.tres
@@ -39,6 +36,7 @@ PROJECT DIRECTORY STRUCTURE:
 │       ├── ADR.mdADR-001_Service_Locator_Pattern.md
 │       ├── ARCH-001_Refactoring_Principles.md
 │       ├── ARCH-002_Acceptance_Criteria.md
+│       ├── EVENT-001_Event_Flow_Map.md
 │       ├── FSM-001_Entity_State_Flows.md
 │       ├── TEST-001_Baseline_Metrics.md
 │       ├── TEST-002_Smoke_Tests.md
@@ -47,15 +45,15 @@ PROJECT DIRECTORY STRUCTURE:
 │       ├── event_usage.txt
 │       ├── singleton_map.txt
 │       └── state_machine_flow.md
-├── final_reorganize.sh
 ├── icon.svg
 ├── pico.save
 ├── progess
 │   └── progress_001-1.jpg
 ├── project.godot
-├── refactor_phase2.sh
-├── sprint_0_audit.sh
 └── src
+    ├── api
+    │   └── interfaces
+    │       └── component_interface.gd
     ├── arenas
     │   ├── arena_00_encounter.gd
     │   └── arena_00_layout.gd
@@ -70,9 +68,10 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   └── terrain_builder.gd
     │   ├── data
     │   │   ├── combat_db.gd
-    │   │   └── config
-    │   │       ├── combat_config.gd
-    │   │       └── settings.gd
+    │   │   ├── config
+    │   │   │   ├── combat_config.gd
+    │   │   │   └── settings.gd
+    │   │   └── game_state_data.gd
     │   ├── events
     │   │   ├── event_bus.gd
     │   │   ├── event_catalog.gd
@@ -184,117 +183,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-46 directories, 130 files
-
-
-=====================================
-FILE: ./all_script_errors.txt
-=====================================
-WorkerThreadPool: 8 threads, 2 max low-priority.
-Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
-TextServer: Added interface "Dummy"
-TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
-Devices:
-  #0: Apple Apple M1 (Apple7) - Supported, Integrated
-- Metal multiview supported:
-  max view count: 16
-  max instances: 4294967295
-Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
-Using "default" pen tablet driver...
-Shader 'CanvasSdfShaderRD' (group 0) SHA256: 97dc9fb2f592cd02d8b1f8fd33df8aec73849d2fbafcfeaa6e99b9c3678c221d
-Shader 'SkeletonShaderRD' (group 0) SHA256: a7e5115c09793f8e950720a2ab8906bff195e9b508eec01af7aeb363da2bf75b
-Shader 'SortShaderRD' (group 0) SHA256: e184fb752fd6b1f86c536cb9dff20977fee019403e1025080eca44e6bfa11ef1
-Shader 'ParticlesShaderRD' (group 0) SHA256: 9797916f926fab4024422fe6c75cc0d8d517705d90802882fb9efa6dda0af392
-Shader 'ParticlesCopyShaderRD' (group 0) SHA256: 1a312a6797c1ba217655b41d33ce357ac226cba8d65d4daab9278d88c57d6468
-Shader 'CanvasShaderRD' (group 0) SHA256: 908e609e1337d67f8799155a57f03a3de33fcdba22b574595e90da921079b33d
-Shader 'CanvasOcclusionShaderRD' (group 0) SHA256: f9d6c9d569cf2f40595061ee84efd5fe34d68284e1f7273f62a4ac36de8852ee
-Shader 'SceneForwardMobileShaderRD' (group 0) SHA256: 1c5d16b1f4d38d016026900999bd209a9f901f70f04136d9fdd669f9601e2db3
-Shader 'SkyShaderRD' (group 0) SHA256: 34c03a8e46624b5ab7488ca0527d4f733272c048f0dd61258a69b9bf419225bd
-Shader 'BokehDofRasterShaderRD' (group 0) SHA256: a5ed26e5b86fb1a016f61f719fa3ba45119a0bda505dcc038bfd26e718ef956d
-Shader 'BlurRasterShaderRD' (group 0) SHA256: 193d80f293dc88299ae7ef003640f13fa7cab1fd1a57de366b53029265639146
-Shader 'CopyShaderRD' (group 0) SHA256: aaaaf4bfa2e7bd72bdafaa25005b56152e2e738422178c95ce5ed4976f964862
-Shader 'CopyToFbShaderRD' (group 0) SHA256: f113ba1d923f38bcf263af4dbc168573e755be83c1d3616fc49b7588aa9fffa4
-Shader 'CubeToDpShaderRD' (group 0) SHA256: 37d76ea0432d00e86934ff9eab83ce63c9c7feffafd96809773e109c5a078e17
-Shader 'CubemapDownsamplerRasterShaderRD' (group 0) SHA256: 20c48704e5817755c17d80b22e7c39d99270bd1e95c54446d742753abc03db33
-Shader 'CubemapFilterRasterShaderRD' (group 0) SHA256: de06c7a642b6af01caa44a65e94daa5dfafbdda1a6111bdd975c28e8c1fe4c1a
-Shader 'CubemapRoughnessRasterShaderRD' (group 0) SHA256: 3efae0638df891d7ec5aaa17ead03d3243a3fdc9f5920d95e16f92a0aeccfd04
-Shader 'SpecularMergeShaderRD' (group 0) SHA256: 8d06f9bec87ae4177f0a49133608f41313ebad2d0d81a5c074db1541cd396ddc
-Shader 'ShadowFrustumShaderRD' (group 0) SHA256: b73466659c6c1252aff41d1d117370efac3ed69d2ee89bb6e036036557afb5bd
-Shader 'MotionVectorsShaderRD' (group 0) SHA256: 548f1c61370fbba7d8bacec2827d86adc6984d8874d31cb21b7bb5f78e6d4335
-Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e6003b5a0c97bd615d1990a7012076a61e11cb05df558
-Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
-Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
-CoreAudio: detected 2 channels
-CoreAudio: output sampling rate: 44100 Hz
-CoreAudio: output audio buffer frames: 512 calculated latency: 11ms
-
-TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
-CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
-Loading resource: res://default_bus_layout.tres
-CORE API HASH: 4052744068
-EDITOR API HASH: 910296392
-Loading resource: res://src/core/data/config/settings.gd
-Loading resource: res://src/core/systems/audio_manager.gd
-Loading resource: res://src/core/systems/cursor_manager.gd
-Loading resource: res://assets/sprites/ui/cursors/cursor_default.png
-Loading resource: res://.godot/imported/cursor_default.png-adc7f5ed4336e28008b129c5a66cab2e.ctex
-Loading resource: res://assets/sprites/ui/cursors/cursor_pointer.png
-Loading resource: res://.godot/imported/cursor_pointer.png-90e307ad4e06d49b3b74ef9b44e078f4.ctex
-Loading resource: res://src/ui/global_hud/global_hud.tscn
-Loading resource: res://src/ui/global_hud/global_hud.gd
-Loading resource: res://assets/sprites/ui/icons/icon-sound-on.png
-Loading resource: res://.godot/imported/icon-sound-on.png-e846c5d97e3d706214419caf8e828d71.ctex
-Loading resource: res://assets/sprites/ui/icons/icon-sound-off.png
-Loading resource: res://.godot/imported/icon-sound-off.png-6ce140963307e6f579be834adb53f1a0.ctex
-Loading resource: res://src/core/systems/game_manager.gd
-Loading resource: res://src/core/building/arena_builder.gd
-Loading resource: res://src/core/data/combat_db.gd
-Loading resource: res://src/core/systems/object_pool.gd
-Loading resource: res://src/projectiles/player_shot.tscn
-Loading resource: res://src/projectiles/player_shot.gd
-Loading resource: res://src/projectiles/boss_shot.tscn
-Loading resource: res://src/projectiles/boss_shot.gd
-Loading resource: res://src/core/util/physics_layers.gd
-Loaded system CA certificates
-Loading resource: res://src/scenes/main/main.tscn
-Loading resource: res://src/scenes/main/main.gd
-Loading resource: res://data/combat_config.tres
-Loading resource: res://src/ui/screens/title_screen/title_screen.tscn
-Loading resource: res://src/ui/screens/title_screen/title_screen.gd
-Loading resource: res://assets/audio/music/title-screen-loop.mp3
-Loading resource: res://.godot/imported/title-screen-loop.mp3-7ec904333b11a47509751ae22a703854.mp3str
-Loading resource: res://assets/sprites/ui/title/box_battle_title.png
-Loading resource: res://.godot/imported/box_battle_title.png-b9353d8af8deadfd04d4db0e868561f1.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-item-start.png
-Loading resource: res://.godot/imported/menu-item-start.png-32e538bb682d9a1b639fc2dc41f90bed.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-item-options.png
-Loading resource: res://.godot/imported/menu-item-options.png-0a5f7fa3c76e43a264f366e36bedb5f1.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-cursor.png
-Loading resource: res://.godot/imported/menu-cursor.png-3bbc1015f1afec795ab061c5256925a7.ctex
-Loading resource: res://src/scenes/loading/loading_screen.tscn
-Loading resource: res://src/scenes/loading/loading_screen.gd
-Loading resource: res://assets/audio/sfx/start-chime.mp3
-Loading resource: res://.godot/imported/start-chime.mp3-d648111bc9ecb7811859947d2e9fa808.mp3str
-Starting shader pre-warming...
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/entities/player/player.gd
-Loading resource: res://src/entities/components/health_component.gd
-Loading resource: res://src/entities/components/combat_component.gd
-Loading resource: res://src/entities/components/input_component.gd
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/entities/boss/base_boss.gd
-Shader pre-warming complete.
-Loading resource: res://src/arenas/arena_00_encounter.gd
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/arenas/arena_00_layout.gd
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/ui/game_hud/game_hud.tscn
-Loading resource: res://src/ui/game_hud/game_hud.gd
-Loading resource: res://src/scenes/game/game.tscn
-Loading resource: res://src/scenes/game/game.gd
-XR: Clearing primary interface
-XR: Removed interface "Native mobile"
-XR: Removed interface "OpenXR"
+48 directories, 127 files
 
 
 =====================================
@@ -1170,6 +1059,188 @@ src/entities/player/player.gd:191:	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHAN
 
 
 =====================================
+FILE: ./docs/sprint_0_audit/EVENT-001_Event_Flow_Map.md
+=====================================
+# Event Flow Map
+
+**Date:** 2025-08-10
+**Status:** Generated
+
+---
+
+This document maps all events defined in `EventCatalog.gd`. For each event, it lists all scripts that emit the event and all scripts that subscribe (listen) to it.
+
+## Event: `PLAYER_HEALTH_CHANGED`
+
+**Path:** `player.health_changed`
+
+### Emitters (who sends this event?)
+```
+src/entities/player/player.gd:	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)
+```
+
+### Listeners (who listens for this event?)
+```
+src/ui/game_hud/game_hud.gd:	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
+```
+
+---
+
+## Event: `PLAYER_HEALING_CHARGES_CHANGED`
+
+**Path:** `player.healing_charges_changed`
+
+### Emitters (who sends this event?)
+```
+src/entities/player/player.gd:	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev, self)
+```
+
+### Listeners (who listens for this event?)
+```
+src/ui/game_hud/game_hud.gd:	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
+```
+
+---
+
+## Event: `PLAYER_TOOK_DAMAGE`
+
+**Path:** `player.took_damage`
+
+### Emitters (who sends this event?)
+```
+No emitters found.
+```
+
+### Listeners (who listens for this event?)
+```
+No listeners found.
+```
+
+---
+
+## Event: `PLAYER_DIED`
+
+**Path:** `player.died`
+
+### Emitters (who sends this event?)
+```
+No emitters found.
+```
+
+### Listeners (who listens for this event?)
+```
+No listeners found.
+```
+
+---
+
+## Event: `BOSS_HEALTH_CHANGED`
+
+**Path:** `boss.health_changed`
+
+### Emitters (who sends this event?)
+```
+src/entities/boss/base_boss.gd:	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
+```
+
+### Listeners (who listens for this event?)
+```
+src/ui/game_hud/game_hud.gd:	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
+```
+
+---
+
+## Event: `BOSS_DIED`
+
+**Path:** `boss.died`
+
+### Emitters (who sends this event?)
+```
+No emitters found.
+```
+
+### Listeners (who listens for this event?)
+```
+No listeners found.
+```
+
+---
+
+## Event: `GAME_PAUSED`
+
+**Path:** `game.paused`
+
+### Emitters (who sends this event?)
+```
+No emitters found.
+```
+
+### Listeners (who listens for this event?)
+```
+src/scenes/game/game.gd:	_pause_token = EventBus.on(EventCatalog.GAME_PAUSED, _on_game_paused)
+```
+
+---
+
+## Event: `GAME_RESUMED`
+
+**Path:** `game.resumed`
+
+### Emitters (who sends this event?)
+```
+No emitters found.
+```
+
+### Listeners (who listens for this event?)
+```
+src/scenes/game/game.gd:	_resume_token = EventBus.on(EventCatalog.GAME_RESUMED, _on_game_resumed)
+```
+
+---
+
+## Event: `MENU_OPENED`
+
+**Path:** `ui.menu_opened`
+
+### Emitters (who sends this event?)
+```
+src/ui/screens/controls_menu/controls_menu.gd:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/credits_menu/credits_menu.gd:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/options_menu/options_menu.gd:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/sound_menu/sound_menu.gd:	EventBus.emit(EventCatalog.MENU_OPENED)
+src/ui/screens/title_screen/title_screen.gd:	EventBus.emit(EventCatalog.MENU_OPENED) # Announce that a menu is open
+```
+
+### Listeners (who listens for this event?)
+```
+src/ui/global_hud/global_hud.gd:	_menu_opened_token = EventBus.on(EventCatalog.MENU_OPENED, _on_menu_opened)
+```
+
+---
+
+## Event: `MENU_CLOSED`
+
+**Path:** `ui.menu_closed`
+
+### Emitters (who sends this event?)
+```
+src/ui/screens/controls_menu/controls_menu.gd:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/credits_menu/credits_menu.gd:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/options_menu/options_menu.gd:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/sound_menu/sound_menu.gd:	EventBus.emit(EventCatalog.MENU_CLOSED)
+src/ui/screens/title_screen/title_screen.gd:	EventBus.emit(EventCatalog.MENU_CLOSED) # Announce that the menu is closing
+```
+
+### Listeners (who listens for this event?)
+```
+src/ui/global_hud/global_hud.gd:	_menu_closed_token = EventBus.on(EventCatalog.MENU_CLOSED, _on_menu_closed)
+```
+
+---
+
+
+
+=====================================
 FILE: ./docs/sprint_0_audit/ARCH-002_Acceptance_Criteria.md
 =====================================
 # ARCH-002: Refactoring Acceptance Criteria
@@ -1534,17 +1605,88 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Implemented state validation in `PlayerStateData` and `BossStateData`║
+║      ░   using property setters. This makes the data resources self-validating
+║      ░   and prevents invalid states (e.g., health > max_health).            ║
+║      ░ ■ Created a formal `ComponentInterface` to act as a standardized      ║
+║      ░   blueprint for all entity components, enforcing a consistent API.    ║
+║      ░ ■ Refactored `GameManager` to use a `GameStateData` resource,         ║
+║      ░   eliminating the "dual architecture" of stateful singletons. All     ║
+║      ░   runtime state is now consistently managed through `Resource` objects.║
+║      ░ ■ Replaced the JSON-based `Config.gd` system with a type-safe,        ║
+║      ░   `Resource`-based system (`CombatConfig.tres` and `CombatDB.gd`).    ║
+║      ░   This provides compile-time safety against typos and enables direct  ║
+║      ░   gameplay value tuning in the Godot editor's Inspector.              ║
+║      ░ ■ Refactored the Player's state machine to load its state scripts at  ║
+║      ░   runtime in `_ready()` instead of using `preload()`. This breaks a   ║
+║      ░   brittle parse-time dependency cycle, making the game's startup      ║
+║      ░   sequence significantly more robust.                                 ║
 ║      ░ ■ Further refined the `src/core` directory structure, creating new    ║
 ║      ░   subdirectories for typed configs and events (`data/config`, `events/typed_events`).║
 ║      ░ ■ Standardized script filenames to snake_case (e.g., `Config.gd` ->   ║
 ║      ░   `config.gd`) for project-wide consistency.                          ║
-║      ░ ■ Reorganized the monolithic `src/core` directory into purpose-driven ║
+║      ░ ■ Reorganized the monolithic `src` directory into purpose-driven      ║
 ║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
 ║      ░   improve project modularity and scalability.                         ║
+║      ░ ■ Simplified the global `EventBus` by removing unused features like   ║
+║      ░   the priority system and `emit_async`, resulting in a leaner         ║
+║      ░   implementation.                                                     ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored `HealthComponent` to initialize the new self-validating  ║
+║      ░   data resources, simplifying its internal logic.                     ║
+║      ░ ■ Refactored `CombatComponent` and `InputComponent` to extend the new ║
+║      ░   `ComponentInterface`, standardizing the entire component architecture.║
+║      ░ ■ Updated `player.gd` to use the standardized `setup` and `teardown`  ║
+║      ░   methods for all its components.                                     ║
+║      ░ ■ Refactored `HealthComponent` to extend the new `ComponentInterface` ║
+║      ░   and use a more robust `is_in_group` check for its setup logic.      ║
+║      ░ ■ Reorganized `AssetPaths.gd` by feature/system for improved clarity. ║
+║      ░ ■ Added a validation system to `AssetPaths.gd` that checks for missing║
+║      ░   files at startup, preventing runtime "file not found" errors.       ║
+║      ░ ■ Added validation to `Settings.gd` property setters to clamp audio   ║
+║      ░   volume values, making the system more robust against invalid data.  ║
+║      ░ ■ Cleaned up all remaining GDScript static analysis warnings          ║
+║      ░   (`UNUSED_PARAMETER`, `SHADOWED_VARIABLE`) for a clean build.        ║
+║      ░ ■ Removed dead/broken event definitions from `EventCatalog` and       ║
+║      ░   removed the corresponding broken logic from `EncounterDirector`.    ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Added placeholder `README.md` and `DEPRECATION.md` files to `core`, ║
+║      ░   `entities`, and `docs` to establish a documentation framework.      ║
+║                                                                              ║
+║   █  Documentation                                                           ║
+║      ░ ■ Improved header comments in `Constants.gd` and `PhysicsLayers.gd`   ║
+║      ░   to clarify their intended purpose and prevent architectural drift.  ║
+║      ░ ■ Completed Sprint 0 architectural audit.                             ║
+║      ░ ■ Added `docs/sprint_0_audit` directory to house analysis files.      ║
+║      ░ ■ Generated audit reports for singletons, event usage, and config usage.║
+║      ░ ■ Added `ADR-001` to formally document the existing Service Locator pattern.║
+║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
+║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
+║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Added missing `max_health` property to `BossStateData` to resolve a ║
+║      ░   crash when the boss took damage.                                    ║
+║      ░ ■ Resolved a crash caused by using the non-existent `has()` method in ║
+║      ░   `HealthComponent`; replaced with a more robust `is_in_group()` check.║
+║      ░ ■ Corrected invalid GDScript 4 dictionary access syntax in `player.gd`.║
+║      ░ ■ Removed the invalid `override` keyword from `HealthComponent`, which ║
+║      ░   was causing a critical parse error.                                 ║
+║      ░ ■ Corrected the argument order in `HealthComponent.setup` calls to    ║
+║      ░   match the newly defined `ComponentInterface` contract.              ║
+║      ░ ■ Resolved a parse-time dependency error by ensuring `GameStateData`  ║
+║      ░   is loaded at runtime in `GameManager`, preventing a startup crash.  ║
+║      ░ ■ Resolved a cascade of parse errors by correcting the implementation ║
+║      ░   of the new `CombatConfig` resource and refactoring dependent scripts.║
+║      ░ ■ Corrected multiple typos and syntax errors in player state scripts  ║
+║      ░   (`state_attack.gd`, `state_hurt.gd`, `state_wall_slide.gd`) that    ║
+║      ░   were causing crashes during gameplay.                               ║
 ║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
 ║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
+║      ░ ■ Fixed a critical race condition where player contact damage could   ║
+║      ░   interrupt a pogo attack, preventing the pogo from dealing damage.   ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -2056,9 +2198,9 @@ environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 =====================================
 FILE: ./data/combat_config.tres
 =====================================
-[gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3 uid="uid://kov03lmcorvh"]
 
-[ext_resource type="Script" path="res://src/core/data/config/combat_config.gd" id="1_config"]
+[ext_resource type="Script" uid="uid://okv7r7dpfyxf" path="res://src/core/data/config/combat_config.gd" id="1_config"]
 
 [resource]
 script = ExtResource("1_config")
@@ -2093,6 +2235,7 @@ player_invincibility_duration = 1.5
 boss_health = 30
 boss_patrol_speed = 100.0
 boss_invincibility_duration = 0.1
+
 
 =====================================
 FILE: ./src/ui/game_hud/game_hud.gd
@@ -3039,7 +3182,8 @@ func _exit_tree():
 	EventBus.emit(EventCatalog.MENU_CLOSED) # Announce that the menu is closing
 
 func _on_start_button_pressed():
-	GameManager.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
+	# MODIFIED: Access the state object on GameManager
+	GameManager.state.current_encounter_script_path = AssetPaths.SCRIPT_ARENA_00_ENCOUNTER
 	get_tree().change_scene_to_file(AssetPaths.SCENE_LOADING_SCREEN)
 
 func _on_options_button_pressed():
@@ -3341,7 +3485,8 @@ const SHADER_PREWARM_SCENES = [
 ]
 
 func _ready():
-	if GameManager.current_encounter_script_path.is_empty():
+	# MODIFIED: Access the state object on GameManager
+	if GameManager.state.current_encounter_script_path.is_empty():
 		print("ERROR: No encounter script specified in GameManager. Returning to title.")
 		get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
 		return
@@ -3357,7 +3502,8 @@ func _load_level():
 	await _prewarm_shaders()
 	
 	# Tell the ArenaBuilder to construct the level asynchronously.
-	GameManager.prebuilt_level = await ArenaBuilder.build_level_async()
+	# MODIFIED: Access the state object on GameManager
+	GameManager.state.prebuilt_level = await ArenaBuilder.build_level_async()
 	
 	# Yield to ensure all creation processes are finalized before we switch.
 	await get_tree().process_frame
@@ -3403,27 +3549,23 @@ FILE: ./src/scenes/game/game.gd
 # src/scenes/game/game.gd
 #
 # This script orchestrates the setup of an arena battle. It now also manages
-# the overall game flow by listening for signals and events.
+# the overall game flow by listening for signals.
 extends Node
 
 var player_node: Node = null
 var boss_node: Node = null
 
-# --- NEW: Subscription Tokens ---
-var _pause_token: int
-var _resume_token: int
-
+# REMOVED: No longer need subscription tokens as we are not using the EventBus here.
 
 func _ready():
-	# --- NEW: Subscribe to game state events ---
-	_pause_token = EventBus.on(EventCatalog.GAME_PAUSED, _on_game_paused)
-	_resume_token = EventBus.on(EventCatalog.GAME_RESUMED, _on_game_resumed)
+	# REMOVED: The game scene no longer subscribes to pause events.
+	# Pause logic will be handled differently if implemented later.
 
-	if GameManager.prebuilt_level:
-		add_child(GameManager.prebuilt_level)
-		GameManager.prebuilt_level = null
+	if GameManager.state.prebuilt_level:
+		add_child(GameManager.state.prebuilt_level)
+		GameManager.state.prebuilt_level = null
 		await get_tree().process_frame
-	elif not GameManager.current_encounter_script_path.is_empty():
+	elif not GameManager.state.current_encounter_script_path.is_empty():
 		var level_container = await ArenaBuilder.build_level_async()
 		add_child(level_container)
 		await get_tree().process_frame
@@ -3437,21 +3579,17 @@ func _ready():
 
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
-	# Connect to the boss 'died' signal AFTER the intro sequence has spawned it.
-	# We can get the node reference again just in case it wasn't ready before.
+	
 	var final_boss_node = get_tree().get_first_node_in_group("enemy")
 	if is_instance_valid(final_boss_node):
 		final_boss_node.died.connect(_on_boss_died)
 
 func _exit_tree():
-	# CRITICAL: Unsubscribe from all events to prevent memory leaks.
-	EventBus.off(_pause_token)
-	EventBus.off(_resume_token)
-	# Unpause the game when this scene is exited.
+	# Unpause the game when this scene is exited. This is a safeguard.
 	get_tree().paused = false
 
 
-# --- Signal & Event Handlers ---
+# --- Signal Handlers ---
 
 func _on_player_died():
 	print("Game Manager: Player death detected. Initiating Game Over.")
@@ -3460,15 +3598,6 @@ func _on_player_died():
 func _on_boss_died():
 	print("Game Manager: Boss death detected. Initiating Victory.")
 	get_tree().call_deferred("change_scene_to_file", AssetPaths.SCENE_VICTORY_SCREEN)
-
-# --- NEW: Pause Handlers ---
-func _on_game_paused(_payload):
-	print("Game Scene: Pausing tree.")
-	get_tree().paused = true
-
-func _on_game_resumed(_payload):
-	print("Game Scene: Resuming tree.")
-	get_tree().paused = false
 
 
 =====================================
@@ -3548,6 +3677,10 @@ FILE: ./src/scenes/main/main.gd
 extends Node
 
 func _ready():
+	# NEW: Validate all asset paths on startup in debug builds.
+	if OS.is_debug_build():
+		AssetPaths.validate_all_paths()
+
 	# Using AssetPaths makes this transition type-safe and easy to manage.
 	# CRITICAL FIX: 'call_deferred' is REQUIRED here. The main scene cannot be
 	# replaced immediately in its own _ready function, as the scene tree is
@@ -3648,22 +3781,29 @@ func execute(sequencer_node: Node) -> Variant:
 =====================================
 FILE: ./src/core/util/physics_layers.gd
 =====================================
-# src/core/physics_layers.gd
+# src/core/util/physics_layers.gd
 #
 # An autoloaded singleton that provides named constants for the 2D physics
 # layers defined in the project settings. This prevents the use of "magic
 # numbers" for collision layers and masks, making the code more readable
 # and easier to maintain.
+#
+# !!! CRITICAL WARNING !!!
+# The values in this file MUST be kept in perfect sync with the settings in:
+# Project -> Project Settings -> General -> Layer Names -> 2D Physics
+#
+# Changing a layer name or order in the project settings without updating
+# this file will break collision detection.
 extends Node
 
-# The bitmask value for each layer (2^n).
-const PLAYER = 1
-const WORLD = 2
-const ENEMY = 4
-const HAZARD = 8
-const ENEMY_PROJECTILE = 16
-const PLAYER_HITBOX = 32
-const PLAYER_HURTBOX = 64
+# The bitmask value for each layer (2^n, where n is the layer number - 1).
+const PLAYER = 1           # Layer 1
+const WORLD = 2            # Layer 2
+const ENEMY = 4            # Layer 3
+const HAZARD = 8           # Layer 4
+const ENEMY_PROJECTILE = 16  # Layer 5
+const PLAYER_HITBOX = 32   # Layer 6
+const PLAYER_HURTBOX = 64  # Layer 7
 
 =====================================
 FILE: ./src/core/util/palette.gd
@@ -3726,50 +3866,42 @@ func get_color(index: int) -> Color:
 =====================================
 FILE: ./src/core/util/asset_paths.gd
 =====================================
-# src/core/asset_paths.gd
+# src/core/util/asset_paths.gd
 #
-# This singleton provides a central registry for all asset file paths.
-# If an asset is moved or renamed, we only need to update the path in this
-# one file, preventing broken references throughout the project.
+# This singleton provides a central, validated registry for all asset file paths.
+# It is now organized by feature/system for better scalability and includes a
+# validation function to prevent runtime errors from missing assets.
 extends Node
 
-# --- Scenes ---
+# --- CORE SYSTEMS ---
 const SCENE_MAIN = "res://src/scenes/main/main.tscn"
 const SCENE_GAME = "res://src/scenes/game/game.tscn"
-const SCENE_GAME_HUD = "res://src/ui/game_hud/game_hud.tscn"
-const SCENE_GAME_OVER_SCREEN = "res://src/ui/screens/game_over_screen/game_over_screen.tscn" # <-- NEW
-const SCENE_VICTORY_SCREEN = "res://src/ui/screens/victory_screen/victory_screen.tscn" # <-- NEW
 const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn"
+const SCRIPT_MENU_MANAGER = "res://src/ui/menu_manager/menu_manager.gd"
+const SCRIPT_CUSTOM_SLIDER = "res://src/ui/components/custom_slider/custom_slider.gd"
+
+# --- ARENAS ---
+const SCRIPT_ARENA_00_LAYOUT = "res://src/arenas/arena_00_layout.gd"
+const SCRIPT_ARENA_00_ENCOUNTER = "res://src/arenas/arena_00_encounter.gd"
+
+# --- PLAYER & RELATED ---
+const SCENE_PLAYER = "res://src/entities/player/player.tscn"
+const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"
+
+# --- BOSS & RELATED ---
+const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
+const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
+
+# --- UI & HUD ---
+const SCENE_GAME_HUD = "res://src/ui/game_hud/game_hud.tscn"
+const SCENE_GAME_OVER_SCREEN = "res://src/ui/screens/game_over_screen/game_over_screen.tscn"
+const SCENE_VICTORY_SCREEN = "res://src/ui/screens/victory_screen/victory_screen.tscn"
 const SCENE_TITLE_SCREEN = "res://src/ui/screens/title_screen/title_screen.tscn"
 const SCENE_OPTIONS_MENU = "res://src/ui/screens/options_menu/options_menu.tscn"
 const SCENE_SOUND_MENU = "res://src/ui/screens/sound_menu/sound_menu.tscn"
 const SCENE_CONTROLS_MENU = "res://src/ui/screens/controls_menu/controls_menu.tscn"
 const SCENE_CREDITS_MENU = "res://src/ui/screens/credits_menu/credits_menu.tscn"
-const SCENE_PLAYER = "res://src/entities/player/player.tscn"
-const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
-const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"
-const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
 
-# --- Scripts ---
-const SCRIPT_MENU_MANAGER = "res://src/ui/menu_manager/menu_manager.gd"
-const SCRIPT_CUSTOM_SLIDER = "res://src/ui/components/custom_slider/custom_slider.gd"
-const SCRIPT_ARENA_00_LAYOUT = "res://src/arenas/arena_00_layout.gd"
-const SCRIPT_ARENA_00_ENCOUNTER = "res://src/arenas/arena_00_encounter.gd"
-
-# --- Audio ---
-const AUDIO_MUSIC_TITLE = "res://assets/audio/music/title-screen-loop.mp3"
-const AUDIO_SFX_MENU_BACK = "res://assets/audio/sfx/menu-back.mp3"
-const AUDIO_SFX_MENU_ERROR = "res://assets/audio/sfx/menu-error.mp3"
-const AUDIO_SFX_MENU_MOVE = "res://assets/audio/sfx/menu-move.mp3"
-const AUDIO_SFX_MENU_SELECT = "res://assets/audio/sfx/menu-select.mp3"
-const AUDIO_SFX_START_CHIME = "res://assets/audio/sfx/start-chime.mp3"
-
-# --- Fonts ---
-const FONT_BLACK = "res://assets/fonts/MPLUSRounded1c-Black.ttf"
-const FONT_BOLD = "res://assets/fonts/MPLUSRounded1c-Bold.ttf"
-const FONT_REGULAR = "res://assets/fonts/MPLUSRounded1c-Regular.ttf"
-
-# --- UI Sprites ---
 const SPRITE_TITLE = "res://assets/sprites/ui/title/box_battle_title.png"
 const SPRITE_MENU_CURSOR = "res://assets/sprites/ui/menu/menu-cursor.png"
 const SPRITE_MENU_ITEM_START = "res://assets/sprites/ui/menu/menu-item-start.png"
@@ -3787,20 +3919,61 @@ const SPRITE_CHECKBOX_UNCHECKED = "res://assets/sprites/ui/checkbox/checkbox-unc
 const SPRITE_ICON_SOUND_ON = "res://assets/sprites/ui/icons/icon-sound-on.png"
 const SPRITE_ICON_SOUND_OFF = "res://assets/sprites/ui/icons/icon-sound-off.png"
 
+# --- FONTS ---
+const FONT_BLACK = "res://assets/fonts/MPLUSRounded1c-Black.ttf"
+const FONT_BOLD = "res://assets/fonts/MPLUSRounded1c-Bold.ttf"
+const FONT_REGULAR = "res://assets/fonts/MPLUSRounded1c-Regular.ttf"
+
+# --- AUDIO ---
+const AUDIO_MUSIC_TITLE = "res://assets/audio/music/title-screen-loop.mp3"
+const AUDIO_SFX_MENU_BACK = "res://assets/audio/sfx/menu-back.mp3"
+const AUDIO_SFX_MENU_ERROR = "res://assets/audio/sfx/menu-error.mp3"
+const AUDIO_SFX_MENU_MOVE = "res://assets/audio/sfx/menu-move.mp3"
+const AUDIO_SFX_MENU_SELECT = "res://assets/audio/sfx/menu-select.mp3"
+const AUDIO_SFX_START_CHIME = "res://assets/audio/sfx/start-chime.mp3"
+
+
+# --- NEW: VALIDATION SYSTEM ---
+# This function runs at startup to verify that every path defined in this
+# script actually points to a real file.
+func validate_all_paths() -> void:
+	print("AssetPaths: Validating all asset paths...")
+	var constants = get_script().get_script_constant_map()
+	var missing_assets = false
+	
+	for key in constants:
+		var value = constants[key]
+		# We only care about string paths that are project resources.
+		if value is String and value.begins_with("res://"):
+			if not FileAccess.file_exists(value):
+				push_error("Asset path validation failed! File not found for '%s': %s" % [key, value])
+				missing_assets = true
+
+	if not missing_assets:
+		print("AssetPaths: All paths validated successfully.")
+
 =====================================
 FILE: ./src/core/util/constants.gd
 =====================================
-# src/core/constants.gd
+# src/core/util/constants.gd
 #
-# This singleton now only holds true global constants that are not meant for
-# gameplay tuning, such as UI layout numbers or asset counts. All gameplay
-# values have been moved to combat_config.json.
+# This singleton holds true global constants that are foundational to the
+# engine's architecture or core systems.
+#
+# GUIDELINES FOR USE:
+# - DO add values that define fundamental, project-wide numbers that are
+#   unlikely to change (e.g., TILE_SIZE).
+# - DO add system-level performance values (e.g., NUM_SFX_PLAYERS).
+# - DO NOT add any values related to gameplay feel, balance, or tuning.
+#   Those belong in a data resource like CombatConfig.tres.
 extends Node
 
 # --- Audio ---
-const NUM_SFX_PLAYERS = 8 # The number of sound effects that can play at once.
+# The number of simultaneous sound effects that can be played at once.
+const NUM_SFX_PLAYERS = 8
 
 # --- Arena Design ---
+# The universal size (width and height) of a single grid tile in the arena.
 const TILE_SIZE = 50
 
 =====================================
@@ -3846,25 +4019,14 @@ The primary public API for inter-system communication is the `EventBus`. Systems
 FILE: ./src/core/events/event_bus.gd
 =====================================
 # src/core/event_bus.gd
+# SIMPLIFIED: Removed async queue, priority sorting, and unused debug features.
 extends Node
 
 var _subscribers: Dictionary = {}
 var _by_id: Dictionary = {}
 var _next_id: int = 1
-var _event_queue: Array = []
-var _trace_capacity: int = 200
-var _trace: Array = []
 
-var debug_enabled: bool = OS.is_debug_build()
-
-func _process(_delta: float) -> void:
-	if _event_queue.is_empty(): return
-	var q = _event_queue.duplicate()
-	_event_queue.clear()
-	for item in q:
-		_emit_internal(item["event"], item["payload"], item["source"])
-
-func on(event_name: String, callback: Callable, opts: Dictionary = {}) -> int:
+func on(event_name: StringName, callback: Callable) -> int:
 	assert(callback.is_valid(), "EventBus.on: callback must be a valid Callable")
 	var subs: Array = _subscribers.get(event_name, [])
 	var owner_node = callback.get_object()
@@ -3872,11 +4034,8 @@ func on(event_name: String, callback: Callable, opts: Dictionary = {}) -> int:
 
 	var entry := {
 		"id": _next_id, "callback": callback, "owner_weak": weak_ref,
-		"once": opts.get("once", false), "priority": opts.get("priority", 0),
-		"type": opts.get("type", null)
 	}
 	subs.append(entry)
-	subs.sort_custom(func(a, b): return a.priority > b.priority)
 	_subscribers[event_name] = subs
 	_by_id[_next_id] = event_name
 	_next_id += 1
@@ -3884,7 +4043,7 @@ func on(event_name: String, callback: Callable, opts: Dictionary = {}) -> int:
 
 func off(token: int) -> void:
 	if not _by_id.has(token): return
-	var event_name: String = _by_id[token]
+	var event_name: StringName = _by_id[token]
 	if _subscribers.has(event_name):
 		for i in range(_subscribers[event_name].size() - 1, -1, -1):
 			if _subscribers[event_name][i].id == token:
@@ -3894,84 +4053,16 @@ func off(token: int) -> void:
 			_subscribers.erase(event_name)
 	_by_id.erase(token)
 
-func off_owner(owner_node: Node) -> void:
-	if owner_node == null: return
-	var tokens_to_remove: Array[int] = []
-	for token in _by_id.keys():
-		var event_name = _by_id[token]
-		if _subscribers.has(event_name):
-			var subs = _subscribers[event_name]
-			for sub in subs:
-				if sub.id == token and sub.owner_weak and sub.owner_weak.get_ref() == owner_node:
-					tokens_to_remove.append(token)
-	for token in tokens_to_remove:
-		off(token)
-
-func emit(event_name: String, payload = null, source: Object = null) -> void:
-	_emit_internal(event_name, payload, source)
-
-func emit_async(event_name: String, payload = null, source: Object = null) -> void:
-	_event_queue.append({"event": event_name, "payload": payload, "source": source})
-
-func _emit_internal(event_name: String, payload, source: Object) -> void:
-	if debug_enabled:
-		var payload_class = "null"
-		if payload != null: payload_class = payload.get_class()
-		var source_str = "invalid"
-		if is_instance_valid(source): source_str = str(source)
-		
-		_trace.append({ "time": Time.get_ticks_msec(), "event": event_name,
-			"payload_type": payload_class, "source": source_str })
-		if _trace.size() > _trace_capacity: _trace.pop_front()
-
+# CORRECTED: Added underscore to unused parameter `_source`.
+func emit(event_name: StringName, payload = null, _source: Object = null) -> void:
 	if not _subscribers.has(event_name): return
 
 	for sub in _subscribers[event_name].duplicate():
 		if sub.owner_weak and not sub.owner_weak.get_ref():
-			off(sub.id); continue
-		
-		var expected_type = sub.type
-		if expected_type and not is_instance_of(payload, expected_type):
-			if debug_enabled:
-				var type_path = expected_type.resource_path if expected_type is Script else str(expected_type)
-				
-				# IMPROVED DEBUG MESSAGE: Get the specific script name if available.
-				var payload_type_name = "null"
-				if payload:
-					if payload is Resource and payload.get_script():
-						payload_type_name = payload.get_script().resource_path
-					else:
-						payload_type_name = payload.get_class()
-
-				print("EventBus: Subscriber for '%s' expected type %s but got %s. Skipping." % [event_name, type_path, payload_type_name])
+			off(sub.id)
 			continue
 		
 		sub.callback.call(payload)
-		
-		if sub.once: off(sub.id)
-
-# --- Debugging Tools ---
-func debug_recent_events() -> Array: return _trace.duplicate()
-
-func dump_subscribers(event_name: String = "") -> Dictionary:
-	var output := {}
-	var events_to_dump: Array = _subscribers.keys() if event_name.is_empty() else [event_name]
-
-	for ev in events_to_dump:
-		if _subscribers.has(ev):
-			output[ev] = []
-			for sub in _subscribers[ev]:
-				var owner_desc := "null"
-				if sub.owner_weak and sub.owner_weak.get_ref():
-					owner_desc = str(sub.owner_weak.get_ref())
-				
-				var type_desc := "any"
-				if sub.type and sub.type is Script:
-					type_desc = sub.type.resource_path
-				
-				output[ev].append({ "id": sub.id, "owner": owner_desc, "priority": sub.priority,
-					"once": sub.once, "type": type_desc })
-	return output
 
 
 =====================================
@@ -4010,7 +4101,7 @@ class_name PlayerHealingChargesChangedEvent
 =====================================
 FILE: ./src/core/events/event_catalog.gd
 =====================================
-# src/core/event_catalog.gd
+# src/core/events/event_catalog.gd
 # This script serves as the canonical, central list of all event names in the project.
 # By using these constants instead of raw strings, we gain IDE autocompletion and
 # prevent typos that would lead to silent runtime failures.
@@ -4020,16 +4111,9 @@ class_name EventCatalog
 # --- Player Events ---
 const PLAYER_HEALTH_CHANGED = "player.health_changed"
 const PLAYER_HEALING_CHARGES_CHANGED = "player.healing_charges_changed"
-const PLAYER_TOOK_DAMAGE = "player.took_damage"
-const PLAYER_DIED = "player.died"
 
 # --- Boss / Entity Events ---
 const BOSS_HEALTH_CHANGED = "boss.health_changed"
-const BOSS_DIED = "boss.died"
-
-# --- Game State Events ---
-const GAME_PAUSED = "game.paused"
-const GAME_RESUMED = "game.resumed"
 
 # --- UI State Events ---
 const MENU_OPENED = "ui.menu_opened"
@@ -4038,19 +4122,22 @@ const MENU_CLOSED = "ui.menu_closed"
 =====================================
 FILE: ./src/core/systems/game_manager.gd
 =====================================
-# src/core/game_manager.gd
+# src/core/systems/game_manager.gd
 #
-# A simple singleton to manage the state of the game session, such as
-# which level is currently being loaded or played.
+# A simple singleton to manage the state of the game session. It now holds
+# a reference to a GameStateData resource, standardizing our state pattern.
 extends Node
 
-# This variable will hold the resource path to the encounter script for the
-# level that the player has chosen to play.
-var current_encounter_script_path: String = ""
+# MODIFIED: Removed the parse-time type hint to break the dependency cycle.
+var state = null
 
-# --- NEW VARIABLE ---
-# This will hold the fully constructed, but currently hidden, level node.
-var prebuilt_level: Node = null
+# Preload the script resource itself. This is safe.
+const GameStateDataScript = preload("res://src/core/data/game_state_data.gd")
+
+func _ready():
+	# Create a new, clean instance of the game state at runtime,
+	# when all scripts have been parsed and registered.
+	state = GameStateDataScript.new()
 
 =====================================
 FILE: ./src/core/systems/object_pool.gd
@@ -4264,20 +4351,26 @@ signal audio_settings_changed
 
 @export var master_volume: float = 1.0:
 	set(value):
-		if not is_equal_approx(master_volume, value):
-			master_volume = value
+		# MODIFIED: Added validation to clamp the value between 0.0 and 1.0
+		var clamped_value = clampf(value, 0.0, 1.0)
+		if not is_equal_approx(master_volume, clamped_value):
+			master_volume = clamped_value
 			audio_settings_changed.emit()
 
 @export var music_volume: float = 1.0:
 	set(value):
-		if not is_equal_approx(music_volume, value):
-			music_volume = value
+		# MODIFIED: Added validation to clamp the value between 0.0 and 1.0
+		var clamped_value = clampf(value, 0.0, 1.0)
+		if not is_equal_approx(music_volume, clamped_value):
+			music_volume = clamped_value
 			audio_settings_changed.emit()
 
 @export var sfx_volume: float = 1.0:
 	set(value):
-		if not is_equal_approx(sfx_volume, value):
-			sfx_volume = value
+		# MODIFIED: Added validation to clamp the value between 0.0 and 1.0
+		var clamped_value = clampf(value, 0.0, 1.0)
+		if not is_equal_approx(sfx_volume, clamped_value):
+			sfx_volume = clamped_value
 			audio_settings_changed.emit()
 
 @export var master_muted: bool = false:
@@ -4346,6 +4439,24 @@ extends Resource
 @export var boss_health: int = 30
 @export var boss_patrol_speed: float = 100.0
 @export var boss_invincibility_duration: float = 0.1
+
+=====================================
+FILE: ./src/core/data/game_state_data.gd
+=====================================
+# src/core/data/game_state_data.gd
+#
+# A Resource that holds all shared runtime state for the game session.
+# This standardizes our state management to follow the same pattern as
+# PlayerStateData and BossStateData.
+class_name GameStateData
+extends Resource
+
+# The resource path to the encounter script for the next level to be loaded.
+var current_encounter_script_path: String = ""
+
+# A reference to the fully constructed, but currently hidden, level node.
+# This is used by the loading screen to pass the level to the game scene.
+var prebuilt_level: Node = null
 
 =====================================
 FILE: ./src/core/DEPRECATION.md
@@ -4528,7 +4639,7 @@ var encounter_script_object: Object = null
 =====================================
 FILE: ./src/core/building/encounter_director.gd
 =====================================
-# src/core/builders/encounter_director.gd
+# src/core/building/encounter_director.gd
 #
 # Responsibility: To spawn all dynamic entities (Player, Boss, HUD) and to
 # direct the flow of the encounter, such as running an intro sequence.
@@ -4586,29 +4697,16 @@ func _spawn_hud_async() -> void:
 
 # Defines and runs the sequence for the boss's grand entrance.
 func run_intro_sequence() -> void:
-	# Create typed SequenceStep objects for a robust, type-safe sequence.
-	var pause_step = EmitStep.new()
-	pause_step.event_name = EventCatalog.GAME_PAUSED
-
+	# SIMPLIFIED: The pause/resume logic was a broken feature and has been removed.
+	# The intro now simply waits before spawning the boss.
 	var wait_step = WaitStep.new()
 	wait_step.duration = 0.5
 
-	var intro_steps: Array[SequenceStep] = [pause_step, wait_step]
+	var intro_steps: Array[SequenceStep] = [wait_step]
 	await Sequencer.run_sequence(intro_steps)
 
 	# Manually spawn the boss to get the node reference.
 	var _boss_node = await _spawn_boss_async()
-
-	# Define the rest of the sequence.
-	var final_wait_step = WaitStep.new()
-	final_wait_step.duration = 1.0
-
-	var resume_step = EmitStep.new()
-	resume_step.event_name = EventCatalog.GAME_RESUMED
-	
-	var outro_steps: Array[SequenceStep] = [final_wait_step, resume_step]
-	await Sequencer.run_sequence(outro_steps)
-
 
 =====================================
 FILE: ./src/core/building/arena_builder.gd
@@ -4627,7 +4725,8 @@ func build_level_async() -> Node:
 	level_container.name = "LevelContainer"
 
 	# --- 1. Load Raw Data ---
-	var encounter_path: String = GameManager.current_encounter_script_path
+	# CORRECTED: Access the state object on GameManager to get the path.
+	var encounter_path: String = GameManager.state.current_encounter_script_path
 	if encounter_path.is_empty():
 		push_error("ArenaBuilder: No encounter script specified in GameManager.")
 		return level_container
@@ -4670,7 +4769,6 @@ func build_level_async() -> Node:
 	await get_tree().process_frame
 	
 	return level_container
-
 
 =====================================
 FILE: ./src/arenas/arena_00_layout.gd
@@ -4760,6 +4858,24 @@ const BOSS_SPAWN_MARKER = "&"
 
 # --- PLAYER DATA ---
 const PLAYER_SPAWN_MARKER = "@"
+
+=====================================
+FILE: ./src/api/interfaces/component_interface.gd
+=====================================
+# src/api/interfaces/component_interface.gd
+#
+# This script defines the formal "contract" or "interface" for all components
+# in the project (HealthComponent, CombatComponent, etc.).
+class_name ComponentInterface
+extends Node
+
+# CORRECTED: Added underscore to unused parameter `p_owner`.
+func setup(_p_owner: Node, _config: Resource = null, _services = null) -> void:
+	pass
+
+func teardown() -> void:
+	pass
+
 
 =====================================
 FILE: ./src/projectiles/player_shot.tscn
@@ -4908,13 +5024,16 @@ FILE: ./src/entities/boss/boss_state_data.gd
 =====================================
 # src/entities/boss/data/boss_state_data.gd
 #
-# A Resource that holds all shared state data for the Boss. This decouples
-# the states from the main boss node.
+# A Resource that holds all shared state data for the Boss.
 class_name BossStateData
 extends Resource
 
 # --- Health & Combat ---
-var health: int = 30
+var max_health: int = 30
+var health: int = 30:
+	set(value):
+		health = clamp(value, 0, max_health)
+
 var is_invincible: bool = false
 var current_attack: int # Using the enum from base_boss.gd
 
@@ -5112,13 +5231,11 @@ var player: CharacterBody2D = null
 # --- Engine Functions ---
 func _ready():
 	b_data = BossStateData.new()
-	# MODIFIED: Get value from the new CombatDB resource.
 	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
 	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	# MODIFIED: Pass the typed resource directly to the component.
-	health_component.setup(b_data, self, CombatDB.config)
+	health_component.setup(self, CombatDB.config)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
@@ -5136,7 +5253,6 @@ func _ready():
 
 func _physics_process(delta):
 	if not is_on_floor():
-		# MODIFIED: Get value from the new CombatDB resource.
 		velocity.y += CombatDB.config.gravity * delta
 
 	if current_state:
@@ -5148,10 +5264,11 @@ func _physics_process(delta):
 		b_data.facing_direction *= -1.0
 
 func _exit_tree():
-	EventBus.off_owner(self)
+	# REMOVED: The simplified EventBus no longer has `off_owner`.
+	# Weakrefs handle cleanup automatically when the owner is freed.
 	states.clear()
 	b_data = null
-	health_component = null
+	if health_component: health_component.teardown()
 
 func change_state(new_state_key: State):
 	if not states.has(new_state_key): return
@@ -5236,27 +5353,26 @@ FILE: ./src/entities/components/combat_component.gd
 =====================================
 # src/entities/components/combat_component.gd
 #
-# A component that handles the execution of the player's combat abilities,
-# such as firing projectiles and performing pogo attacks.
+# A component that handles the execution of the player's combat abilities.
 class_name CombatComponent
-extends Node
+extends ComponentInterface
 
+# CORRECTED: The signal is now used again.
 signal damage_dealt
 
-# --- Dependencies ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 
-# This setup function is called by the owner (the Player) to provide the
-# component with the references it needs to do its job.
-func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData):
-	self.owner_node = p_owner_node
-	self.p_data = player_data
+# CORRECTED: Renamed `owner` to `p_owner` and added underscores to unused parameters.
+func setup(p_owner: Node, _config: Resource = null, _services = null) -> void:
+	self.owner_node = p_owner as CharacterBody2D
+	self.p_data = owner_node.p_data
 
-# --- Public Combat Methods ---
+func teardown() -> void:
+	owner_node = null
+	p_data = null
 
 func fire_shot():
-	# MODIFIED: Get value from the new CombatDB resource.
 	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 	
 	var shot = ObjectPool.get_instance(&"player_shots")
@@ -5270,23 +5386,22 @@ func fire_shot():
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
 	shot.activate()
 
+# POGO BUG FIX: This function is now fully responsible for the pogo action.
 func trigger_pogo(pogo_target):
-	# MODIFIED: Get values from the new CombatDB resource.
+	# First, deal damage and emit the signal if the target is an enemy.
+	if pogo_target and pogo_target.is_in_group("enemy"):
+		var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
+		if enemy_health_comp:
+			enemy_health_comp.take_damage(1, owner_node)
+			damage_dealt.emit()
+	
+	# Then, execute the bounce physics.
 	owner_node.velocity.y = -CombatDB.config.player_pogo_force
 	owner_node.position.y -= 1
 	p_data.can_dash = true
 	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
 	owner_node.change_state(owner_node.State.FALL)
-	
-	if pogo_target:
-		if pogo_target.is_in_group("enemy"):
-			var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
-			if enemy_health_comp:
-				# SOLUTION: Pass 'owner_node' (the player) as the second argument.
-				enemy_health_comp.take_damage(1, owner_node)
-				damage_dealt.emit()
-		elif pogo_target.is_in_group("enemy_projectile"):
-			ObjectPool.return_instance(pogo_target)
+
 
 =====================================
 FILE: ./src/entities/components/health_component.gd
@@ -5294,64 +5409,51 @@ FILE: ./src/entities/components/health_component.gd
 # src/entities/components/health_component.gd
 #
 # A component responsible for managing an entity's health, damage intake,
-# invincibility, and death. Made generic to work with both Player and Boss.
+# invincibility, and death. It now implements the ComponentInterface standard.
 class_name HealthComponent
-extends Node
+extends ComponentInterface
 
 signal health_changed(current_health: int, max_health: int)
 signal died
 
-# --- Dependencies ---
-var entity_data: Resource # Can be PlayerStateData or BossStateData
+var entity_data: Resource
 var owner_node: CharacterBody2D
 
-# --- Node References ---
 @onready var invincibility_timer: Timer = Timer.new()
 @onready var hit_flash_timer: Timer = Timer.new()
 
-# --- Config ---
 var max_health: int
 var invincibility_duration: float
 var knockback_speed: float
 var hazard_knockback_speed: float
-
-# --- Internal State ---
 var original_color: Color
 
 func _ready():
 	add_child(invincibility_timer)
 	add_child(hit_flash_timer)
-	
 	invincibility_timer.one_shot = true
 	hit_flash_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
-	
 	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
 
-func _exit_tree():
-	entity_data = null
-	owner_node = null
-	EventBus.off_owner(self)
-
-# MODIFIED: Changed p_config type from CombatConfig to generic Resource
-func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, p_config: Resource) -> void:
-	self.entity_data = p_entity_data
-	self.owner_node = p_owner_node
-
-	# MODIFIED: Perform a safe runtime cast
-	var cfg: CombatConfig = p_config as CombatConfig
+# CORRECTED: Renamed `owner` to `p_owner` and added underscore to `_services`.
+func setup(p_owner: Node, config: Resource = null, _services = null) -> void:
+	self.owner_node = p_owner as CharacterBody2D
+	
+	var cfg: CombatConfig = config as CombatConfig
 	if not cfg:
-		push_error("HealthComponent.setup: passed p_config is not a CombatConfig resource.")
+		push_error("HealthComponent.setup: passed config is not a CombatConfig resource.")
 		return
 
-	# We check if the owner is the player to know which config properties to use.
-	if p_owner_node.is_in_group("player"):
+	if owner_node.is_in_group("player"):
+		self.entity_data = owner_node.p_data
 		max_health = cfg.player_max_health
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
-	else: # Assumes it's a boss/enemy
+	else:
+		self.entity_data = owner_node.b_data
 		max_health = cfg.boss_health
 		invincibility_duration = cfg.boss_invincibility_duration
 		knockback_speed = 0
@@ -5362,6 +5464,10 @@ func setup(p_entity_data: Resource, p_owner_node: CharacterBody2D, p_config: Res
 		original_color = get_visual_sprite().color
 	
 	health_changed.emit(entity_data.health, max_health)
+
+func teardown() -> void:
+	entity_data = null
+	owner_node = null
 
 func take_damage(damage_amount: int, damage_source: Node = null) -> Dictionary:
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
@@ -5415,26 +5521,28 @@ FILE: ./src/entities/components/input_component.gd
 # src/entities/components/input_component.gd
 #
 # A component that centralizes all input polling and processing for the player.
-# It reads raw input and updates the PlayerStateData resource, decoupling the
-# main player node from the Input singleton.
 class_name InputComponent
-extends Node
+extends ComponentInterface
 
-# --- Dependencies ---
-# SOLUTION: Use the generic, built-in CharacterBody2D type for the owner node.
-# This breaks the circular dependency back to the 'Player' script.
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 var combat_component: CombatComponent
 
-func setup(p_owner_node: CharacterBody2D, player_data: PlayerStateData, p_combat_component: CombatComponent):
-	self.owner_node = p_owner_node
-	self.p_data = player_data
+# CORRECTED: Renamed `owner` to `p_owner` and added underscores to unused parameters.
+func setup(p_owner: Node, _config: Resource = null, _services = null, p_combat_component: CombatComponent = null) -> void:
+	self.owner_node = p_owner as CharacterBody2D
+	self.p_data = owner_node.p_data
 	self.combat_component = p_combat_component
+	
+	if not combat_component:
+		push_error("InputComponent requires a valid CombatComponent to be provided.")
 
-# This function is called by the player's _physics_process loop.
+func teardown() -> void:
+	owner_node = null
+	p_data = null
+	combat_component = null
+
 func process_physics():
-	# MODIFIED: Get value from the new CombatDB resource.
 	if Input.is_action_just_pressed("ui_jump"):
 		p_data.jump_buffer_timer = CombatDB.config.player_jump_buffer
 	
@@ -5447,7 +5555,6 @@ func process_physics():
 	
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
-			# MODIFIED: Get value from the new CombatDB resource.
 			if p_data.charge_timer >= CombatDB.config.player_charge_time:
 				combat_component.fire_shot()
 			else:
@@ -5460,10 +5567,10 @@ func process_physics():
 	if owner_node.is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and p_data.healing_charges > 0 and is_zero_approx(owner_node.velocity.x):
 		owner_node.change_state(owner_node.State.HEAL)
 
-# This function is called by the player's _unhandled_input function.
 func process_unhandled_input(event: InputEvent):
 	if is_instance_valid(owner_node) and is_instance_valid(owner_node.current_state):
 		owner_node.current_state.process_input(event)
+
 
 =====================================
 FILE: ./src/entities/player/player.tscn
@@ -5529,9 +5636,7 @@ script = ExtResource("4_input_comp")
 FILE: ./src/entities/player/player.gd
 =====================================
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine. Its responsibilities are
-# now almost entirely focused on managing the state machine and delegating
-# work to its various components.
+# This script is the "Context" for the State Machine.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -5552,15 +5657,15 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var combat_component: CombatComponent = $CombatComponent
 @onready var input_component: InputComponent = $InputComponent
 
-# --- Preloads ---
-const MoveState = preload("res://src/entities/player/states/state_move.gd")
-const FallState = preload("res://src/entities/player/states/state_fall.gd")
-const JumpState = preload("res://src/entities/player/states/state_jump.gd")
-const DashState = preload("res://src/entities/player/states/state_dash.gd")
-const WallSlideState = preload("res://src/entities/player/states/state_wall_slide.gd")
-const AttackState = preload("res://src/entities/player/states/state_attack.gd")
-const HurtState = preload("res://src/entities/player/states/state_hurt.gd")
-const HealState = preload("res://src/entities/player/states/state_heal.gd")
+# --- State Scripts (Loaded at Runtime) ---
+var MoveStateScript: Script
+var FallStateScript: Script
+var JumpStateScript: Script
+var DashStateScript: Script
+var WallSlideStateScript: Script
+var AttackStateScript: Script
+var HurtStateScript: Script
+var HealStateScript: Script
 
 # --- State Machine & Data ---
 var states: Dictionary
@@ -5572,6 +5677,26 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 func _ready():
 	p_data = PlayerStateData.new()
 	
+	MoveStateScript = load("res://src/entities/player/states/state_move.gd")
+	FallStateScript = load("res://src/entities/player/states/state_fall.gd")
+	JumpStateScript = load("res://src/entities/player/states/state_jump.gd")
+	DashStateScript = load("res://src/entities/player/states/state_dash.gd")
+	WallSlideStateScript = load("res://src/entities/player/states/state_wall_slide.gd")
+	AttackStateScript = load("res://src/entities/player/states/state_attack.gd")
+	HurtStateScript = load("res://src/entities/player/states/state_hurt.gd")
+	HealStateScript = load("res://src/entities/player/states/state_heal.gd")
+
+	states = {
+		State.MOVE: MoveStateScript.new(self, p_data),
+		State.FALL: FallStateScript.new(self, p_data),
+		State.JUMP: JumpStateScript.new(self, p_data),
+		State.DASH: DashStateScript.new(self, p_data),
+		State.WALL_SLIDE: WallSlideStateScript.new(self, p_data),
+		State.ATTACK: AttackStateScript.new(self, p_data),
+		State.HURT: HurtStateScript.new(self, p_data),
+		State.HEAL: HealStateScript.new(self, p_data),
+	}
+
 	visual_sprite.color = Palette.COLOR_PLAYER
 	
 	add_to_group("player")
@@ -5579,22 +5704,14 @@ func _ready():
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	
-	# MODIFIED: Pass the typed player config resource directly to the component.
-	health_component.setup(p_data, self, CombatDB.config)
+	health_component.setup(self, CombatDB.config)
+	combat_component.setup(self)
+	input_component.setup(self, null, null, combat_component)
+
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
-
-	combat_component.setup(self, p_data)
 	combat_component.damage_dealt.connect(_on_damage_dealt)
-	
-	input_component.setup(self, p_data, combat_component)
 
-	states = {
-		State.MOVE: MoveState.new(self, p_data), State.FALL: FallState.new(self, p_data),
-		State.JUMP: JumpState.new(self, p_data), State.DASH: DashState.new(self, p_data),
-		State.WALL_SLIDE: WallSlideState.new(self, p_data), State.ATTACK: AttackState.new(self, p_data),
-		State.HURT: HurtState.new(self, p_data), State.HEAL: HealState.new(self, p_data),
-	}
 	current_state = states[State.FALL]
 	current_state.enter()
 	
@@ -5607,7 +5724,6 @@ func _physics_process(delta):
 	move_and_slide()
 	_check_for_contact_damage()
 	if is_on_wall() and not is_on_floor():
-		# MODIFIED: Get value from the new CombatDB resource.
 		p_data.wall_coyote_timer = CombatDB.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
 
@@ -5615,12 +5731,12 @@ func _unhandled_input(event: InputEvent):
 	input_component.process_unhandled_input(event)
 	
 func _exit_tree():
-	EventBus.off_owner(self)
 	states.clear()
 	p_data = null
-	health_component = null
-	combat_component = null
-	input_component = null
+	
+	if health_component: health_component.teardown()
+	if combat_component: combat_component.teardown()
+	if input_component: input_component.teardown()
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -5641,7 +5757,6 @@ func change_state(new_state_key: State):
 	current_state.enter()
 
 func apply_horizontal_movement():
-	# MODIFIED: Get value from the new CombatDB resource.
 	velocity.x = Input.get_axis("ui_left", "ui_right") * CombatDB.config.player_speed
 	if not is_zero_approx(velocity.x):
 		p_data.facing_direction = sign(velocity.x)
@@ -5649,24 +5764,27 @@ func apply_horizontal_movement():
 func _emit_healing_charges_changed_event():
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
-	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev, self)
+	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 	healing_charges_changed.emit(p_data.healing_charges)
 
 func _check_for_contact_damage():
+	# POGO BUG FIX: If we are in a pogo attack, disable contact damage.
+	# This gives the pogo's hitbox priority and prevents the race condition.
+	if p_data.is_pogo_attack:
+		return
+
 	for i in range(get_slide_collision_count()):
 		var col = get_slide_collision(i)
 		if col:
 			var collider = col.get_collider()
 			if collider.is_in_group("enemy") or collider.is_in_group("hazard"):
 				var damage_result = health_component.take_damage(1, collider)
-				if damage_result.was_damaged:
-					velocity = damage_result.knockback_velocity
+				if damage_result["was_damaged"]:
+					velocity = damage_result["knockback_velocity"]
 					change_state(State.HURT)
 				break
 
-
 func _on_damage_dealt():
-	# MODIFIED: Get values from the new CombatDB resource.
 	if p_data.healing_charges >= CombatDB.config.player_max_healing_charges: return
 	p_data.determination_counter += 1
 	if p_data.determination_counter >= CombatDB.config.player_determination_per_charge:
@@ -5683,7 +5801,6 @@ func _on_hitbox_body_entered(body):
 	elif body.is_in_group("enemy"):
 		var enemy_health_comp = body.get_node_or_null("HealthComponent")
 		if enemy_health_comp:
-			# SOLUTION: Pass 'self' (the player) as the second argument.
 			enemy_health_comp.take_damage(1, self)
 			_on_damage_dealt()
 
@@ -5691,22 +5808,23 @@ func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		if p_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
+			ObjectPool.return_instance(area)
 		else:
 			ObjectPool.return_instance(area)
 
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		var damage_result = health_component.take_damage(1, area)
-		if damage_result.was_damaged:
-			velocity = damage_result.knockback_velocity
+		if damage_result["was_damaged"]:
+			velocity = damage_result["knockback_velocity"]
 			change_state(State.HURT)
 		ObjectPool.return_instance(area)
 
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
-		p_data.health = min(p_data.health + 1, health_component.max_health)
+		p_data.health += 1
 		p_data.healing_charges -= 1
-		health_component.health_changed.emit(p_data.health, health_component.max_health)
+		health_component.health_changed.emit(p_data.health, p_data.max_health)
 		_emit_healing_charges_changed_event()
 		change_state(State.MOVE)
 
@@ -5714,7 +5832,7 @@ func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)
+	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 
 func _on_health_component_died():
@@ -5886,17 +6004,17 @@ func _perform_wall_jump():
 	p_data.jump_buffer_timer = 0
 	p_data.coyote_timer = 0
 	p_data.wall_coyote_timer = 0
-	player.change_state(player.State.JUMP)```
+	player.change_state(player.State.JUMP)
 
----
-**File to Update:** `src/entities/player/states/state_attack.gd`
-```gdscript
+
+=====================================
+FILE: ./src/entities/player/states/state_attack.gd
+=====================================
 # src/entities/player/states/state_attack.gd
 # Handles the player's melee attack.
 extends PlayerState
 
 func enter():
-	# MODIFIED: Get values from the new CombatDB resource.
 	p_data.attack_duration_timer = CombatDB.config.player_attack_duration
 	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 	player.hitbox_shape.disabled = false
@@ -5924,7 +6042,6 @@ func exit():
 
 func process_physics(delta: float):
 	if not p_data.is_pogo_attack:
-		# MODIFIED: Get value from the new CombatDB resource.
 		var friction = CombatDB.config.player_attack_friction
 		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
@@ -5935,85 +6052,7 @@ func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = player.hitbox_shape.shape
 	query.transform = player.global_transform * player.hitbox.transform
-	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
-	query.exclude = [player]
-	
-	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
-	
-	if not results.is_empty():
-		player.combat_component.trigger_pogo(results[0].collider)
-		return true
-		
-	return false```
-
----
-**File to Update:** `src/entities/player/states/state_hurt.gd`
-```gdscript
-# src/entities/player/states/state_hurt.gd
-# Handles player knockback and invincibility.
-extends PlayerState
-
-func enter():
-	p_data.is_charging = false
-	player._cancel_heal()
-	# MODIFIED: Get value from the new CombatDB resource.
-	p_data.knockback_timer = CombatDB.config.player_knockback_duration
-
-func process_physics(delta):
-	# MODIFIED: Get value from the new CombatDB resource.
-	player.velocity.y += CombatDB.config.gravity * delta
-	
-	if p_data.knockback_timer <= 0:
-		player.change_state(player.State.FALL)
-
-
-=====================================
-FILE: ./src/entities/player/states/state_attack.gd
-=====================================
-# src/entities/player/states/state_attack.gd
-# Handles the player's melee attack.
-extends PlayerState
-
-func enter():
-	# MODIFIED: Get values from the new CombatDB resource.
-	p_data.attack_duration_timer = CombatDB.config.player.combat.attack_duration
-	p_data.attack_cooldown_timer = CombatDB.config.player.combat.attack_cooldown
-	player.hitbox_shape.disabled = false
-	p_data.is_pogo_attack = false
-	
-	if Input.is_action_pressed("ui_down"):
-		p_data.is_pogo_attack = true
-		player.hitbox.position = Vector2(0, 60)
-		
-		if player.is_on_floor():
-			player.combat_component.trigger_pogo(null)
-			return
-		
-		if _check_for_immediate_pogo():
-			return
-			
-	elif Input.is_action_pressed("ui_up"):
-		player.hitbox.position = Vector2(0, -60)
-	else:
-		player.hitbox.position = Vector2(p_data.facing_direction * 60, 0)
-
-func exit():
-	player.hitbox_shape.call_deferred("set", "disabled", true)
-	p_data.is_pogo_attack = false
-
-func process_physics(delta: float):
-	if not p_data.is_pogo_attack:
-		# MODIFIED: Get value from the new CombatDB resource.
-		var friction = CombatDB.config.player.combat.attack_friction
-		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
-	
-	if p_data.attack_duration_timer <= 0:
-		player.change_state(player.State.FALL)
-
-func _check_for_immediate_pogo() -> bool:
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = player.hitbox_shape.shape
-	query.transform = player.global_transform * player.hitbox.transform
+	# CORRECTED: Fixed the typo from "HAZ-ARD" to "HAZARD"
 	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [player]
 	
@@ -6036,12 +6075,12 @@ extends PlayerState
 func enter():
 	p_data.is_charging = false
 	player._cancel_heal()
-	# MODIFIED: Get value from the new CombatDB resource.
-	p_data.knockback_timer = CombatDB.config.player.combat.knockback_duration
+	# CORRECTED: Use the flat config path: "player_knockback_duration"
+	p_data.knockback_timer = CombatDB.config.player_knockback_duration
 
 func process_physics(delta):
-	# MODIFIED: Get value from the new CombatDB resource.
-	player.velocity.y += CombatDB.config.general.gravity * delta
+	# CORRECTED: Use the flat config path: "gravity"
+	player.velocity.y += CombatDB.config.gravity * delta
 	
 	if p_data.knockback_timer <= 0:
 		player.change_state(player.State.FALL)
@@ -6136,15 +6175,24 @@ FILE: ./src/entities/player/data/player_state_data.gd
 =====================================
 # src/entities/player/data/player_state_data.gd
 #
-# A Resource that holds all shared state data for the Player. This allows
-# components and states to operate on the data without being tightly coupled
-# to the Player node itself.
+# A Resource that holds all shared state data for the Player. It now includes
+# validation logic in its setters to ensure data integrity.
 class_name PlayerStateData
 extends Resource
 
 # --- Health & Combat ---
-var health: int = 5
-var healing_charges: int = 0
+var max_health: int = 5
+var max_healing_charges: int = 1
+
+# By using setters, we can ensure these values are always valid.
+var health: int = 5:
+	set(value):
+		health = clamp(value, 0, max_health)
+
+var healing_charges: int = 0:
+	set(value):
+		healing_charges = clamp(value, 0, max_healing_charges)
+
 var determination_counter: int = 0
 var is_invincible: bool = false
 var is_dash_invincible: bool = false

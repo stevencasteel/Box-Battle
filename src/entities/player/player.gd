@@ -1,7 +1,5 @@
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine. Its responsibilities are
-# now almost entirely focused on managing the state machine and delegating
-# work to its various components.
+# This script is the "Context" for the State Machine.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -71,7 +69,7 @@ func _ready():
 	
 	health_component.setup(self, CombatDB.config)
 	combat_component.setup(self)
-	input_component.setup(self, null, null, combat_component) # Pass combat_component as the extra arg
+	input_component.setup(self, null, null, combat_component)
 
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
@@ -96,7 +94,6 @@ func _unhandled_input(event: InputEvent):
 	input_component.process_unhandled_input(event)
 	
 func _exit_tree():
-	EventBus.off_owner(self)
 	states.clear()
 	p_data = null
 	
@@ -130,10 +127,15 @@ func apply_horizontal_movement():
 func _emit_healing_charges_changed_event():
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
-	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev, self)
+	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 	healing_charges_changed.emit(p_data.healing_charges)
 
 func _check_for_contact_damage():
+	# POGO BUG FIX: If we are in a pogo attack, disable contact damage.
+	# This gives the pogo's hitbox priority and prevents the race condition.
+	if p_data.is_pogo_attack:
+		return
+
 	for i in range(get_slide_collision_count()):
 		var col = get_slide_collision(i)
 		if col:
@@ -169,6 +171,7 @@ func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		if p_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
+			ObjectPool.return_instance(area)
 		else:
 			ObjectPool.return_instance(area)
 
@@ -182,8 +185,6 @@ func _on_hurtbox_area_entered(area):
 
 func _on_healing_timer_timeout():
 	if states.find_key(current_state) == State.HEAL:
-		# SIMPLIFIED: We no longer need to clamp the health value here.
-		# The PlayerStateData resource's setter handles that automatically.
 		p_data.health += 1
 		p_data.healing_charges -= 1
 		health_component.health_changed.emit(p_data.health, p_data.max_health)
@@ -194,7 +195,7 @@ func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev, self)
+	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 
 func _on_health_component_died():

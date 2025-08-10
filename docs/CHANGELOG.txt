@@ -17,7 +17,7 @@
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
 ║      ░ ■ Implemented state validation in `PlayerStateData` and `BossStateData`║
-║      ░   using property setters. This makes the data resources self-validating║
+║      ░   using property setters. This makes the data resources self-validating
 ║      ░   and prevents invalid states (e.g., health > max_health).            ║
 ║      ░ ■ Created a formal `ComponentInterface` to act as a standardized      ║
 ║      ░   blueprint for all entity components, enforcing a consistent API.    ║
@@ -39,6 +39,9 @@
 ║      ░ ■ Reorganized the monolithic `src` directory into purpose-driven      ║
 ║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
 ║      ░   improve project modularity and scalability.                         ║
+║      ░ ■ Simplified the global `EventBus` by removing unused features like   ║
+║      ░   the priority system and `emit_async`, resulting in a leaner         ║
+║      ░   implementation.                                                     ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
 ║      ░ ■ Refactored `HealthComponent` to initialize the new self-validating  ║
@@ -54,6 +57,10 @@
 ║      ░   files at startup, preventing runtime "file not found" errors.       ║
 ║      ░ ■ Added validation to `Settings.gd` property setters to clamp audio   ║
 ║      ░   volume values, making the system more robust against invalid data.  ║
+║      ░ ■ Cleaned up all remaining GDScript static analysis warnings          ║
+║      ░   (`UNUSED_PARAMETER`, `SHADOWED_VARIABLE`) for a clean build.        ║
+║      ░ ■ Removed dead/broken event definitions from `EventCatalog` and       ║
+║      ░   removed the corresponding broken logic from `EncounterDirector`.    ║
 ║                                                                              ║
 ║   █  Added                                                                   ║
 ║      ░ ■ Added placeholder `README.md` and `DEPRECATION.md` files to `core`, ║
@@ -89,5 +96,7 @@
 ║      ░   were causing crashes during gameplay.                               ║
 ║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
 ║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
+║      ░ ■ Fixed a critical race condition where player contact damage could   ║
+║      ░   interrupt a pogo attack, preventing the pogo from dealing damage.   ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
