@@ -33,8 +33,8 @@ Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e600
 Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
 Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
 CoreAudio: detected 2 channels
-CoreAudio: output sampling rate: 44100 Hz
-CoreAudio: output audio buffer frames: 512 calculated latency: 11ms
+CoreAudio: output sampling rate: 48000 Hz
+CoreAudio: output audio buffer frames: 512 calculated latency: 10ms
 
 TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
 CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
@@ -42,71 +42,34 @@ Loading resource: res://default_bus_layout.tres
 CORE API HASH: 4052744068
 EDITOR API HASH: 910296392
 Loading resource: res://src/core/settings.gd
+Failed loading resource: res://src/core/settings.gd
 Loading resource: res://src/core/audio_manager.gd
+Failed loading resource: res://src/core/audio_manager.gd
 Loading resource: res://src/core/cursor_manager.gd
-Loading resource: res://assets/sprites/ui/cursors/cursor_default.png
-Loading resource: res://.godot/imported/cursor_default.png-adc7f5ed4336e28008b129c5a66cab2e.ctex
-Loading resource: res://assets/sprites/ui/cursors/cursor_pointer.png
-Loading resource: res://.godot/imported/cursor_pointer.png-90e307ad4e06d49b3b74ef9b44e078f4.ctex
+Failed loading resource: res://src/core/cursor_manager.gd
+Loading resource: res://src/core/constants.gd
+Failed loading resource: res://src/core/constants.gd
+Loading resource: res://src/core/asset_paths.gd
+Failed loading resource: res://src/core/asset_paths.gd
 Loading resource: res://src/ui/global_hud/global_hud.tscn
 Loading resource: res://src/ui/global_hud/global_hud.gd
-Loading resource: res://assets/sprites/ui/icons/icon-sound-on.png
-Loading resource: res://.godot/imported/icon-sound-on.png-e846c5d97e3d706214419caf8e828d71.ctex
-Loading resource: res://assets/sprites/ui/icons/icon-sound-off.png
-Loading resource: res://.godot/imported/icon-sound-off.png-6ce140963307e6f579be834adb53f1a0.ctex
 Loading resource: res://src/core/game_manager.gd
+Failed loading resource: res://src/core/game_manager.gd
 Loading resource: res://src/core/arena_builder.gd
+Failed loading resource: res://src/core/arena_builder.gd
+Loading resource: res://src/core/event_bus.gd
+Loading resource: res://src/core/sequencer.gd
 Loading resource: res://src/core/Config.gd
+Failed loading resource: res://src/core/Config.gd
+Loading resource: res://src/core/palette.gd
+Failed loading resource: res://src/core/palette.gd
 Loading resource: res://src/core/object_pool.gd
-Loading resource: res://src/projectiles/player_shot.tscn
-Loading resource: res://src/projectiles/player_shot.gd
-Loading resource: res://src/projectiles/boss_shot.tscn
-Loading resource: res://src/projectiles/boss_shot.gd
+Failed loading resource: res://src/core/object_pool.gd
 Loading resource: res://src/core/physics_layers.gd
+Failed loading resource: res://src/core/physics_layers.gd
 Loaded system CA certificates
 Loading resource: res://src/scenes/main/main.tscn
 Loading resource: res://src/scenes/main/main.gd
-Loading resource: res://src/ui/screens/title_screen/title_screen.tscn
-Loading resource: res://src/ui/screens/title_screen/title_screen.gd
-Loading resource: res://assets/audio/music/title-screen-loop.mp3
-Loading resource: res://.godot/imported/title-screen-loop.mp3-7ec904333b11a47509751ae22a703854.mp3str
-Loading resource: res://assets/sprites/ui/title/box_battle_title.png
-Loading resource: res://.godot/imported/box_battle_title.png-b9353d8af8deadfd04d4db0e868561f1.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-item-start.png
-Loading resource: res://.godot/imported/menu-item-start.png-32e538bb682d9a1b639fc2dc41f90bed.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-item-options.png
-Loading resource: res://.godot/imported/menu-item-options.png-0a5f7fa3c76e43a264f366e36bedb5f1.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-cursor.png
-Loading resource: res://.godot/imported/menu-cursor.png-3bbc1015f1afec795ab061c5256925a7.ctex
-Loading resource: res://src/scenes/loading/loading_screen.tscn
-Loading resource: res://src/scenes/loading/loading_screen.gd
-Loading resource: res://assets/audio/sfx/start-chime.mp3
-Loading resource: res://.godot/imported/start-chime.mp3-d648111bc9ecb7811859947d2e9fa808.mp3str
-Starting shader pre-warming...
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/entities/player/player.gd
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/entities/boss/base_boss.gd
-Shader pre-warming complete.
-Loading resource: res://src/arenas/arena_00_encounter.gd
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/arenas/arena_00_layout.gd
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/ui/game_hud/game_hud.tscn
-Loading resource: res://src/ui/game_hud/game_hud.gd
-Loading resource: res://src/scenes/game/game.tscn
-Loading resource: res://src/scenes/game/game.gd
-Boss chose attack: SINGLE_SHOT
-Boss chose attack: SINGLE_SHOT
-Boss chose attack: VOLLEY_SHOT
-Boss chose attack: SINGLE_SHOT
-Game Manager: Player death detected. Initiating Game Over.
-Loading resource: res://src/ui/screens/game_over_screen/game_over_screen.tscn
-Loading resource: res://src/ui/screens/game_over_screen/game_over_screen.gd
-Loading resource: res://assets/sprites/ui/menu/menu-item-back.png
-Loading resource: res://.godot/imported/menu-item-back.png-fd5ba03a12e4489abdeb0f933c700e10.ctex
-Loading resource: res://assets/sprites/ui/menu/menu-cursor.png
-Loading resource: res://.godot/imported/menu-cursor.png-3bbc1015f1afec795ab061c5256925a7.ctex
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
 XR: Removed interface "OpenXR"

@@ -15,6 +15,13 @@
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   (All new changes will be logged here.)                                     ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Reorganized the monolithic `src/core` directory into purpose-driven ║
+║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
+║      ░   improve project modularity and scalability.                         ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
+║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

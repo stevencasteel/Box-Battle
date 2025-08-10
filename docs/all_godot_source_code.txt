@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug  9 19:11:15 CDT 2025
+Generated on: Sat Aug  9 20:54:20 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -19,7 +19,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── BRAINSTORM.txt
 │   ├── BUGS.txt
 │   ├── CHANGELOG.txt
-│   ├── CHANGELOG_archive_pre-0.3.0.txt
+│   ├── CHANGELOG_archive_pre-0.4.0.txt
 │   ├── DESIGN.txt
 │   ├── DOCS_PROTOCOL.txt
 │   ├── LICENSE
@@ -34,39 +34,43 @@ PROJECT DIRECTORY STRUCTURE:
 ├── progess
 │   └── progress_001-1.jpg
 ├── project.godot
+├── reorganize_core.sh
 └── src
     ├── arenas
     │   ├── arena_00_encounter.gd
     │   └── arena_00_layout.gd
     ├── core
-    │   ├── Config.gd
-    │   ├── arena_builder.gd
-    │   ├── asset_paths.gd
-    │   ├── audio_manager.gd
-    │   ├── builders
+    │   ├── building
+    │   │   ├── arena_builder.gd
     │   │   ├── encounter_director.gd
     │   │   ├── level_build_data.gd
     │   │   ├── level_parser.gd
     │   │   └── terrain_builder.gd
-    │   ├── constants.gd
-    │   ├── cursor_manager.gd
+    │   ├── data
+    │   │   ├── Config.gd
+    │   │   └── settings.gd
     │   ├── event_bus.gd
     │   ├── event_catalog.gd
     │   ├── events
     │   │   ├── boss_health_changed_event.gd
     │   │   ├── player_healing_charges_changed_event.gd
     │   │   └── player_health_changed_event.gd
-    │   ├── game_manager.gd
-    │   ├── object_pool.gd
-    │   ├── palette.gd
-    │   ├── physics_layers.gd
     │   ├── sequencer
     │   │   ├── sequence_step.gd
     │   │   └── steps
     │   │       ├── emit_step.gd
     │   │       └── wait_step.gd
     │   ├── sequencer.gd
-    │   └── settings.gd
+    │   ├── systems
+    │   │   ├── audio_manager.gd
+    │   │   ├── cursor_manager.gd
+    │   │   ├── game_manager.gd
+    │   │   └── object_pool.gd
+    │   └── util
+    │       ├── asset_paths.gd
+    │       ├── constants.gd
+    │       ├── palette.gd
+    │       └── physics_layers.gd
     ├── entities
     │   ├── boss
     │   │   ├── base_boss.gd
@@ -153,119 +157,8 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-39 directories, 106 files
+42 directories, 107 files
 
-
-=====================================
-FILE: ./docs/CHANGELOG_archive_pre-0.3.0.txt
-=====================================
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                                                                              ╚═╗
-║   ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ███████╗██╗      ██████╗  ██████╗  ║
-║  ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔════╝██║     ██╔═══██╗██╔════╝  ║
-║  ██║     ███████║███████║██╔██╗ ██║██║  ███╗█████╗  ██║     ██║   ██║██║  ███╗ ║
-║  ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██║     ██║   ██║██║   ██║ ║
-║  ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝███████╗███████╗╚██████╔╝╚██████╔╝ ║
-║   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚═════╝  ║
-║                                                                              ╔═╝
-║                  A log of all notable changes to the project.                ║
-║                                                                              ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██             [0.3.0] - THE VISUAL FOUNDATION - 2025-08-08             ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This version completes the core architectural refactor and establishes the ║
-║   foundational visual and data-driven systems for the entire project.        ║
-║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Implemented the `Palette.gd` autoload singleton, which defines a    ║
-║      ░   project-wide 32-step grayscale value scale.                         ║
-║      ░ ■ Added semantic color constants (e.g., `COLOR_PLAYER`) to establish a║
-║      ░   clear visual hierarchy for all game elements.                       ║
-║      ░ ■ Implemented the `Config.gd` autoload for loading all `.json` files. ║
-║      ░ ■ Created `combat_config.json` to house all gameplay-related tuning.  ║
-║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event.   ║
-║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog`.║
-║      ░ ■ Implemented a professional-grade, singleton-based Event Bus.        ║
-║      ░ ■ Added an `EventCatalog` and typed `Resource`-based event payloads.  ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Refactored Player, Boss, Projectiles, and TerrainBuilder to source  ║
-║      ░   all their colors from the new `Palette` singleton.                  ║
-║      ░ ■ The game world is now visually rendered with a consistent value scale.║
-║      ░ ■ Refactored the entire codebase to be data-driven via `Config.gd`.   ║
-║      ░ ■ The `Constants.gd` singleton has been streamlined.                  ║
-║      ░ ■ The `EncounterDirector` now uses the `Sequencer` for boss intros.   ║
-║      ░ ■ The main `game.gd` scene now handles the global pause state.        ║
-║      ░ ■ Refactored the `GameHUD` to be fully driven by the Event Bus.       ║
-║      ░ ■ Refactored the ArenaBuilder to strictly adhere to SRP.              ║
-║      ░ ■ Refactored the BaseBoss and Player nodes to use the State Pattern.  ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Resolved a cascade of parse errors in `Palette.gd` by using the     ║
-║      ░   `Color("#hex")` constructor, which is a valid constant expression.  ║
-║      ░ ■ Corrected `Palette.gd` to extend `Node` so it can be autoloaded.    ║
-║      ░ ■ Renamed `Config.get()` to `Config.get_value()` to resolve a conflict.║
-║      ░ ■ Resolved `SHADOWED_GLOBAL_IDENTIFIER` warnings in `base_boss.gd`.   ║
-║      ░ ■ Resolved `Identifier not declared` errors in `player.gd`.           ║
-║      ░ ■ Resolved bug where Player hit flash timer would not reset.          ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This version represents a foundational overhaul of the project's technical ║
-║   architecture. The focus was on implementing professional design patterns   ║
-║   (SOLID, State Pattern) and eliminating performance issues to prepare for   ║
-║   future content and feature development.                                    ║
-║                                                                              ║
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system ║
-║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
-║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
-║      ░   prevent any "first-appearance" hitches for entities.                ║
-║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
-║      ░   the official documentation.                                         ║
-║                                                                              ║
-║   █  Bug Fixes                                                               ║
-║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
-║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
-║      ░ ■ Resolved a physics crash on entity death by using `call_deferred`   ║
-║      ░   for scene transitions.                                              ║
-║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
-║                                                                              ║
-║   █  Documentation                                                           ║
-║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
-║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
-║      ░   design philosophies, patterns, and planned features.                ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                       [0.1.0] - 2025-08-05                           ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This version marks the initial architectural overhaul, transforming the    ║
-║   project from a functional prototype into a robust and scalable foundation. ║
-║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Player Character with rich moveset (dash, wall-jump, etc.).         ║
-║      ░ ■ Combat System with melee, charged shot, and pogo mechanics.         ║
-║      ░ ■ "Determination" healing system & Data-Driven Arena system.          ║
-║      ░ ■ Basic Boss entity framework & Reusable Menu System.                 ║
-║      ░ ■ Full suite of initial project documentation (.txt files).           ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Complete Architectural Refactor to use professional design patterns.║
-║      ░ ■ Player Logic: Migrated from boolean flags to a formal FSM.          ║
-║      ░ ■ Global Singletons: Centralized constants and asset paths.           ║
-║      ░ ■ File Organization: Restructured project directories.                ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Restored player contact damage from enemies and hazards.            ║
-║      ░ ■ Fully restored the pogo mechanic.                                   ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
 FILE: ./docs/TODO.txt
@@ -703,6 +596,183 @@ FILE: ./docs/BUGS.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 =====================================
+FILE: ./docs/CHANGELOG_archive_pre-0.4.0.txt
+=====================================
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ╚═╗
+║   ██████╗██╗  ██╗ █████╗ ███╗   ██╗ ██████╗ ███████╗██╗      ██████╗  ██████╗  ║
+║  ██╔════╝██║  ██║██╔══██╗████╗  ██║██╔════╝ ██╔════╝██║     ██╔═══██╗██╔════╝  ║
+║  ██║     ███████║███████║██╔██╗ ██║██║  ███╗█████╗  ██║     ██║   ██║██║  ███╗ ║
+║  ██║     ██╔══██║██╔══██║██║╚██╗██║██║   ██║██╔══╝  ██║     ██║   ██║██║   ██║ ║
+║  ╚██████╗██║  ██║██║  ██║██║ ╚████║╚██████╔╝███████╗███████╗╚██████╔╝╚██████╔╝ ║
+║   ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝╚══════╝ ╚═════╝  ╚═════╝  ║
+║                                                                              ╔═╝
+║                  A log of all notable changes to the project.                ║
+║                                                                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██            [0.4.0] - THE COMPONENT REFACTOR - 2025-08-09             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version completes the migration to a fully component-based entity     ║
+║   architecture, enhances performance, and resolves all known bugs for a      ║
+║   stable, production-ready foundation.                                       ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `player.gd` script into a component-based ║
+║      ░   architecture, adhering to the Single Responsibility Principle.      ║
+║      ░ ■ Created a `HealthComponent` to manage all health, damage, and       ║
+║      ░   invincibility logic, making it reusable for other entities.         ║
+║      ░ ■ Created a `CombatComponent` to centralize player attack logic.      ║
+║      ░ ■ Created an `InputComponent` to decouple input polling from the player.║
+║      ░ ■ Created a `PlayerStateData` resource to act as a central data       ║
+║      ░   container, decoupling state from the Player node itself.            ║
+║      ░ ■ Refactored `ArenaBuilder` to be data-driven, reading the layout file║
+║      ░   path from a constant in the encounter script, removing brittle      ║
+║      ░   string manipulation logic.                                          ║
+║      ░ ■ Decoupled `GlobalHUD` from specific menu scenes by making its       ║
+║      ░   visibility fully event-driven (`MENU_OPENED`, `MENU_CLOSED`),       ║
+║      ░   resolving an Open/Closed Principle violation.                       ║
+║      ░ ■ Refactored the monolithic `base_boss.gd` script into a component-   ║
+║      ░   based architecture, adhering to SRP and mirroring the Player's design.║
+║      ░ ■ Created `BossStateData.gd` resource to act as a central data        ║
+║      ░   container, decoupling the boss's state from the node itself.        ║
+║                                                                              ║
+║   █  Performance                                                             ║
+║      ░ ■ Implemented a robust, generic `ObjectPool` singleton to manage      ║
+║      ░   reusable nodes like projectiles.                                    ║
+║      ░ ■ Refactored Player and Boss to get/return projectiles from the pool, ║
+║      ░   eliminating runtime instantiation to prevent GC spikes and stutter. ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored `Sequencer.gd` to use type-safe `SequenceStep` resources ║
+║      ░   instead of ad-hoc dictionaries, preventing runtime errors and       ║
+║      ░   improving editor autocompletion.                                    ║
+║      ░ ■ Refactored `AudioManager.gd` and `GlobalHUD` to be event-driven,    ║
+║      ░   subscribing to a new `audio_settings_changed` signal instead of     ║
+║      ░   polling for changes every frame.                                    ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a complex circular dependency parse error between the Player║
+║      ░   and its new components by fully decoupling them with signals.       ║
+║      ░ ■ Fixed a bug where the boss was immune to rapid attacks by giving it ║
+║      ░   a unique, shorter invincibility duration in the project config.     ║
+║      ░ ■ Fixed a bug where player's body dealt rapid contact damage to the boss.║
+║      ░ ■ Unified all damage-dealing logic (melee, pogo, projectile, contact) ║
+║      ░   to consistently and correctly interact with the target's HealthComponent.║
+║      ░ ■ Fixed a visual bug where the Boss's hit-flash color would not reset ║
+║      ░   correctly by ensuring the correct initialization order in `base_boss.gd`.║
+║      ░ ■ Resolved an audio stream memory leak on exit by implementing a      ║
+║      ░   robust cleanup handler for `NOTIFICATION_WM_CLOSE_REQUEST`.         ║
+║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
+║      ░   unnecessary `preload` calls for scripts with a `class_name`.        ║
+║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║
+║      ░   use a signal-based, non-re-parenting architecture that is immune to ║
+║      ░   race conditions.                                                    ║
+║      ░ ■ Resolved all memory leaks by implementing proper cleanup in         ║
+║      ░   `_exit_tree` for all state machines, components, and singletons.    ║
+║      ░ ■ Resolved a leak caused by creating orphaned nodes in `ArenaBuilder`.║
+║      ░ ■ Corrected `Config.gd` to ensure deterministic config loading.       ║
+║      ░ ■ Fixed a critical crash in the `EventBus` related to polymorphism.   ║
+║      ░ ■ Resolved all remaining static analysis warnings for a clean build.  ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██             [0.3.0] - THE VISUAL FOUNDATION - 2025-08-08             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version completes the core architectural refactor and establishes the ║
+║   foundational visual and data-driven systems for the entire project.        ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented the `Palette.gd` autoload singleton, which defines a    ║
+║      ░   project-wide 32-step grayscale value scale.                         ║
+║      ░ ■ Added semantic color constants (e.g., `COLOR_PLAYER`) to establish a║
+║      ░   clear visual hierarchy for all game elements.                       ║
+║      ░ ■ Implemented the `Config.gd` autoload for loading all `.json` files. ║
+║      ░ ■ Created `combat_config.json` to house all gameplay-related tuning.  ║
+║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event.   ║
+║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog`.║
+║      ░ ■ Implemented a professional-grade, singleton-based Event Bus.        ║
+║      ░ ■ Added an `EventCatalog` and typed `Resource`-based event payloads.  ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored Player, Boss, Projectiles, and TerrainBuilder to source  ║
+║      ░   all their colors from the new `Palette` singleton.                  ║
+║      ░ ■ The game world is now visually rendered with a consistent value scale.║
+║      ░ ■ Refactored the entire codebase to be data-driven via `Config.gd`.   ║
+║      ░ ■ The `Constants.gd` singleton has been streamlined.                  ║
+║      ░ ■ The `EncounterDirector` now uses the `Sequencer` for boss intros.   ║
+║      ░ ■ The main `game.gd` scene now handles the global pause state.        ║
+║      ░ ■ Refactored the `GameHUD` to be fully driven by the Event Bus.       ║
+║      ░ ■ Refactored the ArenaBuilder to strictly adhere to SRP.              ║
+║      ░ ■ Refactored the BaseBoss and Player nodes to use the State Pattern.  ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a cascade of parse errors in `Palette.gd` by using the     ║
+║      ░   `Color("#hex")` constructor, which is a valid constant expression.  ║
+║      ░ ■ Corrected `Palette.gd` to extend `Node` so it can be autoloaded.    ║
+║      ░ ■ Renamed `Config.get()` to `Config.get_value()` to resolve a conflict.║
+║      ░ ■ Resolved `SHADOWED_GLOBAL_IDENTIFIER` warnings in `base_boss.gd`.   ║
+║      ░ ■ Resolved `Identifier not declared` errors in `player.gd`.           ║
+║      ░ ■ Resolved bug where Player hit flash timer would not reset.          ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version represents a foundational overhaul of the project's technical ║
+║   architecture. The focus was on implementing professional design patterns   ║
+║   (SOLID, State Pattern) and eliminating performance issues to prepare for   ║
+║   future content and feature development.                                    ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system ║
+║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
+║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
+║      ░   prevent any "first-appearance" hitches for entities.                ║
+║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
+║      ░   the official documentation.                                         ║
+║                                                                              ║
+║   █  Bug Fixes                                                               ║
+║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
+║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
+║      ░ ■ Resolved a physics crash on entity death by using `call_deferred`   ║
+║      ░   for scene transitions.                                              ║
+║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
+║                                                                              ║
+║   █  Documentation                                                           ║
+║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
+║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
+║      ░   design philosophies, patterns, and planned features.                ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                       [0.1.0] - 2025-08-05                           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version marks the initial architectural overhaul, transforming the    ║
+║   project from a functional prototype into a robust and scalable foundation. ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Player Character with rich moveset (dash, wall-jump, etc.).         ║
+║      ░ ■ Combat System with melee, charged shot, and pogo mechanics.         ║
+║      ░ ■ "Determination" healing system & Data-Driven Arena system.          ║
+║      ░ ■ Basic Boss entity framework & Reusable Menu System.                 ║
+║      ░ ■ Full suite of initial project documentation (.txt files).           ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Complete Architectural Refactor to use professional design patterns.║
+║      ░ ■ Player Logic: Migrated from boolean flags to a formal FSM.          ║
+║      ░ ■ Global Singletons: Centralized constants and asset paths.           ║
+║      ░ ■ File Organization: Restructured project directories.                ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Restored player contact damage from enemies and hazards.            ║
+║      ░ ■ Fully restored the pogo mechanic.                                   ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+=====================================
 FILE: ./docs/DOCS_PROTOCOL.txt
 =====================================
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -975,59 +1045,7 @@ FILE: ./docs/CHANGELOG.txt
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Refactored `ArenaBuilder` to be data-driven, reading the layout file║
-║      ░   path from a constant in the encounter script, removing brittle      ║
-║      ░   string manipulation logic.                                          ║
-║      ░ ■ Decoupled `GlobalHUD` from specific menu scenes by making its       ║
-║      ░   visibility fully event-driven (`MENU_OPENED`, `MENU_CLOSED`),       ║
-║      ░   resolving an Open/Closed Principle violation.                       ║
-║      ░ ■ Extracted player combat logic (firing shots, pogo attacks) from     ║
-║      ░   `player.gd` into a new, focused `CombatComponent`, further applying ║
-║      ░   the Single Responsibility Principle.                                ║
-║      ░ ■ Refactored the monolithic `base_boss.gd` script into a component-   ║
-║      ░   based architecture, adhering to SRP and mirroring the Player's design.║
-║      ░ ■ Created `BossStateData.gd` resource to act as a central data        ║
-║      ░   container, decoupling the boss's state from the node itself.        ║
-║      ░ ■ Generalized the `HealthComponent` to be fully reusable, now managing║
-║      ░   health, damage, and invincibility logic for any entity.             ║
-║      ░ ■ Refactored the monolithic `player.gd` script into a component-based ║
-║      ░   architecture, adhering to the Single Responsibility Principle.      ║
-║      ░ ■ Created a `HealthComponent` to manage all health, damage, and       ║
-║      ░   invincibility logic, making it reusable for other entities.         ║
-║      ░ ■ Created a `PlayerStateData` resource to act as a central data       ║
-║      ░   container, decoupling state from the Player node itself.            ║
-║                                                                              ║
-║   █  Performance                                                             ║
-║      ░ ■ Implemented a robust, generic `ObjectPool` singleton to manage      ║
-║      ░   reusable nodes like projectiles.                                    ║
-║      ░ ■ Refactored Player and Boss to get/return projectiles from the pool, ║
-║      ░   eliminating runtime instantiation to prevent GC spikes and stutter. ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Refactored `Sequencer.gd` to use type-safe `SequenceStep` resources ║
-║      ░   instead of ad-hoc dictionaries, preventing runtime errors and       ║
-║      ░   improving editor autocompletion.                                    ║
-║      ░ ■ Refactored `AudioManager.gd` and `GlobalHUD` to be event-driven,    ║
-║      ░   subscribing to a new `audio_settings_changed` signal instead of     ║
-║      ░   polling for changes every frame.                                    ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Fixed a visual bug where the Boss's hit-flash color would not reset ║
-║      ░   correctly by ensuring the correct initialization order in `base_boss.gd`.║
-║      ░ ■ Resolved an audio stream memory leak on exit by implementing a      ║
-║      ░   robust cleanup handler for `NOTIFICATION_WM_CLOSE_REQUEST`.         ║
-║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
-║      ░   unnecessary `preload` calls for scripts with a `class_name`.        ║
-║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║
-║      ░   use a signal-based, non-re-parenting architecture that is immune to ║
-║      ░   race conditions.                                                    ║
-║      ░ ■ Resolved all memory leaks by implementing proper cleanup in         ║
-║      ░   `_exit_tree` for all state machines, components, and singletons.    ║
-║      ░ ■ Resolved a leak caused by creating orphaned nodes in `ArenaBuilder`.║
-║      ░ ■ Corrected `Config.gd` to ensure deterministic config loading.       ║
-║      ░ ■ Fixed a critical crash in the `EventBus` related to polymorphism.   ║
-║      ░ ■ Resolved all remaining static analysis warnings for a clean build.  ║
+║   (All new changes will be logged here.)                                     ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -1522,6 +1540,7 @@ ui_dash={
 renderer/rendering_method="mobile"
 environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 
+
 =====================================
 FILE: ./data/combat_config.json
 =====================================
@@ -1569,7 +1588,8 @@ FILE: ./data/combat_config.json
     "boss": {
         "stats": {
             "health": 30,
-            "patrol_speed": 100.0
+            "patrol_speed": 100.0,
+            "invincibility_duration": 0.1
         }
     }
 }
@@ -3036,59 +3056,6 @@ func _ready():
 
 
 =====================================
-FILE: ./src/core/settings.gd
-=====================================
-# src/core/settings.gd
-#
-# This script is a "Singleton" (also known as an "Autoload" in Godot).
-# It now emits a signal whenever an audio setting is changed, allowing other
-# systems like the AudioManager to react efficiently without polling.
-extends Node
-
-# NEW: A signal that is emitted whenever any audio setting is changed.
-signal audio_settings_changed
-
-# --- Audio Settings ---
-# The variables have been converted to properties with setters. This allows us
-# to run code (emitting the signal) whenever their values are changed.
-
-@export var master_volume: float = 1.0:
-	set(value):
-		if not is_equal_approx(master_volume, value):
-			master_volume = value
-			audio_settings_changed.emit()
-
-@export var music_volume: float = 1.0:
-	set(value):
-		if not is_equal_approx(music_volume, value):
-			music_volume = value
-			audio_settings_changed.emit()
-
-@export var sfx_volume: float = 1.0:
-	set(value):
-		if not is_equal_approx(sfx_volume, value):
-			sfx_volume = value
-			audio_settings_changed.emit()
-
-@export var master_muted: bool = false:
-	set(value):
-		if master_muted != value:
-			master_muted = value
-			audio_settings_changed.emit()
-
-@export var music_muted: bool = true:
-	set(value):
-		if music_muted != value:
-			music_muted = value
-			audio_settings_changed.emit()
-
-@export var sfx_muted: bool = false:
-	set(value):
-		if sfx_muted != value:
-			sfx_muted = value
-			audio_settings_changed.emit()
-
-=====================================
 FILE: ./src/core/event_bus.gd
 =====================================
 # src/core/event_bus.gd
@@ -3221,346 +3188,162 @@ func dump_subscribers(event_name: String = "") -> Dictionary:
 
 
 =====================================
-FILE: ./src/core/builders/level_parser.gd
+FILE: ./src/core/util/physics_layers.gd
 =====================================
-# src/core/builders/level_parser.gd
+# src/core/physics_layers.gd
 #
-# Responsibility: To parse the raw data from layout and encounter scripts and
-# organize it into a structured LevelBuildData object. This class does not
-# create any nodes; it only processes data.
-class_name LevelParser
-extends RefCounted
-
-# The single public method of this class. It takes the arena script resources
-# and returns a complete LevelBuildData resource.
-#
-# CORRECTED: The function signature now correctly expects Script resources,
-# not instantiated Objects.
-func parse_level_data(layout_script: Script, encounter_script: Script) -> LevelBuildData:
-	var data = LevelBuildData.new()
-	# We can still store the script resource for later use.
-	data.encounter_script_object = encounter_script
-
-	# Constants can be accessed directly from the script resource.
-	for y in range(layout_script.TERRAIN_DATA.size()):
-		var row_string: String = layout_script.TERRAIN_DATA[y]
-		for x in range(row_string.length()):
-			var tile_char: String = row_string[x]
-			var tile_pos := Vector2(x * Constants.TILE_SIZE, y * Constants.TILE_SIZE) + Vector2(Constants.TILE_SIZE / 2.0, Constants.TILE_SIZE / 2.0)
-
-			match tile_char:
-				'#':
-					data.terrain_tiles.append(tile_pos)
-				'-':
-					data.oneway_platforms.append(tile_pos)
-				'^':
-					data.hazard_tiles.append(tile_pos)
-				_:
-					if tile_char == encounter_script.PLAYER_SPAWN_MARKER:
-						data.player_spawn_pos = tile_pos
-					elif tile_char == encounter_script.BOSS_SPAWN_MARKER:
-						data.boss_spawn_pos = tile_pos
-	
-	return data
-
-
-=====================================
-FILE: ./src/core/builders/terrain_builder.gd
-=====================================
-# src/core/builders/terrain_builder.gd
-#
-# Responsibility: To create all static level geometry (solid tiles,
-# one-way platforms, hazards) based on parsed LevelBuildData. It now also
-# creates the visual representation for each tile using the Palette.
-class_name TerrainBuilder
-extends RefCounted
-
-# The main public method. It takes the parent node, the data, and a valid
-# SceneTree reference, then builds the tiles asynchronously in batches.
-func build_terrain_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
-	const BATCH_SIZE = 20 # How many tiles to create before yielding a frame.
-
-	for i in range(build_data.terrain_tiles.size()):
-		_create_solid_tile(parent_node, build_data.terrain_tiles[i])
-		if i % BATCH_SIZE == 0:
-			await tree.process_frame
-
-	for i in range(build_data.oneway_platforms.size()):
-		_create_oneway_platform(parent_node, build_data.oneway_platforms[i])
-		if i % BATCH_SIZE == 0:
-			await tree.process_frame
-
-	for i in range(build_data.hazard_tiles.size()):
-		_create_hazard_tile(parent_node, build_data.hazard_tiles[i])
-		if i % BATCH_SIZE == 0:
-			await tree.process_frame
-	
-	await tree.process_frame
-
-# --- Tile Creation Functions (Now with Visuals) ---
-
-func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
-	var static_body := StaticBody2D.new()
-	static_body.position = pos
-	static_body.collision_layer = 2 # 'world' layer
-	static_body.add_to_group("world")
-	
-	var collision_shape := CollisionShape2D.new()
-	var rectangle_shape := RectangleShape2D.new()
-	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
-	collision_shape.shape = rectangle_shape
-	static_body.add_child(collision_shape)
-	
-	# PALETTE INTEGRATION: Add a visible ColorRect.
-	var visual_rect := ColorRect.new()
-	visual_rect.color = Palette.COLOR_TERRAIN_PRIMARY
-	visual_rect.size = rectangle_shape.size
-	visual_rect.position = -rectangle_shape.size / 2.0 # Center the rect on the body's origin
-	static_body.add_child(visual_rect)
-	
-	parent_node.add_child(static_body)
-
-func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
-	var static_body := StaticBody2D.new()
-	static_body.position = pos
-	static_body.collision_layer = 2 # 'world' layer
-	static_body.add_to_group("world")
-	static_body.add_to_group("oneway_platforms")
-	
-	var collision_shape := CollisionShape2D.new()
-	collision_shape.one_way_collision = true
-	var rectangle_shape := RectangleShape2D.new()
-	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
-	collision_shape.shape = rectangle_shape
-	collision_shape.position.y = -(Constants.TILE_SIZE / 2.0) + (rectangle_shape.size.y / 2.0)
-	static_body.add_child(collision_shape)
-
-	# PALETTE INTEGRATION: Add a visible ColorRect that matches the thin platform.
-	var visual_rect := ColorRect.new()
-	visual_rect.color = Palette.COLOR_TERRAIN_SECONDARY
-	visual_rect.size = rectangle_shape.size
-	visual_rect.position = Vector2(-rectangle_shape.size.x / 2.0, collision_shape.position.y - (rectangle_shape.size.y / 2.0))
-	static_body.add_child(visual_rect)
-	
-	parent_node.add_child(static_body)
-
-func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
-	var static_body := StaticBody2D.new()
-	static_body.position = pos
-	static_body.collision_layer = 10 # world | hazard
-	static_body.add_to_group("world")
-	static_body.add_to_group("hazard")
-	
-	var collision_shape := CollisionShape2D.new()
-	var rectangle_shape := RectangleShape2D.new()
-	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
-	collision_shape.shape = rectangle_shape
-	static_body.add_child(collision_shape)
-	
-	# PALETTE INTEGRATION: Add a visible ColorRect using the hazard color.
-	var visual_rect := ColorRect.new()
-	visual_rect.color = Palette.COLOR_HAZARD_PRIMARY
-	visual_rect.size = rectangle_shape.size
-	visual_rect.position = -rectangle_shape.size / 2.0
-	static_body.add_child(visual_rect)
-	
-	parent_node.add_child(static_body)
-
-
-=====================================
-FILE: ./src/core/builders/level_build_data.gd
-=====================================
-# src/core/builders/level_build_data.gd
-#
-# A custom Resource script that acts as a data container. Its only purpose is to
-# hold all the parsed information about a level in one clean, portable object.
-# This prevents us from having to pass many individual arrays and variables between
-# our different builder classes.
-class_name LevelBuildData
-extends Resource
-
-var terrain_tiles: Array[Vector2] = []
-var oneway_platforms: Array[Vector2] = []
-var hazard_tiles: Array[Vector2] = []
-var player_spawn_pos: Vector2 = Vector2.ZERO
-var boss_spawn_pos: Vector2 = Vector2.ZERO
-var encounter_script_object: Object = null
-
-=====================================
-FILE: ./src/core/builders/encounter_director.gd
-=====================================
-# src/core/builders/encounter_director.gd
-#
-# Responsibility: To spawn all dynamic entities (Player, Boss, HUD) and to
-# direct the flow of the encounter, such as running an intro sequence.
-class_name EncounterDirector
-extends RefCounted
-
-# --- Stored References ---
-var _parent_node: Node
-var _build_data: LevelBuildData
-var _tree: SceneTree
-
-# The main public method. It takes the parent node, the data, and a valid
-# SceneTree reference, then spawns the entities asynchronously.
-func spawn_entities_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
-	# Store references for use in other functions
-	_parent_node = parent_node
-	_build_data = build_data
-	_tree = tree
-
-	# Spawn the essential non-sequenced entities first.
-	await _spawn_player_async()
-	await _spawn_hud_async()
-
-	# Run the scripted intro sequence for the boss.
-	await run_intro_sequence()
-
-
-# --- Entity Spawning Functions ---
-
-func _spawn_player_async() -> void:
-	var player_instance = load(AssetPaths.SCENE_PLAYER).instantiate()
-	player_instance.global_position = _build_data.player_spawn_pos
-	_parent_node.add_child(player_instance)
-	await _tree.process_frame
-
-func _spawn_boss_async() -> Node:
-	var boss_scene: PackedScene = _build_data.encounter_script_object.BOSS_SCENE if _build_data.encounter_script_object else null
-	if not boss_scene:
-		push_error("EncounterDirector: Could not find BOSS_SCENE in encounter script.")
-		return null
-
-	var boss_instance = boss_scene.instantiate()
-	boss_instance.global_position = _build_data.boss_spawn_pos
-	_parent_node.add_child(boss_instance)
-	await _tree.process_frame
-	return boss_instance
-
-func _spawn_hud_async() -> void:
-	var hud_instance = load(AssetPaths.SCENE_GAME_HUD).instantiate()
-	_parent_node.add_child(hud_instance)
-	await _tree.process_frame
-
-
-# --- Sequencer Implementation ---
-
-# Defines and runs the sequence for the boss's grand entrance.
-func run_intro_sequence() -> void:
-	# Create typed SequenceStep objects for a robust, type-safe sequence.
-	var pause_step = EmitStep.new()
-	pause_step.event_name = EventCatalog.GAME_PAUSED
-
-	var wait_step = WaitStep.new()
-	wait_step.duration = 0.5
-
-	var intro_steps: Array[SequenceStep] = [pause_step, wait_step]
-	await Sequencer.run_sequence(intro_steps)
-
-	# Manually spawn the boss to get the node reference.
-	var _boss_node = await _spawn_boss_async()
-
-	# Define the rest of the sequence.
-	var final_wait_step = WaitStep.new()
-	final_wait_step.duration = 1.0
-
-	var resume_step = EmitStep.new()
-	resume_step.event_name = EventCatalog.GAME_RESUMED
-	
-	var outro_steps: Array[SequenceStep] = [final_wait_step, resume_step]
-	await Sequencer.run_sequence(outro_steps)
-
-
-=====================================
-FILE: ./src/core/Config.gd
-=====================================
-# src/core/Config.gd
-#
-# An autoloaded singleton responsible for loading all configuration files
-# from the res://data/ directory at startup. It provides a simple dot-notation
-# getter to access nested configuration values from anywhere in the project.
+# An autoloaded singleton that provides named constants for the 2D physics
+# layers defined in the project settings. This prevents the use of "magic
+# numbers" for collision layers and masks, making the code more readable
+# and easier to maintain.
 extends Node
 
-var _config_data: Dictionary = {}
-
-func _ready() -> void:
-	_load_all_configs()
-
-# Public getter to retrieve a config value using a dot-separated key.
-# Example: Config.get_value("player.physics.speed")
-func get_value(key: String, default = null):
-	var parts = key.split(".")
-	var current_level = _config_data
-	for part in parts:
-		if current_level is Dictionary and current_level.has(part):
-			current_level = current_level[part]
-		else:
-			push_warning("Config.get_value: Key '%s' not found." % key)
-			return default
-	return current_level
-
-# --- Internal Functions ---
-
-# MODIFIED: This function now reads all filenames into a list first, sorts that
-# list alphabetically, and then loads the files. This guarantees a stable,
-# deterministic loading order, preventing platform-specific bugs where
-# config values might be overridden inconsistently.
-func _load_all_configs() -> void:
-	var dir = DirAccess.open("res://data")
-	if not dir:
-		push_error("Config: Could not open 'res://data/' directory. Make sure it exists.")
-		return
-
-	var file_names: Array[String] = []
-	dir.list_dir_begin()
-	var file_name = dir.get_next()
-	while file_name != "":
-		if not dir.current_is_dir() and file_name.ends_with(".json"):
-			file_names.append(file_name)
-		file_name = dir.get_next()
-	
-	# The critical fix: Sort the filenames to ensure deterministic load order.
-	file_names.sort()
-	
-	# CORRECTED: Renamed loop variable from "name" to "config_filename" to
-	# resolve the SHADOWED_VARIABLE_BASE_CLASS warning.
-	for config_filename in file_names:
-		_load_and_parse_file("res://data/" + config_filename)
-
-
-func _load_and_parse_file(file_path: String) -> void:
-	var file = FileAccess.open(file_path, FileAccess.READ)
-	if not file:
-		push_error("Config: Failed to open config file: %s" % file_path)
-		return
-
-	var content = file.get_as_text()
-	var json = JSON.new()
-	var error = json.parse(content)
-	if error != OK:
-		push_error("Config: Failed to parse JSON in %s. Error: %s at line %d" % [file_path, json.get_error_message(), json.get_error_line()])
-		return
-
-	# Merge the data from this file into our main dictionary.
-	_config_data.merge(json.data, true)
-
+# The bitmask value for each layer (2^n).
+const PLAYER = 1
+const WORLD = 2
+const ENEMY = 4
+const HAZARD = 8
+const ENEMY_PROJECTILE = 16
+const PLAYER_HITBOX = 32
+const PLAYER_HURTBOX = 64
 
 =====================================
-FILE: ./src/core/game_manager.gd
+FILE: ./src/core/util/palette.gd
 =====================================
-# src/core/game_manager.gd
+# src/core/palette.gd
 #
-# A simple singleton to manage the state of the game session, such as
-# which level is currently being loaded or played.
+# An autoloaded singleton that holds the project's master color palette.
+# It establishes a single source of truth for all visual elements, ensuring a
+# cohesive aesthetic. It is designed around a 32-step grayscale value scale.
 extends Node
 
-# This variable will hold the resource path to the encounter script for the
-# level that the player has chosen to play.
-var current_encounter_script_path: String = ""
+# FIX: The Color("#hex") constructor is a valid constant expression, unlike
+# Color.from_string(). This allows the entire palette and its semantic
+# constants to be correctly defined at compile-time.
+const _palette: Array[Color] = [
+	Color("#000000"), Color("#080808"), Color("#101010"), Color("#191919"),
+	Color("#212121"), Color("#292929"), Color("#313131"), Color("#3a3a3a"),
+	Color("#424242"), Color("#4a4a4a"), Color("#525252"), Color("#5a5a5a"),
+	Color("#636363"), Color("#6b6b6b"), Color("#737373"), Color("#7b7b7b"),
+	Color("#848484"), Color("#8c8c8c"), Color("#949494"), Color("#9c9c9c"),
+	Color("#a5a5a5"), Color("#adadad"), Color("#b5b5b5"), Color("#bdbdbd"),
+	Color("#c5c5c5"), Color("#cecece"), Color("#d6d6d6"), Color("#dedede"),
+	Color("#e6e6e6"), Color("#efefef"), Color("#f7f7f7"), Color("#ffffff")
+]
 
-# --- NEW VARIABLE ---
-# This will hold the fully constructed, but currently hidden, level node.
-var prebuilt_level: Node = null
+# --- SEMANTIC CONSTANTS ---
+# This is the most important part of the script. We refer to these constants
+# in our code, not the raw index numbers. This makes the code readable and
+# easy to update. If we want to make all hazards darker, we just change one
+# line here.
+
+# Gameplay
+const COLOR_PLAYER: Color = _palette[31]
+const COLOR_BOSS_PRIMARY: Color = _palette[30]
+const COLOR_PLAYER_PROJECTILE: Color = _palette[29]
+const COLOR_HAZARD_PRIMARY: Color = _palette[28] # Also Enemy Projectiles
+
+# Environment
+const COLOR_BACKGROUND: Color = _palette[0]
+const COLOR_GRID: Color = _palette[2]
+const COLOR_TERRAIN_PRIMARY: Color = _palette[4]
+const COLOR_TERRAIN_SECONDARY: Color = _palette[6]
+
+# UI/UX
+const COLOR_TEXT_HEADER: Color = _palette[30]
+const COLOR_UI_ACCENT_PRIMARY: Color = _palette[28]
+const COLOR_TEXT_PRIMARY: Color = _palette[26]
+const COLOR_TEXT_DISABLED: Color = _palette[16]
+const COLOR_UI_GLOW: Color = _palette[12]
+const COLOR_UI_PANEL_BG: Color = _palette[8]
+
+# --- Helper Function ---
+# Provides a safe way to get a color by its index if needed.
+func get_color(index: int) -> Color:
+	if index >= 0 and index < _palette.size():
+		return _palette[index]
+	push_warning("Palette: Invalid color index requested: %d" % index)
+	return Color.MAGENTA # Return a highly visible error color
+
+=====================================
+FILE: ./src/core/util/asset_paths.gd
+=====================================
+# src/core/asset_paths.gd
+#
+# This singleton provides a central registry for all asset file paths.
+# If an asset is moved or renamed, we only need to update the path in this
+# one file, preventing broken references throughout the project.
+extends Node
+
+# --- Scenes ---
+const SCENE_MAIN = "res://src/scenes/main/main.tscn"
+const SCENE_GAME = "res://src/scenes/game/game.tscn"
+const SCENE_GAME_HUD = "res://src/ui/game_hud/game_hud.tscn"
+const SCENE_GAME_OVER_SCREEN = "res://src/ui/screens/game_over_screen/game_over_screen.tscn" # <-- NEW
+const SCENE_VICTORY_SCREEN = "res://src/ui/screens/victory_screen/victory_screen.tscn" # <-- NEW
+const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn"
+const SCENE_TITLE_SCREEN = "res://src/ui/screens/title_screen/title_screen.tscn"
+const SCENE_OPTIONS_MENU = "res://src/ui/screens/options_menu/options_menu.tscn"
+const SCENE_SOUND_MENU = "res://src/ui/screens/sound_menu/sound_menu.tscn"
+const SCENE_CONTROLS_MENU = "res://src/ui/screens/controls_menu/controls_menu.tscn"
+const SCENE_CREDITS_MENU = "res://src/ui/screens/credits_menu/credits_menu.tscn"
+const SCENE_PLAYER = "res://src/entities/player/player.tscn"
+const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
+const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"
+const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
+
+# --- Scripts ---
+const SCRIPT_MENU_MANAGER = "res://src/ui/menu_manager/menu_manager.gd"
+const SCRIPT_CUSTOM_SLIDER = "res://src/ui/components/custom_slider/custom_slider.gd"
+const SCRIPT_ARENA_00_LAYOUT = "res://src/arenas/arena_00_layout.gd"
+const SCRIPT_ARENA_00_ENCOUNTER = "res://src/arenas/arena_00_encounter.gd"
+
+# --- Audio ---
+const AUDIO_MUSIC_TITLE = "res://assets/audio/music/title-screen-loop.mp3"
+const AUDIO_SFX_MENU_BACK = "res://assets/audio/sfx/menu-back.mp3"
+const AUDIO_SFX_MENU_ERROR = "res://assets/audio/sfx/menu-error.mp3"
+const AUDIO_SFX_MENU_MOVE = "res://assets/audio/sfx/menu-move.mp3"
+const AUDIO_SFX_MENU_SELECT = "res://assets/audio/sfx/menu-select.mp3"
+const AUDIO_SFX_START_CHIME = "res://assets/audio/sfx/start-chime.mp3"
+
+# --- Fonts ---
+const FONT_BLACK = "res://assets/fonts/MPLUSRounded1c-Black.ttf"
+const FONT_BOLD = "res://assets/fonts/MPLUSRounded1c-Bold.ttf"
+const FONT_REGULAR = "res://assets/fonts/MPLUSRounded1c-Regular.ttf"
+
+# --- UI Sprites ---
+const SPRITE_TITLE = "res://assets/sprites/ui/title/box_battle_title.png"
+const SPRITE_MENU_CURSOR = "res://assets/sprites/ui/menu/menu-cursor.png"
+const SPRITE_MENU_ITEM_START = "res://assets/sprites/ui/menu/menu-item-start.png"
+const SPRITE_MENU_ITEM_OPTIONS = "res://assets/sprites/ui/menu/menu-item-options.png"
+const SPRITE_MENU_ITEM_SOUND = "res://assets/sprites/ui/menu/menu-item-sound.png"
+const SPRITE_MENU_ITEM_CONTROLS = "res://assets/sprites/ui/menu/menu-item-controls.png"
+const SPRITE_MENU_ITEM_CREDITS = "res://assets/sprites/ui/menu/menu-item-credits.png"
+const SPRITE_MENU_ITEM_BACK = "res://assets/sprites/ui/menu/menu-item-back.png"
+const SPRITE_CURSOR_DEFAULT = "res://assets/sprites/ui/cursors/cursor_default.png"
+const SPRITE_CURSOR_POINTER = "res://assets/sprites/ui/cursors/cursor_pointer.png"
+const SPRITE_SLIDER_TRACK = "res://assets/sprites/ui/slider/slider-track.png"
+const SPRITE_SLIDER_KNOB = "res://assets/sprites/ui/slider/slider-knob.png"
+const SPRITE_CHECKBOX_CHECKED = "res://assets/sprites/ui/checkbox/checkbox-checked.png"
+const SPRITE_CHECKBOX_UNCHECKED = "res://assets/sprites/ui/checkbox/checkbox-unchecked.png"
+const SPRITE_ICON_SOUND_ON = "res://assets/sprites/ui/icons/icon-sound-on.png"
+const SPRITE_ICON_SOUND_OFF = "res://assets/sprites/ui/icons/icon-sound-off.png"
+
+=====================================
+FILE: ./src/core/util/constants.gd
+=====================================
+# src/core/constants.gd
+#
+# This singleton now only holds true global constants that are not meant for
+# gameplay tuning, such as UI layout numbers or asset counts. All gameplay
+# values have been moved to combat_config.json.
+extends Node
+
+# --- Audio ---
+const NUM_SFX_PLAYERS = 8 # The number of sound effects that can play at once.
+
+# --- Arena Design ---
+const TILE_SIZE = 50
 
 =====================================
 FILE: ./src/core/sequencer.gd
@@ -3680,89 +3463,57 @@ func execute(sequencer_node: Node) -> Variant:
 	return null
 
 =====================================
-FILE: ./src/core/physics_layers.gd
+FILE: ./src/core/events/boss_health_changed_event.gd
 =====================================
-# src/core/physics_layers.gd
+# src/core/events/boss_health_changed_event.gd
+# A typed payload for the BOSS_HEALTH_CHANGED event.
+extends Resource
+class_name BossHealthChangedEvent
+
+@export var current_health: int = 0
+@export var max_health: int = 0
+
+=====================================
+FILE: ./src/core/events/player_health_changed_event.gd
+=====================================
+# src/core/events/player_health_changed_event.gd
+# A typed payload for the PLAYER_HEALTH_CHANGED event. Using a Resource allows
+# for type safety and IDE autocompletion in listener scripts.
+extends Resource
+class_name PlayerHealthChangedEvent
+
+@export var current_health: int = 0
+@export var max_health: int = 0
+
+=====================================
+FILE: ./src/core/events/player_healing_charges_changed_event.gd
+=====================================
+# src/core/events/player_healing_charges_changed_event.gd
+# A typed payload for the PLAYER_HEALING_CHARGES_CHANGED event.
+extends Resource
+class_name PlayerHealingChargesChangedEvent
+
+@export var current_charges: int = 0
+
+=====================================
+FILE: ./src/core/systems/game_manager.gd
+=====================================
+# src/core/game_manager.gd
 #
-# An autoloaded singleton that provides named constants for the 2D physics
-# layers defined in the project settings. This prevents the use of "magic
-# numbers" for collision layers and masks, making the code more readable
-# and easier to maintain.
+# A simple singleton to manage the state of the game session, such as
+# which level is currently being loaded or played.
 extends Node
 
-# The bitmask value for each layer (2^n).
-const PLAYER = 1
-const WORLD = 2
-const ENEMY = 4
-const HAZARD = 8
-const ENEMY_PROJECTILE = 16
-const PLAYER_HITBOX = 32
-const PLAYER_HURTBOX = 64
+# This variable will hold the resource path to the encounter script for the
+# level that the player has chosen to play.
+var current_encounter_script_path: String = ""
+
+# --- NEW VARIABLE ---
+# This will hold the fully constructed, but currently hidden, level node.
+var prebuilt_level: Node = null
 
 =====================================
-FILE: ./src/core/arena_builder.gd
-=====================================
-# src/core/arena_builder.gd
-#
-# This singleton is now a high-level "Coordinator". Its single responsibility
-# is to manage the overall process of level construction by delegating tasks
-# to specialized builder classes.
-extends Node
-
-# This function is now much cleaner and easier to read. It's a clear,
-# step-by-step recipe for building a level.
-func build_level_async() -> Node:
-	var level_container := Node.new()
-	level_container.name = "LevelContainer"
-
-	# --- 1. Load Raw Data ---
-	var encounter_path: String = GameManager.current_encounter_script_path
-	if encounter_path.is_empty():
-		push_error("ArenaBuilder: No encounter script specified in GameManager.")
-		return level_container
-		
-	var encounter_script: Script = load(encounter_path)
-	if not encounter_script:
-		push_error("ArenaBuilder: Failed to load encounter script at: %s" % encounter_path)
-		return level_container
-		
-	# Use get_script_constant_map() to safely read the constant
-	# from the script resource itself, without creating a temporary instance.
-	var constants_map = encounter_script.get_script_constant_map()
-	if not constants_map.has("LAYOUT_SCRIPT_PATH"):
-		push_error("ArenaBuilder: Encounter script '%s' is missing 'LAYOUT_SCRIPT_PATH' constant." % encounter_path)
-		return level_container
-		
-	var layout_path: String = constants_map["LAYOUT_SCRIPT_PATH"]
-	
-	var layout_script: Script = load(layout_path)
-
-	if not layout_script:
-		push_error("ArenaBuilder: Failed to load layout script defined in encounter: %s" % layout_path)
-		return level_container
-
-	# --- 2. Parse Data ---
-	var parser = LevelParser.new()
-	var build_data = parser.parse_level_data(layout_script, encounter_script)
-	
-	await get_tree().process_frame
-
-	# --- 3. Build Terrain ---
-	var terrain_builder = TerrainBuilder.new()
-	await terrain_builder.build_terrain_async(level_container, build_data, get_tree())
-
-	# --- 4. Spawn Entities ---
-	var encounter_director = EncounterDirector.new()
-	await encounter_director.spawn_entities_async(level_container, build_data, get_tree())
-
-	# --- 5. Finalize ---
-	await get_tree().process_frame
-	
-	return level_container
-
-
-=====================================
-FILE: ./src/core/object_pool.gd
+FILE: ./src/core/systems/object_pool.gd
 =====================================
 # src/core/object_pool.gd
 #
@@ -3828,7 +3579,7 @@ func return_instance(p_instance: Node):
 
 
 =====================================
-FILE: ./src/core/audio_manager.gd
+FILE: ./src/core/systems/audio_manager.gd
 =====================================
 # src/core/audio_manager.gd
 #
@@ -3897,98 +3648,7 @@ func stop_music():
 	music_player.stop()
 
 =====================================
-FILE: ./src/core/events/boss_health_changed_event.gd
-=====================================
-# src/core/events/boss_health_changed_event.gd
-# A typed payload for the BOSS_HEALTH_CHANGED event.
-extends Resource
-class_name BossHealthChangedEvent
-
-@export var current_health: int = 0
-@export var max_health: int = 0
-
-=====================================
-FILE: ./src/core/events/player_health_changed_event.gd
-=====================================
-# src/core/events/player_health_changed_event.gd
-# A typed payload for the PLAYER_HEALTH_CHANGED event. Using a Resource allows
-# for type safety and IDE autocompletion in listener scripts.
-extends Resource
-class_name PlayerHealthChangedEvent
-
-@export var current_health: int = 0
-@export var max_health: int = 0
-
-=====================================
-FILE: ./src/core/events/player_healing_charges_changed_event.gd
-=====================================
-# src/core/events/player_healing_charges_changed_event.gd
-# A typed payload for the PLAYER_HEALING_CHARGES_CHANGED event.
-extends Resource
-class_name PlayerHealingChargesChangedEvent
-
-@export var current_charges: int = 0
-
-=====================================
-FILE: ./src/core/palette.gd
-=====================================
-# src/core/palette.gd
-#
-# An autoloaded singleton that holds the project's master color palette.
-# It establishes a single source of truth for all visual elements, ensuring a
-# cohesive aesthetic. It is designed around a 32-step grayscale value scale.
-extends Node
-
-# FIX: The Color("#hex") constructor is a valid constant expression, unlike
-# Color.from_string(). This allows the entire palette and its semantic
-# constants to be correctly defined at compile-time.
-const _palette: Array[Color] = [
-	Color("#000000"), Color("#080808"), Color("#101010"), Color("#191919"),
-	Color("#212121"), Color("#292929"), Color("#313131"), Color("#3a3a3a"),
-	Color("#424242"), Color("#4a4a4a"), Color("#525252"), Color("#5a5a5a"),
-	Color("#636363"), Color("#6b6b6b"), Color("#737373"), Color("#7b7b7b"),
-	Color("#848484"), Color("#8c8c8c"), Color("#949494"), Color("#9c9c9c"),
-	Color("#a5a5a5"), Color("#adadad"), Color("#b5b5b5"), Color("#bdbdbd"),
-	Color("#c5c5c5"), Color("#cecece"), Color("#d6d6d6"), Color("#dedede"),
-	Color("#e6e6e6"), Color("#efefef"), Color("#f7f7f7"), Color("#ffffff")
-]
-
-# --- SEMANTIC CONSTANTS ---
-# This is the most important part of the script. We refer to these constants
-# in our code, not the raw index numbers. This makes the code readable and
-# easy to update. If we want to make all hazards darker, we just change one
-# line here.
-
-# Gameplay
-const COLOR_PLAYER: Color = _palette[31]
-const COLOR_BOSS_PRIMARY: Color = _palette[30]
-const COLOR_PLAYER_PROJECTILE: Color = _palette[29]
-const COLOR_HAZARD_PRIMARY: Color = _palette[28] # Also Enemy Projectiles
-
-# Environment
-const COLOR_BACKGROUND: Color = _palette[0]
-const COLOR_GRID: Color = _palette[2]
-const COLOR_TERRAIN_PRIMARY: Color = _palette[4]
-const COLOR_TERRAIN_SECONDARY: Color = _palette[6]
-
-# UI/UX
-const COLOR_TEXT_HEADER: Color = _palette[30]
-const COLOR_UI_ACCENT_PRIMARY: Color = _palette[28]
-const COLOR_TEXT_PRIMARY: Color = _palette[26]
-const COLOR_TEXT_DISABLED: Color = _palette[16]
-const COLOR_UI_GLOW: Color = _palette[12]
-const COLOR_UI_PANEL_BG: Color = _palette[8]
-
-# --- Helper Function ---
-# Provides a safe way to get a color by its index if needed.
-func get_color(index: int) -> Color:
-	if index >= 0 and index < _palette.size():
-		return _palette[index]
-	push_warning("Palette: Invalid color index requested: %d" % index)
-	return Color.MAGENTA # Return a highly visible error color
-
-=====================================
-FILE: ./src/core/cursor_manager.gd
+FILE: ./src/core/systems/cursor_manager.gd
 =====================================
 # src/core/cursor_manager.gd
 #
@@ -4030,84 +3690,444 @@ func set_pointer_state(is_pointing: bool):
 		cursor_sprite.texture = CURSOR_DEFAULT
 
 =====================================
-FILE: ./src/core/asset_paths.gd
+FILE: ./src/core/data/settings.gd
 =====================================
-# src/core/asset_paths.gd
+# src/core/settings.gd
 #
-# This singleton provides a central registry for all asset file paths.
-# If an asset is moved or renamed, we only need to update the path in this
-# one file, preventing broken references throughout the project.
+# This script is a "Singleton" (also known as an "Autoload" in Godot).
+# It now emits a signal whenever an audio setting is changed, allowing other
+# systems like the AudioManager to react efficiently without polling.
 extends Node
 
-# --- Scenes ---
-const SCENE_MAIN = "res://src/scenes/main/main.tscn"
-const SCENE_GAME = "res://src/scenes/game/game.tscn"
-const SCENE_GAME_HUD = "res://src/ui/game_hud/game_hud.tscn"
-const SCENE_GAME_OVER_SCREEN = "res://src/ui/screens/game_over_screen/game_over_screen.tscn" # <-- NEW
-const SCENE_VICTORY_SCREEN = "res://src/ui/screens/victory_screen/victory_screen.tscn" # <-- NEW
-const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn"
-const SCENE_TITLE_SCREEN = "res://src/ui/screens/title_screen/title_screen.tscn"
-const SCENE_OPTIONS_MENU = "res://src/ui/screens/options_menu/options_menu.tscn"
-const SCENE_SOUND_MENU = "res://src/ui/screens/sound_menu/sound_menu.tscn"
-const SCENE_CONTROLS_MENU = "res://src/ui/screens/controls_menu/controls_menu.tscn"
-const SCENE_CREDITS_MENU = "res://src/ui/screens/credits_menu/credits_menu.tscn"
-const SCENE_PLAYER = "res://src/entities/player/player.tscn"
-const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
-const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"
-const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
+# NEW: A signal that is emitted whenever any audio setting is changed.
+signal audio_settings_changed
 
-# --- Scripts ---
-const SCRIPT_MENU_MANAGER = "res://src/ui/menu_manager/menu_manager.gd"
-const SCRIPT_CUSTOM_SLIDER = "res://src/ui/components/custom_slider/custom_slider.gd"
-const SCRIPT_ARENA_00_LAYOUT = "res://src/arenas/arena_00_layout.gd"
-const SCRIPT_ARENA_00_ENCOUNTER = "res://src/arenas/arena_00_encounter.gd"
+# --- Audio Settings ---
+# The variables have been converted to properties with setters. This allows us
+# to run code (emitting the signal) whenever their values are changed.
 
-# --- Audio ---
-const AUDIO_MUSIC_TITLE = "res://assets/audio/music/title-screen-loop.mp3"
-const AUDIO_SFX_MENU_BACK = "res://assets/audio/sfx/menu-back.mp3"
-const AUDIO_SFX_MENU_ERROR = "res://assets/audio/sfx/menu-error.mp3"
-const AUDIO_SFX_MENU_MOVE = "res://assets/audio/sfx/menu-move.mp3"
-const AUDIO_SFX_MENU_SELECT = "res://assets/audio/sfx/menu-select.mp3"
-const AUDIO_SFX_START_CHIME = "res://assets/audio/sfx/start-chime.mp3"
+@export var master_volume: float = 1.0:
+	set(value):
+		if not is_equal_approx(master_volume, value):
+			master_volume = value
+			audio_settings_changed.emit()
 
-# --- Fonts ---
-const FONT_BLACK = "res://assets/fonts/MPLUSRounded1c-Black.ttf"
-const FONT_BOLD = "res://assets/fonts/MPLUSRounded1c-Bold.ttf"
-const FONT_REGULAR = "res://assets/fonts/MPLUSRounded1c-Regular.ttf"
+@export var music_volume: float = 1.0:
+	set(value):
+		if not is_equal_approx(music_volume, value):
+			music_volume = value
+			audio_settings_changed.emit()
 
-# --- UI Sprites ---
-const SPRITE_TITLE = "res://assets/sprites/ui/title/box_battle_title.png"
-const SPRITE_MENU_CURSOR = "res://assets/sprites/ui/menu/menu-cursor.png"
-const SPRITE_MENU_ITEM_START = "res://assets/sprites/ui/menu/menu-item-start.png"
-const SPRITE_MENU_ITEM_OPTIONS = "res://assets/sprites/ui/menu/menu-item-options.png"
-const SPRITE_MENU_ITEM_SOUND = "res://assets/sprites/ui/menu/menu-item-sound.png"
-const SPRITE_MENU_ITEM_CONTROLS = "res://assets/sprites/ui/menu/menu-item-controls.png"
-const SPRITE_MENU_ITEM_CREDITS = "res://assets/sprites/ui/menu/menu-item-credits.png"
-const SPRITE_MENU_ITEM_BACK = "res://assets/sprites/ui/menu/menu-item-back.png"
-const SPRITE_CURSOR_DEFAULT = "res://assets/sprites/ui/cursors/cursor_default.png"
-const SPRITE_CURSOR_POINTER = "res://assets/sprites/ui/cursors/cursor_pointer.png"
-const SPRITE_SLIDER_TRACK = "res://assets/sprites/ui/slider/slider-track.png"
-const SPRITE_SLIDER_KNOB = "res://assets/sprites/ui/slider/slider-knob.png"
-const SPRITE_CHECKBOX_CHECKED = "res://assets/sprites/ui/checkbox/checkbox-checked.png"
-const SPRITE_CHECKBOX_UNCHECKED = "res://assets/sprites/ui/checkbox/checkbox-unchecked.png"
-const SPRITE_ICON_SOUND_ON = "res://assets/sprites/ui/icons/icon-sound-on.png"
-const SPRITE_ICON_SOUND_OFF = "res://assets/sprites/ui/icons/icon-sound-off.png"
+@export var sfx_volume: float = 1.0:
+	set(value):
+		if not is_equal_approx(sfx_volume, value):
+			sfx_volume = value
+			audio_settings_changed.emit()
+
+@export var master_muted: bool = false:
+	set(value):
+		if master_muted != value:
+			master_muted = value
+			audio_settings_changed.emit()
+
+@export var music_muted: bool = true:
+	set(value):
+		if music_muted != value:
+			music_muted = value
+			audio_settings_changed.emit()
+
+@export var sfx_muted: bool = false:
+	set(value):
+		if sfx_muted != value:
+			sfx_muted = value
+			audio_settings_changed.emit()
 
 =====================================
-FILE: ./src/core/constants.gd
+FILE: ./src/core/data/Config.gd
 =====================================
-# src/core/constants.gd
+# src/core/Config.gd
 #
-# This singleton now only holds true global constants that are not meant for
-# gameplay tuning, such as UI layout numbers or asset counts. All gameplay
-# values have been moved to combat_config.json.
+# An autoloaded singleton responsible for loading all configuration files
+# from the res://data/ directory at startup. It provides a simple dot-notation
+# getter to access nested configuration values from anywhere in the project.
 extends Node
 
-# --- Audio ---
-const NUM_SFX_PLAYERS = 8 # The number of sound effects that can play at once.
+var _config_data: Dictionary = {}
 
-# --- Arena Design ---
-const TILE_SIZE = 50
+func _ready() -> void:
+	_load_all_configs()
+
+# Public getter to retrieve a config value using a dot-separated key.
+# Example: Config.get_value("player.physics.speed")
+func get_value(key: String, default = null):
+	var parts = key.split(".")
+	var current_level = _config_data
+	for part in parts:
+		if current_level is Dictionary and current_level.has(part):
+			current_level = current_level[part]
+		else:
+			push_warning("Config.get_value: Key '%s' not found." % key)
+			return default
+	return current_level
+
+# --- Internal Functions ---
+
+# MODIFIED: This function now reads all filenames into a list first, sorts that
+# list alphabetically, and then loads the files. This guarantees a stable,
+# deterministic loading order, preventing platform-specific bugs where
+# config values might be overridden inconsistently.
+func _load_all_configs() -> void:
+	var dir = DirAccess.open("res://data")
+	if not dir:
+		push_error("Config: Could not open 'res://data/' directory. Make sure it exists.")
+		return
+
+	var file_names: Array[String] = []
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".json"):
+			file_names.append(file_name)
+		file_name = dir.get_next()
+	
+	# The critical fix: Sort the filenames to ensure deterministic load order.
+	file_names.sort()
+	
+	# CORRECTED: Renamed loop variable from "name" to "config_filename" to
+	# resolve the SHADOWED_VARIABLE_BASE_CLASS warning.
+	for config_filename in file_names:
+		_load_and_parse_file("res://data/" + config_filename)
+
+
+func _load_and_parse_file(file_path: String) -> void:
+	var file = FileAccess.open(file_path, FileAccess.READ)
+	if not file:
+		push_error("Config: Failed to open config file: %s" % file_path)
+		return
+
+	var content = file.get_as_text()
+	var json = JSON.new()
+	var error = json.parse(content)
+	if error != OK:
+		push_error("Config: Failed to parse JSON in %s. Error: %s at line %d" % [file_path, json.get_error_message(), json.get_error_line()])
+		return
+
+	# Merge the data from this file into our main dictionary.
+	_config_data.merge(json.data, true)
+
+
+=====================================
+FILE: ./src/core/building/level_parser.gd
+=====================================
+# src/core/builders/level_parser.gd
+#
+# Responsibility: To parse the raw data from layout and encounter scripts and
+# organize it into a structured LevelBuildData object. This class does not
+# create any nodes; it only processes data.
+class_name LevelParser
+extends RefCounted
+
+# The single public method of this class. It takes the arena script resources
+# and returns a complete LevelBuildData resource.
+#
+# CORRECTED: The function signature now correctly expects Script resources,
+# not instantiated Objects.
+func parse_level_data(layout_script: Script, encounter_script: Script) -> LevelBuildData:
+	var data = LevelBuildData.new()
+	# We can still store the script resource for later use.
+	data.encounter_script_object = encounter_script
+
+	# Constants can be accessed directly from the script resource.
+	for y in range(layout_script.TERRAIN_DATA.size()):
+		var row_string: String = layout_script.TERRAIN_DATA[y]
+		for x in range(row_string.length()):
+			var tile_char: String = row_string[x]
+			var tile_pos := Vector2(x * Constants.TILE_SIZE, y * Constants.TILE_SIZE) + Vector2(Constants.TILE_SIZE / 2.0, Constants.TILE_SIZE / 2.0)
+
+			match tile_char:
+				'#':
+					data.terrain_tiles.append(tile_pos)
+				'-':
+					data.oneway_platforms.append(tile_pos)
+				'^':
+					data.hazard_tiles.append(tile_pos)
+				_:
+					if tile_char == encounter_script.PLAYER_SPAWN_MARKER:
+						data.player_spawn_pos = tile_pos
+					elif tile_char == encounter_script.BOSS_SPAWN_MARKER:
+						data.boss_spawn_pos = tile_pos
+	
+	return data
+
+
+=====================================
+FILE: ./src/core/building/terrain_builder.gd
+=====================================
+# src/core/builders/terrain_builder.gd
+#
+# Responsibility: To create all static level geometry (solid tiles,
+# one-way platforms, hazards) based on parsed LevelBuildData. It now also
+# creates the visual representation for each tile using the Palette.
+class_name TerrainBuilder
+extends RefCounted
+
+# The main public method. It takes the parent node, the data, and a valid
+# SceneTree reference, then builds the tiles asynchronously in batches.
+func build_terrain_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
+	const BATCH_SIZE = 20 # How many tiles to create before yielding a frame.
+
+	for i in range(build_data.terrain_tiles.size()):
+		_create_solid_tile(parent_node, build_data.terrain_tiles[i])
+		if i % BATCH_SIZE == 0:
+			await tree.process_frame
+
+	for i in range(build_data.oneway_platforms.size()):
+		_create_oneway_platform(parent_node, build_data.oneway_platforms[i])
+		if i % BATCH_SIZE == 0:
+			await tree.process_frame
+
+	for i in range(build_data.hazard_tiles.size()):
+		_create_hazard_tile(parent_node, build_data.hazard_tiles[i])
+		if i % BATCH_SIZE == 0:
+			await tree.process_frame
+	
+	await tree.process_frame
+
+# --- Tile Creation Functions (Now with Visuals) ---
+
+func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
+	var static_body := StaticBody2D.new()
+	static_body.position = pos
+	static_body.collision_layer = 2 # 'world' layer
+	static_body.add_to_group("world")
+	
+	var collision_shape := CollisionShape2D.new()
+	var rectangle_shape := RectangleShape2D.new()
+	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
+	collision_shape.shape = rectangle_shape
+	static_body.add_child(collision_shape)
+	
+	# PALETTE INTEGRATION: Add a visible ColorRect.
+	var visual_rect := ColorRect.new()
+	visual_rect.color = Palette.COLOR_TERRAIN_PRIMARY
+	visual_rect.size = rectangle_shape.size
+	visual_rect.position = -rectangle_shape.size / 2.0 # Center the rect on the body's origin
+	static_body.add_child(visual_rect)
+	
+	parent_node.add_child(static_body)
+
+func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
+	var static_body := StaticBody2D.new()
+	static_body.position = pos
+	static_body.collision_layer = 2 # 'world' layer
+	static_body.add_to_group("world")
+	static_body.add_to_group("oneway_platforms")
+	
+	var collision_shape := CollisionShape2D.new()
+	collision_shape.one_way_collision = true
+	var rectangle_shape := RectangleShape2D.new()
+	rectangle_shape.size = Vector2(Constants.TILE_SIZE, 10)
+	collision_shape.shape = rectangle_shape
+	collision_shape.position.y = -(Constants.TILE_SIZE / 2.0) + (rectangle_shape.size.y / 2.0)
+	static_body.add_child(collision_shape)
+
+	# PALETTE INTEGRATION: Add a visible ColorRect that matches the thin platform.
+	var visual_rect := ColorRect.new()
+	visual_rect.color = Palette.COLOR_TERRAIN_SECONDARY
+	visual_rect.size = rectangle_shape.size
+	visual_rect.position = Vector2(-rectangle_shape.size.x / 2.0, collision_shape.position.y - (rectangle_shape.size.y / 2.0))
+	static_body.add_child(visual_rect)
+	
+	parent_node.add_child(static_body)
+
+func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
+	var static_body := StaticBody2D.new()
+	static_body.position = pos
+	static_body.collision_layer = 10 # world | hazard
+	static_body.add_to_group("world")
+	static_body.add_to_group("hazard")
+	
+	var collision_shape := CollisionShape2D.new()
+	var rectangle_shape := RectangleShape2D.new()
+	rectangle_shape.size = Vector2(Constants.TILE_SIZE, Constants.TILE_SIZE)
+	collision_shape.shape = rectangle_shape
+	static_body.add_child(collision_shape)
+	
+	# PALETTE INTEGRATION: Add a visible ColorRect using the hazard color.
+	var visual_rect := ColorRect.new()
+	visual_rect.color = Palette.COLOR_HAZARD_PRIMARY
+	visual_rect.size = rectangle_shape.size
+	visual_rect.position = -rectangle_shape.size / 2.0
+	static_body.add_child(visual_rect)
+	
+	parent_node.add_child(static_body)
+
+
+=====================================
+FILE: ./src/core/building/level_build_data.gd
+=====================================
+# src/core/builders/level_build_data.gd
+#
+# A custom Resource script that acts as a data container. Its only purpose is to
+# hold all the parsed information about a level in one clean, portable object.
+# This prevents us from having to pass many individual arrays and variables between
+# our different builder classes.
+class_name LevelBuildData
+extends Resource
+
+var terrain_tiles: Array[Vector2] = []
+var oneway_platforms: Array[Vector2] = []
+var hazard_tiles: Array[Vector2] = []
+var player_spawn_pos: Vector2 = Vector2.ZERO
+var boss_spawn_pos: Vector2 = Vector2.ZERO
+var encounter_script_object: Object = null
+
+=====================================
+FILE: ./src/core/building/encounter_director.gd
+=====================================
+# src/core/builders/encounter_director.gd
+#
+# Responsibility: To spawn all dynamic entities (Player, Boss, HUD) and to
+# direct the flow of the encounter, such as running an intro sequence.
+class_name EncounterDirector
+extends RefCounted
+
+# --- Stored References ---
+var _parent_node: Node
+var _build_data: LevelBuildData
+var _tree: SceneTree
+
+# The main public method. It takes the parent node, the data, and a valid
+# SceneTree reference, then spawns the entities asynchronously.
+func spawn_entities_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
+	# Store references for use in other functions
+	_parent_node = parent_node
+	_build_data = build_data
+	_tree = tree
+
+	# Spawn the essential non-sequenced entities first.
+	await _spawn_player_async()
+	await _spawn_hud_async()
+
+	# Run the scripted intro sequence for the boss.
+	await run_intro_sequence()
+
+
+# --- Entity Spawning Functions ---
+
+func _spawn_player_async() -> void:
+	var player_instance = load(AssetPaths.SCENE_PLAYER).instantiate()
+	player_instance.global_position = _build_data.player_spawn_pos
+	_parent_node.add_child(player_instance)
+	await _tree.process_frame
+
+func _spawn_boss_async() -> Node:
+	var boss_scene: PackedScene = _build_data.encounter_script_object.BOSS_SCENE if _build_data.encounter_script_object else null
+	if not boss_scene:
+		push_error("EncounterDirector: Could not find BOSS_SCENE in encounter script.")
+		return null
+
+	var boss_instance = boss_scene.instantiate()
+	boss_instance.global_position = _build_data.boss_spawn_pos
+	_parent_node.add_child(boss_instance)
+	await _tree.process_frame
+	return boss_instance
+
+func _spawn_hud_async() -> void:
+	var hud_instance = load(AssetPaths.SCENE_GAME_HUD).instantiate()
+	_parent_node.add_child(hud_instance)
+	await _tree.process_frame
+
+
+# --- Sequencer Implementation ---
+
+# Defines and runs the sequence for the boss's grand entrance.
+func run_intro_sequence() -> void:
+	# Create typed SequenceStep objects for a robust, type-safe sequence.
+	var pause_step = EmitStep.new()
+	pause_step.event_name = EventCatalog.GAME_PAUSED
+
+	var wait_step = WaitStep.new()
+	wait_step.duration = 0.5
+
+	var intro_steps: Array[SequenceStep] = [pause_step, wait_step]
+	await Sequencer.run_sequence(intro_steps)
+
+	# Manually spawn the boss to get the node reference.
+	var _boss_node = await _spawn_boss_async()
+
+	# Define the rest of the sequence.
+	var final_wait_step = WaitStep.new()
+	final_wait_step.duration = 1.0
+
+	var resume_step = EmitStep.new()
+	resume_step.event_name = EventCatalog.GAME_RESUMED
+	
+	var outro_steps: Array[SequenceStep] = [final_wait_step, resume_step]
+	await Sequencer.run_sequence(outro_steps)
+
+
+=====================================
+FILE: ./src/core/building/arena_builder.gd
+=====================================
+# src/core/arena_builder.gd
+#
+# This singleton is now a high-level "Coordinator". Its single responsibility
+# is to manage the overall process of level construction by delegating tasks
+# to specialized builder classes.
+extends Node
+
+# This function is now much cleaner and easier to read. It's a clear,
+# step-by-step recipe for building a level.
+func build_level_async() -> Node:
+	var level_container := Node.new()
+	level_container.name = "LevelContainer"
+
+	# --- 1. Load Raw Data ---
+	var encounter_path: String = GameManager.current_encounter_script_path
+	if encounter_path.is_empty():
+		push_error("ArenaBuilder: No encounter script specified in GameManager.")
+		return level_container
+		
+	var encounter_script: Script = load(encounter_path)
+	if not encounter_script:
+		push_error("ArenaBuilder: Failed to load encounter script at: %s" % encounter_path)
+		return level_container
+		
+	# Use get_script_constant_map() to safely read the constant
+	# from the script resource itself, without creating a temporary instance.
+	var constants_map = encounter_script.get_script_constant_map()
+	if not constants_map.has("LAYOUT_SCRIPT_PATH"):
+		push_error("ArenaBuilder: Encounter script '%s' is missing 'LAYOUT_SCRIPT_PATH' constant." % encounter_path)
+		return level_container
+		
+	var layout_path: String = constants_map["LAYOUT_SCRIPT_PATH"]
+	
+	var layout_script: Script = load(layout_path)
+
+	if not layout_script:
+		push_error("ArenaBuilder: Failed to load layout script defined in encounter: %s" % layout_path)
+		return level_container
+
+	# --- 2. Parse Data ---
+	var parser = LevelParser.new()
+	var build_data = parser.parse_level_data(layout_script, encounter_script)
+	
+	await get_tree().process_frame
+
+	# --- 3. Build Terrain ---
+	var terrain_builder = TerrainBuilder.new()
+	await terrain_builder.build_terrain_async(level_container, build_data, get_tree())
+
+	# --- 4. Spawn Entities ---
+	var encounter_director = EncounterDirector.new()
+	await encounter_director.spawn_entities_async(level_container, build_data, get_tree())
+
+	# --- 5. Finalize ---
+	await get_tree().process_frame
+	
+	return level_container
+
 
 =====================================
 FILE: ./src/arenas/arena_00_layout.gd
@@ -4289,9 +4309,14 @@ func deactivate():
 func _physics_process(delta):
 	global_position += direction * speed * delta
 
+# SOLUTION: This function now correctly finds and calls take_damage on the
+# enemy's HealthComponent, aligning it with the final architecture.
 func _on_body_entered(body):
 	if body.is_in_group("enemy"):
-		body.take_damage(damage)
+		var enemy_health_comp = body.get_node_or_null("HealthComponent")
+		if enemy_health_comp:
+			enemy_health_comp.take_damage(damage, self)
+	
 	ObjectPool.return_instance(self)
 
 func _on_area_entered(area):
@@ -4301,6 +4326,7 @@ func _on_area_entered(area):
 
 func _on_screen_exited():
 	ObjectPool.return_instance(self)
+
 
 =====================================
 FILE: ./src/projectiles/boss_shot.gd
@@ -4545,12 +4571,11 @@ func _ready():
 	b_data = BossStateData.new()
 	b_data.patrol_speed = Config.get_value("boss.stats.patrol_speed", 100.0)
 	
-	# CORRECTED ORDER: Set the visual color FIRST.
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	# THEN, set up the component so it captures the correct original color.
 	var boss_health_configs = {
-		"max_health": "boss.stats.health"
+		"max_health": "boss.stats.health",
+		"invincibility": "boss.stats.invincibility_duration"
 	}
 	health_component.setup(b_data, self, boss_health_configs)
 	health_component.health_changed.connect(_on_health_component_health_changed)
@@ -4595,10 +4620,7 @@ func change_state(new_state_key: State):
 	current_state.enter()
 
 # --- Public Methods ---
-func take_damage(damage_amount: int):
-	# Delegate the call to the component.
-	health_component.take_damage(damage_amount, self)
-
+# SOLUTION: The take_damage function is now removed.
 func die():
 	died.emit()
 	queue_free()
@@ -4654,6 +4676,8 @@ FILE: ./src/entities/components/combat_component.gd
 class_name CombatComponent
 extends Node
 
+signal damage_dealt
+
 # --- Dependencies ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
@@ -4687,12 +4711,13 @@ func trigger_pogo(pogo_target):
 	p_data.air_jumps_left = Config.get_value("player.physics.max_air_jumps")
 	owner_node.change_state(owner_node.State.FALL)
 	
-	# CORRECTED: Fixed the typo from "p_ogo_target" to "pogo_target".
 	if pogo_target:
-		if pogo_target.has_method("take_damage"):
-			pogo_target.take_damage(1)
-			# The owner is still responsible for its own game logic (like gaining charges).
-			owner_node._on_damage_dealt() 
+		if pogo_target.is_in_group("enemy"):
+			var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
+			if enemy_health_comp:
+				# SOLUTION: Pass 'owner_node' (the player) as the second argument.
+				enemy_health_comp.take_damage(1, owner_node)
+				damage_dealt.emit()
 		elif pogo_target.is_in_group("enemy_projectile"):
 			ObjectPool.return_instance(pogo_target)
 
@@ -4815,6 +4840,8 @@ class_name InputComponent
 extends Node
 
 # --- Dependencies ---
+# SOLUTION: Use the generic, built-in CharacterBody2D type for the owner node.
+# This breaks the circular dependency back to the 'Player' script.
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 var combat_component: CombatComponent
@@ -4940,8 +4967,7 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var combat_component: CombatComponent = $CombatComponent
-# MODIFIED: Use a generic Node type to avoid the parse-time dependency.
-@onready var input_component: Node = $InputComponent
+@onready var input_component: InputComponent = $InputComponent
 
 # --- Preloads ---
 const MoveState = preload("res://src/entities/player/states/state_move.gd")
@@ -4961,11 +4987,6 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 
 # --- Engine Functions ---
 func _ready():
-	# MODIFIED: Perform a safe, runtime cast of the InputComponent.
-	if not input_component is InputComponent:
-		push_warning("Player _ready: Node at path $InputComponent is not a valid InputComponent. Input will not work.")
-		input_component = null # Ensure it's null if the cast fails.
-	
 	p_data = PlayerStateData.new()
 	
 	visual_sprite.color = Palette.COLOR_PLAYER
@@ -4988,14 +5009,9 @@ func _ready():
 	health_component.died.connect(_on_health_component_died)
 
 	combat_component.setup(self, p_data)
+	combat_component.damage_dealt.connect(_on_damage_dealt)
 	
-	# MODIFIED: Guard the setup call.
-	if is_instance_valid(input_component):
-		print("[VERIFICATION] InputComponent is valid, calling setup.")
-		input_component.setup(self, p_data, combat_component)
-	else:
-		print("[VERIFICATION ERROR] InputComponent is NOT valid.")
-
+	input_component.setup(self, p_data, combat_component)
 
 	states = {
 		State.MOVE: MoveState.new(self, p_data), State.FALL: FallState.new(self, p_data),
@@ -5010,8 +5026,7 @@ func _ready():
 
 func _physics_process(delta):
 	_update_timers(delta)
-	if is_instance_valid(input_component):
-		input_component.process_physics()
+	input_component.process_physics()
 	current_state.process_physics(delta)
 	move_and_slide()
 	_check_for_contact_damage()
@@ -5020,8 +5035,7 @@ func _physics_process(delta):
 		p_data.last_wall_normal = get_wall_normal()
 
 func _unhandled_input(event: InputEvent):
-	if is_instance_valid(input_component):
-		input_component.process_unhandled_input(event)
+	input_component.process_unhandled_input(event)
 	
 func _exit_tree():
 	EventBus.off_owner(self)
@@ -5063,12 +5077,15 @@ func _emit_healing_charges_changed_event():
 func _check_for_contact_damage():
 	for i in range(get_slide_collision_count()):
 		var col = get_slide_collision(i)
-		if col and (col.get_collider().is_in_group("enemy") or col.get_collider().is_in_group("hazard")):
-			var damage_result = health_component.take_damage(1, col.get_collider())
-			if damage_result.was_damaged:
-				velocity = damage_result.knockback_velocity
-				change_state(State.HURT)
-			break
+		if col:
+			var collider = col.get_collider()
+			if collider.is_in_group("enemy") or collider.is_in_group("hazard"):
+				var damage_result = health_component.take_damage(1, collider)
+				if damage_result.was_damaged:
+					velocity = damage_result.knockback_velocity
+					change_state(State.HURT)
+				break
+
 
 func _on_damage_dealt():
 	if p_data.healing_charges >= Config.get_value("player.health.max_healing_charges"): return
@@ -5082,13 +5099,21 @@ func _cancel_heal():
 	healing_timer.stop()
 
 func _on_hitbox_body_entered(body):
-	if p_data.is_pogo_attack: combat_component.trigger_pogo(body)
-	elif body.is_in_group("enemy"): body.take_damage(1); _on_damage_dealt()
+	if p_data.is_pogo_attack:
+		combat_component.trigger_pogo(body)
+	elif body.is_in_group("enemy"):
+		var enemy_health_comp = body.get_node_or_null("HealthComponent")
+		if enemy_health_comp:
+			# SOLUTION: Pass 'self' (the player) as the second argument.
+			enemy_health_comp.take_damage(1, self)
+			_on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		if p_data.is_pogo_attack: combat_component.trigger_pogo(area)
-		else: ObjectPool.return_instance(area)
+		if p_data.is_pogo_attack:
+			combat_component.trigger_pogo(area)
+		else:
+			ObjectPool.return_instance(area)
 
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
@@ -5115,6 +5140,7 @@ func _on_health_component_health_changed(current, max_val):
 
 func _on_health_component_died():
 	died.emit()
+
 
 =====================================
 FILE: ./src/entities/player/states/state_jump.gd
@@ -5337,6 +5363,7 @@ func _check_for_immediate_pogo() -> bool:
 		return true
 		
 	return false
+
 
 =====================================
 FILE: ./src/entities/player/states/state_hurt.gd
