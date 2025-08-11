@@ -154,3 +154,17 @@
 ║      ░   components to prevent potential memory leaks from cyclic references.║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+   █  Architectural Changes
+      ░ ■ Decoupled game logic from screen resolution by creating a `GridUtils`
+      ░   singleton to handle conversions between tile and world coordinates.
+      ░ ■ Implemented a `CameraManager` to dynamically fit the camera to the
+      ░   arena's logical size, enabling support for non-square aspect ratios.
+      ░ ■ Enhanced the `TerrainBuilder` to procedurally fill the entire camera
+      ░   viewport with background tiles, creating a seamless play area.
+
+   █  Changed
+      ░ ■ Project display settings updated to a 16:9 aspect ratio (1920x1080).
+      ░ ■ Refactored procedural UI menus to use container nodes for better
+      ░   resizing, though minor alignment issues remain (see BUGS.txt).

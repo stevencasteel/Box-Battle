@@ -98,3 +98,13 @@
 #   [ ] # — Short title (owner | date) + one-line reproduction steps
 # - If you create a GitHub Issue for an item, add the issue number after the bracket:
 #   [ ] #14 — Example bug title (alice | 2025-08-11)
+
+
+   □  [BUG-UI001] Inconsistent Back Button Centering in Sub-Menus.
+      ░  STATUS: OPEN
+      ░  DESCRIPTION: The "Back" button in the Sound and Controls menus is not
+      ░  perfectly centered horizontally, unlike the button in the Credits menu.
+      ░  This is likely due to a conflict between manual positioning and the
+      ░  parent container's layout logic.
+      ░  DEFERRED: A full UI overhaul is planned for a future sprint. This
+      ░  minor visual bug will be resolved then.

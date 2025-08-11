@@ -1,16 +1,15 @@
 # src/core/building/arena_builder.gd
 #
-# This singleton is a high-level "Coordinator". It owns the logic for directing
-# the encounter to ensure Callables remain valid throughout sequences.
+# This singleton is a high-level "Coordinator".
 extends Node
 
 var _current_build_data: LevelBuildData
 var _current_level_container: Node
 var _intro_sequence_handle: SequenceHandle
 
+# MODIFIED: Signature is simple again, no camera needed.
 func build_level_async() -> Node:
-	# Clean up any previous encounter's state.
-	if is_instance_valid(_intro_sequence_handle) and _intro_sequence_handle.is_running:
+	if is_instance_valid(_intro_sequence_handle):
 		_intro_sequence_handle.cancel()
 	_intro_sequence_handle = null
 	
@@ -29,13 +28,13 @@ func build_level_async() -> Node:
 		
 	var parser = LevelParser.new()
 	_current_build_data = parser.parse_level_data(encounter_script)
+	_current_level_container.set_meta("build_data", _current_build_data)
 	
 	await get_tree().process_frame
 
 	var terrain_builder = TerrainBuilder.new()
 	await terrain_builder.build_terrain_async(_current_level_container, _current_build_data, get_tree())
 
-	# ArenaBuilder now directly calls the spawning logic.
 	await _spawn_player_async()
 	await _spawn_hud_async()
 	_intro_sequence_handle = _run_intro_sequence()
