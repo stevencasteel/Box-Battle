@@ -1,6 +1,6 @@
 # src/entities/boss/base_boss.gd
-# This is the "Context" script for the Boss State Machine. It now delegates
-# state and health management to its data resource and component.
+# This is the "Context" for the Boss State Machine. It now delegates all
+# state management logic to its StateMachine child node.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -16,10 +16,9 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 @onready var cooldown_timer: Timer = $CooldownTimer
 @onready var patrol_timer: Timer = $PatrolTimer
 @onready var health_component: HealthComponent = $HealthComponent
+@onready var state_machine: BaseStateMachine = $StateMachine
 
-# --- State Machine & Data ---
-var states: Dictionary
-var current_state: BossState
+# --- Data ---
 var b_data: BossStateData
 
 # --- Boss Properties ---
@@ -27,7 +26,6 @@ var player: CharacterBody2D = null
 
 # --- Engine Functions ---
 func _ready():
-	# THE FIX: Add the node to its group FIRST, before any components are set up.
 	add_to_group("enemy")
 	
 	b_data = BossStateData.new()
@@ -35,7 +33,6 @@ func _ready():
 	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	# MODIFIED: Setup components by passing a dictionary of dependencies.
 	health_component.setup(self, {
 		"data_resource": b_data,
 		"config": CombatDB.config
@@ -45,39 +42,30 @@ func _ready():
 
 	player = get_tree().get_first_node_in_group("player")
 	
-	states = {
-		State.IDLE: BossStateIdle.new(self, b_data),
-		State.ATTACK: BossStateAttack.new(self, b_data),
-		State.COOLDOWN: BossStateCooldown.new(self, b_data),
-		State.PATROL: BossStatePatrol.new(self, b_data),
+	var states = {
+		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
+		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
+		State.COOLDOWN: BossStateCooldown.new(self, state_machine, b_data),
+		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
 	}
 	
-	change_state(State.COOLDOWN)
+	state_machine.setup(states, State.COOLDOWN)
+
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+		if state_machine: state_machine.teardown()
+		if health_component: health_component.teardown()
+		b_data = null
 
 func _physics_process(delta):
 	if not is_on_floor():
 		velocity.y += CombatDB.config.gravity * delta
-
-	if current_state:
-		current_state.process_physics(delta)
 	
+	# The state machine automatically calls process_physics on the current state.
 	move_and_slide()
 	
-	if states.find_key(current_state) == State.PATROL and is_on_wall():
+	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
 		b_data.facing_direction *= -1.0
-
-func _exit_tree():
-	states.clear()
-	b_data = null
-	if health_component: health_component.teardown()
-
-func change_state(new_state_key: State):
-	if not states.has(new_state_key): return
-	if current_state == states[new_state_key]: return
-	if current_state: current_state.exit()
-	
-	current_state = states[new_state_key]
-	current_state.enter()
 
 # --- Public Methods ---
 func die():
@@ -107,12 +95,12 @@ func fire_shot_at_player():
 	
 # --- Signal Handlers ---
 func _on_cooldown_timer_timeout():
-	if states.find_key(current_state) == State.COOLDOWN:
-		change_state(State.PATROL)
+	if state_machine.current_state == state_machine.states[State.COOLDOWN]:
+		state_machine.change_state(State.PATROL)
 
 func _on_patrol_timer_timeout():
-	if states.find_key(current_state) == State.PATROL:
-		change_state(State.IDLE)
+	if state_machine.current_state == state_machine.states[State.PATROL]:
+		state_machine.change_state(State.IDLE)
 		
 func _on_health_component_health_changed(current, max_val):
 	var ev = BossHealthChangedEvent.new()

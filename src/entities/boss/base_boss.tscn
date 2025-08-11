@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=5 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
+[ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -31,6 +32,9 @@ one_shot = true
 
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_b0so8")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("3_fsm")
 
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]

@@ -57,6 +57,9 @@
 ║      ░   to unify all entity state management, removing duplicated code.     ║
 ║      ░ ■ Refactored the Player to use the new `BaseStateMachine`, simplifying║
 ║      ░   the main `player.gd` script and delegating all state logic.         ║
+║      ░ ■ Refactored the `BaseBoss` to use the new `BaseStateMachine`,        ║
+║      ░   unifying the state management architecture across all entities and  ║
+║      ░   removing the final piece of duplicated state logic.                 ║
 ║      ░ ■ Decoupled all Components from their owners by passing dependencies  ║
 ║      ░   (data resources, other components) explicitly through a dictionary  ║
 ║      ░   in the `setup()` method, adhering to Dependency Inversion.          ║

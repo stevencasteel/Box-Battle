@@ -14,7 +14,7 @@ func _init(p_owner: Node, p_state_machine: Node, p_state_data: Resource):
 	self.state_machine = p_state_machine
 	self.state_data = p_state_data
 
-# NEW: Teardown function to break cyclic references.
+# NEW: Teardown function to break cyclic references and prevent memory leaks.
 func teardown():
 	owner = null
 	state_machine = null

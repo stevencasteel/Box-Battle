@@ -24,12 +24,14 @@ func setup(p_states: Dictionary, p_initial_state_key):
 	self.states = p_states
 	change_state(p_initial_state_key)
 
-# NEW: Teardown function to clean up all contained states.
+# CORRECTED: The teardown function is restored.
 func teardown():
 	if current_state:
 		current_state.exit()
+	# Call teardown on each individual state to break cyclic references.
 	for state in states.values():
-		state.teardown()
+		if state.has_method("teardown"):
+			state.teardown()
 	states.clear()
 	current_state = null
 
@@ -48,5 +50,5 @@ func change_state(new_state_key, msg := {}):
 	current_state.enter(msg)
 
 func _exit_tree():
-	# We call teardown here to be safe, but the owner should call it first.
+	# Call teardown on exit to be safe, though the owner should call it first.
 	teardown()

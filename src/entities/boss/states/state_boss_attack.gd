@@ -1,29 +1,27 @@
 # src/entities/boss/states/state_boss_attack.gd
 # This state executes an attack and immediately transitions to Cooldown.
-extends "res://src/entities/boss/states/state_boss_base.gd"
+extends BaseState
 class_name BossStateAttack
 
-func enter(_msg := {}) -> void:
-	var attack_keys = boss.AttackPattern.keys()
+func enter(_msg := {}):
+	var attack_keys = owner.AttackPattern.keys()
 	var chosen_attack_name = attack_keys[randi() % attack_keys.size()]
 	
-	# MODIFIED: Write to the data object
-	b_data.current_attack = boss.AttackPattern[chosen_attack_name]
-	print("Boss chose attack: ", chosen_attack_name)
+	state_data.current_attack = owner.AttackPattern[chosen_attack_name]
 	
-	match b_data.current_attack:
-		boss.AttackPattern.SINGLE_SHOT:
-			boss.fire_shot_at_player()
-		boss.AttackPattern.VOLLEY_SHOT:
-			var tween = boss.get_tree().create_tween()
-			tween.tween_callback(boss.fire_shot_at_player)
+	match state_data.current_attack:
+		owner.AttackPattern.SINGLE_SHOT:
+			owner.fire_shot_at_player()
+		owner.AttackPattern.VOLLEY_SHOT:
+			var tween = owner.get_tree().create_tween()
+			tween.tween_callback(owner.fire_shot_at_player)
 			tween.tween_interval(0.2)
-			tween.tween_callback(boss.fire_shot_at_player)
+			tween.tween_callback(owner.fire_shot_at_player)
 			tween.tween_interval(0.2)
-			tween.tween_callback(boss.fire_shot_at_player)
+			tween.tween_callback(owner.fire_shot_at_player)
 			
-	boss.change_state(boss.State.COOLDOWN)
+	state_machine.change_state(owner.State.COOLDOWN)
 
-func process_physics(_delta: float) -> void:
+func process_physics(_delta: float):
 	# This state is instantaneous, so it does nothing in the physics process.
 	pass
