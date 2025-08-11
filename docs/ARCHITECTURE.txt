@@ -84,3 +84,95 @@
 ║   5. Confirm & Proceed: The Human confirms success and defines the next goal.║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+ARCHITECTURE SUMMARY
+====================
+
+Purpose
+-------
+Capture the runtime architecture after the refactor. This doc focuses on:
+- The component-based entity model
+- State machines and lifecycle
+- Autoload singletons and their responsibilities
+- Damage/hit contracts and flow
+
+High-level ASCII diagram
+------------------------
+Entities (Node2D)
+  ├─ components (ComponentInterface)
+  └─ state_machine (BaseStateMachine)
+         ├─ state: BaseState
+         └─ state: BaseState
+
+Singletons (autoloads)
+----------------------
+- EventBus      — pub/sub decoupling for cross-systems events
+- SceneManager  — load/unload top-level scenes safely (async)
+- Sequencer     — sequence manager for cutscene-like flows and blocking scripts
+- ObjectPool    — pooled nodes (projectiles, FX, temporary entities)
+- CombatUtils   — canonical damage application & hit resolution helpers
+- AssetPaths    — centralized resource path map (optional)
+- Palette       — color / theme constants (optional)
+
+Core contracts & API
+--------------------
+ComponentInterface (convention)
+- Purpose: reusable behavior units attached to Entities.
+- Expected methods:
+  - `func setup(config: Dictionary) -> void`    # apply param set; called on entity init
+  - `func teardown() -> void`                  # cleanup (disconnect signals, timers)
+- Lifetime: components are owned by their entity; teardown must undo everything added.
+
+BaseState / BaseStateMachine
+- BaseState exposes:
+  - `func enter(data = null) -> void`
+  - `func exit() -> void`
+  - `func physics_process(delta: float) -> void`
+- BaseStateMachine:
+  - holds `current_state: BaseState`
+  - `change_state(new_state: BaseState, data = null)` performs exit → transition → enter
+  - States should be lightweight and free of leaked timers/signals (teardown on exit).
+
+IDamageable
+- Entities that can be damaged must implement the IDamageable contract:
+  - `func receive_damage(damage_info: Dictionary) -> void`
+  - `func is_invulnerable() -> bool` (optional)
+- CombatUtils is the recommended façade to resolve hits:
+  - `CombatUtils.apply_damage(source, target, damage_info)`
+
+Damage / Hit Flow (canonical)
+1. A hit is detected (Area2D overlap, raycast, or collision callback).
+2. A DamageSource object/dictionary is created (type, amount, knockback, owner, hit_flags).
+3. `CombatUtils.apply_damage(...)` is called.
+4. CombatUtils:
+   - Normalizes damage_info
+   - Checks IDamageable contract and invulnerability windows
+   - Applies HP change and notifies EventBus (eg. `EventBus.emit("damage_taken", {...})`)
+   - Handles FX via ObjectPool
+
+EventBus usage (example)
+- Emit:
+  `EventBus.emit("player_died", {"player": player})`
+- Subscribe:
+  `EventBus.on("player_died", self, "_on_player_died")`
+
+File organization notes
+- `src/core/` => autoloads + shared utilities
+- `src/entities/` => entity scenes, component scripts, and state scripts
+- `src/arenas/` => procedural/serialized arena builders & layouts
+- `docs/` => architecture and design docs (update when APIs change)
+
+Performance / lifecycle guidance
+- Use ObjectPool for high-frequency nodes (bullets, hitFX).
+- Keep async scene loads in SceneManager to avoid frame stalls.
+- Pre-warm shaders/materials on load if you see first-frame hitches.
+- Always disconnect EventBus listeners and clear timers in `_exit_tree`.
+
+Common places to check when adding features:
+- Combat: `src/core/CombatUtils.gd`
+- Eventing: `src/core/EventBus.gd`
+- State machine base: `src/core/BaseStateMachine.gd`
+- Component contract: `src/entities/ComponentInterface.gd`
+- Pools: `src/core/ObjectPool.gd`
+
+(When you update any of these, please mirror the change into this doc.)

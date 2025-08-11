@@ -74,3 +74,27 @@
 ║      ░  `_check_for_contact_damage()` function to work as intended.          ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+# BUGS.txt — Live Bug Tracker
+# Legend:
+#   ID — Optional local ID or GitHub Issue # if applicable.
+#   [ ] — Open
+#   [-] — In Progress
+#   [x] — Fixed (date)
+
+## Open
+[ ] #— None at present.
+
+## In Progress
+[-] #— None at present.
+
+## Fixed
+[x] #101 — Pogo mechanic sometimes failed to register damage on boss (2025-08-09)
+[x] #99  — Contact damage applied twice under rare conditions (2025-08-05)
+
+# Notes:
+# - This file is intentionally minimal. Add new items to "Open" as:
+#   [ ] # — Short title (owner | date) + one-line reproduction steps
+# - If you create a GitHub Issue for an item, add the issue number after the bracket:
+#   [ ] #14 — Example bug title (alice | 2025-08-11)

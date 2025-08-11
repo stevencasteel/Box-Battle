@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 10 22:22:20 CDT 2025
+Generated on: Mon Aug 11 08:55:35 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -32,6 +32,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── create_all_godot_source_code_txt.command
 │   ├── create_all_godot_source_code_txt.sh
 │   └── sprint_0_audit
+│       ├── ADR-002_Communication_Patterns.md
 │       ├── ADR.md
 │       ├── ADR.mdADR-001_Service_Locator_Pattern.md
 │       ├── ARCH-001_Refactoring_Principles.md
@@ -106,7 +107,6 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── boss_state_data.gd
     │   │   └── states
     │   │       ├── state_boss_attack.gd
-    │   │       ├── state_boss_base.gd
     │   │       ├── state_boss_cooldown.gd
     │   │       ├── state_boss_idle.gd
     │   │       └── state_boss_patrol.gd
@@ -641,6 +641,165 @@ FILE: ./docs/CHANGELOG_archive_pre-0.4.0.txt
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██          [0.5.0] - ARCHITECTURAL UNIFICATION - 2025-08-10            ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
+║                                                                              ║
+║      This version completes a foundational architectural refactor,           ║
+║      unifying the player and boss state machines, introducing a robust       ║
+║      interface-based damage system, and fully decoupling all entity          ║ 
+║      components to create a highly scalable and maintainable codebase.       ║                                                                 ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Introduced a robust, interface-based damage system (`IDamageable`)  ║
+║      ░   to formalize how entities receive damage, replacing fragile,        ║
+║      ░   string-based lookups with a type-safe contract.                     ║
+║      ░ ■ Created a new `CombatUtils` singleton to provide a robust,          ║
+║      ░   tree-traversing utility for finding `HealthComponent` nodes from any║
+║      ░   physics collider, eliminating brittle `get_node` lookups.           ║
+║      ░ ■ Decoupled `CombatComponent` from the `Player` by replacing direct   ║
+║      ░   state and velocity mutation with a `pogo_bounce_requested` signal,  ║
+║      ░   adhering to the Dependency Inversion Principle.                     ║
+║      ░ ■ Created a new `SceneManager` autoload to centralize all scene       ║
+║      ░   transition logic, providing a single, robust API for navigation.    ║
+║      ░ ■ Implemented state validation in `PlayerStateData` and `BossStateData`║
+║      ░   using property setters. This makes the data resources self-validating
+║      ░   and prevents invalid states (e.g., health > max_health).            ║
+║      ░ ■ Created a formal `ComponentInterface` to act as a standardized      ║
+║      ░   blueprint for all entity components, enforcing a consistent API.    ║
+║      ░ ■ Refactored `GameManager` to use a `GameStateData` resource,         ║
+║      ░   eliminating the "dual architecture" of stateful singletons. All     ║
+║      ░   runtime state is now consistently managed through `Resource` objects.║
+║      ░ ■ Replaced the JSON-based `Config.gd` system with a type-safe,        ║
+║      ░   `Resource`-based system (`CombatConfig.tres` and `CombatDB.gd`).    ║
+║      ░   This provides compile-time safety against typos and enables direct  ║
+║      ░   gameplay value tuning in the Godot editor's Inspector.              ║
+║      ░ ■ Refactored the Player's state machine to load its state scripts at  ║
+║      ░   runtime in `_ready()` instead of using `preload()`. This breaks a   ║
+║      ░   brittle parse-time dependency cycle, making the game's startup      ║
+║      ░   sequence significantly more robust.                                 ║
+║      ░ ■ Further refined the `src/core` directory structure, creating new    ║
+║      ░   subdirectories for typed configs and events (`data/config`, `events/typed_events`).║
+║      ░ ■ Standardized script filenames to snake_case (e.g., `Config.gd` ->   ║
+║      ░   `config.gd`) for project-wide consistency.                          ║
+║      ░ ■ Reorganized the monolithic `src` directory into purpose-driven      ║
+║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
+║      ░   improve project modularity and scalability.                         ║
+║      ░ ■ Simplified the global `EventBus` by removing unused features like   ║
+║      ░   the priority system and `emit_async`, resulting in a leaner         ║
+║      ░   implementation.                                                     ║
+║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState`   ║
+║      ░   to unify all entity state management, removing duplicated code.     ║
+║      ░ ■ Refactored the Player to use the new `BaseStateMachine`, simplifying║
+║      ░   the main `player.gd` script and delegating all state logic.         ║
+║      ░ ■ Refactored the `BaseBoss` to use the new `BaseStateMachine`,        ║
+║      ░   unifying the state management architecture across all entities and  ║
+║      ░   removing the final piece of duplicated state logic.                 ║
+║      ░ ■ Decoupled all Components from their owners by passing dependencies  ║
+║      ░   (data resources, other components) explicitly through a dictionary  ║
+║      ░   in the `setup()` method, adhering to Dependency Inversion.          ║
+║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState`   ║
+║      ░   to unify all entity state management, removing duplicated code.     ║
+║      ░ ■ Refactored the `BaseBoss` to use the new `BaseStateMachine`,        ║
+║      ░   unifying the state management architecture across all entities.     ║
+║      ░ ■ Simplified the `EventBus` API by removing the unused `_source`      ║
+║      ░   parameter from the `emit` function.                                 ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Renamed `HealthComponent.take_damage` to `apply_damage` to          ║
+║      ░   conform to the new interface contract.                              ║
+║      ░ ■ Refactored `CombatUtils` to find any `IDamageable` node, not just   ║
+║      ░   a `HealthComponent`.                                                ║
+║      ░ ■ Updated all damage sources (projectiles, melee, pogo, contact)      ║
+║      ░   to use the new `CombatUtils.find_damageable` method.                ║
+║      ░ ■ Refactored all UI screens and core game scripts to use the new      ║
+║      ░   `SceneManager`, removing scattered `get_tree().change_scene` calls. ║
+║      ░ ■ Refactored `HealthComponent` to initialize the new self-validating  ║
+║      ░   data resources, simplifying its internal logic.                     ║
+║      ░ ■ Refactored `CombatComponent` and `InputComponent` to extend the new ║
+║      ░   `ComponentInterface`, standardizing the entire component architecture.║
+║      ░ ■ Updated `player.gd` to use the standardized `setup` and `teardown`  ║
+║      ░   methods for all its components.                                     ║
+║      ░ ■ Refactored `HealthComponent` to extend the new `ComponentInterface` ║
+║      ░   and use a more robust `is_in_group` check for its setup logic.      ║
+║      ░ ■ Reorganized `AssetPaths.gd` by feature/system for improved clarity. ║
+║      ░ ■ Added a validation system to `AssetPaths.gd` that checks for missing║
+║      ░   files at startup, preventing runtime "file not found" errors.       ║
+║      ░ ■ Added validation to `Settings.gd` property setters to clamp audio   ║
+║      ░   volume values, making the system more robust against invalid data.  ║
+║      ░ ■ Cleaned up all remaining GDScript static analysis warnings          ║
+║      ░   (`UNUSED_PARAMETER`, `SHADOWED_VARIABLE`) for a clean build.        ║
+║      ░ ■ Removed dead/broken event definitions from `EventCatalog` and       ║
+║      ░   removed the corresponding broken logic from `EncounterDirector`.    ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Added placeholder `README.md` and `DEPRECATION.md` files to `core`, ║
+║      ░   `entities`, and `docs` to establish a documentation framework.      ║
+║                                                                              ║
+║   █  Documentation                                                           ║
+║      ░ ■ Improved header comments in `Constants.gd` and `PhysicsLayers.gd`   ║
+║      ░   to clarify their intended purpose and prevent architectural drift.  ║
+║      ░ ■ Completed Sprint 0 architectural audit.                             ║
+║      ░ ■ Added `docs/sprint_0_audit` directory to house analysis files.      ║
+║      ░ ■ Generated audit reports for singletons, event usage, and config usage.║
+║      ░ ■ Added `ADR-001` to formally document the existing Service Locator pattern.║
+║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
+║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
+║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
+║      ░ ■ Added `ADR-002_Communication_Patterns.md` to formally document the  ║
+║      ░   project's standard for using Godot Signals (local communication)   ║
+║      ░   vs. the EventBus (global communication).                            ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a complex series of bugs causing the pogo mechanic to be   ║
+║      ░   unreliable. The attack now consistently damages the boss, bounces off║
+║      ░   projectiles, and can be executed repeatedly on the ground without   ║
+║      ░   "misfiring".                                                        ║
+║      ░ ■ Unified the ground and air pogo logic into a single, physics-driven ║
+║      ░   system that correctly handles all valid bounce surfaces (enemies,   ║
+║      ░   projectiles, and world geometry).                                   ║
+║      ░ ■ Separated the pogo mechanic from the melee attack cooldown, allowing║
+║      ░   the player to seamlessly transition between bouncing and landing.   ║
+║      ░ ■ Corrected the pogo's physics query to include `Area2D` nodes,       ║
+║      ░   restoring its ability to detect and destroy projectiles.            ║
+║      ░ ■ Resolved a memory leak by ensuring the `GameManager` frees its      ║
+║      ░   `GameStateData` resource in `_exit_tree`.                           ║
+║      ░ ■ Fixed a critical parse error by removing a conflicting `class_name` ║
+║      ░   from the `SceneManager` autoload script.                            ║
+║      ░ ■ Added missing `max_health` property to `BossStateData` to resolve a ║
+║      ░   crash when the boss took damage.                                    ║
+║      ░ ■ Resolved a crash caused by using the non-existent `has()` method in ║
+║      ░   `HealthComponent`; replaced with a more robust `is_in_group()` check.║
+║      ░ ■ Corrected invalid GDScript 4 dictionary access syntax in `player.gd`.║
+║      ░ ■ Removed the invalid `override` keyword from `HealthComponent`, which ║
+║      ░   was causing a critical parse error.                                 ║
+║      ░ ■ Corrected the argument order in `HealthComponent.setup` calls to    ║
+║      ░   match the newly defined `ComponentInterface` contract.              ║
+║      ░ ■ Resolved a parse-time dependency error by ensuring `GameStateData`  ║
+║      ░   is loaded at runtime in `GameManager`, preventing a startup crash.  ║
+║      ░ ■ Resolved a cascade of parse errors by correcting the implementation ║
+║      ░   of the new `CombatConfig` resource and refactoring dependent scripts.║
+║      ░ ■ Corrected multiple typos and syntax errors in player state scripts  ║
+║      ░   (`state_attack.gd`, `state_hurt.gd`, `state_wall_slide.gd`) that    ║
+║      ░   were causing crashes during gameplay.                               ║
+║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
+║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
+║      ░ ■ Fixed a critical race condition where player contact damage could   ║
+║      ░   interrupt a pogo attack, preventing the pogo from dealing damage.   ║
+║      ░ ■ Resolved a critical bug where the Player and Boss would receive the ║
+║      ░   wrong invincibility durations. Moved `add_to_group()` to the top of ║
+║      ░   `_ready()` to ensure entities are correctly identified before their ║
+║      ░   components are configured.                                          ║
+║      ░ ■ Restored player knockback and invincibility, which were failing due ║
+║      ░   to the incorrect invincibility timer.                               ║
+║      ░ ■ The `Hurt` state now correctly uses its own short `knockback_timer` ║
+║      ░   for stun duration, decoupled from the longer invincibility timer.   ║
+║      ░ ■ Implemented robust `teardown` methods in the state machine and all  ║
+║      ░   components to prevent potential memory leaks from cyclic references.║
+║      ░ ■ Corrected all calls to `EventBus.emit` to match the new, simpler    ║
+║      ░   2-argument signature, resolving a crash.                            ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██            [0.4.0] - THE COMPONENT REFACTOR - 2025-08-09             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
@@ -801,6 +960,8 @@ FILE: ./docs/CHANGELOG_archive_pre-0.4.0.txt
 ║      ░ ■ Fully restored the pogo mechanic.                                   ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
 
 =====================================
 FILE: ./docs/DOCS_PROTOCOL.txt
@@ -1396,6 +1557,80 @@ FILE: ./docs/sprint_0_audit/TEST-003_Regression_Checklist.md
 
 
 =====================================
+FILE: ./docs/sprint_0_audit/ADR-002_Communication_Patterns.md
+=====================================
+# ADR-002: Communication Patterns (Signal vs. EventBus)
+
+**Date:** 2025-08-10
+
+**Status:** Adopted
+
+---
+
+## Context
+
+The project utilizes two primary methods for communication between different parts of the codebase: Godot's built-in **Signal** system and our custom global **EventBus**. Without a clear standard, it can be ambiguous which tool to use, potentially leading to tightly-coupled systems that are difficult to maintain or debug.
+
+This document defines the official standard for choosing a communication pattern.
+
+## Decision
+
+We will adhere to a clear "Local vs. Global" distinction for communication:
+
+1. **Use Godot Signals for *Local* Communication.**
+2. **Use the EventBus for *Global* Communication.**
+
+---
+
+### 1. Godot Signals: Local Communication
+
+Signals are the preferred method for communication **within a single, self-contained scene** or between a parent node and its direct children. This represents a tightly-coupled, "owner-to-part" relationship.
+
+**Use a Signal when:**
+- A child node needs to tell its parent that something happened (e.g., a `Button` telling a `Menu` it was pressed).
+- A parent node needs to broadcast a message to all of its direct children.
+- A component needs to communicate its result back to its owner (e.g., `CombatComponent` emitting `pogo_bounce_requested` for `Player` to handle).
+
+**Litmus Test:** If the sender and receiver are part of the same scene file (`.tscn`) and have a direct parent-child relationship, use a signal.
+
+**Example (`player.gd`):**
+```gdscript
+# The HealthComponent (child) emits a signal.
+signal died
+
+# The Player (parent) listens to its own component.
+health_component.died.connect(_on_health_component_died)
+```
+
+### 2. EventBus: Global Communication
+
+The EventBus is the preferred method for communication **between disparate, decoupled systems**. The sender and receiver should have no direct knowledge of each other. This represents a loosely-coupled, "system-to-system" relationship.
+
+**Use the EventBus when:**
+- A gameplay event needs to be reflected in the UI (e.g., the Player's health changes, and the GameHUD must be updated).
+- A UI action needs to trigger a global system change (e.g., a TitleScreen button opens a menu, and the GlobalHUD must show the mute icon).
+- An entity in the game world needs to trigger an audio cue (e.g., the Boss dies, and the AudioManager needs to play a victory sound).
+
+**Litmus Test:** If the sender and receiver are in completely different parts of the scene tree and do not know about each other's existence, use the EventBus.
+
+**Example (player.gd emitting, game_hud.gd listening):**
+
+```gdscript
+# player.gd (Sender)
+var ev = PlayerHealthChangedEvent.new()
+EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
+
+# game_hud.gd (Receiver)
+EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
+```
+
+## Consequences
+
+**Positive:** This standard provides a clear, unambiguous rule that is easy to follow, promoting clean architecture and preventing "spaghetti" code where everything is globally connected via the EventBus. It keeps scenes self-contained and makes systems highly modular.
+
+**Negative:** None. This is a best-practice clarification that reduces cognitive overhead.
+
+=====================================
 FILE: ./docs/sprint_0_audit/ADR.mdADR-001_Service_Locator_Pattern.md
 =====================================
 # ADR-001: Global System Access via Autoload Singletons (Service Locator)
@@ -1618,7 +1853,7 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
-║      ░ ■ Introduced a robust, interface-based damage system (`IDamageable`) ║
+║      ░ ■ Introduced a robust, interface-based damage system (`IDamageable`)  ║
 ║      ░   to formalize how entities receive damage, replacing fragile,        ║
 ║      ░   string-based lookups with a type-safe contract.                     ║
 ║      ░ ■ Created a new `CombatUtils` singleton to provide a robust,          ║
@@ -1655,9 +1890,25 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░ ■ Simplified the global `EventBus` by removing unused features like   ║
 ║      ░   the priority system and `emit_async`, resulting in a leaner         ║
 ║      ░   implementation.                                                     ║
+║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState`   ║
+║      ░   to unify all entity state management, removing duplicated code.     ║
+║      ░ ■ Refactored the Player to use the new `BaseStateMachine`, simplifying║
+║      ░   the main `player.gd` script and delegating all state logic.         ║
+║      ░ ■ Refactored the `BaseBoss` to use the new `BaseStateMachine`,        ║
+║      ░   unifying the state management architecture across all entities and  ║
+║      ░   removing the final piece of duplicated state logic.                 ║
+║      ░ ■ Decoupled all Components from their owners by passing dependencies  ║
+║      ░   (data resources, other components) explicitly through a dictionary  ║
+║      ░   in the `setup()` method, adhering to Dependency Inversion.          ║
+║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState`   ║
+║      ░   to unify all entity state management, removing duplicated code.     ║
+║      ░ ■ Refactored the `BaseBoss` to use the new `BaseStateMachine`,        ║
+║      ░   unifying the state management architecture across all entities.     ║
+║      ░ ■ Simplified the `EventBus` API by removing the unused `_source`      ║
+║      ░   parameter from the `emit` function.                                 ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
-║      ░ ■ Renamed `HealthComponent.take_damage` to `apply_damage` to           ║
+║      ░ ■ Renamed `HealthComponent.take_damage` to `apply_damage` to          ║
 ║      ░   conform to the new interface contract.                              ║
 ║      ░ ■ Refactored `CombatUtils` to find any `IDamageable` node, not just   ║
 ║      ░   a `HealthComponent`.                                                ║
@@ -1697,6 +1948,9 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
 ║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
 ║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
+║      ░ ■ Added `ADR-002_Communication_Patterns.md` to formally document the  ║
+║      ░   project's standard for using Godot Signals (local communication)   ║
+║      ░   vs. the EventBus (global communication).                            ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
 ║      ░ ■ Resolved a complex series of bugs causing the pogo mechanic to be   ║
@@ -1734,6 +1988,18 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
 ║      ░ ■ Fixed a critical race condition where player contact damage could   ║
 ║      ░   interrupt a pogo attack, preventing the pogo from dealing damage.   ║
+║      ░ ■ Resolved a critical bug where the Player and Boss would receive the ║
+║      ░   wrong invincibility durations. Moved `add_to_group()` to the top of ║
+║      ░   `_ready()` to ensure entities are correctly identified before their ║
+║      ░   components are configured.                                          ║
+║      ░ ■ Restored player knockback and invincibility, which were failing due ║
+║      ░   to the incorrect invincibility timer.                               ║
+║      ░ ■ The `Hurt` state now correctly uses its own short `knockback_timer` ║
+║      ░   for stun duration, decoupled from the longer invincibility timer.   ║
+║      ░ ■ Implemented robust `teardown` methods in the state machine and all  ║
+║      ░   components to prevent potential memory leaks from cyclic references.║
+║      ░ ■ Corrected all calls to `EventBus.emit` to match the new, simpler    ║
+║      ░   2-argument signature, resolving a crash.                            ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -2027,53 +2293,52 @@ FILE: ./README.md
 =====================================
 # BOX BATTLE
 
-
+```
 ██████╗  ██████╗ ██╗  ██╗    ██████╗  █████╗ ████████╗████████╗██╗     ███████╗
 ██╔══██╗██╔═══██╗╗██╗██╔╝    ██╔══██╗██╔══██╗╚══██╔══╝╚══██╔══╝██║     ██╔════╝
 ██████╔╝██║   ██║╚███╔╝      ██████╔╝███████║   ██║      ██║   ██║     █████╗  
 ██╔══██╗██║   ██║██╔██╗      ██╔══██╗██╔══██║   ██║      ██║   ██║     ██╔══╝  
 ██████╔╝╚██████╔╝██╔╝ ██╗    ██████╔╝██║  ██║   ██║      ██║   ███████╗███████╗
 ╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝╚══════╝
-
+```
 
 A combat-focused 2D action game built in Godot 4, showcasing clean architecture and comprehensive game systems.
 
 ## What Makes This Code Notable
 
 ### Architectural Excellence
-- **Decoupled Messaging System**: A professional-grade Event Bus singleton allows game systems (UI, Audio, Gameplay) to communicate without direct dependencies, making the architecture highly modular and scalable. The Event Bus is used for global, decoupled communication, while local component-to-owner interaction is handled cleanly with Godot's built-in signal system.
-- **Centralized Asset Management**: All file paths are managed through a single `AssetPaths` singleton, eliminating broken references and making refactoring trivial.
-- **Singleton-Based Core Systems**: Audio, settings, cursor management, and constants are globally accessible without tight coupling.
-- **Modular Arena System**: Level layouts and encounters are separated into data-only scripts, making level creation declarative and maintainable.
+- **Centralized Asset Management**: All file paths are managed through a single `AssetPaths` singleton, eliminating broken references and making refactoring trivial
+- **Singleton-Based Core Systems**: Audio, settings, cursor management, and constants are globally accessible without tight coupling
+- **Modular Arena System**: Level layouts and encounters are separated into data-only scripts, making level creation declarative and maintainable
 
 ### Advanced Player Controller
-- **Robust State Machine**: Clean finite state machine handling movement, combat, dashing, wall-sliding, and healing states.
-- **Physics-Driven Design**: Implements coyote time, jump buffering, wall jumping, and variable jump height for responsive controls.
-- **Pogo Mechanics**: Sophisticated downward attack system with instant collision detection and momentum preservation.
-- **Determination System**: Risk/reward mechanics where dealing damage builds healing charges.
+- **Robust State Machine**: Clean finite state machine handling movement, combat, dashing, wall-sliding, and healing states
+- **Physics-Driven Design**: Implements coyote time, jump buffering, wall jumping, and variable jump height for responsive controls
+- **Pogo Mechanics**: Sophisticated downward attack system with instant collision detection and momentum preservation
+- **Determination System**: Risk/reward mechanics where dealing damage builds healing charges
 
 ### Production-Quality UI
-- **Custom Menu Navigation**: Unified system supporting both keyboard and mouse input with audio feedback.
-- **Global HUD Management**: Context-aware UI elements that appear/disappear based on current scene.
-- **Real-time Settings Sync**: Audio sliders and checkboxes update immediately without save/load cycles.
-- **Custom Slider Component**: Self-contained, reusable UI widget with proper mouse interaction.
+- **Custom Menu Navigation**: Unified system supporting both keyboard and mouse input with audio feedback
+- **Global HUD Management**: Context-aware UI elements that appear/disappear based on current scene
+- **Real-time Settings Sync**: Audio sliders and checkboxes update immediately without save/load cycles
+- **Custom Slider Component**: Self-contained, reusable UI widget with proper mouse interaction
 
 ### Smart Audio Architecture
-- **Pooled SFX Players**: Multiple AudioStreamPlayer instances prevent sound cutoff during rapid-fire events.
+- **Pooled SFX Players**: Multiple AudioStreamPlayer instances prevent sound cutoff during rapid-fire events
 - **Context-Aware Sounds**: Different menu actions trigger appropriate audio cues (back vs select vs error)
-- **Robust Music Management**: Prevents music restarts when switching between menu screens.
+- **Robust Music Management**: Prevents music restarts when switching between menu screens
 
 ### Clean Code Practices
-- **Extensive Documentation**: Every script explains its purpose and key design decisions.
-- **Consistent Naming**: Clear, descriptive variable and function names throughout.
-- **Proper Signal Usage**: Decoupled communication between components using Godot's signal system.
-- **Layer-Based Physics**: Thoughtful collision layer setup for different object types and interactions.
+- **Extensive Documentation**: Every script explains its purpose and key design decisions
+- **Consistent Naming**: Clear, descriptive variable and function names throughout
+- **Proper Signal Usage**: Decoupled communication between components using Godot's signal system
+- **Layer-Based Physics**: Thoughtful collision layer setup for different object types and interactions
 
 ### Noteworthy Technical Solutions
-- **Fake Cursor System**: Custom cursor that works consistently across all platforms with proper click-through behavior.
-- **Immediate Pogo Detection**: Proactive collision checking prevents frame-delay issues in fast-paced combat.
-- **Hazard Dual-Layer System**: Terrain that's both solid (world layer) and damaging (hazard layer) for consistent physics.
-- **Deferred Scene Changes**: Proper scene transition handling to prevent physics errors.
+- **Fake Cursor System**: Custom cursor that works consistently across all platforms with proper click-through behavior
+- **Immediate Pogo Detection**: Proactive collision checking prevents frame-delay issues in fast-paced combat
+- **Hazard Dual-Layer System**: Terrain that's both solid (world layer) and damaging (hazard layer) for consistent physics
+- **Deferred Scene Changes**: Proper scene transition handling to prevent physics errors
 
 ## Getting Started
 
@@ -2091,13 +2356,15 @@ A combat-focused 2D action game built in Godot 4, showcasing clean architecture 
 
 ## Project Structure
 
+```
 src/
-├── core/ # Singleton systems (audio, settings, etc.)
-├── entities/ # Player and enemy classes
-├── projectiles/ # Bullet and shot behaviors
-├── scenes/ # Main game scenes
-├── ui/ # Menu systems and components
-└── arenas/ # Level data and encounter scripts
+├── core/           # Singleton systems (audio, settings, etc.)
+├── entities/       # Player and enemy classes
+├── projectiles/    # Bullet and shot behaviors
+├── scenes/         # Main game scenes
+├── ui/             # Menu systems and components
+└── arenas/         # Level data and encounter scripts
+```
 
 This codebase demonstrates how to structure a Godot project for maintainability, extensibility, and professional polish. Every system is designed to be modular, well-documented, and easy to extend.
 
@@ -3801,24 +4068,19 @@ FILE: ./src/core/util/combat_utils.gd
 # A collection of static helper functions for combat-related logic.
 extends Node
 
-# MODIFIED: This function is now more generic. It finds any node that can be
-# damaged by checking for the `apply_damage` method, which is our conceptual
-# interface. It returns the node that has the method.
+# Finds any node that can be damaged by checking for the `apply_damage` method,
+# which is our conceptual interface. It returns the node that has the method.
 func find_damageable(from_node: Node) -> Node:
 	var current_node = from_node
 	while is_instance_valid(current_node):
 		# Check if the node itself implements the IDamageable interface.
 		if current_node.has_method("apply_damage"):
-			# VERIFICATION PRINT
-			print("CombatUtils: Found damageable node: ", current_node.name)
 			return current_node
 			
 		# HealthComponent is the primary implementer of our interface.
 		# This provides a direct path for performance.
 		var hc = current_node.get_node_or_null("HealthComponent")
 		if hc and hc.has_method("apply_damage"):
-			# VERIFICATION PRINT
-			print("CombatUtils: Found damageable component on: ", current_node.name)
 			return hc
 
 		# If not, move up to the parent and check again.
@@ -4067,8 +4329,9 @@ The primary public API for inter-system communication is the `EventBus`. Systems
 =====================================
 FILE: ./src/core/events/event_bus.gd
 =====================================
-# src/core/event_bus.gd
-# SIMPLIFIED: Removed async queue, priority sorting, and unused debug features.
+# src/core/events/event_bus.gd
+# This is the final, lean version of the EventBus. The unused `_source`
+# parameter has been removed from the emit function for a cleaner API.
 extends Node
 
 var _subscribers: Dictionary = {}
@@ -4102,8 +4365,8 @@ func off(token: int) -> void:
 			_subscribers.erase(event_name)
 	_by_id.erase(token)
 
-# CORRECTED: Added underscore to unused parameter `_source`.
-func emit(event_name: StringName, payload = null, _source: Object = null) -> void:
+# MODIFIED: Removed the unused `_source` parameter.
+func emit(event_name: StringName, payload = null) -> void:
 	if not _subscribers.has(event_name): return
 
 	for sub in _subscribers[event_name].duplicate():
@@ -5154,10 +5417,11 @@ var patrol_speed: float = 100.0
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=4 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=5 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
+[ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -5188,6 +5452,9 @@ one_shot = true
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_b0so8")
 
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("3_fsm")
+
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]
 
@@ -5196,48 +5463,15 @@ FILE: ./src/entities/boss/states/state_boss_idle.gd
 =====================================
 # src/entities/boss/states/state_boss_idle.gd
 # The state for when the boss is pausing before an attack.
-extends "res://src/entities/boss/states/state_boss_base.gd"
+extends BaseState
 class_name BossStateIdle
 
-func enter(_msg := {}) -> void:
-	boss.velocity.x = 0
-	boss.change_state(boss.State.ATTACK)
+func enter(_msg := {}):
+	owner.velocity.x = 0
+	state_machine.change_state(owner.State.ATTACK)
 
-func process_physics(_delta: float) -> void:
+func process_physics(_delta: float):
 	# This state is instantaneous, so it does nothing in the physics process.
-	pass
-
-
-=====================================
-FILE: ./src/entities/boss/states/state_boss_base.gd
-=====================================
-# src/entities/boss/states/state_boss_base.gd
-# Base class / contract for all Boss states.
-# Modeled after src/entities/player/states/state_base.gd
-class_name BossState
-
-var boss: CharacterBody2D
-var b_data: BossStateData # NEW: Reference to the shared state data
-
-# MODIFIED: The constructor now accepts the state data resource.
-func _init(boss_node: CharacterBody2D, boss_data: BossStateData) -> void:
-	self.boss = boss_node
-	self.b_data = boss_data
-
-# Called when this state becomes active.
-func enter(_msg := {}) -> void:
-	pass
-
-# Called when this state is being replaced by another state.
-func exit() -> void:
-	pass
-
-# Main per-physics-frame update for the state.
-func process_physics(_delta: float) -> void:
-	pass
-
-# Optional input handling for state-specific input semantics.
-func process_input(_event: InputEvent) -> void:
 	pass
 
 
@@ -5246,14 +5480,14 @@ FILE: ./src/entities/boss/states/state_boss_cooldown.gd
 =====================================
 # src/entities/boss/states/state_boss_cooldown.gd
 # The state for when the boss is waiting after an attack.
-extends "res://src/entities/boss/states/state_boss_base.gd"
+extends BaseState
 class_name BossStateCooldown
 
-func enter(_msg := {}) -> void:
-	boss.velocity.x = 0
-	boss.cooldown_timer.start()
+func enter(_msg := {}):
+	owner.velocity.x = 0
+	owner.cooldown_timer.start()
 
-func process_physics(_delta: float) -> void:
+func process_physics(_delta: float):
 	# The state itself does nothing; it's just waiting for the timer.
 	pass
 
@@ -5263,31 +5497,29 @@ FILE: ./src/entities/boss/states/state_boss_attack.gd
 =====================================
 # src/entities/boss/states/state_boss_attack.gd
 # This state executes an attack and immediately transitions to Cooldown.
-extends "res://src/entities/boss/states/state_boss_base.gd"
+extends BaseState
 class_name BossStateAttack
 
-func enter(_msg := {}) -> void:
-	var attack_keys = boss.AttackPattern.keys()
+func enter(_msg := {}):
+	var attack_keys = owner.AttackPattern.keys()
 	var chosen_attack_name = attack_keys[randi() % attack_keys.size()]
 	
-	# MODIFIED: Write to the data object
-	b_data.current_attack = boss.AttackPattern[chosen_attack_name]
-	print("Boss chose attack: ", chosen_attack_name)
+	state_data.current_attack = owner.AttackPattern[chosen_attack_name]
 	
-	match b_data.current_attack:
-		boss.AttackPattern.SINGLE_SHOT:
-			boss.fire_shot_at_player()
-		boss.AttackPattern.VOLLEY_SHOT:
-			var tween = boss.get_tree().create_tween()
-			tween.tween_callback(boss.fire_shot_at_player)
+	match state_data.current_attack:
+		owner.AttackPattern.SINGLE_SHOT:
+			owner.fire_shot_at_player()
+		owner.AttackPattern.VOLLEY_SHOT:
+			var tween = owner.get_tree().create_tween()
+			tween.tween_callback(owner.fire_shot_at_player)
 			tween.tween_interval(0.2)
-			tween.tween_callback(boss.fire_shot_at_player)
+			tween.tween_callback(owner.fire_shot_at_player)
 			tween.tween_interval(0.2)
-			tween.tween_callback(boss.fire_shot_at_player)
+			tween.tween_callback(owner.fire_shot_at_player)
 			
-	boss.change_state(boss.State.COOLDOWN)
+	state_machine.change_state(owner.State.COOLDOWN)
 
-func process_physics(_delta: float) -> void:
+func process_physics(_delta: float):
 	# This state is instantaneous, so it does nothing in the physics process.
 	pass
 
@@ -5297,23 +5529,22 @@ FILE: ./src/entities/boss/states/state_boss_patrol.gd
 =====================================
 # src/entities/boss/states/state_boss_patrol.gd
 # The state responsible for the boss's back-and-forth movement.
-extends "res://src/entities/boss/states/state_boss_base.gd"
+extends BaseState
 class_name BossStatePatrol
 
-func enter(_msg := {}) -> void:
-	boss.patrol_timer.start()
+func enter(_msg := {}):
+	owner.patrol_timer.start()
 
-func process_physics(_delta: float) -> void:
-	# MODIFIED: Read direction and speed from the data object.
-	boss.velocity.x = b_data.facing_direction * b_data.patrol_speed
+func process_physics(_delta: float):
+	owner.velocity.x = state_data.facing_direction * state_data.patrol_speed
 
 
 =====================================
 FILE: ./src/entities/boss/base_boss.gd
 =====================================
 # src/entities/boss/base_boss.gd
-# This is the "Context" script for the Boss State Machine. It now delegates
-# state and health management to its data resource and component.
+# This is the "Context" for the Boss State Machine. It now delegates all
+# state management logic to its StateMachine child node.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -5329,10 +5560,9 @@ enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
 @onready var cooldown_timer: Timer = $CooldownTimer
 @onready var patrol_timer: Timer = $PatrolTimer
 @onready var health_component: HealthComponent = $HealthComponent
+@onready var state_machine: BaseStateMachine = $StateMachine
 
-# --- State Machine & Data ---
-var states: Dictionary
-var current_state: BossState
+# --- Data ---
 var b_data: BossStateData
 
 # --- Boss Properties ---
@@ -5340,7 +5570,6 @@ var player: CharacterBody2D = null
 
 # --- Engine Functions ---
 func _ready():
-	# THE FIX: Add the node to its group FIRST, before any components are set up.
 	add_to_group("enemy")
 	
 	b_data = BossStateData.new()
@@ -5348,7 +5577,6 @@ func _ready():
 	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	# MODIFIED: Setup components by passing a dictionary of dependencies.
 	health_component.setup(self, {
 		"data_resource": b_data,
 		"config": CombatDB.config
@@ -5358,39 +5586,30 @@ func _ready():
 
 	player = get_tree().get_first_node_in_group("player")
 	
-	states = {
-		State.IDLE: BossStateIdle.new(self, b_data),
-		State.ATTACK: BossStateAttack.new(self, b_data),
-		State.COOLDOWN: BossStateCooldown.new(self, b_data),
-		State.PATROL: BossStatePatrol.new(self, b_data),
+	var states = {
+		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
+		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
+		State.COOLDOWN: BossStateCooldown.new(self, state_machine, b_data),
+		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
 	}
 	
-	change_state(State.COOLDOWN)
+	state_machine.setup(states, State.COOLDOWN)
+
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+		if state_machine: state_machine.teardown()
+		if health_component: health_component.teardown()
+		b_data = null
 
 func _physics_process(delta):
 	if not is_on_floor():
 		velocity.y += CombatDB.config.gravity * delta
-
-	if current_state:
-		current_state.process_physics(delta)
 	
+	# The state machine automatically calls process_physics on the current state.
 	move_and_slide()
 	
-	if states.find_key(current_state) == State.PATROL and is_on_wall():
+	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
 		b_data.facing_direction *= -1.0
-
-func _exit_tree():
-	states.clear()
-	b_data = null
-	if health_component: health_component.teardown()
-
-func change_state(new_state_key: State):
-	if not states.has(new_state_key): return
-	if current_state == states[new_state_key]: return
-	if current_state: current_state.exit()
-	
-	current_state = states[new_state_key]
-	current_state.enter()
 
 # --- Public Methods ---
 func die():
@@ -5420,18 +5639,19 @@ func fire_shot_at_player():
 	
 # --- Signal Handlers ---
 func _on_cooldown_timer_timeout():
-	if states.find_key(current_state) == State.COOLDOWN:
-		change_state(State.PATROL)
+	if state_machine.current_state == state_machine.states[State.COOLDOWN]:
+		state_machine.change_state(State.PATROL)
 
 func _on_patrol_timer_timeout():
-	if states.find_key(current_state) == State.PATROL:
-		change_state(State.IDLE)
+	if state_machine.current_state == state_machine.states[State.PATROL]:
+		state_machine.change_state(State.IDLE)
 		
 func _on_health_component_health_changed(current, max_val):
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
+	# CORRECTED: Removed the third argument (`self`).
+	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 
 func _on_health_component_died():
@@ -5493,12 +5713,14 @@ func setup(p_states: Dictionary, p_initial_state_key):
 	self.states = p_states
 	change_state(p_initial_state_key)
 
-# NEW: Teardown function to clean up all contained states.
+# CORRECTED: The teardown function is restored.
 func teardown():
 	if current_state:
 		current_state.exit()
+	# Call teardown on each individual state to break cyclic references.
 	for state in states.values():
-		state.teardown()
+		if state.has_method("teardown"):
+			state.teardown()
 	states.clear()
 	current_state = null
 
@@ -5517,7 +5739,7 @@ func change_state(new_state_key, msg := {}):
 	current_state.enter(msg)
 
 func _exit_tree():
-	# We call teardown here to be safe, but the owner should call it first.
+	# Call teardown on exit to be safe, though the owner should call it first.
 	teardown()
 
 =====================================
@@ -5795,7 +6017,7 @@ func _init(p_owner: Node, p_state_machine: Node, p_state_data: Resource):
 	self.state_machine = p_state_machine
 	self.state_data = p_state_data
 
-# NEW: Teardown function to break cyclic references.
+# NEW: Teardown function to break cyclic references and prevent memory leaks.
 func teardown():
 	owner = null
 	state_machine = null
@@ -5920,7 +6142,6 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 
 # --- Engine Functions ---
 func _ready():
-	# THE FIX: Add the node to its group FIRST, before any components are set up.
 	add_to_group("player")
 	
 	p_data = PlayerStateData.new()
@@ -5982,7 +6203,6 @@ func _notification(what):
 
 func _physics_process(delta):
 	_update_timers(delta)
-
 	move_and_slide()
 	_check_for_contact_damage()
 	if is_on_wall() and not is_on_floor():
@@ -6017,6 +6237,7 @@ func _update_timers(delta):
 func _emit_healing_charges_changed_event():
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
+	# CORRECTED: Removed the third argument (`self`).
 	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 	healing_charges_changed.emit(p_data.healing_charges)
 
@@ -6025,7 +6246,6 @@ func _emit_healing_charges_changed_event():
 func _check_for_contact_damage():
 	if p_data.is_invincible:
 		return
-
 	for i in range(get_slide_collision_count()):
 		var col = get_slide_collision(i)
 		if col:
@@ -6086,6 +6306,7 @@ func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
+	# CORRECTED: Removed the third argument (`self`).
 	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 

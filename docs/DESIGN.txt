@@ -83,3 +83,72 @@
 ║   ▒  Gravity Box (Gravity Man-inspired): Gravity reverses periodically.      ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+DESIGN SUMMARY (core gameplay)
+==============================
+
+Purpose
+-------
+Capture the player-facing rules and important implementation decisions so designers and devs stay aligned.
+
+Mechanics (short)
+-----------------
+- Movement: standard platformer ground & air with coyote time + jump buffering.
+- Pogo: jump-on-enemy mechanic that bounces the player and applies damage to the enemy.
+- Contact damage: mutual damage when entity collides with dangerous zones/actors — resolved through CombatUtils.
+- Projectiles: use pooled nodes; projectiles are *DamageSource* emitters on hit.
+
+Pogo — implementation notes
+---------------------------
+Goal: reliable, consistent damage application and deterministic bounce.
+
+Canonical rules:
+1. Pogo triggers when the player is moving downward and the player's pogo sensor area overlaps enemy hurtbox while the attack input or a pogo-frame confidence check is true.
+2. On pogo hit:
+   - Player receives a vertical impulse/bounce and may gain a brief invulnerability window.
+   - Enemy receives damage via `CombatUtils.apply_damage(player, enemy, damage_info)`.
+   - Use CombatUtils to de-duplicate or throttle repeated hits within the same physics tick.
+3. Edge cases to watch:
+   - Multiple damage sources on a single frame (ensure CombatUtils dedupes per damage hit-id).
+   - Pogo while a boss is invulnerable (respect `is_invulnerable()`).
+
+Jump buffering & coyote time
+----------------------------
+- Jump-buffer: store jump input for a short window (eg. 0.1s) to allow forgiving timing.
+- Coyote time: allow jumping up to a short window after leaving ground (eg. 0.08s).
+- Implemented in the player state machine as small time accumulators — prefer deterministic values stored in a `.tres` tuning resource.
+
+Hit detection & damage flow
+---------------------------
+- Always route damage through CombatUtils; do not directly mutate HP from collision callbacks.
+- DamageInfo shape (recommended):
+  {
+    "amount": int,
+    "type": "physical" | "fire" | ...,
+    "source": Node,           # optional reference
+    "hit_id": String,         # optional dedupe id
+    "knockback": Vector2,
+    "flags": {"ignore_armor": false, ...}
+  }
+
+Data-driven tuning
+------------------
+- Keep numeric tuning in resource files (`.tres`) stored under `res://assets/config/` or `res://data/`.
+- Example resources: `combat_config.tres`, `player_tuning.tres`, `boss_phase_1.tres`
+- Designers edit these in the Godot inspector; code reads them at runtime.
+
+Guidelines for adding new mechanics
+----------------------------------
+- Add logic as a component when it can be reused across entities.
+- Add high-level sequencing to Sequencer when you need deterministic, ordered scripts.
+- Keep state transitions in the state machine; do not splice logic between multiple components arbitrarily.
+
+Testing checklist (dev)
+-----------------------
+- Reproduce pogo behavior on small enemy and boss (ensure single hit / correct bounce).
+- Verify contact damage doesn't double-apply for simultaneous collisions.
+- Run memory/profile track for object pool usage to ensure reuse works.
+
+Where to update this doc
+------------------------
+- If you change damage_info shape, update `docs/ARCHITECTURE.txt` and this file.

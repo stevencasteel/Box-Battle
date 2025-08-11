@@ -1,22 +1,88 @@
-# Entities
+Entities: how to add components & states
+=======================================
 
-This directory contains the logic for all dynamic game objects, such as the Player and Bosses.
+Purpose
+-------
+Explain the minimal conventions for adding new components and states to the entity system.
 
-## Architecture
+Component contract (example)
+----------------------------
+Create components by extending the ComponentInterface base. Keep them small and single-purpose.
 
-Entities follow a **Component-Based Architecture** combined with a **State Machine**.
+Example components (GDScript):
 
--   **Context Node (`player.gd`, `base_boss.gd`)**: The root node of the entity scene. Its primary job is to hold the components and manage the current state. It delegates all logic to its children.
--   **Data Resource (`player_state_data.gd`)**: A `Resource` file that holds all of the entity's state variables (health, timers, flags). This allows states and components to share data without needing a direct reference to the main node or each other.
--   **Components (`health_component.gd`, etc.)**: Child nodes that encapsulate a single area of responsibility (e.g., managing health, handling input). They operate on the shared `Data Resource`.
--   **States (`state_move.gd`, etc.)**: Classes that define specific behaviors. The active state is managed by the Context Node.
+# res://src/entities/ComponentInterface.gd
+extends Node2D
+class_name ComponentInterface
 
-Components communicate with their owner by emitting signals, which the context node listens for and reacts to. This keeps the component's responsibility focused solely on its own logic.
+# Called once when the entity or builder attaches the component.
+func setup(config: Dictionary) -> void:
+    pass
 
-## Adding a New State
+# Called when the component or entity is being destroyed / swapped.
+func teardown() -> void:
+    pass
 
-1.  Create a new script in the entity's `states` directory that inherits from `PlayerState` or `BossState`.
-2.  Implement the required `enter()`, `exit()`, and `process_physics()` methods.
-3.  Add the new state to the `State` enum in the context node script (`player.gd`).
-4.  Instantiate the new state in the `states` dictionary in the context node's `_ready()` function.
-5.  Call `change_state(State.YOUR_NEW_STATE)` from another state to transition to it.
+# Example concrete component: HealthComponent
+# res://src/entities/components/HealthComponent.gd
+extends ComponentInterface
+class_name HealthComponent
+
+@export var max_hp: int = 100
+var hp: int = 100
+
+func setup(config: Dictionary) -> void:
+    if config.has("max_hp"):
+        max_hp = int(config["max_hp"])
+    hp = max_hp
+
+func receive_damage(amount: int) -> void:
+    hp -= amount
+    if hp <= 0:
+        _on_dead()
+
+func _on_dead() -> void:
+    # notify EventBus / play death FX via ObjectPool
+    EventBus.emit("entity_dead", { "entity": get_parent() })
+    queue_free()
+
+State machine (example)
+-----------------------
+BaseState provides enter/exit and processing hooks. States are swapped by the entity's BaseStateMachine.
+
+# res://src/core/BaseState.gd
+extends Node
+class_name BaseState
+
+func enter(data = null) -> void: pass
+func exit() -> void: pass
+func physics_process(delta: float) -> void: pass
+
+# res://src/core/BaseStateMachine.gd
+extends Node
+class_name BaseStateMachine
+
+var current_state: BaseState = null
+
+func change_state(new_state: BaseState, data = null) -> void:
+    if current_state:
+        current_state.exit()
+        current_state.queue_free() # if state is a node instance
+    current_state = new_state
+    add_child(current_state)
+    current_state.enter(data)
+
+Best practices
+--------------
+- Keep state logic deterministic; side-effects should be limited and explicit.
+- Components must clean themselves up in `teardown()` (disconnect signals, stop timers).
+- Use the `EventBus` for cross-system signals rather than global references.
+- Store tunable numbers in `.tres` resources and refer to them in `setup()`.
+
+Example workflow to add a component
+----------------------------------
+1. Create `res://src/entities/components/MyComponent.gd` extending `ComponentInterface`.
+2. Expose tuning via `@export` variables or read from a provided config dictionary in `setup()`.
+3. Add the component as a child to the entity scene or let entity builder attach it at spawn time.
+4. Ensure `teardown()` reverses all runtime connections.
+

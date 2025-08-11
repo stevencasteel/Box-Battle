@@ -1,79 +1,83 @@
 # BOX BATTLE
 
-
+```
 ██████╗  ██████╗ ██╗  ██╗    ██████╗  █████╗ ████████╗████████╗██╗     ███████╗
 ██╔══██╗██╔═══██╗╗██╗██╔╝    ██╔══██╗██╔══██╗╚══██╔══╝╚══██╔══╝██║     ██╔════╝
 ██████╔╝██║   ██║╚███╔╝      ██████╔╝███████║   ██║      ██║   ██║     █████╗  
 ██╔══██╗██║   ██║██╔██╗      ██╔══██╗██╔══██║   ██║      ██║   ██║     ██╔══╝  
 ██████╔╝╚██████╔╝██╔╝ ██╗    ██████╔╝██║  ██║   ██║      ██║   ███████╗███████╗
 ╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝╚══════╝
+```
 
+A combat-focused 2D action game built in Godot 4. This repo contains the engine, gameplay systems, and tools used to produce a modular, maintainable boss-arena prototype.
 
-A combat-focused 2D action game built in Godot 4, showcasing clean architecture and comprehensive game systems.
+**Current status (short):** Architecturally refactored and stabilized — unified state machines, componentized entities, data-driven config resources, and a small suite of robust core singletons (EventBus, SceneManager, Sequencer, ObjectPool, CombatUtils).
 
-## What Makes This Code Notable
+---
 
-### Architectural Excellence
-- **Decoupled Messaging System**: A professional-grade Event Bus singleton allows game systems (UI, Audio, Gameplay) to communicate without direct dependencies, making the architecture highly modular and scalable. The Event Bus is used for global, decoupled communication, while local component-to-owner interaction is handled cleanly with Godot's built-in signal system.
-- **Centralized Asset Management**: All file paths are managed through a single `AssetPaths` singleton, eliminating broken references and making refactoring trivial.
-- **Singleton-Based Core Systems**: Audio, settings, cursor management, and constants are globally accessible without tight coupling.
-- **Modular Arena System**: Level layouts and encounters are separated into data-only scripts, making level creation declarative and maintainable.
+## Highlights (refactor & stability wins)
+- Component-based entities (reusable components + `BaseStateMachine`/`BaseState`)
+- Interface-driven damage (`IDamageable`) and `CombatUtils` for consistent damage application
+- Data-driven tuning via `.tres` resources
+- EventBus & Sequencer for decoupled communication and scripted sequences
+- Performance improvements: async arena build, shader pre-warm, object pooling
+- Key gameplay fixes: pogo mechanic, contact damage deduplication, consistent hit resolution
 
-### Advanced Player Controller
-- **Robust State Machine**: Clean finite state machine handling movement, combat, dashing, wall-sliding, and healing states.
-- **Physics-Driven Design**: Implements coyote time, jump buffering, wall jumping, and variable jump height for responsive controls.
-- **Pogo Mechanics**: Sophisticated downward attack system with instant collision detection and momentum preservation.
-- **Determination System**: Risk/reward mechanics where dealing damage builds healing charges.
+---
 
-### Production-Quality UI
-- **Custom Menu Navigation**: Unified system supporting both keyboard and mouse input with audio feedback.
-- **Global HUD Management**: Context-aware UI elements that appear/disappear based on current scene.
-- **Real-time Settings Sync**: Audio sliders and checkboxes update immediately without save/load cycles.
-- **Custom Slider Component**: Self-contained, reusable UI widget with proper mouse interaction.
+## Quick start (developer)
+1. Install Godot 4.x (4.4+ recommended).  
+2. Clone the repository.  
+3. Open the project in Godot and run `res://scenes/main.tscn` (or the title screen).  
+4. Dev tip: run the static script checker / lint from CI locally before pushing.
 
-### Smart Audio Architecture
-- **Pooled SFX Players**: Multiple AudioStreamPlayer instances prevent sound cutoff during rapid-fire events.
-- **Context-Aware Sounds**: Different menu actions trigger appropriate audio cues (back vs select vs error)
-- **Robust Music Management**: Prevents music restarts when switching between menu screens.
+**Controls (default)**
+- Move: WASD / Arrow keys  
+- Jump: X  
+- Attack: C  
+- Dash: Z  
+- Heal: Down + Jump (consumes charges)
 
-### Clean Code Practices
-- **Extensive Documentation**: Every script explains its purpose and key design decisions.
-- **Consistent Naming**: Clear, descriptive variable and function names throughout.
-- **Proper Signal Usage**: Decoupled communication between components using Godot's signal system.
-- **Layer-Based Physics**: Thoughtful collision layer setup for different object types and interactions.
+---
 
-### Noteworthy Technical Solutions
-- **Fake Cursor System**: Custom cursor that works consistently across all platforms with proper click-through behavior.
-- **Immediate Pogo Detection**: Proactive collision checking prevents frame-delay issues in fast-paced combat.
-- **Hazard Dual-Layer System**: Terrain that's both solid (world layer) and damaging (hazard layer) for consistent physics.
-- **Deferred Scene Changes**: Proper scene transition handling to prevent physics errors.
-
-## Getting Started
-
-1. Clone the repository
-2. Open the project in Godot 4.4+
-3. Run the project - it starts at the title screen
-
-## Controls
-
-- **Movement**: WASD / Arrow Keys
-- **Jump**: Space / X / Period
-- **Attack**: C / Comma / Alt + Shift
-- **Dash**: Z / Slash / Shift + Ctrl
-- **Heal**: Hold Down + Jump while on ground (requires healing charges)
-
-## Project Structure
+## Repo layout (high level)
 
 src/
-├── core/ # Singleton systems (audio, settings, etc.)
-├── entities/ # Player and enemy classes
-├── projectiles/ # Bullet and shot behaviors
-├── scenes/ # Main game scenes
-├── ui/ # Menu systems and components
-└── arenas/ # Level data and encounter scripts
+├── core/ # singletons & infrastructure (EventBus, Sequencer, SceneManager, settings, etc.)
+├── entities/ # players, bosses, components, state machines
+├── projectiles/ # projectile implementations and pool usage
+├── scenes/ # top-level scenes (game, main, loading)
+├── ui/ # HUD & menu system (event-driven)
+├── arenas/ # layout & encounter data + arena builder
+docs/ # design, architecture, BUGS.txt, ADRs
+core/ # core helpers & autoload scripts
 
-This codebase demonstrates how to structure a Godot project for maintainability, extensibility, and professional polish. Every system is designed to be modular, well-documented, and easy to extend.
+---
+
+## Where to read more (local docs)
+- `docs/ARCHITECTURE.txt` — canonical architecture & runtime contracts (component, state machine, singletons).
+- `docs/DESIGN.txt` — gameplay mechanics and rationale (pogo, hit logic, buffering).
+- `BUGS.txt` — lightweight local bug board (Open / In Progress / Fixed).
+- `core/DEPRECATION.md` — migration notes for deprecated APIs.
+
+---
+
+## Contributing / dev notes
+- Follow the `ComponentInterface` contract for entity components.
+- Clean up long-lived connections and timers on `_exit_tree` to avoid leaks.
+- Use `.tres` resource files for tuning so designers can use the editor safely.
+- Small PRs are preferred. Reference bug numbers (or BUGS.txt entries) in commit messages (eg. `Fixes #12`).
+
+---
+
+## How to commit docs quickly (VS Code)
+1. Create a branch: `git checkout -b docs/refresh`  
+2. Save files in the repo paths above.  
+3. `git add <files>`  
+4. `git commit -m "docs: refresh README + architecture + design + BUGS starter"`  
+5. `git push --set-upstream origin docs/refresh` and open a PR if desired.
+
+---
 
 ## License
-
-This project is released under CC0 1.0 Universal - dedicated to the public domain. Use it however you like!
+CC0 1.0 Universal — public domain.
