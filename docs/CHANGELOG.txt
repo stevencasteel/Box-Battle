@@ -16,6 +16,12 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Created a new `CombatUtils` singleton to provide a robust,          ║
+║      ░   tree-traversing utility for finding `HealthComponent` nodes from any║
+║      ░   physics collider, eliminating brittle `get_node` lookups.           ║
+║      ░ ■ Decoupled `CombatComponent` from the `Player` by replacing direct   ║
+║      ░   state and velocity mutation with a `pogo_bounce_requested` signal,  ║
+║      ░   adhering to the Dependency Inversion Principle.                     ║
 ║      ░ ■ Created a new `SceneManager` autoload to centralize all scene       ║
 ║      ░   transition logic, providing a single, robust API for navigation.    ║
 ║      ░ ■ Implemented state validation in `PlayerStateData` and `BossStateData`║
@@ -82,6 +88,17 @@
 ║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a complex series of bugs causing the pogo mechanic to be   ║
+║      ░   unreliable. The attack now consistently damages the boss, bounces off║
+║      ░   projectiles, and can be executed repeatedly on the ground without   ║
+║      ░   "misfiring".                                                        ║
+║      ░ ■ Unified the ground and air pogo logic into a single, physics-driven ║
+║      ░   system that correctly handles all valid bounce surfaces (enemies,   ║
+║      ░   projectiles, and world geometry).                                   ║
+║      ░ ■ Separated the pogo mechanic from the melee attack cooldown, allowing║
+║      ░   the player to seamlessly transition between bouncing and landing.   ║
+║      ░ ■ Corrected the pogo's physics query to include `Area2D` nodes,       ║
+║      ░   restoring its ability to detect and destroy projectiles.            ║
 ║      ░ ■ Resolved a memory leak by ensuring the `GameManager` frees its      ║
 ║      ░   `GameStateData` resource in `_exit_tree`.                           ║
 ║      ░ ■ Fixed a critical parse error by removing a conflicting `class_name` ║

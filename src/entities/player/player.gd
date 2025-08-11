@@ -74,6 +74,9 @@ func _ready():
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	combat_component.damage_dealt.connect(_on_damage_dealt)
+	
+	# NEW: Connect to the combat component's new signal.
+	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 	current_state = states[State.FALL]
 	current_state.enter()
@@ -156,16 +159,16 @@ func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 
+# MODIFIED: Logic now uses the robust lookup utility.
 func _on_hitbox_body_entered(body):
-	# --- DEBUG PRINT ---
-	print("[DEBUG] Hitbox collided with: ", body.name, " | In Groups: ", body.get_groups())
 	if p_data.is_pogo_attack:
 		combat_component.trigger_pogo(body)
-	elif body.is_in_group("enemy"):
-		var enemy_health_comp = body.get_node_or_null("HealthComponent")
-		if enemy_health_comp:
-			enemy_health_comp.take_damage(1, self)
-			_on_damage_dealt()
+	else:
+		var health_comp = CombatUtils.find_health_component(body)
+		if health_comp:
+			var damage_result = health_comp.take_damage(1, self)
+			if damage_result["was_damaged"]:
+				_on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
@@ -200,3 +203,13 @@ func _on_health_component_health_changed(current, max_val):
 
 func _on_health_component_died():
 	died.emit()
+
+# NEW: This function handles the logic previously in CombatComponent.
+func _on_pogo_bounce_requested():
+	print("VERIFICATION: Pogo bounce logic successfully triggered in player.gd")
+	velocity.y = -CombatDB.config.player_pogo_force
+	# Apply a small upward nudge to prevent re-collision with the same frame.
+	position.y -= 1
+	p_data.can_dash = true
+	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
+	change_state(State.FALL)

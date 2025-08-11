@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 10 17:49:44 CDT 2025
+Generated on: Sun Aug 10 19:29:56 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -93,6 +93,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   └── scene_manager.gd
     │   └── util
     │       ├── asset_paths.gd
+    │       ├── combat_utils.gd
     │       ├── constants.gd
     │       ├── palette.gd
     │       └── physics_layers.gd
@@ -184,7 +185,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-48 directories, 128 files
+48 directories, 129 files
 
 
 =====================================
@@ -1606,6 +1607,12 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Created a new `CombatUtils` singleton to provide a robust,          ║
+║      ░   tree-traversing utility for finding `HealthComponent` nodes from any║
+║      ░   physics collider, eliminating brittle `get_node` lookups.           ║
+║      ░ ■ Decoupled `CombatComponent` from the `Player` by replacing direct   ║
+║      ░   state and velocity mutation with a `pogo_bounce_requested` signal,  ║
+║      ░   adhering to the Dependency Inversion Principle.                     ║
 ║      ░ ■ Created a new `SceneManager` autoload to centralize all scene       ║
 ║      ░   transition logic, providing a single, robust API for navigation.    ║
 ║      ░ ■ Implemented state validation in `PlayerStateData` and `BossStateData`║
@@ -1672,6 +1679,17 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a complex series of bugs causing the pogo mechanic to be   ║
+║      ░   unreliable. The attack now consistently damages the boss, bounces off║
+║      ░   projectiles, and can be executed repeatedly on the ground without   ║
+║      ░   "misfiring".                                                        ║
+║      ░ ■ Unified the ground and air pogo logic into a single, physics-driven ║
+║      ░   system that correctly handles all valid bounce surfaces (enemies,   ║
+║      ░   projectiles, and world geometry).                                   ║
+║      ░ ■ Separated the pogo mechanic from the melee attack cooldown, allowing║
+║      ░   the player to seamlessly transition between bouncing and landing.   ║
+║      ░ ■ Corrected the pogo's physics query to include `Area2D` nodes,       ║
+║      ░   restoring its ability to detect and destroy projectiles.            ║
 ║      ░ ■ Resolved a memory leak by ensuring the `GameManager` frees its      ║
 ║      ░   `GameStateData` resource in `_exit_tree`.                           ║
 ║      ░ ■ Fixed a critical parse error by removing a conflicting `class_name` ║
@@ -2123,6 +2141,7 @@ CombatDB="*res://src/core/data/combat_db.gd"
 Palette="*res://src/core/util/palette.gd"
 ObjectPool="*res://src/core/systems/object_pool.gd"
 PhysicsLayers="*res://src/core/util/physics_layers.gd"
+CombatUtils="*res://src/core/util/combat_utils.gd"
 
 [display]
 
@@ -3780,6 +3799,31 @@ func execute(sequencer_node: Node) -> Variant:
 	return null
 
 =====================================
+FILE: ./src/core/util/combat_utils.gd
+=====================================
+# src/core/util/combat_utils.gd
+# A collection of helper functions for combat-related logic.
+# This script extends Node to function as an autoload singleton.
+extends Node
+
+# Traverses up the scene tree from a given node to find the first
+# node that has a HealthComponent child. This is robust against hitting
+# child colliders or areas.
+func find_health_component(from_node: Node) -> HealthComponent:
+	var current_node = from_node
+	while is_instance_valid(current_node):
+		# First, check if the current node has the component as a direct child.
+		var hc = current_node.get_node_or_null("HealthComponent")
+		if hc and hc is HealthComponent:
+			return hc
+		# If not, move up to the parent and check again.
+		current_node = current_node.get_parent()
+	
+	# If we reach the top of the tree without finding it, return null.
+	return null
+
+
+=====================================
 FILE: ./src/core/util/physics_layers.gd
 =====================================
 # src/core/util/physics_layers.gd
@@ -5396,10 +5440,12 @@ FILE: ./src/entities/components/combat_component.gd
 # src/entities/components/combat_component.gd
 #
 # A component that handles the execution of the player's combat abilities.
+# It is now decoupled and emits signals for its owner to react to.
 class_name CombatComponent
 extends ComponentInterface
 
 signal damage_dealt
+signal pogo_bounce_requested
 
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
@@ -5426,20 +5472,34 @@ func fire_shot():
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
 	shot.activate()
 
-func trigger_pogo(pogo_target):
-	if pogo_target and pogo_target.is_in_group("enemy"):
-		var enemy_health_comp = pogo_target.get_node_or_null("HealthComponent")
-		if enemy_health_comp:
-			# MODIFIED: Pass `true` to bypass invincibility frames for pogo hits.
-			enemy_health_comp.take_damage(1, owner_node, true)
-			damage_dealt.emit()
-	
-	owner_node.velocity.y = -CombatDB.config.player_pogo_force
-	owner_node.position.y -= 1
-	p_data.can_dash = true
-	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
-	owner_node.change_state(owner_node.State.FALL)
+func trigger_pogo(pogo_target) -> bool:
+	if not is_instance_valid(pogo_target):
+		return false
 
+	var should_bounce = false
+	
+	# Can bounce on projectiles.
+	if p_data.is_pogo_attack and pogo_target.is_in_group("enemy_projectile"):
+		should_bounce = true
+		ObjectPool.return_instance(pogo_target)
+	
+	# Can bounce on enemies and deal damage.
+	var health_comp = CombatUtils.find_health_component(pogo_target)
+	if health_comp:
+		should_bounce = true
+		var damage_result = health_comp.take_damage(1, owner_node, true)
+		if damage_result["was_damaged"]:
+			damage_dealt.emit()
+
+	# Can bounce on the ground or any solid world tile.
+	if pogo_target is StaticBody2D and pogo_target.is_in_group("world"):
+		should_bounce = true
+
+	if should_bounce:
+		pogo_bounce_requested.emit()
+		return true
+
+	return false
 
 =====================================
 FILE: ./src/entities/components/health_component.gd
@@ -5751,6 +5811,9 @@ func _ready():
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	combat_component.damage_dealt.connect(_on_damage_dealt)
+	
+	# NEW: Connect to the combat component's new signal.
+	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 	current_state = states[State.FALL]
 	current_state.enter()
@@ -5833,16 +5896,16 @@ func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 
+# MODIFIED: Logic now uses the robust lookup utility.
 func _on_hitbox_body_entered(body):
-	# --- DEBUG PRINT ---
-	print("[DEBUG] Hitbox collided with: ", body.name, " | In Groups: ", body.get_groups())
 	if p_data.is_pogo_attack:
 		combat_component.trigger_pogo(body)
-	elif body.is_in_group("enemy"):
-		var enemy_health_comp = body.get_node_or_null("HealthComponent")
-		if enemy_health_comp:
-			enemy_health_comp.take_damage(1, self)
-			_on_damage_dealt()
+	else:
+		var health_comp = CombatUtils.find_health_component(body)
+		if health_comp:
+			var damage_result = health_comp.take_damage(1, self)
+			if damage_result["was_damaged"]:
+				_on_damage_dealt()
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
@@ -5877,6 +5940,16 @@ func _on_health_component_health_changed(current, max_val):
 
 func _on_health_component_died():
 	died.emit()
+
+# NEW: This function handles the logic previously in CombatComponent.
+func _on_pogo_bounce_requested():
+	print("VERIFICATION: Pogo bounce logic successfully triggered in player.gd")
+	velocity.y = -CombatDB.config.player_pogo_force
+	# Apply a small upward nudge to prevent re-collision with the same frame.
+	position.y -= 1
+	p_data.can_dash = true
+	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
+	change_state(State.FALL)
 
 
 =====================================
@@ -6055,28 +6128,29 @@ FILE: ./src/entities/player/states/state_attack.gd
 extends PlayerState
 
 func enter():
-	p_data.attack_duration_timer = CombatDB.config.player_attack_duration
-	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
+	p_data.is_pogo_attack = Input.is_action_pressed("ui_down")
 	player.hitbox_shape.disabled = false
-	p_data.is_pogo_attack = false
-	
-	if Input.is_action_pressed("ui_down"):
-		p_data.is_pogo_attack = true
-		# --- DEBUG PRINT ---
-		print("[DEBUG] Pogo Attack Initiated in AttackState.")
+
+	# --- UNIFIED POGO LOGIC ---
+	if p_data.is_pogo_attack:
 		player.hitbox.position = Vector2(0, 60)
 		
-		if player.is_on_floor():
-			player.combat_component.trigger_pogo(null)
+		# Always perform a physics check. If it fails, instantly cancel the attack.
+		# This single check now handles ground, air, and enemy pogos.
+		if not _check_for_immediate_pogo():
+			player.change_state(player.State.FALL)
 			return
-		
-		if _check_for_immediate_pogo():
-			return
-			
-	elif Input.is_action_pressed("ui_up"):
-		player.hitbox.position = Vector2(0, -60)
+	
+	# --- MELEE ATTACK LOGIC ---
 	else:
-		player.hitbox.position = Vector2(p_data.facing_direction * 60, 0)
+		p_data.attack_duration_timer = CombatDB.config.player_attack_duration
+		p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
+		
+		if Input.is_action_pressed("ui_up"):
+			player.hitbox.position = Vector2(0, -60)
+		else:
+			player.hitbox.position = Vector2(p_data.facing_direction * 60, 0)
+
 
 func exit():
 	player.hitbox_shape.call_deferred("set", "disabled", true)
@@ -6097,12 +6171,15 @@ func _check_for_immediate_pogo() -> bool:
 	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [player]
 	
+	# CRITICAL FIX: Explicitly enable collision with Area2D nodes.
+	query.collide_with_areas = true
+	
 	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
 	
 	if not results.is_empty():
-		player.combat_component.trigger_pogo(results[0].collider)
-		return true
-		
+		if player.combat_component.trigger_pogo(results[0].collider):
+			return true
+	
 	return false
 
 

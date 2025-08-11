@@ -3,28 +3,29 @@
 extends PlayerState
 
 func enter():
-	p_data.attack_duration_timer = CombatDB.config.player_attack_duration
-	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
+	p_data.is_pogo_attack = Input.is_action_pressed("ui_down")
 	player.hitbox_shape.disabled = false
-	p_data.is_pogo_attack = false
-	
-	if Input.is_action_pressed("ui_down"):
-		p_data.is_pogo_attack = true
-		# --- DEBUG PRINT ---
-		print("[DEBUG] Pogo Attack Initiated in AttackState.")
+
+	# --- UNIFIED POGO LOGIC ---
+	if p_data.is_pogo_attack:
 		player.hitbox.position = Vector2(0, 60)
 		
-		if player.is_on_floor():
-			player.combat_component.trigger_pogo(null)
+		# Always perform a physics check. If it fails, instantly cancel the attack.
+		# This single check now handles ground, air, and enemy pogos.
+		if not _check_for_immediate_pogo():
+			player.change_state(player.State.FALL)
 			return
-		
-		if _check_for_immediate_pogo():
-			return
-			
-	elif Input.is_action_pressed("ui_up"):
-		player.hitbox.position = Vector2(0, -60)
+	
+	# --- MELEE ATTACK LOGIC ---
 	else:
-		player.hitbox.position = Vector2(p_data.facing_direction * 60, 0)
+		p_data.attack_duration_timer = CombatDB.config.player_attack_duration
+		p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
+		
+		if Input.is_action_pressed("ui_up"):
+			player.hitbox.position = Vector2(0, -60)
+		else:
+			player.hitbox.position = Vector2(p_data.facing_direction * 60, 0)
+
 
 func exit():
 	player.hitbox_shape.call_deferred("set", "disabled", true)
@@ -45,10 +46,13 @@ func _check_for_immediate_pogo() -> bool:
 	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [player]
 	
+	# CRITICAL FIX: Explicitly enable collision with Area2D nodes.
+	query.collide_with_areas = true
+	
 	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
 	
 	if not results.is_empty():
-		player.combat_component.trigger_pogo(results[0].collider)
-		return true
-		
+		if player.combat_component.trigger_pogo(results[0].collider):
+			return true
+	
 	return false
