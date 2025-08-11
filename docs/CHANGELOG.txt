@@ -15,154 +15,28 @@
 ║  ██                            [UNRELEASED]                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Introduced a robust, interface-based damage system (`IDamageable`)  ║
-║      ░   to formalize how entities receive damage, replacing fragile,        ║
-║      ░   string-based lookups with a type-safe contract.                     ║
-║      ░ ■ Created a new `CombatUtils` singleton to provide a robust,          ║
-║      ░   tree-traversing utility for finding `HealthComponent` nodes from any║
-║      ░   physics collider, eliminating brittle `get_node` lookups.           ║
-║      ░ ■ Decoupled `CombatComponent` from the `Player` by replacing direct   ║
-║      ░   state and velocity mutation with a `pogo_bounce_requested` signal,  ║
-║      ░   adhering to the Dependency Inversion Principle.                     ║
-║      ░ ■ Created a new `SceneManager` autoload to centralize all scene       ║
-║      ░   transition logic, providing a single, robust API for navigation.    ║
-║      ░ ■ Implemented state validation in `PlayerStateData` and `BossStateData`║
-║      ░   using property setters. This makes the data resources self-validating
-║      ░   and prevents invalid states (e.g., health > max_health).            ║
-║      ░ ■ Created a formal `ComponentInterface` to act as a standardized      ║
-║      ░   blueprint for all entity components, enforcing a consistent API.    ║
-║      ░ ■ Refactored `GameManager` to use a `GameStateData` resource,         ║
-║      ░   eliminating the "dual architecture" of stateful singletons. All     ║
-║      ░   runtime state is now consistently managed through `Resource` objects.║
-║      ░ ■ Replaced the JSON-based `Config.gd` system with a type-safe,        ║
-║      ░   `Resource`-based system (`CombatConfig.tres` and `CombatDB.gd`).    ║
-║      ░   This provides compile-time safety against typos and enables direct  ║
-║      ░   gameplay value tuning in the Godot editor's Inspector.              ║
-║      ░ ■ Refactored the Player's state machine to load its state scripts at  ║
-║      ░   runtime in `_ready()` instead of using `preload()`. This breaks a   ║
-║      ░   brittle parse-time dependency cycle, making the game's startup      ║
-║      ░   sequence significantly more robust.                                 ║
-║      ░ ■ Further refined the `src/core` directory structure, creating new    ║
-║      ░   subdirectories for typed configs and events (`data/config`, `events/typed_events`).║
-║      ░ ■ Standardized script filenames to snake_case (e.g., `Config.gd` ->   ║
-║      ░   `config.gd`) for project-wide consistency.                          ║
-║      ░ ■ Reorganized the monolithic `src` directory into purpose-driven      ║
-║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
-║      ░   improve project modularity and scalability.                         ║
-║      ░ ■ Simplified the global `EventBus` by removing unused features like   ║
-║      ░   the priority system and `emit_async`, resulting in a leaner         ║
-║      ░   implementation.                                                     ║
-║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState`   ║
-║      ░   to unify all entity state management, removing duplicated code.     ║
-║      ░ ■ Refactored the Player to use the new `BaseStateMachine`, simplifying║
-║      ░   the main `player.gd` script and delegating all state logic.         ║
-║      ░ ■ Refactored the `BaseBoss` to use the new `BaseStateMachine`,        ║
-║      ░   unifying the state management architecture across all entities and  ║
-║      ░   removing the final piece of duplicated state logic.                 ║
-║      ░ ■ Decoupled all Components from their owners by passing dependencies  ║
-║      ░   (data resources, other components) explicitly through a dictionary  ║
-║      ░   in the `setup()` method, adhering to Dependency Inversion.          ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Renamed `HealthComponent.take_damage` to `apply_damage` to          ║
-║      ░   conform to the new interface contract.                              ║
-║      ░ ■ Refactored `CombatUtils` to find any `IDamageable` node, not just   ║
-║      ░   a `HealthComponent`.                                                ║
-║      ░ ■ Updated all damage sources (projectiles, melee, pogo, contact)      ║
-║      ░   to use the new `CombatUtils.find_damageable` method.                ║
-║      ░ ■ Refactored all UI screens and core game scripts to use the new      ║
-║      ░   `SceneManager`, removing scattered `get_tree().change_scene` calls. ║
-║      ░ ■ Refactored `HealthComponent` to initialize the new self-validating  ║
-║      ░   data resources, simplifying its internal logic.                     ║
-║      ░ ■ Refactored `CombatComponent` and `InputComponent` to extend the new ║
-║      ░   `ComponentInterface`, standardizing the entire component architecture.║
-║      ░ ■ Updated `player.gd` to use the standardized `setup` and `teardown`  ║
-║      ░   methods for all its components.                                     ║
-║      ░ ■ Refactored `HealthComponent` to extend the new `ComponentInterface` ║
-║      ░   and use a more robust `is_in_group` check for its setup logic.      ║
-║      ░ ■ Reorganized `AssetPaths.gd` by feature/system for improved clarity. ║
-║      ░ ■ Added a validation system to `AssetPaths.gd` that checks for missing║
-║      ░   files at startup, preventing runtime "file not found" errors.       ║
-║      ░ ■ Added validation to `Settings.gd` property setters to clamp audio   ║
-║      ░   volume values, making the system more robust against invalid data.  ║
-║      ░ ■ Cleaned up all remaining GDScript static analysis warnings          ║
-║      ░   (`UNUSED_PARAMETER`, `SHADOWED_VARIABLE`) for a clean build.        ║
-║      ░ ■ Removed dead/broken event definitions from `EventCatalog` and       ║
-║      ░   removed the corresponding broken logic from `EncounterDirector`.    ║
-║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Added placeholder `README.md` and `DEPRECATION.md` files to `core`, ║
-║      ░   `entities`, and `docs` to establish a documentation framework.      ║
-║                                                                              ║
-║   █  Documentation                                                           ║
-║      ░ ■ Improved header comments in `Constants.gd` and `PhysicsLayers.gd`   ║
-║      ░   to clarify their intended purpose and prevent architectural drift.  ║
-║      ░ ■ Completed Sprint 0 architectural audit.                             ║
-║      ░ ■ Added `docs/sprint_0_audit` directory to house analysis files.      ║
-║      ░ ■ Generated audit reports for singletons, event usage, and config usage.║
-║      ░ ■ Added `ADR-001` to formally document the existing Service Locator pattern.║
-║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
-║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
-║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Resolved a complex series of bugs causing the pogo mechanic to be   ║
-║      ░   unreliable. The attack now consistently damages the boss, bounces off║
-║      ░   projectiles, and can be executed repeatedly on the ground without   ║
-║      ░   "misfiring".                                                        ║
-║      ░ ■ Unified the ground and air pogo logic into a single, physics-driven ║
-║      ░   system that correctly handles all valid bounce surfaces (enemies,   ║
-║      ░   projectiles, and world geometry).                                   ║
-║      ░ ■ Separated the pogo mechanic from the melee attack cooldown, allowing║
-║      ░   the player to seamlessly transition between bouncing and landing.   ║
-║      ░ ■ Corrected the pogo's physics query to include `Area2D` nodes,       ║
-║      ░   restoring its ability to detect and destroy projectiles.            ║
-║      ░ ■ Resolved a memory leak by ensuring the `GameManager` frees its      ║
-║      ░   `GameStateData` resource in `_exit_tree`.                           ║
-║      ░ ■ Fixed a critical parse error by removing a conflicting `class_name` ║
-║      ░   from the `SceneManager` autoload script.                            ║
-║      ░ ■ Added missing `max_health` property to `BossStateData` to resolve a ║
-║      ░   crash when the boss took damage.                                    ║
-║      ░ ■ Resolved a crash caused by using the non-existent `has()` method in ║
-║      ░   `HealthComponent`; replaced with a more robust `is_in_group()` check.║
-║      ░ ■ Corrected invalid GDScript 4 dictionary access syntax in `player.gd`.║
-║      ░ ■ Removed the invalid `override` keyword from `HealthComponent`, which ║
-║      ░   was causing a critical parse error.                                 ║
-║      ░ ■ Corrected the argument order in `HealthComponent.setup` calls to    ║
-║      ░   match the newly defined `ComponentInterface` contract.              ║
-║      ░ ■ Resolved a parse-time dependency error by ensuring `GameStateData`  ║
-║      ░   is loaded at runtime in `GameManager`, preventing a startup crash.  ║
-║      ░ ■ Resolved a cascade of parse errors by correcting the implementation ║
-║      ░   of the new `CombatConfig` resource and refactoring dependent scripts.║
-║      ░ ■ Corrected multiple typos and syntax errors in player state scripts  ║
-║      ░   (`state_attack.gd`, `state_hurt.gd`, `state_wall_slide.gd`) that    ║
-║      ░   were causing crashes during gameplay.                               ║
-║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
-║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
-║      ░ ■ Fixed a critical race condition where player contact damage could   ║
-║      ░   interrupt a pogo attack, preventing the pogo from dealing damage.   ║
-║      ░ ■ Resolved a critical bug where the Player and Boss would receive the ║
-║      ░   wrong invincibility durations. Moved `add_to_group()` to the top of ║
-║      ░   `_ready()` to ensure entities are correctly identified before their ║
-║      ░   components are configured.                                          ║
-║      ░ ■ Restored player knockback and invincibility, which were failing due ║
-║      ░   to the incorrect invincibility timer.                               ║
-║      ░ ■ The `Hurt` state now correctly uses its own short `knockback_timer` ║
-║      ░   for stun duration, decoupled from the longer invincibility timer.   ║
-║      ░ ■ Implemented robust `teardown` methods in the state machine and all  ║
-║      ░   components to prevent potential memory leaks from cyclic references.║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
 
 
-   █  Architectural Changes
+
+   █  Architectural Changes                                                   
+      ░ ■ Hardened the `Sequencer` to return a `SequenceHandle`, allowing      
+      ░   cinematic sequences to be safely cancelled to prevent state bugs.   
+      ░ ■ Hardened the `ObjectPool` by replacing fragile, name-based node      
+      ░   lookups with direct references, making the system more robust.      
       ░ ■ Decoupled game logic from screen resolution by creating a `GridUtils`
       ░   singleton to handle conversions between tile and world coordinates.
       ░ ■ Implemented a `CameraManager` to dynamically fit the camera to the
       ░   arena's logical size, enabling support for non-square aspect ratios.
       ░ ■ Enhanced the `TerrainBuilder` to procedurally fill the entire camera
       ░   viewport with background tiles, creating a seamless play area.
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a potential memory leak in the `EventBus` by implementing   
+      ░   a self-cleaning mechanism that automatically prunes dead            
+      ░   subscriptions during the `emit` cycle.                              
+      ░ ■ Corrected several `async`/`await` errors in the `Sequencer` and its  
+      ░   new `CallableStep` to ensure it can reliably execute async functions.
+
 
    █  Changed
       ░ ■ Project display settings updated to a 16:9 aspect ratio (1920x1080).
