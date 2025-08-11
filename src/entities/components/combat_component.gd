@@ -33,6 +33,7 @@ func fire_shot():
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
 	shot.activate()
 
+# MODIFIED: Now uses the robust CombatUtils to find any damageable target.
 func trigger_pogo(pogo_target) -> bool:
 	if not is_instance_valid(pogo_target):
 		return false
@@ -45,10 +46,10 @@ func trigger_pogo(pogo_target) -> bool:
 		ObjectPool.return_instance(pogo_target)
 	
 	# Can bounce on enemies and deal damage.
-	var health_comp = CombatUtils.find_health_component(pogo_target)
-	if health_comp:
+	var damageable = CombatUtils.find_damageable(pogo_target)
+	if damageable:
 		should_bounce = true
-		var damage_result = health_comp.take_damage(1, owner_node, true)
+		var damage_result = damageable.apply_damage(1, owner_node, true)
 		if damage_result["was_damaged"]:
 			damage_dealt.emit()
 

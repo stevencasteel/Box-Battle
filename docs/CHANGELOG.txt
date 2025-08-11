@@ -16,6 +16,9 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
+║      ░ ■ Introduced a robust, interface-based damage system (`IDamageable`) ║
+║      ░   to formalize how entities receive damage, replacing fragile,        ║
+║      ░   string-based lookups with a type-safe contract.                     ║
 ║      ░ ■ Created a new `CombatUtils` singleton to provide a robust,          ║
 ║      ░   tree-traversing utility for finding `HealthComponent` nodes from any║
 ║      ░   physics collider, eliminating brittle `get_node` lookups.           ║
@@ -52,6 +55,12 @@
 ║      ░   implementation.                                                     ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
+║      ░ ■ Renamed `HealthComponent.take_damage` to `apply_damage` to           ║
+║      ░   conform to the new interface contract.                              ║
+║      ░ ■ Refactored `CombatUtils` to find any `IDamageable` node, not just   ║
+║      ░   a `HealthComponent`.                                                ║
+║      ░ ■ Updated all damage sources (projectiles, melee, pogo, contact)      ║
+║      ░   to use the new `CombatUtils.find_damageable` method.                ║
 ║      ░ ■ Refactored all UI screens and core game scripts to use the new      ║
 ║      ░   `SceneManager`, removing scattered `get_tree().change_scene` calls. ║
 ║      ░ ■ Refactored `HealthComponent` to initialize the new self-validating  ║

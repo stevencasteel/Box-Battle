@@ -1,7 +1,8 @@
 # src/entities/components/health_component.gd
 #
 # A component responsible for managing an entity's health, damage intake,
-# invincibility, and death. It now implements the ComponentInterface standard.
+# invincibility, and death. It now implements the ComponentInterface standard
+# and the conceptual IDamageable interface.
 class_name HealthComponent
 extends ComponentInterface
 
@@ -19,6 +20,9 @@ var invincibility_duration: float
 var knockback_speed: float
 var hazard_knockback_speed: float
 var original_color: Color
+
+# A reference to the conceptual interface script.
+const IDamageable = preload("res://src/api/interfaces/i_damageable.gd")
 
 func _ready():
 	add_child(invincibility_timer)
@@ -60,13 +64,12 @@ func teardown() -> void:
 	entity_data = null
 	owner_node = null
 
-# MODIFIED: Added p_bypass_invincibility parameter
-func take_damage(damage_amount: int, damage_source: Node = null, p_bypass_invincibility: bool = false) -> Dictionary:
+# MODIFIED: Renamed to match the IDamageable interface contract.
+func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invincibility: bool = false) -> Dictionary:
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
 	
-	# MODIFIED: Check the bypass flag
 	if (entity_data.is_invincible or is_dash_invincible) and not p_bypass_invincibility:
-		return {"was_damaged": false}
+		return {"was_damaged": false, "knockback_velocity": Vector2.ZERO}
 
 	entity_data.health -= damage_amount
 	health_changed.emit(entity_data.health, entity_data.max_health)

@@ -1,20 +1,28 @@
 # src/core/util/combat_utils.gd
-# A collection of helper functions for combat-related logic.
-# This script extends Node to function as an autoload singleton.
+# A collection of static helper functions for combat-related logic.
 extends Node
 
-# Traverses up the scene tree from a given node to find the first
-# node that has a HealthComponent child. This is robust against hitting
-# child colliders or areas.
-func find_health_component(from_node: Node) -> HealthComponent:
+# MODIFIED: This function is now more generic. It finds any node that can be
+# damaged by checking for the `apply_damage` method, which is our conceptual
+# interface. It returns the node that has the method.
+func find_damageable(from_node: Node) -> Node:
 	var current_node = from_node
 	while is_instance_valid(current_node):
-		# First, check if the current node has the component as a direct child.
+		# Check if the node itself implements the IDamageable interface.
+		if current_node.has_method("apply_damage"):
+			# VERIFICATION PRINT
+			print("CombatUtils: Found damageable node: ", current_node.name)
+			return current_node
+			
+		# HealthComponent is the primary implementer of our interface.
+		# This provides a direct path for performance.
 		var hc = current_node.get_node_or_null("HealthComponent")
-		if hc and hc is HealthComponent:
+		if hc and hc.has_method("apply_damage"):
+			# VERIFICATION PRINT
+			print("CombatUtils: Found damageable component on: ", current_node.name)
 			return hc
+
 		# If not, move up to the parent and check again.
 		current_node = current_node.get_parent()
 	
-	# If we reach the top of the tree without finding it, return null.
 	return null

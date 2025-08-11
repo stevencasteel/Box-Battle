@@ -26,13 +26,11 @@ func deactivate():
 func _physics_process(delta):
 	global_position += direction * speed * delta
 
-# SOLUTION: This function now correctly finds and calls take_damage on the
-# enemy's HealthComponent, aligning it with the final architecture.
+# MODIFIED: Now uses the robust CombatUtils to find any damageable target.
 func _on_body_entered(body):
-	if body.is_in_group("enemy"):
-		var enemy_health_comp = body.get_node_or_null("HealthComponent")
-		if enemy_health_comp:
-			enemy_health_comp.take_damage(damage, self)
+	var damageable = CombatUtils.find_damageable(body)
+	if damageable:
+		damageable.apply_damage(damage, self)
 	
 	ObjectPool.return_instance(self)
 

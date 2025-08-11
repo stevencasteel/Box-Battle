@@ -74,8 +74,6 @@ func _ready():
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	combat_component.damage_dealt.connect(_on_damage_dealt)
-	
-	# NEW: Connect to the combat component's new signal.
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 	current_state = states[State.FALL]
@@ -133,6 +131,7 @@ func _emit_healing_charges_changed_event():
 	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 	healing_charges_changed.emit(p_data.healing_charges)
 
+# MODIFIED: Now calls `apply_damage` on its own health component.
 func _check_for_contact_damage():
 	if p_data.is_pogo_attack:
 		return
@@ -142,7 +141,7 @@ func _check_for_contact_damage():
 		if col:
 			var collider = col.get_collider()
 			if collider.is_in_group("enemy") or collider.is_in_group("hazard"):
-				var damage_result = health_component.take_damage(1, collider)
+				var damage_result = health_component.apply_damage(1, collider)
 				if damage_result["was_damaged"]:
 					velocity = damage_result["knockback_velocity"]
 					change_state(State.HURT)
@@ -159,14 +158,14 @@ func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 
-# MODIFIED: Logic now uses the robust lookup utility.
+# MODIFIED: Now uses the robust CombatUtils to find any damageable target.
 func _on_hitbox_body_entered(body):
 	if p_data.is_pogo_attack:
 		combat_component.trigger_pogo(body)
 	else:
-		var health_comp = CombatUtils.find_health_component(body)
-		if health_comp:
-			var damage_result = health_comp.take_damage(1, self)
+		var damageable = CombatUtils.find_damageable(body)
+		if damageable:
+			var damage_result = damageable.apply_damage(1, self)
 			if damage_result["was_damaged"]:
 				_on_damage_dealt()
 
@@ -174,13 +173,13 @@ func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
 		if p_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
-			ObjectPool.return_instance(area)
 		else:
 			ObjectPool.return_instance(area)
 
+# MODIFIED: Now calls `apply_damage` on its own health component.
 func _on_hurtbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
-		var damage_result = health_component.take_damage(1, area)
+		var damage_result = health_component.apply_damage(1, area)
 		if damage_result["was_damaged"]:
 			velocity = damage_result["knockback_velocity"]
 			change_state(State.HURT)
@@ -204,11 +203,8 @@ func _on_health_component_health_changed(current, max_val):
 func _on_health_component_died():
 	died.emit()
 
-# NEW: This function handles the logic previously in CombatComponent.
 func _on_pogo_bounce_requested():
-	print("VERIFICATION: Pogo bounce logic successfully triggered in player.gd")
 	velocity.y = -CombatDB.config.player_pogo_force
-	# Apply a small upward nudge to prevent re-collision with the same frame.
 	position.y -= 1
 	p_data.can_dash = true
 	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
