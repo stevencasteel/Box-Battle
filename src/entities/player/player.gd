@@ -1,5 +1,6 @@
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine.
+# This script is the "Context" for the State Machine. It now delegates all
+# state management logic to its StateMachine child node.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -19,6 +20,7 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var combat_component: CombatComponent = $CombatComponent
 @onready var input_component: InputComponent = $InputComponent
+@onready var state_machine: BaseStateMachine = $StateMachine
 
 # --- State Scripts (Loaded at Runtime) ---
 var MoveStateScript: Script
@@ -30,14 +32,15 @@ var AttackStateScript: Script
 var HurtStateScript: Script
 var HealStateScript: Script
 
-# --- State Machine & Data ---
-var states: Dictionary
-var current_state: PlayerState
+# --- Data ---
 var p_data: PlayerStateData
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 
 # --- Engine Functions ---
 func _ready():
+	# THE FIX: Add the node to its group FIRST, before any components are set up.
+	add_to_group("player")
+	
 	p_data = PlayerStateData.new()
 	
 	MoveStateScript = load("res://src/entities/player/states/state_move.gd")
@@ -49,58 +52,73 @@ func _ready():
 	HurtStateScript = load("res://src/entities/player/states/state_hurt.gd")
 	HealStateScript = load("res://src/entities/player/states/state_heal.gd")
 
-	states = {
-		State.MOVE: MoveStateScript.new(self, p_data),
-		State.FALL: FallStateScript.new(self, p_data),
-		State.JUMP: JumpStateScript.new(self, p_data),
-		State.DASH: DashStateScript.new(self, p_data),
-		State.WALL_SLIDE: WallSlideStateScript.new(self, p_data),
-		State.ATTACK: AttackStateScript.new(self, p_data),
-		State.HURT: HurtStateScript.new(self, p_data),
-		State.HEAL: HealStateScript.new(self, p_data),
+	health_component.setup(self, {
+		"data_resource": p_data,
+		"config": CombatDB.config
+	})
+	combat_component.setup(self, {
+		"data_resource": p_data
+	})
+	input_component.setup(self, {
+		"data_resource": p_data,
+		"state_machine": state_machine,
+		"combat_component": combat_component
+	})
+	
+	var states = {
+		State.MOVE: MoveStateScript.new(self, state_machine, p_data),
+		State.FALL: FallStateScript.new(self, state_machine, p_data),
+		State.JUMP: JumpStateScript.new(self, state_machine, p_data),
+		State.DASH: DashStateScript.new(self, state_machine, p_data),
+		State.WALL_SLIDE: WallSlideStateScript.new(self, state_machine, p_data),
+		State.ATTACK: AttackStateScript.new(self, state_machine, p_data),
+		State.HURT: HurtStateScript.new(self, state_machine, p_data),
+		State.HEAL: HealStateScript.new(self, state_machine, p_data),
 	}
-
+	
+	state_machine.setup(states, State.FALL)
+	
 	visual_sprite.color = Palette.COLOR_PLAYER
 	
-	add_to_group("player")
 	hitbox.body_entered.connect(_on_hitbox_body_entered)
 	hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	
-	health_component.setup(self, CombatDB.config)
-	combat_component.setup(self)
-	input_component.setup(self, null, null, combat_component)
-
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	combat_component.damage_dealt.connect(_on_damage_dealt)
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
-
-	current_state = states[State.FALL]
-	current_state.enter()
 	
 	_emit_healing_charges_changed_event()
 
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+		if state_machine: state_machine.teardown()
+		if health_component: health_component.teardown()
+		if combat_component: combat_component.teardown()
+		if input_component: input_component.teardown()
+		p_data = null
+
 func _physics_process(delta):
 	_update_timers(delta)
-	input_component.process_physics()
-	current_state.process_physics(delta)
+
 	move_and_slide()
 	_check_for_contact_damage()
 	if is_on_wall() and not is_on_floor():
 		p_data.wall_coyote_timer = CombatDB.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
 
-func _unhandled_input(event: InputEvent):
-	input_component.process_unhandled_input(event)
-	
-func _exit_tree():
-	states.clear()
-	p_data = null
-	
-	if health_component: health_component.teardown()
-	if combat_component: combat_component.teardown()
-	if input_component: input_component.teardown()
+# --- Public Helper Functions (for States) ---
+
+func apply_horizontal_movement():
+	velocity.x = Input.get_axis("ui_left", "ui_right") * CombatDB.config.player_speed
+	if not is_zero_approx(velocity.x):
+		p_data.facing_direction = sign(velocity.x)
+
+func _cancel_heal():
+	if healing_timer.is_stopped(): return
+	healing_timer.stop()
+
+# --- Private Helper Functions ---
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -114,26 +132,16 @@ func _update_timers(delta):
 	if p_data.is_charging and Input.is_action_pressed("ui_attack"):
 		p_data.charge_timer += delta
 
-func change_state(new_state_key: State):
-	if not states.has(new_state_key) or current_state == states[new_state_key]: return
-	current_state.exit()
-	current_state = states[new_state_key]
-	current_state.enter()
-
-func apply_horizontal_movement():
-	velocity.x = Input.get_axis("ui_left", "ui_right") * CombatDB.config.player_speed
-	if not is_zero_approx(velocity.x):
-		p_data.facing_direction = sign(velocity.x)
-
 func _emit_healing_charges_changed_event():
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
 	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 	healing_charges_changed.emit(p_data.healing_charges)
 
-# MODIFIED: Now calls `apply_damage` on its own health component.
+# --- Signal Handlers ---
+
 func _check_for_contact_damage():
-	if p_data.is_pogo_attack:
+	if p_data.is_invincible:
 		return
 
 	for i in range(get_slide_collision_count()):
@@ -143,8 +151,8 @@ func _check_for_contact_damage():
 			if collider.is_in_group("enemy") or collider.is_in_group("hazard"):
 				var damage_result = health_component.apply_damage(1, collider)
 				if damage_result["was_damaged"]:
-					velocity = damage_result["knockback_velocity"]
-					change_state(State.HURT)
+					self.velocity = damage_result["knockback_velocity"]
+					state_machine.change_state(State.HURT)
 				break
 
 func _on_damage_dealt():
@@ -154,11 +162,6 @@ func _on_damage_dealt():
 		p_data.determination_counter = 0; p_data.healing_charges += 1
 		_emit_healing_charges_changed_event()
 
-func _cancel_heal():
-	if healing_timer.is_stopped(): return
-	healing_timer.stop()
-
-# MODIFIED: Now uses the robust CombatUtils to find any damageable target.
 func _on_hitbox_body_entered(body):
 	if p_data.is_pogo_attack:
 		combat_component.trigger_pogo(body)
@@ -176,22 +179,26 @@ func _on_hitbox_area_entered(area):
 		else:
 			ObjectPool.return_instance(area)
 
-# MODIFIED: Now calls `apply_damage` on its own health component.
 func _on_hurtbox_area_entered(area):
+	if p_data.is_invincible:
+		if area.is_in_group("enemy_projectile"):
+			ObjectPool.return_instance(area)
+		return
+	
 	if area.is_in_group("enemy_projectile"):
 		var damage_result = health_component.apply_damage(1, area)
 		if damage_result["was_damaged"]:
-			velocity = damage_result["knockback_velocity"]
-			change_state(State.HURT)
+			self.velocity = damage_result["knockback_velocity"]
+			state_machine.change_state(State.HURT)
 		ObjectPool.return_instance(area)
 
 func _on_healing_timer_timeout():
-	if states.find_key(current_state) == State.HEAL:
+	if state_machine.current_state == state_machine.states[State.HEAL]:
 		p_data.health += 1
 		p_data.healing_charges -= 1
 		health_component.health_changed.emit(p_data.health, p_data.max_health)
 		_emit_healing_charges_changed_event()
-		change_state(State.MOVE)
+		state_machine.change_state(State.MOVE)
 
 func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
@@ -208,4 +215,4 @@ func _on_pogo_bounce_requested():
 	position.y -= 1
 	p_data.can_dash = true
 	p_data.air_jumps_left = CombatDB.config.player_max_air_jumps
-	change_state(State.FALL)
+	state_machine.change_state(State.FALL)

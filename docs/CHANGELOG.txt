@@ -16,7 +16,7 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  Architectural Changes                                                   ║
-║      ░ ■ Introduced a robust, interface-based damage system (`IDamageable`) ║
+║      ░ ■ Introduced a robust, interface-based damage system (`IDamageable`)  ║
 ║      ░   to formalize how entities receive damage, replacing fragile,        ║
 ║      ░   string-based lookups with a type-safe contract.                     ║
 ║      ░ ■ Created a new `CombatUtils` singleton to provide a robust,          ║
@@ -53,9 +53,16 @@
 ║      ░ ■ Simplified the global `EventBus` by removing unused features like   ║
 ║      ░   the priority system and `emit_async`, resulting in a leaner         ║
 ║      ░   implementation.                                                     ║
+║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState`   ║
+║      ░   to unify all entity state management, removing duplicated code.     ║
+║      ░ ■ Refactored the Player to use the new `BaseStateMachine`, simplifying║
+║      ░   the main `player.gd` script and delegating all state logic.         ║
+║      ░ ■ Decoupled all Components from their owners by passing dependencies  ║
+║      ░   (data resources, other components) explicitly through a dictionary  ║
+║      ░   in the `setup()` method, adhering to Dependency Inversion.          ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
-║      ░ ■ Renamed `HealthComponent.take_damage` to `apply_damage` to           ║
+║      ░ ■ Renamed `HealthComponent.take_damage` to `apply_damage` to          ║
 ║      ░   conform to the new interface contract.                              ║
 ║      ░ ■ Refactored `CombatUtils` to find any `IDamageable` node, not just   ║
 ║      ░   a `HealthComponent`.                                                ║
@@ -132,5 +139,15 @@
 ║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
 ║      ░ ■ Fixed a critical race condition where player contact damage could   ║
 ║      ░   interrupt a pogo attack, preventing the pogo from dealing damage.   ║
+║      ░ ■ Resolved a critical bug where the Player and Boss would receive the ║
+║      ░   wrong invincibility durations. Moved `add_to_group()` to the top of ║
+║      ░   `_ready()` to ensure entities are correctly identified before their ║
+║      ░   components are configured.                                          ║
+║      ░ ■ Restored player knockback and invincibility, which were failing due ║
+║      ░   to the incorrect invincibility timer.                               ║
+║      ░ ■ The `Hurt` state now correctly uses its own short `knockback_timer` ║
+║      ░   for stun duration, decoupled from the longer invincibility timer.   ║
+║      ░ ■ Implemented robust `teardown` methods in the state machine and all  ║
+║      ░   components to prevent potential memory leaks from cyclic references.║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

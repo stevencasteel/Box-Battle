@@ -27,16 +27,22 @@ var player: CharacterBody2D = null
 
 # --- Engine Functions ---
 func _ready():
+	# THE FIX: Add the node to its group FIRST, before any components are set up.
+	add_to_group("enemy")
+	
 	b_data = BossStateData.new()
 	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
 	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	
-	health_component.setup(self, CombatDB.config)
+	# MODIFIED: Setup components by passing a dictionary of dependencies.
+	health_component.setup(self, {
+		"data_resource": b_data,
+		"config": CombatDB.config
+	})
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 
-	add_to_group("enemy")
 	player = get_tree().get_first_node_in_group("player")
 	
 	states = {
@@ -61,8 +67,6 @@ func _physics_process(delta):
 		b_data.facing_direction *= -1.0
 
 func _exit_tree():
-	# REMOVED: The simplified EventBus no longer has `off_owner`.
-	# Weakrefs handle cleanup automatically when the owner is freed.
 	states.clear()
 	b_data = null
 	if health_component: health_component.teardown()

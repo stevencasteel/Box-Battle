@@ -1,58 +1,56 @@
 # src/entities/player/states/state_attack.gd
 # Handles the player's melee attack.
-extends PlayerState
+extends BaseState
 
-func enter():
-	p_data.is_pogo_attack = Input.is_action_pressed("ui_down")
-	player.hitbox_shape.disabled = false
+func enter(_msg := {}):
+	state_data.is_pogo_attack = Input.is_action_pressed("ui_down")
+	owner.hitbox_shape.disabled = false
 
 	# --- UNIFIED POGO LOGIC ---
-	if p_data.is_pogo_attack:
-		player.hitbox.position = Vector2(0, 60)
+	if state_data.is_pogo_attack:
+		owner.hitbox.position = Vector2(0, 60)
 		
 		# Always perform a physics check. If it fails, instantly cancel the attack.
 		# This single check now handles ground, air, and enemy pogos.
 		if not _check_for_immediate_pogo():
-			player.change_state(player.State.FALL)
+			state_machine.change_state(owner.State.FALL)
 			return
 	
 	# --- MELEE ATTACK LOGIC ---
 	else:
-		p_data.attack_duration_timer = CombatDB.config.player_attack_duration
-		p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
+		state_data.attack_duration_timer = CombatDB.config.player_attack_duration
+		state_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 		
 		if Input.is_action_pressed("ui_up"):
-			player.hitbox.position = Vector2(0, -60)
+			owner.hitbox.position = Vector2(0, -60)
 		else:
-			player.hitbox.position = Vector2(p_data.facing_direction * 60, 0)
+			owner.hitbox.position = Vector2(state_data.facing_direction * 60, 0)
 
 
 func exit():
-	player.hitbox_shape.call_deferred("set", "disabled", true)
-	p_data.is_pogo_attack = false
+	owner.hitbox_shape.call_deferred("set", "disabled", true)
+	state_data.is_pogo_attack = false
 
 func process_physics(delta: float):
-	if not p_data.is_pogo_attack:
+	if not state_data.is_pogo_attack:
 		var friction = CombatDB.config.player_attack_friction
-		player.velocity = player.velocity.move_toward(Vector2.ZERO, friction * delta)
+		owner.velocity = owner.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
-	if p_data.attack_duration_timer <= 0:
-		player.change_state(player.State.FALL)
+	if state_data.attack_duration_timer <= 0:
+		state_machine.change_state(owner.State.FALL)
 
 func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = player.hitbox_shape.shape
-	query.transform = player.global_transform * player.hitbox.transform
+	query.shape = owner.hitbox_shape.shape
+	query.transform = owner.global_transform * owner.hitbox.transform
 	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
-	query.exclude = [player]
-	
-	# CRITICAL FIX: Explicitly enable collision with Area2D nodes.
+	query.exclude = [owner]
 	query.collide_with_areas = true
 	
-	var results = player.get_world_2d().direct_space_state.intersect_shape(query)
+	var results = owner.get_world_2d().direct_space_state.intersect_shape(query)
 	
 	if not results.is_empty():
-		if player.combat_component.trigger_pogo(results[0].collider):
+		if owner.combat_component.trigger_pogo(results[0].collider):
 			return true
 	
 	return false

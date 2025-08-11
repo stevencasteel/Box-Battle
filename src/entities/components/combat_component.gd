@@ -11,9 +11,16 @@ signal pogo_bounce_requested
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 
-func setup(p_owner: Node, _config: Resource = null, _services = null) -> void:
+# MODIFIED: Signature now matches the parent ComponentInterface.
+func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
-	self.p_data = owner_node.p_data
+	
+	# Pull required dependencies from the dictionary.
+	self.p_data = p_dependencies.get("data_resource")
+	
+	if not p_data:
+		push_error("CombatComponent.setup: Missing required dependency ('data_resource').")
+		return
 
 func teardown() -> void:
 	owner_node = null
@@ -33,8 +40,8 @@ func fire_shot():
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
 	shot.activate()
 
-# MODIFIED: Now uses the robust CombatUtils to find any damageable target.
 func trigger_pogo(pogo_target) -> bool:
+	# CORRECTED: Fixed the typo from p_ogo_target to pogo_target.
 	if not is_instance_valid(pogo_target):
 		return false
 

@@ -5,8 +5,11 @@
 class_name ComponentInterface
 extends Node
 
-# CORRECTED: Added underscore to unused parameter `p_owner`.
-func setup(_p_owner: Node, _config: Resource = null, _services = null) -> void:
+# The setup function is now more flexible.
+# It takes the owner and an optional dictionary for any other dependencies.
+# MODIFIED: Prefixed parameters with an underscore to silence UNUSED_PARAMETER
+# warnings, as this base implementation is intentionally empty.
+func setup(_p_owner: Node, _p_dependencies: Dictionary = {}) -> void:
 	pass
 
 func teardown() -> void:

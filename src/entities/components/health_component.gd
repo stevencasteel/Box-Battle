@@ -1,8 +1,8 @@
 # src/entities/components/health_component.gd
 #
 # A component responsible for managing an entity's health, damage intake,
-# invincibility, and death. It now implements the ComponentInterface standard
-# and the conceptual IDamageable interface.
+# invincibility, and death. It is now the single source of truth for the
+# invincibility timer.
 class_name HealthComponent
 extends ComponentInterface
 
@@ -21,7 +21,6 @@ var knockback_speed: float
 var hazard_knockback_speed: float
 var original_color: Color
 
-# A reference to the conceptual interface script.
 const IDamageable = preload("res://src/api/interfaces/i_damageable.gd")
 
 func _ready():
@@ -30,25 +29,27 @@ func _ready():
 	invincibility_timer.one_shot = true
 	hit_flash_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
-	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
+	
+	invincibility_timer.timeout.connect(func(): 
+		entity_data.is_invincible = false
+	)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
 
-func setup(p_owner: Node, config: Resource = null, _services = null) -> void:
+func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
+	self.entity_data = p_dependencies.get("data_resource")
+	var cfg: CombatConfig = p_dependencies.get("config")
 	
-	var cfg: CombatConfig = config as CombatConfig
-	if not cfg:
-		push_error("HealthComponent.setup: passed config is not a CombatConfig resource.")
+	if not entity_data or not cfg:
+		push_error("HealthComponent.setup: Missing required dependencies ('data_resource', 'config').")
 		return
 
 	if owner_node.is_in_group("player"):
-		self.entity_data = owner_node.p_data
 		max_health = cfg.player_max_health
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
-	else:
-		self.entity_data = owner_node.b_data
+	else: # Assumes enemy/boss
 		max_health = cfg.boss_health
 		invincibility_duration = cfg.boss_invincibility_duration
 		knockback_speed = 0
@@ -64,7 +65,6 @@ func teardown() -> void:
 	entity_data = null
 	owner_node = null
 
-# MODIFIED: Renamed to match the IDamageable interface contract.
 func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invincibility: bool = false) -> Dictionary:
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
 	
@@ -75,6 +75,7 @@ func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invin
 	health_changed.emit(entity_data.health, entity_data.max_health)
 	
 	_trigger_hit_flash()
+	
 	entity_data.is_invincible = true
 	invincibility_timer.start(invincibility_duration)
 	

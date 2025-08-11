@@ -7,26 +7,30 @@ extends ComponentInterface
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 var combat_component: CombatComponent
+var state_machine: BaseStateMachine
 
-# CORRECTED: Renamed `owner` to `p_owner` and added underscores to unused parameters.
-func setup(p_owner: Node, _config: Resource = null, _services = null, p_combat_component: CombatComponent = null) -> void:
+func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
-	self.p_data = owner_node.p_data
-	self.combat_component = p_combat_component
+	self.p_data = p_dependencies.get("data_resource")
+	self.state_machine = p_dependencies.get("state_machine")
+	self.combat_component = p_dependencies.get("combat_component")
 	
-	if not combat_component:
-		push_error("InputComponent requires a valid CombatComponent to be provided.")
+	if not p_data or not state_machine or not combat_component:
+		push_error("InputComponent.setup: Missing required dependencies.")
+		return
 
 func teardown() -> void:
 	owner_node = null
 	p_data = null
 	combat_component = null
+	state_machine = null
 
-func process_physics():
+# CORRECTED: Renamed to `_physics_process` to match Godot's engine callback.
+func _physics_process(_delta):
 	if Input.is_action_just_pressed("ui_jump"):
 		p_data.jump_buffer_timer = CombatDB.config.player_jump_buffer
 	
-	if not owner_node.states.find_key(owner_node.current_state) in owner_node.ACTION_ALLOWED_STATES:
+	if not state_machine.states.find_key(state_machine.current_state) in owner_node.ACTION_ALLOWED_STATES:
 		return
 	
 	if Input.is_action_just_pressed("ui_attack") and p_data.attack_cooldown_timer <= 0:
@@ -38,15 +42,16 @@ func process_physics():
 			if p_data.charge_timer >= CombatDB.config.player_charge_time:
 				combat_component.fire_shot()
 			else:
-				owner_node.change_state(owner_node.State.ATTACK)
+				state_machine.change_state(owner_node.State.ATTACK)
 			p_data.is_charging = false
 	
 	if Input.is_action_just_pressed("ui_dash") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
-		owner_node.change_state(owner_node.State.DASH)
+		state_machine.change_state(owner_node.State.DASH)
 	
 	if owner_node.is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and p_data.healing_charges > 0 and is_zero_approx(owner_node.velocity.x):
-		owner_node.change_state(owner_node.State.HEAL)
+		state_machine.change_state(owner_node.State.HEAL)
 
-func process_unhandled_input(event: InputEvent):
-	if is_instance_valid(owner_node) and is_instance_valid(owner_node.current_state):
-		owner_node.current_state.process_input(event)
+# CORRECTED: Renamed to `_unhandled_input` to match Godot's engine callback.
+func _unhandled_input(event: InputEvent):
+	if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
+		state_machine.current_state.process_input(event)

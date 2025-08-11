@@ -1,16 +1,14 @@
 # src/entities/player/states/state_heal.gd
 # Handles the player's healing state.
-extends PlayerState
+extends BaseState
 
-func enter():
-	player.velocity = Vector2.ZERO
-	# MODIFIED: Get value from the new CombatDB resource.
-	player.healing_timer.start(CombatDB.config.player_heal_duration)
-	print("Healing started...")
+func enter(_msg := {}):
+	owner.velocity = Vector2.ZERO
+	owner.healing_timer.start(CombatDB.config.player_heal_duration)
 
 func exit():
-	player._cancel_heal()
+	owner._cancel_heal()
 
 func process_physics(_delta: float):
-	if not Input.is_action_pressed("ui_down") or not Input.is_action_pressed("ui_jump") or not is_zero_approx(player.velocity.x) or not player.is_on_floor():
-		player.change_state(player.State.MOVE)
+	if not Input.is_action_pressed("ui_down") or not Input.is_action_pressed("ui_jump") or not is_zero_approx(owner.velocity.x) or not owner.is_on_floor():
+		state_machine.change_state(owner.State.MOVE)

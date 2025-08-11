@@ -9,7 +9,6 @@ extends Resource
 var max_health: int = 5
 var max_healing_charges: int = 1
 
-# By using setters, we can ensure these values are always valid.
 var health: int = 5:
 	set(value):
 		health = clamp(value, 0, max_health)
