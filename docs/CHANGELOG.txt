@@ -63,12 +63,6 @@
 ║      ░ ■ Decoupled all Components from their owners by passing dependencies  ║
 ║      ░   (data resources, other components) explicitly through a dictionary  ║
 ║      ░   in the `setup()` method, adhering to Dependency Inversion.          ║
-║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState`   ║
-║      ░   to unify all entity state management, removing duplicated code.     ║
-║      ░ ■ Refactored the `BaseBoss` to use the new `BaseStateMachine`,        ║
-║      ░   unifying the state management architecture across all entities.     ║
-║      ░ ■ Simplified the `EventBus` API by removing the unused `_source`      ║
-║      ░   parameter from the `emit` function.                                 ║
 ║                                                                              ║
 ║   █  Changed                                                                 ║
 ║      ░ ■ Renamed `HealthComponent.take_damage` to `apply_damage` to          ║
@@ -111,9 +105,6 @@
 ║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
 ║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
 ║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
-║      ░ ■ Added `ADR-002_Communication_Patterns.md` to formally document the  ║
-║      ░   project's standard for using Godot Signals (local communication)   ║
-║      ░   vs. the EventBus (global communication).                            ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
 ║      ░ ■ Resolved a complex series of bugs causing the pogo mechanic to be   ║
@@ -161,7 +152,5 @@
 ║      ░   for stun duration, decoupled from the longer invincibility timer.   ║
 ║      ░ ■ Implemented robust `teardown` methods in the state machine and all  ║
 ║      ░   components to prevent potential memory leaks from cyclic references.║
-║      ░ ■ Corrected all calls to `EventBus.emit` to match the new, simpler    ║
-║      ░   2-argument signature, resolving a crash.                            ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

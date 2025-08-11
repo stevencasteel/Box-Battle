@@ -1,6 +1,5 @@
-# src/core/events/event_bus.gd
-# This is the final, lean version of the EventBus. The unused `_source`
-# parameter has been removed from the emit function for a cleaner API.
+# src/core/event_bus.gd
+# SIMPLIFIED: Removed async queue, priority sorting, and unused debug features.
 extends Node
 
 var _subscribers: Dictionary = {}
@@ -18,29 +17,45 @@ func on(event_name: StringName, callback: Callable) -> int:
 	}
 	subs.append(entry)
 	_subscribers[event_name] = subs
+	
+	# The key is the token ID, the value is the event name.
 	_by_id[_next_id] = event_name
+	
 	_next_id += 1
 	return entry.id
 
 func off(token: int) -> void:
 	if not _by_id.has(token): return
+	
+	# CORRECTED: Get the event name from the dictionary.
 	var event_name: StringName = _by_id[token]
+	
 	if _subscribers.has(event_name):
-		for i in range(_subscribers[event_name].size() - 1, -1, -1):
-			if _subscribers[event_name][i].id == token:
-				_subscribers[event_name].remove_at(i)
+		var subs = _subscribers[event_name]
+		for i in range(subs.size() - 1, -1, -1):
+			if subs[i].id == token:
+				subs.remove_at(i)
 				break
-		if _subscribers[event_name].is_empty():
+		if subs.is_empty():
 			_subscribers.erase(event_name)
+	
 	_by_id.erase(token)
 
-# MODIFIED: Removed the unused `_source` parameter.
-func emit(event_name: StringName, payload = null) -> void:
+# CORRECTED: Added underscore to unused parameter `_source`.
+func emit(event_name: StringName, payload = null, _source: Object = null) -> void:
 	if not _subscribers.has(event_name): return
 
-	for sub in _subscribers[event_name].duplicate():
+	var subs: Array = _subscribers[event_name]
+	
+	for i in range(subs.size() - 1, -1, -1):
+		var sub = subs[i]
+		
 		if sub.owner_weak and not sub.owner_weak.get_ref():
-			off(sub.id)
+			_by_id.erase(sub.id)
+			subs.remove_at(i)
 			continue
 		
 		sub.callback.call(payload)
+	
+	if subs.is_empty():
+		_subscribers.erase(event_name)
