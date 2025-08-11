@@ -11,6 +11,8 @@ Entities follow a **Component-Based Architecture** combined with a **State Machi
 -   **Components (`health_component.gd`, etc.)**: Child nodes that encapsulate a single area of responsibility (e.g., managing health, handling input). They operate on the shared `Data Resource`.
 -   **States (`state_move.gd`, etc.)**: Classes that define specific behaviors. The active state is managed by the Context Node.
 
+Components communicate with their owner by emitting signals, which the context node listens for and reacts to. This keeps the component's responsibility focused solely on its own logic.
+
 ## Adding a New State
 
 1.  Create a new script in the entity's `states` directory that inherits from `PlayerState` or `BossState`.

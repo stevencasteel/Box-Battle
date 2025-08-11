@@ -18,4 +18,5 @@ func _ready():
 	menu.setup_menu([MenuManager.MenuItem.new(return_button, "BACK")])
 
 func _on_return_button_pressed():
-	get_tree().change_scene_to_file(AssetPaths.SCENE_TITLE_SCREEN)
+	# MODIFIED: Use the new SceneManager.
+	SceneManager.go_to_title_screen()

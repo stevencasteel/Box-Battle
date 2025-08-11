@@ -1,20 +1,20 @@
 # BOX BATTLE
 
-```
+
 ██████╗  ██████╗ ██╗  ██╗    ██████╗  █████╗ ████████╗████████╗██╗     ███████╗
 ██╔══██╗██╔═══██╗╗██╗██╔╝    ██╔══██╗██╔══██╗╚══██╔══╝╚══██╔══╝██║     ██╔════╝
 ██████╔╝██║   ██║╚███╔╝      ██████╔╝███████║   ██║      ██║   ██║     █████╗  
 ██╔══██╗██║   ██║██╔██╗      ██╔══██╗██╔══██║   ██║      ██║   ██║     ██╔══╝  
 ██████╔╝╚██████╔╝██╔╝ ██╗    ██████╔╝██║  ██║   ██║      ██║   ███████╗███████╗
 ╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝╚══════╝
-```
+
 
 A combat-focused 2D action game built in Godot 4, showcasing clean architecture and comprehensive game systems.
 
 ## What Makes This Code Notable
 
 ### Architectural Excellence
-- **Decoupled Messaging System**: A professional-grade Event Bus singleton allows game systems (UI, Audio, Gameplay) to communicate without direct dependencies, making the architecture highly modular and scalable.
+- **Decoupled Messaging System**: A professional-grade Event Bus singleton allows game systems (UI, Audio, Gameplay) to communicate without direct dependencies, making the architecture highly modular and scalable. The Event Bus is used for global, decoupled communication, while local component-to-owner interaction is handled cleanly with Godot's built-in signal system.
 - **Centralized Asset Management**: All file paths are managed through a single `AssetPaths` singleton, eliminating broken references and making refactoring trivial.
 - **Singleton-Based Core Systems**: Audio, settings, cursor management, and constants are globally accessible without tight coupling.
 - **Modular Arena System**: Level layouts and encounters are separated into data-only scripts, making level creation declarative and maintainable.

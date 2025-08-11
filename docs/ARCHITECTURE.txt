@@ -64,6 +64,15 @@
 ║      themselves procedurally using shaders, allowing for a highly polished   ║
 ║      and animatable interface without relying on static images.              ║
 ║                                                                              ║
+║   █  Component-to-Owner Communication (via Signals): Components encapsulate  ║
+║      logic but should not directly control their owner. To maintain this     ║
+║      decoupling, components use Godot's built-in signals to announce that    ║
+║      something has happened. The owner node (e.g., `player.gd`) listens for  ║
+║      these signals and decides how to react. For example, the               ║
+║      `CombatComponent` emits `pogo_bounce_requested`, and the `Player` script║
+║      implements the actual physics bounce. This keeps components reusable    ║
+║      and the owner in full control of its own state.                         ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                         COLLABORATION WORKFLOW                       ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║

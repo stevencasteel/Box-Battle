@@ -26,6 +26,7 @@ func _ready():
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
 	
+	# This can be null if the boss spawns later via sequencer
 	var final_boss_node = get_tree().get_first_node_in_group("enemy")
 	if is_instance_valid(final_boss_node):
 		final_boss_node.died.connect(_on_boss_died)
@@ -36,11 +37,9 @@ func _exit_tree():
 # --- Signal Handlers ---
 
 func _on_player_died():
-	print("Game Manager: Player death detected. Initiating Game Over.")
 	# MODIFIED: Use the new SceneManager.
 	SceneManager.go_to_game_over()
 
 func _on_boss_died():
-	print("Game Manager: Boss death detected. Initiating Victory.")
 	# MODIFIED: Use the new SceneManager.
 	SceneManager.go_to_victory()
