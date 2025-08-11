@@ -42,15 +42,17 @@ A combat-focused 2D action game built in Godot 4. This repo contains the engine,
 
 ## Repo layout (high level)
 
+```
 src/
-├── core/ # singletons & infrastructure (EventBus, Sequencer, SceneManager, settings, etc.)
-├── entities/ # players, bosses, components, state machines
-├── projectiles/ # projectile implementations and pool usage
-├── scenes/ # top-level scenes (game, main, loading)
-├── ui/ # HUD & menu system (event-driven)
-├── arenas/ # layout & encounter data + arena builder
-docs/ # design, architecture, BUGS.txt, ADRs
-core/ # core helpers & autoload scripts
+├── core/          # singletons & infrastructure (EventBus, Sequencer, SceneManager, settings, etc.)
+├── entities/      # players, bosses, components, state machines
+├── projectiles/   # projectile implementations and pool usage
+├── scenes/        # top-level scenes (game, main, loading)
+├── ui/            # HUD & menu system (event-driven)
+└── arenas/        # layout & encounter data + arena builder
+docs/              # design, architecture, BUGS.txt, ADRs
+core/              # core helpers & autoload scripts
+```
 
 ---
 
