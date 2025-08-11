@@ -3,41 +3,36 @@
 extends Node
 
 var player_node: Node = null
-var boss_node: Node = null
 var level_container: Node = null
 
 @onready var camera: Camera2D = $Camera2D
 
+var _boss_died_token: int = 0
+
 func _ready():
+	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
+	
 	if GameManager.state.prebuilt_level:
 		level_container = GameManager.state.prebuilt_level
-		add_child(level_container)
 		GameManager.state.prebuilt_level = null
-		await get_tree().process_frame
-	elif not GameManager.state.current_encounter_script_path.is_empty():
-		# This path is now only taken if skipping the loading screen.
-		level_container = await ArenaBuilder.build_level_async()
-		add_child(level_container)
-		await get_tree().process_frame
 	else:
-		print("ERROR: Game scene loaded without a pre-built level or encounter path.")
-		SceneManager.go_to_title_screen()
-		return
-	
+		level_container = await ArenaBuilder.build_level_async()
+
 	if is_instance_valid(level_container):
 		var build_data: LevelBuildData = level_container.get_meta("build_data")
 		if build_data:
-			# Step 1: Fit the camera to the logical arena size.
-			CameraManager.fit_camera_to_arena(camera, build_data.dimensions_tiles)
-			await get_tree().process_frame # Wait a frame for camera zoom to apply.
+			# STEP 1: Center the camera on the arena.
+			CameraManager.center_camera_on_arena(camera, build_data.dimensions_tiles)
 			
-			# Step 2: Fill the visible empty space with background tiles.
+			# STEP 2: Add the level to the scene.
+			add_child(level_container)
+			await get_tree().process_frame
+			
+			# STEP 3: Fill the viewport (which is now wider than the arena).
 			var terrain_builder = TerrainBuilder.new()
 			terrain_builder.fill_viewport(level_container, build_data, camera)
 
 	player_node = get_tree().get_first_node_in_group("player")
-	boss_node = get_tree().get_first_node_in_group("enemy")
-
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
 	
@@ -46,12 +41,13 @@ func _ready():
 		final_boss_node.died.connect(_on_boss_died)
 
 func _exit_tree():
+	EventBus.off(_boss_died_token)
 	get_tree().paused = false
 
-# --- Signal Handlers ---
+# --- Signal & Event Handlers ---
 
 func _on_player_died():
 	SceneManager.go_to_game_over()
 
-func _on_boss_died():
+func _on_boss_died(_payload = null):
 	SceneManager.go_to_victory()

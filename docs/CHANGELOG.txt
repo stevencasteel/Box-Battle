@@ -55,3 +55,28 @@
       ░   The `AttackState` now reads an `AttackPattern` resource to execute   
       ░   attacks, and the `IdleState` is responsible for selecting which      
       ░   pattern to use.                                                     
+
+
+   █  Architectural Changes                                                   
+      ░ ■ Decoupled game logic from screen resolution by creating a `GridUtils`
+      ░   singleton to handle conversions between tile and world coordinates. 
+      ░ ■ Implemented a `CameraManager` to support non-square aspect ratios.  
+      ░ ■ Enhanced the `TerrainBuilder` to procedurally fill the entire camera
+      ░   viewport with background tiles, creating a seamless play area.      
+                                                                              
+   █  Changed                                                                 
+      ░ ■ Project's default display resolution updated from 1000x1000 to a     
+      ░   pixel-perfect 1800x1000 widescreen aspect ratio.                    
+      ░ ■ The Player's dash mechanic has been refined. All momentum is now     
+      ░   cancelled at the end of a dash, providing a more precise "hard stop" 
+      ░   feel and allowing for more controlled aerial maneuvers.             
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a long-standing visual bug where debug collision shapes would
+      ░   be incorrectly culled at the viewport edges by correcting the engine's
+      ░   update order in the `game.gd` scene.                                
+      ░ ■ Replaced all `ColorRect` nodes used for in-world visuals with        
+      ░   `Polygon2D` nodes to prevent potential rendering conflicts.         
+      ░ ■ Fixed a critical race condition where killing the boss would not trigger
+      ░   the victory screen by moving the logic to the global `EventBus`.    
+      ░ ■ Addressed several minor UI layout bugs for better consistency.      

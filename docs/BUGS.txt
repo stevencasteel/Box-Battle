@@ -108,3 +108,13 @@
       ░  parent container's layout logic.
       ░  DEFERRED: A full UI overhaul is planned for a future sprint. This
       ░  minor visual bug will be resolved then.
+
+         □  [BUG-RENDER001] Debug collision shapes are culled at viewport edges.
+      ░  STATUS: OPEN
+      ░  DESCRIPTION: When running with "Visible Collision Shapes", the blue
+      ░  debug lines for physics bodies that fall exactly on the camera's
+      ░  viewport boundary are inconsistently rendered (often missing). This
+      ░  appears to be a minor engine culling artifact.
+      ░  DEFERRED: This is a debug-only visual issue and has no impact on
+      ░  gameplay, final visuals, or actual collision detection. It is a very
+      ░  low priority fix.

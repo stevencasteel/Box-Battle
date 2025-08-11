@@ -1,15 +1,12 @@
 # src/entities/boss/base_boss.gd
-# This is the "Context" for the Boss State Machine. It now loads a list
-# of AttackPattern resources for its states to use.
+# This is the "Context" for the Boss State Machine. It now announces its
+# death on the global EventBus.
 extends CharacterBody2D
 
-# --- Signals ---
-signal health_changed(current_health, max_health)
-signal died
+# REMOVED: The local `died` signal is no longer needed.
 
 # --- Enums ---
 enum State { IDLE, ATTACK, COOLDOWN, PATROL }
-# REMOVED: AttackPattern enum is no longer needed; it's data-driven.
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -23,14 +20,12 @@ var b_data: BossStateData
 
 # --- Boss Properties ---
 var player: CharacterBody2D = null
-# NEW: An array to hold our AttackPattern resources.
 var attack_patterns: Array[AttackPattern] = []
 
 # --- Engine Functions ---
 func _ready():
 	add_to_group("enemy")
 	
-	# NEW: Load all attack patterns into the array.
 	attack_patterns.append(load("res://src/entities/boss/attack_patterns/single_shot.tres"))
 	attack_patterns.append(load("res://src/entities/boss/attack_patterns/volley_shot.tres"))
 	
@@ -74,7 +69,8 @@ func _physics_process(delta):
 
 # --- Public Methods ---
 func die():
-	died.emit()
+	# MODIFIED: Emit the global event instead of the local signal.
+	EventBus.emit(EventCatalog.BOSS_DIED)
 	queue_free()
 
 # --- Internal Functions ---
@@ -112,7 +108,9 @@ func _on_health_component_health_changed(current, max_val):
 	ev.current_health = current
 	ev.max_health = max_val
 	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
-	health_changed.emit(current, max_val)
+	# health_changed signal is no longer used, but we keep it for now.
+	# It could be useful for boss-internal logic (e.g. phase changes).
+	# health_changed.emit(current, max_val)
 
 func _on_health_component_died():
 	die()

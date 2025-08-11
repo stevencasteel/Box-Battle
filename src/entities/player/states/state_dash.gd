@@ -1,17 +1,27 @@
 # src/entities/player/states/state_dash.gd
-# Handles the player's dashing state.
+# EXPERIMENTAL: All momentum is now cancelled at the end of a dash
+# to test the "hard stop" game feel.
 extends BaseState
+
+var _dash_direction: Vector2
 
 func enter(_msg := {}):
 	state_data.is_dash_invincible = true
 	state_data.can_dash = false
 	state_data.dash_duration_timer = CombatDB.config.player_dash_duration
 	state_data.dash_cooldown_timer = CombatDB.config.player_dash_cooldown
-	owner.velocity = _get_dash_direction() * CombatDB.config.player_dash_speed
+	
+	_dash_direction = _get_dash_direction()
+	owner.velocity = _dash_direction * CombatDB.config.player_dash_speed
 
 func exit():
 	state_data.is_dash_invincible = false
-	owner.velocity = owner.velocity * 0.5 
+	
+	# THE CHANGE: Apply momentum cancellation to ALL dashes.
+	if _dash_direction.y != 0: # If dash is vertical (up or down)
+		owner.velocity.y = 0.0
+	if _dash_direction.x != 0: # If dash is horizontal
+		owner.velocity.x = 0.0
 
 func process_physics(_delta: float):
 	if state_data.dash_duration_timer <= 0:
