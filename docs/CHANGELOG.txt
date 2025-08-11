@@ -42,3 +42,16 @@
       ░ ■ Project display settings updated to a 16:9 aspect ratio (1920x1080).
       ░ ■ Refactored procedural UI menus to use container nodes for better
       ░   resizing, though minor alignment issues remain (see BUGS.txt).
+
+   █  Architectural Changes                                                   
+      ░ ■ Created a data-driven `AttackPattern` resource, allowing boss      
+      ░   attack properties (timing, cooldowns) to be designed and tuned     
+      ░   directly in the editor instead of being hard-coded.                 
+      ░ ■ Implemented a new, reusable `TelegraphComponent` scene to provide    
+      ░   consistent and clear visual warnings for all enemy attacks.         
+                                                                              
+   █  Changed                                                                 
+      ░ ■ Refactored the `BaseBoss` and its state machine to be fully data-driven.
+      ░   The `AttackState` now reads an `AttackPattern` resource to execute   
+      ░   attacks, and the `IdleState` is responsible for selecting which      
+      ░   pattern to use.                                                     

@@ -1,6 +1,6 @@
 # src/entities/boss/base_boss.gd
-# This is the "Context" for the Boss State Machine. It now delegates all
-# state management logic to its StateMachine child node.
+# This is the "Context" for the Boss State Machine. It now loads a list
+# of AttackPattern resources for its states to use.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -9,7 +9,7 @@ signal died
 
 # --- Enums ---
 enum State { IDLE, ATTACK, COOLDOWN, PATROL }
-enum AttackPattern { SINGLE_SHOT, VOLLEY_SHOT }
+# REMOVED: AttackPattern enum is no longer needed; it's data-driven.
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -23,10 +23,16 @@ var b_data: BossStateData
 
 # --- Boss Properties ---
 var player: CharacterBody2D = null
+# NEW: An array to hold our AttackPattern resources.
+var attack_patterns: Array[AttackPattern] = []
 
 # --- Engine Functions ---
 func _ready():
 	add_to_group("enemy")
+	
+	# NEW: Load all attack patterns into the array.
+	attack_patterns.append(load("res://src/entities/boss/attack_patterns/single_shot.tres"))
+	attack_patterns.append(load("res://src/entities/boss/attack_patterns/volley_shot.tres"))
 	
 	b_data = BossStateData.new()
 	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
@@ -61,7 +67,6 @@ func _physics_process(delta):
 	if not is_on_floor():
 		velocity.y += CombatDB.config.gravity * delta
 	
-	# The state machine automatically calls process_physics on the current state.
 	move_and_slide()
 	
 	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
@@ -106,7 +111,6 @@ func _on_health_component_health_changed(current, max_val):
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	# CORRECTED: Removed the third argument (`self`).
 	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 
