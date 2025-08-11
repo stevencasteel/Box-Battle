@@ -38,7 +38,6 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 
 # --- Engine Functions ---
 func _ready():
-	# THE FIX: Add the node to its group FIRST, before any components are set up.
 	add_to_group("player")
 	
 	p_data = PlayerStateData.new()
@@ -100,7 +99,6 @@ func _notification(what):
 
 func _physics_process(delta):
 	_update_timers(delta)
-
 	move_and_slide()
 	_check_for_contact_damage()
 	if is_on_wall() and not is_on_floor():
@@ -135,6 +133,7 @@ func _update_timers(delta):
 func _emit_healing_charges_changed_event():
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
+	# CORRECTED: Removed the third argument (`self`).
 	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 	healing_charges_changed.emit(p_data.healing_charges)
 
@@ -143,7 +142,6 @@ func _emit_healing_charges_changed_event():
 func _check_for_contact_damage():
 	if p_data.is_invincible:
 		return
-
 	for i in range(get_slide_collision_count()):
 		var col = get_slide_collision(i)
 		if col:
@@ -204,6 +202,7 @@ func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
+	# CORRECTED: Removed the third argument (`self`).
 	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 

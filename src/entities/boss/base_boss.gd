@@ -106,7 +106,8 @@ func _on_health_component_health_changed(current, max_val):
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev, self)
+	# CORRECTED: Removed the third argument (`self`).
+	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 
 func _on_health_component_died():

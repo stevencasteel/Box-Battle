@@ -1,5 +1,6 @@
-# src/core/event_bus.gd
-# SIMPLIFIED: Removed async queue, priority sorting, and unused debug features.
+# src/core/events/event_bus.gd
+# This is the final, lean version of the EventBus. The unused `_source`
+# parameter has been removed from the emit function for a cleaner API.
 extends Node
 
 var _subscribers: Dictionary = {}
@@ -33,8 +34,8 @@ func off(token: int) -> void:
 			_subscribers.erase(event_name)
 	_by_id.erase(token)
 
-# CORRECTED: Added underscore to unused parameter `_source`.
-func emit(event_name: StringName, payload = null, _source: Object = null) -> void:
+# MODIFIED: Removed the unused `_source` parameter.
+func emit(event_name: StringName, payload = null) -> void:
 	if not _subscribers.has(event_name): return
 
 	for sub in _subscribers[event_name].duplicate():
