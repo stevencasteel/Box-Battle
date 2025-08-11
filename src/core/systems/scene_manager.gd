@@ -1,15 +1,15 @@
 # src/core/systems/scene_manager.gd
 #
-# A centralized singleton for handling all scene transitions. This provides a
-# safe, high-level API for changing scenes and prevents scene path strings
-# from being scattered across the codebase.
+# A centralized singleton for handling all scene transitions. It now also
+# cleans up the ObjectPool to prevent projectiles from persisting.
 extends Node
 
 # --- Private Methods ---
 
 # The core, private function that handles the actual scene change.
-# It uses 'call_deferred' to ensure the change happens at a safe time.
 func _switch_to_scene(path: String) -> void:
+	# THE FIX: Clean up all active projectiles before changing scenes.
+	ObjectPool.reset()
 	get_tree().call_deferred("change_scene_to_file", path)
 
 

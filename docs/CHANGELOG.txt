@@ -80,3 +80,28 @@
       ░ ■ Fixed a critical race condition where killing the boss would not trigger
       ░   the victory screen by moving the logic to the global `EventBus`.    
       ░ ■ Addressed several minor UI layout bugs for better consistency.      
+
+
+
+         █  Added                                                                   
+      ░ ■ Implemented a dynamic, three-phase boss fight. The boss now becomes
+      ░   more aggressive as its health decreases, using faster cooldowns and
+      ░   more complex attack patterns in later phases.                       
+      ░ ■ Added phase indicator icons to the Game HUD that update in real-time
+      ░   to visually represent the boss's current phase.                      
+      ░ ■ Created a templated boss death sequence using the `Sequencer`. This 
+      ░   creates a cinematic pause after defeating the boss before the       
+      ░   victory screen appears.                                             
+                                                                              
+   █  Changed                                                                 
+      ░ ■ The boss's `HealthComponent` can now detect when health crosses      
+      ░   pre-defined thresholds and emit a signal, enabling phase transitions.
+      ░ ■ The `GameHUD`'s player health bar now correctly uses a color from the
+      ░   global `Palette` for visual consistency.                            
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a "zombie attack" bug where the boss could still fire       
+      ░   projectiles after dying by adding an `_is_dead` state flag.         
+      ░ ■ Fixed a bug where active projectiles would persist across scene      
+      ░   transitions by adding a global reset function to the `ObjectPool`.  
+      ░ ■ Corrected the phase indicator UI to deplete from right-to-left.      

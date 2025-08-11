@@ -1,8 +1,6 @@
 # src/core/systems/object_pool.gd
-#
-# This version has been hardened to remove fragile name-based lookups. It now
-# stores a direct reference to the container node for each pool, making it
-# immune to errors from renaming nodes.
+# This version now has a public `reset()` method to clean up all active
+# objects, which is crucial for preventing visual bugs during scene transitions.
 extends Node
 
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
@@ -14,6 +12,17 @@ func _ready():
 	_create_pool_for_scene(&"player_shots", PlayerShotScene, 15)
 	_create_pool_for_scene(&"boss_shots", BossShotScene, 30)
 
+# NEW: Public function to clean up all active instances.
+func reset():
+	for pool_name in _pools:
+		var pool = _pools[pool_name]
+		# Iterate through all children of the container node.
+		for child in pool.container.get_children():
+			# If a child is NOT in the inactive list, it must be active.
+			if not pool.inactive.has(child):
+				# Return it to the pool.
+				return_instance(child)
+
 func _create_pool_for_scene(p_pool_name: StringName, p_scene: PackedScene, p_initial_size: int):
 	if _pools.has(p_pool_name):
 		return
@@ -22,7 +31,6 @@ func _create_pool_for_scene(p_pool_name: StringName, p_scene: PackedScene, p_ini
 	pool_container.name = p_pool_name
 	add_child(pool_container)
 	
-	# MODIFIED: The pool's data now includes a direct reference to its container node.
 	_pools[p_pool_name] = {
 		"scene": p_scene,
 		"inactive": [],
@@ -46,9 +54,7 @@ func get_instance(p_pool_name: StringName) -> Node:
 	if not pool.inactive.is_empty():
 		instance = pool.inactive.pop_front()
 	else:
-		# This case handles if the pool runs dry during intense combat.
 		instance = pool.scene.instantiate()
-		# MODIFIED: We now use the direct reference to the container, which is robust.
 		pool.container.add_child(instance)
 	
 	return instance
@@ -59,7 +65,6 @@ func return_instance(p_instance: Node):
 
 	var pool_name = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
-		# It's safer to just queue_free() than to assume ownership.
 		p_instance.queue_free()
 		return
 	

@@ -1,13 +1,13 @@
 # src/entities/components/health_component.gd
 #
-# A component responsible for managing an entity's health, damage intake,
-# invincibility, and death. It is now the single source of truth for the
-# invincibility timer.
+# A component responsible for managing an entity's health. It now has the
+# ability to emit a signal when its health drops below defined thresholds.
 class_name HealthComponent
 extends ComponentInterface
 
 signal health_changed(current_health: int, max_health: int)
 signal died
+signal health_threshold_reached(health_percentage: float) # NEW SIGNAL
 
 var entity_data: Resource
 var owner_node: CharacterBody2D
@@ -71,6 +71,9 @@ func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invin
 	if (entity_data.is_invincible or is_dash_invincible) and not p_bypass_invincibility:
 		return {"was_damaged": false, "knockback_velocity": Vector2.ZERO}
 
+	# Store health before damage to check if a threshold was crossed.
+	var health_before_damage = entity_data.health
+	
 	entity_data.health -= damage_amount
 	health_changed.emit(entity_data.health, entity_data.max_health)
 	
@@ -81,10 +84,28 @@ func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invin
 	
 	var knockback_info = _calculate_knockback(damage_source)
 	
+	# NEW: Check if any thresholds were crossed.
+	_check_for_threshold_crossing(health_before_damage, entity_data.health)
+	
 	if entity_data.health <= 0:
 		died.emit()
 		
 	return {"was_damaged": true, "knockback_velocity": knockback_info}
+
+# NEW FUNCTION: Checks if health has dropped below a threshold.
+func _check_for_threshold_crossing(health_before: int, health_after: int):
+	if not owner_node.has_method("get_health_thresholds"):
+		return
+		
+	var thresholds: Array[float] = owner_node.get_health_thresholds()
+	var old_percent = float(health_before) / max_health
+	var new_percent = float(health_after) / max_health
+	
+	for threshold in thresholds:
+		# If we were above the threshold before, but are at or below it now...
+		if old_percent > threshold and new_percent <= threshold:
+			# ...emit the signal.
+			health_threshold_reached.emit(threshold)
 
 func _calculate_knockback(damage_source: Node) -> Vector2:
 	if knockback_speed == 0 or not damage_source:
