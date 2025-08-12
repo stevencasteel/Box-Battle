@@ -51,6 +51,12 @@
 
 
 
+   █  Documentation                                                           
+      ░ ■ Formalized the project's official Dependency Injection pattern in    
+      ░   `ARCHITECTURE.txt`. The standard is "Owner-Driven Injection" within 
+      ░   an entity's `_ready()` function, leveraging Godot's lifecycle guarantees.
+
+
 
 
 

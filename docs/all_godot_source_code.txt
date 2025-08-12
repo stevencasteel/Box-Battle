@@ -2,13 +2,14 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Tue Aug 12 10:18:15 CDT 2025
+Generated on: Tue Aug 12 13:51:58 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
 ├── README.md
+├── all_script_errors.txt
 ├── data
 │   └── combat_config.tres
 ├── default_bus_layout.tres
@@ -208,7 +209,264 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-51 directories, 149 files
+51 directories, 150 files
+
+
+=====================================
+FILE: ./all_script_errors.txt
+=====================================
+WorkerThreadPool: 8 threads, 2 max low-priority.
+Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Devices:
+  #0: Apple Apple M1 (Apple7) - Supported, Integrated
+- Metal multiview supported:
+  max view count: 16
+  max instances: 4294967295
+Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
+Using "default" pen tablet driver...
+Shader 'CanvasSdfShaderRD' (group 0) SHA256: 97dc9fb2f592cd02d8b1f8fd33df8aec73849d2fbafcfeaa6e99b9c3678c221d
+Shader 'SkeletonShaderRD' (group 0) SHA256: a7e5115c09793f8e950720a2ab8906bff195e9b508eec01af7aeb363da2bf75b
+Shader 'SortShaderRD' (group 0) SHA256: e184fb752fd6b1f86c536cb9dff20977fee019403e1025080eca44e6bfa11ef1
+Shader 'ParticlesShaderRD' (group 0) SHA256: 9797916f926fab4024422fe6c75cc0d8d517705d90802882fb9efa6dda0af392
+Shader 'ParticlesCopyShaderRD' (group 0) SHA256: 1a312a6797c1ba217655b41d33ce357ac226cba8d65d4daab9278d88c57d6468
+Shader 'CanvasShaderRD' (group 0) SHA256: 908e609e1337d67f8799155a57f03a3de33fcdba22b574595e90da921079b33d
+Shader 'CanvasOcclusionShaderRD' (group 0) SHA256: f9d6c9d569cf2f40595061ee84efd5fe34d68284e1f7273f62a4ac36de8852ee
+Shader 'SceneForwardMobileShaderRD' (group 0) SHA256: 1c5d16b1f4d38d016026900999bd209a9f901f70f04136d9fdd669f9601e2db3
+Shader 'SkyShaderRD' (group 0) SHA256: 34c03a8e46624b5ab7488ca0527d4f733272c048f0dd61258a69b9bf419225bd
+Shader 'BokehDofRasterShaderRD' (group 0) SHA256: a5ed26e5b86fb1a016f61f719fa3ba45119a0bda505dcc038bfd26e718ef956d
+Shader 'BlurRasterShaderRD' (group 0) SHA256: 193d80f293dc88299ae7ef003640f13fa7cab1fd1a57de366b53029265639146
+Shader 'CopyShaderRD' (group 0) SHA256: aaaaf4bfa2e7bd72bdafaa25005b56152e2e738422178c95ce5ed4976f964862
+Shader 'CopyToFbShaderRD' (group 0) SHA256: f113ba1d923f38bcf263af4dbc168573e755be83c1d3616fc49b7588aa9fffa4
+Shader 'CubeToDpShaderRD' (group 0) SHA256: 37d76ea0432d00e86934ff9eab83ce63c9c7feffafd96809773e109c5a078e17
+Shader 'CubemapDownsamplerRasterShaderRD' (group 0) SHA256: 20c48704e5817755c17d80b22e7c39d99270bd1e95c54446d742753abc03db33
+Shader 'CubemapFilterRasterShaderRD' (group 0) SHA256: de06c7a642b6af01caa44a65e94daa5dfafbdda1a6111bdd975c28e8c1fe4c1a
+Shader 'CubemapRoughnessRasterShaderRD' (group 0) SHA256: 3efae0638df891d7ec5aaa17ead03d3243a3fdc9f5920d95e16f92a0aeccfd04
+Shader 'SpecularMergeShaderRD' (group 0) SHA256: 8d06f9bec87ae4177f0a49133608f41313ebad2d0d81a5c074db1541cd396ddc
+Shader 'ShadowFrustumShaderRD' (group 0) SHA256: b73466659c6c1252aff41d1d117370efac3ed69d2ee89bb6e036036557afb5bd
+Shader 'MotionVectorsShaderRD' (group 0) SHA256: 548f1c61370fbba7d8bacec2827d86adc6984d8874d31cb21b7bb5f78e6d4335
+Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e6003b5a0c97bd615d1990a7012076a61e11cb05df558
+Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
+Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
+CoreAudio: detected 2 channels
+CoreAudio: output sampling rate: 44100 Hz
+CoreAudio: output audio buffer frames: 512 calculated latency: 11ms
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
+Loading resource: res://default_bus_layout.tres
+CORE API HASH: 4052744068
+EDITOR API HASH: 910296392
+Loading resource: res://src/core/data/config/settings.gd
+Loading resource: res://src/core/systems/audio_manager.gd
+Loading resource: res://src/core/systems/cursor_manager.gd
+Loading resource: res://assets/sprites/ui/cursors/cursor_default.png
+Loading resource: res://.godot/imported/cursor_default.png-adc7f5ed4336e28008b129c5a66cab2e.ctex
+Loading resource: res://assets/sprites/ui/cursors/cursor_pointer.png
+Loading resource: res://.godot/imported/cursor_pointer.png-90e307ad4e06d49b3b74ef9b44e078f4.ctex
+Loading resource: res://src/ui/global_hud/global_hud.tscn
+Loading resource: res://src/ui/global_hud/global_hud.gd
+Loading resource: res://assets/sprites/ui/icons/icon-sound-on.png
+Loading resource: res://.godot/imported/icon-sound-on.png-e846c5d97e3d706214419caf8e828d71.ctex
+Loading resource: res://assets/sprites/ui/icons/icon-sound-off.png
+Loading resource: res://.godot/imported/icon-sound-off.png-6ce140963307e6f579be834adb53f1a0.ctex
+Loading resource: res://src/core/systems/game_manager.gd
+Loading resource: res://src/core/systems/scene_manager.gd
+Loading resource: res://src/projectiles/player_shot.tscn
+Loading resource: res://src/projectiles/player_shot.gd
+Loading resource: res://src/projectiles/boss_shot.tscn
+Loading resource: res://src/projectiles/boss_shot.gd
+Loading resource: res://src/projectiles/turret_shot.tscn
+Loading resource: res://src/projectiles/turret_shot.gd
+Loading resource: res://src/core/building/arena_builder.gd
+Loading resource: res://src/core/data/combat_db.gd
+Loading resource: res://src/core/util/physics_layers.gd
+Loading resource: res://src/core/systems/camera_manager.gd
+Loaded system CA certificates
+Loading resource: res://src/scenes/main/main.tscn
+Loading resource: res://src/scenes/main/main.gd
+Loading resource: res://data/combat_config.tres
+AssetPaths: Validating all asset paths...
+AssetPaths: All paths validated successfully.
+Loading resource: res://src/ui/screens/title_screen/title_screen.tscn
+Loading resource: res://src/ui/screens/title_screen/title_screen.gd
+Loading resource: res://assets/audio/music/title-screen-loop.mp3
+Loading resource: res://.godot/imported/title-screen-loop.mp3-7ec904333b11a47509751ae22a703854.mp3str
+Loading resource: res://assets/sprites/ui/title/box_battle_title.png
+Loading resource: res://.godot/imported/box_battle_title.png-b9353d8af8deadfd04d4db0e868561f1.ctex
+Loading resource: res://assets/sprites/ui/menu/menu-item-start.png
+Loading resource: res://.godot/imported/menu-item-start.png-32e538bb682d9a1b639fc2dc41f90bed.ctex
+Loading resource: res://assets/sprites/ui/menu/menu-item-options.png
+Loading resource: res://.godot/imported/menu-item-options.png-0a5f7fa3c76e43a264f366e36bedb5f1.ctex
+Loading resource: res://assets/sprites/ui/menu/menu-cursor.png
+Loading resource: res://.godot/imported/menu-cursor.png-3bbc1015f1afec795ab061c5256925a7.ctex
+Loading resource: res://assets/audio/sfx/start-chime.mp3
+Loading resource: res://.godot/imported/start-chime.mp3-d648111bc9ecb7811859947d2e9fa808.mp3str
+Loading resource: res://src/scenes/loading/loading_screen.tscn
+Loading resource: res://src/scenes/loading/loading_screen.gd
+Starting shader pre-warming...
+Loading resource: res://src/entities/player/player.tscn
+Loading resource: res://src/entities/player/player.gd
+Loading resource: res://src/entities/player/states/state_move.gd
+Loading resource: res://src/entities/player/states/state_fall.gd
+Loading resource: res://src/entities/player/states/state_jump.gd
+Loading resource: res://src/entities/player/states/state_dash.gd
+Loading resource: res://src/entities/player/states/state_wall_slide.gd
+Loading resource: res://src/entities/player/states/state_attack.gd
+Loading resource: res://src/entities/player/states/state_hurt.gd
+Loading resource: res://src/entities/player/states/state_heal.gd
+Loading resource: res://src/entities/boss/base_boss.tscn
+Loading resource: res://src/entities/boss/base_boss.gd
+Loading resource: res://src/entities/components/telegraph_component.tscn
+Loading resource: res://src/entities/components/telegraph_component.gd
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+Shader pre-warming complete.
+Loading resource: res://src/arenas/arena_00_encounter.gd
+Loading resource: res://src/entities/boss/base_boss.tscn
+Loading resource: res://src/arenas/arena_00_layout.gd
+Loading resource: res://src/entities/player/player.tscn
+Loading resource: res://src/ui/game_hud/game_hud.tscn
+Loading resource: res://src/ui/game_hud/game_hud.gd
+Loading resource: res://src/entities/minions/turret.tscn
+Loading resource: res://src/entities/minions/turret.gd
+Loading resource: res://src/entities/minions/turret.tscn
+Loading resource: res://src/scenes/game/game.tscn
+Loading resource: res://src/scenes/game/game.gd
+Loading resource: res://src/entities/minions/states/state_turret_idle.gd
+Loading resource: res://src/entities/minions/states/state_turret_attack.gd
+VERIFICATION: Camera centered on arena.
+VERIFICATION: Boss has entered a new phase. Phases remaining: 2
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+VERIFICATION: BaseStateMachine torn down successfully.
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
+Leaked instance: GDScriptNativeClass:9223372050024891063
+Leaked instance: Object:94992598787
+Leaked instance: Object:94891935507
+Leaked instance: Object:94908712727
+Leaked instance: Object:94925489944
+Leaked instance: Object:94942267161
+Leaked instance: Object:94959044378
+Leaked instance: Object:94975821595
+Leaked instance: Object:95009376028
+Leaked instance: GDScript:9223372100272654119 - Resource path: res://src/entities/components/base_state.gd
+Leaked instance: GDScript:9223372102839568169 - Resource path: res://src/entities/player/states/state_move.gd
+Leaked instance: Object:72242693930
+Leaked instance: GDScript:9223372103594542894 - Resource path: res://src/entities/player/states/state_fall.gd
+Leaked instance: GDScript:9223372104349517615 - Resource path: res://src/entities/player/states/state_jump.gd
+Leaked instance: GDScript:9223372105104492336 - Resource path: res://src/entities/player/states/state_dash.gd
+Leaked instance: GDScript:9223372105859467057 - Resource path: res://src/entities/player/states/state_wall_slide.gd
+Leaked instance: GDScript:9223372106748659506 - Resource path: res://src/entities/player/states/state_attack.gd
+Leaked instance: GDScript:9223372107855955763 - Resource path: res://src/entities/player/states/state_hurt.gd
+Leaked instance: Object:72259471156
+Leaked instance: Object:72276248373
+Leaked instance: GDScript:9223372108543821622 - Resource path: res://src/entities/player/states/state_heal.gd
+Leaked instance: Object:72293025591
+Leaked instance: Object:72309802808
+Leaked instance: Object:72326580025
+Leaked instance: Object:72343357242
+Leaked instance: Object:72360134459
+Leaked instance: Object:77426853698
+Leaked instance: Object:77443630915
+Leaked instance: Object:77477185352
+Leaked instance: Object:77493962569
+Leaked instance: Object:77460408148
+Leaked instance: GDScript:9223372111748269911 - Resource path: res://src/entities/boss/states/state_boss_idle.gd
+Leaked instance: GDScript:9223372111899264856 - Resource path: res://src/entities/boss/states/state_boss_attack.gd
+Leaked instance: GDScript:9223372112050259801 - Resource path: res://src/entities/boss/states/state_boss_cooldown.gd
+Leaked instance: GDScript:9223372112201254746 - Resource path: res://src/entities/boss/states/state_boss_patrol.gd
+Leaked instance: GDScript:9223372112352249691 - Resource path: res://src/entities/boss/states/state_boss_lunge.gd
+Leaked instance: Object:95831460216
+Leaked instance: GDScript:9223372132283582841 - Resource path: res://src/entities/minions/states/state_turret_idle.gd
+Leaked instance: Object:96317999482
+Leaked instance: GDScript:9223372132770122107 - Resource path: res://src/entities/minions/states/state_turret_attack.gd
+Leaked instance: Object:96418662784
+Leaked instance: Object:96452217217
+Leaked instance: Object:113934077298
+Leaked instance: Object:113950854515
+Leaked instance: Object:113967631732
+Leaked instance: Object:113984408949
+Leaked instance: Object:114001186166
+Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
+Resource still in use: res://src/entities/components/base_state.gd (GDScript)
+Resource still in use: res://src/entities/player/states/state_move.gd (GDScript)
+Resource still in use: res://src/entities/player/states/state_fall.gd (GDScript)
+Resource still in use: res://src/entities/player/states/state_jump.gd (GDScript)
+Resource still in use: res://src/entities/player/states/state_dash.gd (GDScript)
+Resource still in use: res://src/entities/player/states/state_wall_slide.gd (GDScript)
+Resource still in use: res://src/entities/player/states/state_attack.gd (GDScript)
+Resource still in use: res://src/entities/player/states/state_hurt.gd (GDScript)
+Resource still in use: res://src/entities/player/states/state_heal.gd (GDScript)
+Resource still in use: res://src/entities/boss/states/state_boss_idle.gd (GDScript)
+Resource still in use: res://src/entities/boss/states/state_boss_attack.gd (GDScript)
+Resource still in use: res://src/entities/boss/states/state_boss_cooldown.gd (GDScript)
+Resource still in use: res://src/entities/boss/states/state_boss_patrol.gd (GDScript)
+Resource still in use: res://src/entities/boss/states/state_boss_lunge.gd (GDScript)
+Resource still in use: res://src/entities/minions/states/state_turret_idle.gd (GDScript)
+Resource still in use: res://src/entities/minions/states/state_turret_attack.gd (GDScript)
+Orphan StringName: Turret (static: 0, total: 2)
+Orphan StringName: BossStatePatrol (static: 0, total: 3)
+Orphan StringName: _start_telegraph (static: 0, total: 1)
+Orphan StringName: _set_path_cache (static: 0, total: 16)
+Orphan StringName: _reset_state (static: 0, total: 16)
+Orphan StringName: _apply_gravity (static: 0, total: 2)
+Orphan StringName: turret (static: 0, total: 10)
+Orphan StringName: state_data (static: 0, total: 48)
+Orphan StringName: process_physics (static: 0, total: 15)
+Orphan StringName: BossStateLunge (static: 0, total: 3)
+Orphan StringName: _setup_local_to_scene (static: 0, total: 16)
+Orphan StringName: BossStateAttack (static: 0, total: 3)
+Orphan StringName: BaseBoss (static: 0, total: 2)
+Orphan StringName: "src/entities/player/states/state_attack.gd" (static: 0, total: 1)
+Orphan StringName: _check_for_wall_slide (static: 0, total: 2)
+Orphan StringName: current_pattern (static: 0, total: 5)
+Orphan StringName: "src/entities/player/states/state_jump.gd" (static: 0, total: 1)
+Orphan StringName: _perform_air_jump (static: 0, total: 1)
+Orphan StringName: "src/entities/player/states/state_wall_slide.gd" (static: 0, total: 1)
+Orphan StringName: BossStateCooldown (static: 0, total: 3)
+Orphan StringName: Resource (static: 2, total: 35)
+Orphan StringName: exit (static: 0, total: 6)
+Orphan StringName: state_machine (static: 0, total: 48)
+Orphan StringName: CharacterBody2D (static: 1, total: 5)
+Orphan StringName: _init (static: 0, total: 1)
+Orphan StringName: _perform_wall_jump (static: 0, total: 2)
+Orphan StringName: _get_dash_direction (static: 0, total: 1)
+Orphan StringName: TurretStateIdle (static: 0, total: 3)
+Orphan StringName: lunge_duration (static: 0, total: 5)
+Orphan StringName: "src/entities/player/states/state_heal.gd" (static: 0, total: 1)
+Orphan StringName: process_input (static: 0, total: 1)
+Orphan StringName: AttackPattern (static: 0, total: 1)
+Orphan StringName: LUNGE_SPEED (static: 0, total: 1)
+Orphan StringName: boss (static: 0, total: 10)
+Orphan StringName: Node (static: 5, total: 69)
+Orphan StringName: "src/entities/player/states/state_fall.gd" (static: 0, total: 1)
+Orphan StringName: owner (static: 0, total: 48)
+Orphan StringName: teardown (static: 0, total: 1)
+Orphan StringName: Object (static: 2, total: 3)
+Orphan StringName: "src/entities/player/states/state_move.gd" (static: 0, total: 1)
+Orphan StringName: "src/entities/player/states/state_dash.gd" (static: 0, total: 1)
+Orphan StringName: BossStateIdle (static: 0, total: 3)
+Orphan StringName: "src/entities/player/states/state_hurt.gd" (static: 0, total: 1)
+Orphan StringName: BaseState (static: 0, total: 3)
+Orphan StringName: _execute_attack (static: 0, total: 1)
+Orphan StringName: _dash_direction (static: 0, total: 5)
+Orphan StringName: _get_rid (static: 0, total: 16)
+Orphan StringName: TurretStateAttack (static: 0, total: 3)
+Orphan StringName: _check_for_immediate_pogo (static: 0, total: 1)
+Orphan StringName: TelegraphScene (static: 0, total: 1)
+Orphan StringName: enter (static: 0, total: 15)
+StringName: 51 unclaimed string names at exit.
 
 
 =====================================
@@ -2107,10 +2365,56 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
+
+
+
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                            [UNRELEASED]                              ██  ║
+║  ██                  [0.7.0] - NEEDS TITLE - 2025-08-XX                  ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
+
+
+
+   █  Architectural Changes                                                   
+      ░ ■ Unified the state machine architecture to be purely object-based.    
+      ░   This removes inconsistent lifecycle logic and makes the system more  
+      ░   robust against memory leaks.                                        
+      ░ ■ Implemented a formal `teardown` pattern in all state machines and    
+      ░   entity components to ensure proper cleanup and prevent cyclic references.
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a critical race condition that caused the game to crash when
+      ░   a Turret minion was destroyed.                                      
+
+
+
+
+   █  Architectural Changes                                                   
+      ░ ■ Converted all gameplay tuning data into editor-friendly Resources.   
+      ░   The `CombatConfig` now uses `@export` hints to generate sliders and  
+      ░   organized groups in the Godot Inspector for easy tuning.            
+      ░ ■ Refactored the `BaseBoss` to be fully data-driven. Attack patterns   
+      ░   for each phase are now assigned via exported arrays in the Inspector,
+      ░   decoupling boss design from hard-coded script paths.                
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a "modulo by zero" crash in the boss's idle state by adding
+      ░   a guard clause to handle cases where no attack patterns are assigned.
+      ░ ■ Corrected a resource loading error caused by duplicated UIDs in the  
+      ░   `base_boss.tscn` file, ensuring exported resources load correctly.  ```
+
+
+
+
+
+
+
+
+
+
+
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
+║  ██                  [0.6.0] - NEEDS TITLE - 2025-08-11                  ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
 
 
 
@@ -5211,49 +5515,50 @@ FILE: ./src/core/data/config/combat_config.gd
 =====================================
 # src/core/data/config/combat_config.gd
 # A single, flat Resource that exposes all combat tuning values.
+# It now uses @export_group and @export_range for a clean Inspector UI.
 class_name CombatConfig
 extends Resource
 
 @export_group("General Physics")
-@export var gravity: float = 1200.0
+@export_range(500, 3000, 10) var gravity: float = 1200.0
 
 @export_group("Player Physics")
-@export var player_speed: float = 450.0
-@export var player_jump_force: float = 680.0
-@export var player_pogo_force: float = 450.0
-@export var player_coyote_time: float = 0.1
-@export var player_jump_buffer: float = 0.1
-@export var player_jump_release_dampener: float = 0.4
-@export var player_wall_coyote_time: float = 0.05
-@export var player_fast_fall_gravity_multiplier: float = 1.4
+@export_range(100, 1000, 5) var player_speed: float = 450.0
+@export_range(200, 1500, 10) var player_jump_force: float = 680.0
+@export_range(200, 1000, 10) var player_pogo_force: float = 450.0
+@export_range(0.0, 0.5, 0.01) var player_coyote_time: float = 0.1
+@export_range(0.0, 0.5, 0.01) var player_jump_buffer: float = 0.1
+@export_range(0.1, 1.0, 0.05) var player_jump_release_dampener: float = 0.4
+@export_range(0.0, 0.5, 0.01) var player_wall_coyote_time: float = 0.05
+@export_range(1.0, 3.0, 0.1) var player_fast_fall_gravity_multiplier: float = 1.4
 @export var player_max_air_jumps: int = 0
-@export var player_dash_speed: float = 1400.0
-@export var player_dash_duration: float = 0.15
-@export var player_dash_cooldown: float = 0.5
-@export var player_wall_slide_speed: float = 120.0
-@export var player_wall_jump_force_x: float = 1650.0
-@export var player_wall_jump_force_y: float = 680.0
+@export_range(500, 2500, 50) var player_dash_speed: float = 1400.0
+@export_range(0.05, 0.5, 0.01) var player_dash_duration: float = 0.15
+@export_range(0.1, 2.0, 0.05) var player_dash_cooldown: float = 0.5
+@export_range(50, 500, 5) var player_wall_slide_speed: float = 120.0
+@export_range(500, 2500, 50) var player_wall_jump_force_x: float = 1650.0
+@export_range(200, 1500, 10) var player_wall_jump_force_y: float = 680.0
 
 @export_group("Player Combat")
-@export var player_attack_cooldown: float = 0.12
-@export var player_charge_time: float = 0.35
-@export var player_attack_duration: float = 0.1
-@export var player_attack_friction: float = 2000.0
-@export var player_knockback_speed: float = 700.0
-@export var player_knockback_duration: float = 0.1
-@export var player_hazard_knockback_speed: float = 400.0
-@export var player_determination_per_charge: int = 10
+@export_range(0.05, 1.0, 0.01) var player_attack_cooldown: float = 0.12
+@export_range(0.1, 1.0, 0.01) var player_charge_time: float = 0.35
+@export_range(0.05, 0.5, 0.01) var player_attack_duration: float = 0.1
+@export_range(100, 5000, 100) var player_attack_friction: float = 2000.0
+@export_range(100, 1500, 25) var player_knockback_speed: float = 700.0
+@export_range(0.05, 0.5, 0.01) var player_knockback_duration: float = 0.1
+@export_range(100, 1500, 25) var player_hazard_knockback_speed: float = 400.0
+@export_range(1, 100, 1) var player_determination_per_charge: int = 10
 
 @export_group("Player Health / Healing")
-@export var player_max_health: int = 5
-@export var player_heal_duration: float = 2.0
-@export var player_max_healing_charges: int = 1
-@export var player_invincibility_duration: float = 1.5
+@export_range(1, 20, 1) var player_max_health: int = 5
+@export_range(0.1, 5.0, 0.1) var player_heal_duration: float = 2.0
+@export_range(1, 10, 1) var player_max_healing_charges: int = 1
+@export_range(0.1, 5.0, 0.1) var player_invincibility_duration: float = 1.5
 
 @export_group("Boss")
-@export var boss_health: int = 30
-@export var boss_patrol_speed: float = 100.0
-@export var boss_invincibility_duration: float = 0.1
+@export_range(10, 500, 5) var boss_health: int = 30
+@export_range(50, 500, 5) var boss_patrol_speed: float = 100.0
+@export_range(0.0, 2.0, 0.01) var boss_invincibility_duration: float = 0.1
 
 =====================================
 FILE: ./src/core/data/game_state_data.gd
@@ -6026,12 +6331,15 @@ var patrol_speed: float = 100.0
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=6 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=9 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
 [ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
 [ext_resource type="Script" path="res://src/entities/components/armor_component.gd" id="4_armor"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="5_pattern_single"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot.tres" id="6_pattern_volley"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="7_pattern_lunge"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -6040,6 +6348,9 @@ size = Vector2(60, 60)
 collision_layer = 12
 collision_mask = 3
 script = ExtResource("1_26qjf")
+phase_1_patterns = [ExtResource("5_pattern_single"), ExtResource("6_pattern_volley")]
+phase_2_patterns = [ExtResource("5_pattern_single"), ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")]
+phase_3_patterns = [ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")]
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -30.0
@@ -6075,14 +6386,20 @@ script = ExtResource("4_armor")
 FILE: ./src/entities/boss/states/state_boss_idle.gd
 =====================================
 # src/entities/boss/states/state_boss_idle.gd
-# This state now chooses an attack from the boss's CURRENT attack pattern list.
+# This state now safely handles cases where no attack patterns are configured.
 extends BaseState
 class_name BossStateIdle
 
 func enter(_msg := {}):
 	owner.velocity.x = 0
 	
-	# MODIFIED: Use the dynamic `current_attack_patterns` array.
+	# THE FIX: Add a guard clause to prevent a crash if the patterns array is empty.
+	if owner.current_attack_patterns.is_empty():
+		push_warning("BossStateIdle: No attack patterns defined for the current phase. Defaulting to Cooldown.")
+		# Transition to cooldown to prevent getting stuck in an idle->attack loop.
+		state_machine.change_state(owner.State.COOLDOWN)
+		return
+	
 	var chosen_pattern = owner.current_attack_patterns[randi() % owner.current_attack_patterns.size()]
 	
 	state_machine.change_state(owner.State.ATTACK, {"pattern": chosen_pattern})
@@ -6240,11 +6557,11 @@ func process_physics(_delta: float):
 FILE: ./src/entities/boss/base_boss.gd
 =====================================
 # src/entities/boss/base_boss.gd
-# The boss can now perform a new "Armored Lunge" attack in its later phases.
+# The boss is now fully data-driven. Its attack patterns for each phase
+# are now configured in the editor via exported Resource arrays.
 class_name BaseBoss
 extends CharacterBody2D
 
-# MODIFIED: Added LUNGE state.
 enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -6252,43 +6569,31 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @onready var patrol_timer: Timer = $PatrolTimer
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var state_machine: BaseStateMachine = $StateMachine
-# NEW: Direct reference to the ArmorComponent.
 @onready var armor_component: ArmorComponent = $ArmorComponent
 
+# --- DATA ---
 var b_data: BossStateData
 var player: CharacterBody2D = null
-
-var phases_remaining: int = 3
-@export var phase_2_threshold: float = 0.7
-@export var phase_3_threshold: float = 0.4
-
-var phase_1_patterns: Array[AttackPattern] = []
-var phase_2_patterns: Array[AttackPattern] = []
-var phase_3_patterns: Array[AttackPattern] = []
-var current_attack_patterns: Array[AttackPattern] = []
-
 var _active_attack_tween: Tween
 var _is_dead: bool = false
+var phases_remaining: int = 3
+
+# --- EDITOR CONFIGURATION ---
+@export_group("Phase Configuration")
+@export_range(0.0, 1.0, 0.01) var phase_2_threshold: float = 0.7
+@export_range(0.0, 1.0, 0.01) var phase_3_threshold: float = 0.4
+
+# THE FIX: Attack patterns are now exposed to the editor.
+@export_group("Attack Patterns")
+@export var phase_1_patterns: Array[AttackPattern] = []
+@export var phase_2_patterns: Array[AttackPattern] = []
+@export var phase_3_patterns: Array[AttackPattern] = []
+var current_attack_patterns: Array[AttackPattern] = []
 
 func _ready():
 	add_to_group("enemy")
 	
-	var single_shot = load("res://src/entities/boss/attack_patterns/single_shot.tres")
-	var volley_shot = load("res://src/entities/boss/attack_patterns/volley_shot.tres")
-	var lunge_attack = load("res://src/entities/boss/attack_patterns/lunge_attack.tres")
-	
-	phase_1_patterns = [single_shot, volley_shot]
-	
-	var single_shot_p2 = single_shot.duplicate(); single_shot_p2.cooldown *= 0.8
-	var volley_shot_p2 = volley_shot.duplicate(); volley_shot_p2.cooldown *= 0.8
-	# Add the lunge attack to Phase 2.
-	phase_2_patterns = [single_shot_p2, volley_shot_p2, lunge_attack]
-
-	var volley_shot_p3 = volley_shot_p2.duplicate(); volley_shot_p3.cooldown *= 0.8
-	var lunge_attack_p3 = lunge_attack.duplicate(); lunge_attack_p3.cooldown *= 0.9
-	# Add the lunge attack to Phase 3.
-	phase_3_patterns = [volley_shot_p3, lunge_attack_p3]
-	
+	# THE FIX: Set the initial attack patterns from the exported array.
 	current_attack_patterns = phase_1_patterns
 	
 	b_data = BossStateData.new()
@@ -6305,7 +6610,6 @@ func _ready():
 		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
 		State.COOLDOWN: BossStateCooldown.new(self, state_machine, b_data),
 		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
-		# NEW: Instantiate the Lunge state.
 		State.LUNGE: BossStateLunge.new(self, state_machine, b_data),
 	}
 	state_machine.setup(states, State.COOLDOWN)
@@ -6313,8 +6617,8 @@ func _ready():
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
-		if state_machine: state_machine.teardown()
-		if health_component: health_component.teardown()
+		if is_instance_valid(state_machine): state_machine.teardown()
+		if is_instance_valid(health_component): health_component.teardown()
 		b_data = null
 
 func _physics_process(delta):
@@ -6362,11 +6666,12 @@ func _on_health_threshold_reached(health_percentage: float):
 
 	if new_phases_remaining != phases_remaining:
 		phases_remaining = new_phases_remaining
+		# THE FIX: Set the current patterns from the exported arrays.
 		match phases_remaining:
 			2: current_attack_patterns = phase_2_patterns
 			1: current_attack_patterns = phase_3_patterns
 		
-		print("VERIFICATION: Boss has ", phases_remaining, " phases remaining.")
+		print("VERIFICATION: Boss has entered a new phase. Phases remaining: ", phases_remaining)
 		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout():
@@ -6477,8 +6782,8 @@ FILE: ./src/entities/components/base_state_machine.gd
 =====================================
 # src/entities/components/base_state_machine.gd
 #
-# A reusable, node-based state machine manager. An entity (like Player or Boss)
-# will own this node and use it to manage its states.
+# A reusable, node-based state machine manager. It now ensures all states
+# are treated as pure Objects and are cleaned up correctly.
 class_name BaseStateMachine
 extends Node
 
@@ -6501,7 +6806,7 @@ func setup(p_states: Dictionary, p_initial_state_key):
 	self.states = p_states
 	change_state(p_initial_state_key)
 
-# CORRECTED: The teardown function is restored.
+# THE FIX: The teardown function now correctly calls teardown on each state.
 func teardown():
 	if current_state:
 		current_state.exit()
@@ -6511,7 +6816,9 @@ func teardown():
 			state.teardown()
 	states.clear()
 	current_state = null
+	print("VERIFICATION: BaseStateMachine torn down successfully.")
 
+# THE FIX: This function now treats states as pure objects. No add_child/queue_free.
 func change_state(new_state_key, msg := {}):
 	if not states.has(new_state_key):
 		push_warning("StateMachine: Attempted to change to unknown state '%s'." % new_state_key)
@@ -6922,7 +7229,8 @@ func process_input(_event: InputEvent):
 FILE: ./src/entities/minions/turret.gd
 =====================================
 # src/entities/minions/turret.gd
-# The main context script for the stationary Turret minion.
+# The Turret now correctly tears down its components to prevent memory leaks
+# and includes guard clauses to prevent race conditions on death.
 class_name Turret
 extends CharacterBody2D
 
@@ -6937,7 +7245,6 @@ enum State { IDLE, ATTACK }
 var t_data: TurretStateData
 var player: CharacterBody2D
 
-# Configurable properties
 var fire_rate: float = 2.0
 var detection_radius: float = 400.0
 
@@ -6965,12 +7272,17 @@ func _ready():
 	
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+		if is_instance_valid(state_machine): state_machine.teardown()
+		if is_instance_valid(health_component): health_component.teardown()
+		t_data = null
+
 func die():
 	queue_free()
 
 func fire_at_player():
 	if not is_instance_valid(player): return
-	# THE FIX: Request a projectile from the correct, dedicated pool.
 	var shot = ObjectPool.get_instance(&"turret_shots")
 	if not shot: return
 	shot.direction = (player.global_position - global_position).normalized()
@@ -6978,12 +7290,17 @@ func fire_at_player():
 	shot.activate()
 
 func _on_range_detector_body_entered(body):
+	# THE FIX: Add a guard clause to prevent crash on death.
+	if not t_data: return
 	if body.is_in_group("player"):
 		t_data.is_player_in_range = true
 
 func _on_range_detector_body_exited(body):
+	# THE FIX: Add a guard clause to prevent crash on death.
+	if not t_data: return
 	if body.is_in_group("player"):
 		t_data.is_player_in_range = false
+
 
 =====================================
 FILE: ./src/entities/minions/turret_state_data.gd
@@ -7175,8 +7492,8 @@ script = ExtResource("5_fsm")
 FILE: ./src/entities/player/player.gd
 =====================================
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine. It now delegates all
-# state management logic to its StateMachine child node.
+# This script is the "Context" for the State Machine. It now correctly
+# tears down its components to prevent memory leaks.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -7265,13 +7582,14 @@ func _ready():
 	
 	_emit_healing_charges_changed_event()
 
+# THE FIX: This function now ensures all components are safely torn down.
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
-		if state_machine: state_machine.teardown()
-		if health_component: health_component.teardown()
-		if combat_component: combat_component.teardown()
-		if input_component: input_component.teardown()
-		p_data = null
+		if is_instance_valid(state_machine): state_machine.teardown()
+		if is_instance_valid(health_component): health_component.teardown()
+		if is_instance_valid(combat_component): combat_component.teardown()
+		if is_instance_valid(input_component): input_component.teardown()
+		p_data = null # Release reference to the data resource
 
 func _physics_process(delta):
 	_update_timers(delta)
@@ -7309,7 +7627,6 @@ func _update_timers(delta):
 func _emit_healing_charges_changed_event():
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
-	# CORRECTED: Removed the third argument (`self`).
 	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 	healing_charges_changed.emit(p_data.healing_charges)
 
@@ -7378,7 +7695,6 @@ func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	# CORRECTED: Removed the third argument (`self`).
 	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 

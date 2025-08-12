@@ -11,7 +11,7 @@
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ▓▓▓-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       GUIDING DESIGN PRINCIPLES                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
@@ -40,29 +40,23 @@
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       KEY ARCHITECTURAL PATTERNS                     ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  The State Pattern: This is the primary pattern for managing complex     ║
 ║      entities. The logic for each state (e.g., `Move`, `Attack`, `Dash`) is  ║
-║      encapsulated in its own class file. The entity (`Player`, `BaseBoss`)   ║
-║      then acts as a "Context", holding a reference to the current state and  ║
-║      delegating all processing to it. This keeps the entity's main script    ║
-║      clean and makes adding or changing abilities highly modular.            ║
+║      encapsulated in its own class file (`BaseState` extending `Object`). The║
+║      entity (`Player`, `BaseBoss`) then acts as a "Context", holding a       ║
+║      reference to the current state and delegating all processing to it.     ║
 ║                                                                              ║
 ║   █  Singleton-Driven Core: Global systems are managed by Autoload singletons.║
 ║      ░  `Palette.gd`: Manages all game colors for a cohesive aesthetic.      ║
 ║      ░  `AssetPaths.gd`: A central, pre-loading registry for all assets.     ║
-║      ░  Other singletons (`AudioManager`, `Constants`, etc.) serve dedicated roles.║
+║      ░  Other singletons (`AudioManager`, `CombatDB`, etc.) serve dedicated roles.║
 ║                                                                              ║
-║   █  Asynchronous Loading with Pre-warming: To ensure smooth transitions, a  ║
-║      `LoadingScreen` orchestrates all setup. It pre-warms shaders by         ║
-║      flashing entities in an off-screen viewport and calls the               ║
-║      `ArenaBuilder` to construct the level in non-blocking batches.          ║
-║                                                                              ║
-║   █  Component-Based and Procedural UI: The UI is built from self-contained, ║
-║      reusable scenes (`StyledMenuItem`). These components will draw          ║
-║      themselves procedurally using shaders, allowing for a highly polished   ║
-║      and animatable interface without relying on static images.              ║
+║   █  Data-Driven Design via Resources: All tunable gameplay values (damage,  ║
+║      cooldowns, health) are defined in custom `Resource` files (`.tres`).    ║
+║      This decouples game balance from game logic and allows for rapid tuning ║
+║      directly in the Godot Inspector using `@export` variables.              ║
 ║                                                                              ║
 ║   █  Component-to-Owner Communication (via Signals): Components encapsulate  ║
 ║      logic but should not directly control their owner. To maintain this     ║
@@ -70,8 +64,36 @@
 ║      something has happened. The owner node (e.g., `player.gd`) listens for  ║
 ║      these signals and decides how to react. For example, the               ║
 ║      `CombatComponent` emits `pogo_bounce_requested`, and the `Player` script║
-║      implements the actual physics bounce. This keeps components reusable    ║
-║      and the owner in full control of its own state.                         ║
+║      implements the actual physics bounce.                                   ║
+║                                                                              ║
+║   █  Dependency Injection (DI): The Official Pattern                         ║
+║      ░  The project standard is **Owner-Driven Injection**, performed within ║
+║      ░  an entity's `_ready()` function. This pattern is robust because it   ║
+║      ░  aligns perfectly with Godot's Node Lifecycle. By the time `_ready()` ║
+║      ░  is called, the engine guarantees that the node and all of its children║
+║      ░  (defined in the `.tscn` file) are instantiated and accessible. The   ║
+║      ░  owner node is the ideal place to wire its own components together.   ║
+║      ░                                                                       ║
+║      ░  Example (`player.gd`):                                               ║
+║      ░  ```gdscript                                                          ║
+║      ░  func _ready():                                                       ║
+║      ░      # Player gets its own child nodes via @onready                   ║
+║      ░      # and then "injects" them as dependencies into other components. ║
+║      ░      input_component.setup(self, {                                    ║
+║      ░          "state_machine": state_machine,                              ║
+║      ░          "combat_component": combat_component                         ║
+║      ░      })                                                               ║
+║      ░  ```                                                                  ║
+║      ░                                                                       ║
+║      ░  **Anti-Pattern to Avoid: Global Factory Injection**                  ║
+║      ░  A previous attempt to use a global `EntityFactory` to centralize DI  ║
+║      ░  failed. This pattern creates a critical race condition because it    ║
+║      ░  instantiates a node and tries to access its children *before* the    ║
+║      ░  node has entered the Scene Tree. As a result, `@onready` variables   ║
+║      ░  are still `null` at the time of injection, leading to crashes.       ║
+║      ░                                                                       ║
+║      ░  Therefore, all component wiring MUST be handled by the entity that   ║
+║      ░  owns them, inside the `_ready()` function.                           ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                         COLLABORATION WORKFLOW                       ██  ║
