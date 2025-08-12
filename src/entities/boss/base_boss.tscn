@@ -1,13 +1,14 @@
-[gd_scene load_steps=5 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=6 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
 [ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
+[ext_resource type="Script" path="res://src/entities/components/armor_component.gd" id="4_armor"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
 
-[node name="BaseBoss" type="CharacterBody2D"]
+[node name="BaseBoss" type="CharacterBody2D" groups=["enemy"]]
 collision_layer = 12
 collision_mask = 3
 script = ExtResource("1_26qjf")
@@ -35,6 +36,9 @@ script = ExtResource("2_b0so8")
 
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("3_fsm")
+
+[node name="ArmorComponent" type="Node" parent="."]
+script = ExtResource("4_armor")
 
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]

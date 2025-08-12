@@ -105,3 +105,18 @@
       ░ ■ Fixed a bug where active projectiles would persist across scene      
       ░   transitions by adding a global reset function to the `ObjectPool`.  
       ░ ■ Corrected the phase indicator UI to deplete from right-to-left.      
+
+
+   █  Added                                                                   
+      ░ ■ Implemented a new `ArmorComponent` to allow for phases of boss       
+      ░   invulnerability, a key feature of the "Kitchen Sink" boss design.   
+      ░ ■ Created a new data-driven "Armored Lunge" attack pattern. In later   
+      ░   phases, the boss can now become invulnerable and perform a high-speed
+      ░   dash across the arena.                                              
+                                                                              
+   █  Changed                                                                 
+      ░ ■ The `HealthComponent` is now "armor-aware" and will check for an     
+      ░   active `ArmorComponent` before applying damage.                     
+      ░ ■ The boss's attack telegraph system is now context-aware, displaying a
+      ░   long rectangle for the lunge path and a square for projectile attacks,
+      ░   improving visual clarity for the player.                            

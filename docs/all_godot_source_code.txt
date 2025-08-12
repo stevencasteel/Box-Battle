@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 11 18:50:32 CDT 2025
+Generated on: Mon Aug 11 19:06:01 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -107,6 +107,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── boss
     │   │   ├── attack_patterns
     │   │   │   ├── attack_pattern.gd
+    │   │   │   ├── lunge_attack.tres
     │   │   │   ├── single_shot.tres
     │   │   │   └── volley_shot.tres
     │   │   ├── base_boss.gd
@@ -116,8 +117,10 @@ PROJECT DIRECTORY STRUCTURE:
     │   │       ├── state_boss_attack.gd
     │   │       ├── state_boss_cooldown.gd
     │   │       ├── state_boss_idle.gd
+    │   │       ├── state_boss_lunge.gd
     │   │       └── state_boss_patrol.gd
     │   ├── components
+    │   │   ├── armor_component.gd
     │   │   ├── base_state.gd
     │   │   ├── base_state_machine.gd
     │   │   ├── combat_component.gd
@@ -196,7 +199,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-49 directories, 139 files
+49 directories, 142 files
 
 
 =====================================
@@ -2158,6 +2161,21 @@ FILE: ./docs/CHANGELOG.txt
       ░ ■ Fixed a bug where active projectiles would persist across scene      
       ░   transitions by adding a global reset function to the `ObjectPool`.  
       ░ ■ Corrected the phase indicator UI to deplete from right-to-left.      
+
+
+   █  Added                                                                   
+      ░ ■ Implemented a new `ArmorComponent` to allow for phases of boss       
+      ░   invulnerability, a key feature of the "Kitchen Sink" boss design.   
+      ░ ■ Created a new data-driven "Armored Lunge" attack pattern. In later   
+      ░   phases, the boss can now become invulnerable and perform a high-speed
+      ░   dash across the arena.                                              
+                                                                              
+   █  Changed                                                                 
+      ░ ■ The `HealthComponent` is now "armor-aware" and will check for an     
+      ░   active `ArmorComponent` before applying damage.                     
+      ░ ■ The boss's attack telegraph system is now context-aware, displaying a
+      ░   long rectangle for the lunge path and a square for projectile attacks,
+      ░   improving visual clarity for the player.                            
 
 =====================================
 FILE: ./docs/BRAINSTORM.txt
@@ -5736,6 +5754,21 @@ func _on_screen_exited():
 	ObjectPool.return_instance(self)
 
 =====================================
+FILE: ./src/entities/boss/attack_patterns/lunge_attack.tres
+=====================================
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+
+[resource]
+script = ExtResource("1_attack_pattern")
+attack_id = &"lunge"
+telegraph_duration = 0.8
+attack_duration = 0.5
+cooldown = 2.0
+
+
+=====================================
 FILE: ./src/entities/boss/attack_patterns/attack_pattern.gd
 =====================================
 # src/entities/boss/attack_patterns/attack_pattern.gd
@@ -5816,16 +5849,17 @@ var patrol_speed: float = 100.0
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=5 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=6 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
 [ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
+[ext_resource type="Script" path="res://src/entities/components/armor_component.gd" id="4_armor"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
 
-[node name="BaseBoss" type="CharacterBody2D"]
+[node name="BaseBoss" type="CharacterBody2D" groups=["enemy"]]
 collision_layer = 12
 collision_mask = 3
 script = ExtResource("1_26qjf")
@@ -5854,6 +5888,9 @@ script = ExtResource("2_b0so8")
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("3_fsm")
 
+[node name="ArmorComponent" type="Node" parent="."]
+script = ExtResource("4_armor")
+
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]
 
@@ -5878,6 +5915,41 @@ func process_physics(_delta: float):
 
 
 =====================================
+FILE: ./src/entities/boss/states/state_boss_lunge.gd
+=====================================
+# src/entities/boss/states/state_boss_lunge.gd
+# This state executes a high-speed, armored lunge attack.
+extends BaseState
+class_name BossStateLunge
+
+var boss: BaseBoss
+var lunge_duration: float
+const LUNGE_SPEED = 1200.0
+
+func enter(msg := {}):
+	self.boss = owner as BaseBoss
+	if not boss: return
+
+	# Get the duration from the AttackPattern resource.
+	var pattern = msg.get("pattern")
+	if pattern:
+		lunge_duration = pattern.attack_duration
+	else:
+		lunge_duration = 0.5 # Default fallback
+	
+	# Activate armor and set velocity for the lunge.
+	boss.armor_component.activate()
+	boss.velocity = Vector2(state_data.facing_direction * LUNGE_SPEED, 0)
+
+func process_physics(delta: float):
+	lunge_duration -= delta
+	if lunge_duration <= 0:
+		# Lunge is over. Deactivate armor and transition to cooldown.
+		boss.armor_component.deactivate()
+		state_machine.change_state(boss.State.COOLDOWN)
+
+
+=====================================
 FILE: ./src/entities/boss/states/state_boss_cooldown.gd
 =====================================
 # src/entities/boss/states/state_boss_cooldown.gd
@@ -5898,19 +5970,17 @@ func process_physics(_delta: float):
 FILE: ./src/entities/boss/states/state_boss_attack.gd
 =====================================
 # src/entities/boss/states/state_boss_attack.gd
-# This state is now fully data-driven. It reads an AttackPattern resource
-# to determine how to telegraph and execute an attack.
+# This state now displays a different telegraph shape for the lunge attack
+# to clearly communicate the boss's intent to the player.
 extends BaseState
 class_name BossStateAttack
 
 const TelegraphScene = preload(AssetPaths.SCENE_TELEGRAPH_COMPONENT)
 
 var current_pattern: AttackPattern
-# This variable will hold a correctly-typed reference to the boss.
 var boss: BaseBoss
 
 func enter(msg := {}):
-	# THE FIX: Cast the generic `owner` to the specific `BaseBoss` type.
 	self.boss = owner as BaseBoss
 	if not boss:
 		push_error("BossStateAttack: Owner is not a BaseBoss. Aborting.")
@@ -5918,11 +5988,12 @@ func enter(msg := {}):
 		return
 
 	if not msg.has("pattern"):
-		push_error("BossStateAttack: No 'pattern' provided in enter message. Aborting attack.")
+		push_error("BossStateAttack: No 'pattern' provided. Aborting.")
 		state_machine.change_state(boss.State.COOLDOWN)
 		return
 	
 	current_pattern = msg.get("pattern")
+	
 	_start_telegraph()
 
 func _start_telegraph() -> void:
@@ -5930,27 +6001,44 @@ func _start_telegraph() -> void:
 	boss.add_child(telegraph)
 	
 	var telegraph_duration = current_pattern.telegraph_duration
-	var telegraph_position = boss.global_position + Vector2(state_data.facing_direction * 100, 0)
-	var telegraph_size = Vector2(150, 150)
+	var telegraph_position: Vector2
+	var telegraph_size: Vector2
 	var telegraph_color = Palette.COLOR_HAZARD_PRIMARY
-	
+
+	# MODIFIED: Choose telegraph shape based on the attack ID.
+	match current_pattern.attack_id:
+		&"lunge":
+			# For a lunge, show a long, thin rectangle covering the lunge path.
+			var lunge_width = 800
+			telegraph_size = Vector2(lunge_width, 60) # A thin rectangle
+			# Position it in front of the boss, centered vertically.
+			var x_offset = (lunge_width / 2.0) + (boss.get_node("CollisionShape2D").shape.size.x / 2.0)
+			telegraph_position = boss.global_position + Vector2(state_data.facing_direction * x_offset, 0)
+		_: # Default case for projectile attacks
+			# For projectiles, show a square where the attack will originate.
+			telegraph_size = Vector2(150, 150)
+			telegraph_position = boss.global_position + Vector2(state_data.facing_direction * 100, 0)
+
 	telegraph.start_telegraph(telegraph_duration, telegraph_size, telegraph_position, telegraph_color)
 	await telegraph.telegraph_finished
 	
 	_execute_attack()
 
 func _execute_attack():
+	# If the attack was a lunge, the state change is handled here.
+	if current_pattern.attack_id == &"lunge":
+		state_machine.change_state(boss.State.LUNGE, {"pattern": current_pattern})
+		return
+
+	# Otherwise, execute the projectile attack.
 	match current_pattern.attack_id:
 		&"single_shot":
 			boss.fire_shot_at_player()
 		&"volley_shot":
 			match boss.phases_remaining:
-				3: # Phase 1
-					boss.fire_volley(1)
-				2: # Phase 2
-					boss.fire_volley(3)
-				1: # Phase 3
-					boss.fire_volley(5)
+				3: boss.fire_volley(1)
+				2: boss.fire_volley(3)
+				1: boss.fire_volley(5)
 
 	boss.cooldown_timer.wait_time = current_pattern.cooldown
 	state_machine.change_state(boss.State.COOLDOWN)
@@ -5975,18 +6063,20 @@ func process_physics(_delta: float):
 FILE: ./src/entities/boss/base_boss.gd
 =====================================
 # src/entities/boss/base_boss.gd
-# This version includes an `_is_dead` flag to definitively prevent any
-# "zombie" actions after the boss has been defeated.
+# The boss can now perform a new "Armored Lunge" attack in its later phases.
 class_name BaseBoss
 extends CharacterBody2D
 
-enum State { IDLE, ATTACK, COOLDOWN, PATROL }
+# MODIFIED: Added LUNGE state.
+enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 
 @onready var visual_sprite: ColorRect = $ColorRect
 @onready var cooldown_timer: Timer = $CooldownTimer
 @onready var patrol_timer: Timer = $PatrolTimer
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var state_machine: BaseStateMachine = $StateMachine
+# NEW: Direct reference to the ArmorComponent.
+@onready var armor_component: ArmorComponent = $ArmorComponent
 
 var b_data: BossStateData
 var player: CharacterBody2D = null
@@ -6001,20 +6091,29 @@ var phase_3_patterns: Array[AttackPattern] = []
 var current_attack_patterns: Array[AttackPattern] = []
 
 var _active_attack_tween: Tween
-# NEW: State flag to prevent all actions after death.
 var _is_dead: bool = false
 
 func _ready():
 	add_to_group("enemy")
+	
 	var single_shot = load("res://src/entities/boss/attack_patterns/single_shot.tres")
 	var volley_shot = load("res://src/entities/boss/attack_patterns/volley_shot.tres")
+	var lunge_attack = load("res://src/entities/boss/attack_patterns/lunge_attack.tres")
+	
 	phase_1_patterns = [single_shot, volley_shot]
+	
 	var single_shot_p2 = single_shot.duplicate(); single_shot_p2.cooldown *= 0.8
 	var volley_shot_p2 = volley_shot.duplicate(); volley_shot_p2.cooldown *= 0.8
-	phase_2_patterns = [single_shot_p2, volley_shot_p2]
+	# Add the lunge attack to Phase 2.
+	phase_2_patterns = [single_shot_p2, volley_shot_p2, lunge_attack]
+
 	var volley_shot_p3 = volley_shot_p2.duplicate(); volley_shot_p3.cooldown *= 0.8
-	phase_3_patterns = [volley_shot_p3]
+	var lunge_attack_p3 = lunge_attack.duplicate(); lunge_attack_p3.cooldown *= 0.9
+	# Add the lunge attack to Phase 3.
+	phase_3_patterns = [volley_shot_p3, lunge_attack_p3]
+	
 	current_attack_patterns = phase_1_patterns
+	
 	b_data = BossStateData.new()
 	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
@@ -6023,11 +6122,14 @@ func _ready():
 	health_component.died.connect(_on_health_component_died)
 	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
 	player = get_tree().get_first_node_in_group("player")
+	
 	var states = {
 		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
 		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
 		State.COOLDOWN: BossStateCooldown.new(self, state_machine, b_data),
 		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
+		# NEW: Instantiate the Lunge state.
+		State.LUNGE: BossStateLunge.new(self, state_machine, b_data),
 	}
 	state_machine.setup(states, State.COOLDOWN)
 
@@ -6045,15 +6147,10 @@ func _physics_process(delta):
 		b_data.facing_direction *= -1.0
 
 func get_health_thresholds() -> Array[float]: return [phase_2_threshold, phase_3_threshold]
-
 func die():
-	# Prevent this function from running more than once.
 	if _is_dead: return
 	_is_dead = true
-	
-	if is_instance_valid(_active_attack_tween):
-		_active_attack_tween.kill()
-		
+	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
 	set_physics_process(false)
 	hide()
 	EventBus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
@@ -6072,9 +6169,7 @@ func _update_player_tracking():
 	self.scale.x = b_data.facing_direction
 	
 func fire_shot_at_player():
-	# THE FIX: This guard clause now prevents all zombie actions.
 	if _is_dead: return
-	
 	if not is_instance_valid(player): return
 	var shot = ObjectPool.get_instance(&"boss_shots")
 	if not shot: return
@@ -6373,6 +6468,30 @@ func trigger_pogo(pogo_target) -> bool:
 
 
 =====================================
+FILE: ./src/entities/components/armor_component.gd
+=====================================
+# src/entities/components/armor_component.gd
+#
+# A simple component that manages an "armored" state. When active, it can
+# be queried by other components (like HealthComponent) to determine if
+# damage should be ignored.
+class_name ArmorComponent
+extends Node
+
+var is_armored: bool = false
+
+func activate():
+	is_armored = true
+	# Optional: Add visual feedback here later, like changing the boss's color.
+	print("VERIFICATION: ArmorComponent ACTIVATED.")
+
+func deactivate():
+	is_armored = false
+	# Optional: Revert visual feedback here.
+	print("VERIFICATION: ArmorComponent DEACTIVATED.")
+
+
+=====================================
 FILE: ./src/entities/components/telegraph_component.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://b1i2c3d4e5f6g"]
@@ -6393,17 +6512,18 @@ FILE: ./src/entities/components/health_component.gd
 =====================================
 # src/entities/components/health_component.gd
 #
-# A component responsible for managing an entity's health. It now has the
-# ability to emit a signal when its health drops below defined thresholds.
+# This component is now "armor-aware". Before applying damage, it checks
+# if the owner has an ArmorComponent and if that component is active.
 class_name HealthComponent
 extends ComponentInterface
 
 signal health_changed(current_health: int, max_health: int)
 signal died
-signal health_threshold_reached(health_percentage: float) # NEW SIGNAL
+signal health_threshold_reached(health_percentage: float)
 
 var entity_data: Resource
 var owner_node: CharacterBody2D
+var armor_component: ArmorComponent # NEW: Reference to the armor component
 
 @onready var invincibility_timer: Timer = Timer.new()
 @onready var hit_flash_timer: Timer = Timer.new()
@@ -6423,15 +6543,16 @@ func _ready():
 	hit_flash_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
 	
-	invincibility_timer.timeout.connect(func(): 
-		entity_data.is_invincible = false
-	)
+	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.entity_data = p_dependencies.get("data_resource")
 	var cfg: CombatConfig = p_dependencies.get("config")
+	
+	# NEW: Get a reference to the armor component, if it exists.
+	self.armor_component = owner_node.get_node_or_null("ArmorComponent")
 	
 	if not entity_data or not cfg:
 		push_error("HealthComponent.setup: Missing required dependencies ('data_resource', 'config').")
@@ -6442,7 +6563,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
-	else: # Assumes enemy/boss
+	else:
 		max_health = cfg.boss_health
 		invincibility_duration = cfg.boss_invincibility_duration
 		knockback_speed = 0
@@ -6457,16 +6578,20 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 func teardown() -> void:
 	entity_data = null
 	owner_node = null
+	armor_component = null
 
 func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invincibility: bool = false) -> Dictionary:
+	# NEW: Armor Check. If the armor component exists and is active, ignore damage.
+	if is_instance_valid(armor_component) and armor_component.is_armored:
+		# Optional: Play a "clink" sound effect here for feedback.
+		return {"was_damaged": false, "knockback_velocity": Vector2.ZERO}
+
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
 	
 	if (entity_data.is_invincible or is_dash_invincible) and not p_bypass_invincibility:
 		return {"was_damaged": false, "knockback_velocity": Vector2.ZERO}
 
-	# Store health before damage to check if a threshold was crossed.
 	var health_before_damage = entity_data.health
-	
 	entity_data.health -= damage_amount
 	health_changed.emit(entity_data.health, entity_data.max_health)
 	
@@ -6477,7 +6602,6 @@ func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invin
 	
 	var knockback_info = _calculate_knockback(damage_source)
 	
-	# NEW: Check if any thresholds were crossed.
 	_check_for_threshold_crossing(health_before_damage, entity_data.health)
 	
 	if entity_data.health <= 0:
@@ -6485,31 +6609,22 @@ func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invin
 		
 	return {"was_damaged": true, "knockback_velocity": knockback_info}
 
-# NEW FUNCTION: Checks if health has dropped below a threshold.
 func _check_for_threshold_crossing(health_before: int, health_after: int):
-	if not owner_node.has_method("get_health_thresholds"):
-		return
-		
+	if not owner_node.has_method("get_health_thresholds"): return
 	var thresholds: Array[float] = owner_node.get_health_thresholds()
 	var old_percent = float(health_before) / max_health
 	var new_percent = float(health_after) / max_health
 	
 	for threshold in thresholds:
-		# If we were above the threshold before, but are at or below it now...
 		if old_percent > threshold and new_percent <= threshold:
-			# ...emit the signal.
 			health_threshold_reached.emit(threshold)
 
 func _calculate_knockback(damage_source: Node) -> Vector2:
-	if knockback_speed == 0 or not damage_source:
-		return Vector2.ZERO
-		
+	if knockback_speed == 0 or not damage_source: return Vector2.ZERO
 	var knockback_dir = (owner_node.global_position - damage_source.global_position).normalized()
-	
 	var speed = knockback_speed
 	if damage_source.is_in_group("hazard"):
 		speed = hazard_knockback_speed
-		
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
 
 func _trigger_hit_flash():
