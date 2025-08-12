@@ -103,6 +103,11 @@
 ║      ░  `player_state_data.gd`. In `input_component.gd`, set these timers on ║
 ║      ░  input. In states like `Move` and `Fall`, check if a buffer is active ║
 ║      ░  and the action is permitted, then execute and reset the timer.       ║
+
+      ░  ▓ Input Buffering (DEFERRED): An initial implementation of attack and  
+      ░    dash input buffering was tested and reverted. The feature was found
+      ░    to detract from the game's intended precise feel.      
+
 ║                                                                              ║
 ║   □  2. Implement the Two-Tier Melee Hitbox                                  ║
 ║      ░  WHY: To reward risky, close-range combat and add depth to melee.     ║

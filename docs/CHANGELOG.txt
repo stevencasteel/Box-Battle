@@ -26,6 +26,15 @@
 
 
 
+   █  Changed                                                                 
+      ░ ■ Reverted experimental implementation of attack and dash input buffering.
+      ░   After playtesting, the feature was found to negatively impact the   
+      ░   precise and deliberate feel of the combat. The project will retain  
+      ░   the existing responsive (non-buffered) input model.                 
+
+
+
+
 
 
    █  Architectural Changes                                                   
