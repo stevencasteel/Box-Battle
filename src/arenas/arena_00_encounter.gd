@@ -1,13 +1,7 @@
 # src/arenas/arena_00_encounter.gd
-#
-# This file defines the dynamic entities and patterns for Arena 00.
-# It acts as a "level script" or "director" for the fight.
+# This encounter file now defines a list of spawnable minions.
 extends Node
 
-# --- NEW: DATA-DRIVEN LAYOUT ---
-# This constant explicitly defines which layout file this encounter uses.
-# The ArenaBuilder will read this path directly, removing any assumptions
-# about file naming conventions.
 const LAYOUT_SCRIPT_PATH = "res://src/arenas/arena_00_layout.gd"
 
 # --- BOSS DATA ---
@@ -16,3 +10,8 @@ const BOSS_SPAWN_MARKER = "&"
 
 # --- PLAYER DATA ---
 const PLAYER_SPAWN_MARKER = "@"
+
+# --- MINION DATA ---
+const MINION_SPAWNS = {
+	"T": AssetPaths.SCENE_TURRET
+}

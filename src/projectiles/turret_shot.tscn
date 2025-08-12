@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3 uid="uid://d1e2f3g4h5i6j"]
+
+[ext_resource type="Script" path="res://src/projectiles/turret_shot.gd" id="1_turret_shot_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_turretshot"]
+size = Vector2(20, 20)
+
+[node name="TurretShot" type="Area2D"]
+collision_layer = 16
+collision_mask = 65
+script = ExtResource("1_turret_shot_script")
+metadata/pool_name = &"turret_shots"
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+color = Color(0.898039, 0.898039, 0.898039, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_turretshot")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+rect = Rect2(-10, -10, 20, 20)
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]

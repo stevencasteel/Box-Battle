@@ -20,10 +20,12 @@ const SCRIPT_ARENA_00_ENCOUNTER = "res://src/arenas/arena_00_encounter.gd"
 const SCENE_PLAYER = "res://src/entities/player/player.tscn"
 const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"
 
-# --- BOSS & RELATED ---
+# --- BOSS, MINIONS & RELATED ---
 const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
 const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
 const SCENE_TELEGRAPH_COMPONENT = "res://src/entities/components/telegraph_component.tscn"
+const SCENE_TURRET = "res://src/entities/minions/turret.tscn"
+const SCENE_TURRET_SHOT = "res://src/projectiles/turret_shot.tscn"
 
 # --- UI & HUD ---
 const SCENE_GAME_HUD = "res://src/ui/game_hud/game_hud.tscn"

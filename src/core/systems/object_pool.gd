@@ -1,18 +1,21 @@
 # src/core/systems/object_pool.gd
+#
 # This version now has a public `reset()` method to clean up all active
-# objects, which is crucial for preventing visual bugs during scene transitions.
+# objects, and includes a new pool for the Turret's projectiles.
 extends Node
 
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
+const TurretShotScene = preload(AssetPaths.SCENE_TURRET_SHOT)
 
 var _pools: Dictionary = {}
 
 func _ready():
 	_create_pool_for_scene(&"player_shots", PlayerShotScene, 15)
 	_create_pool_for_scene(&"boss_shots", BossShotScene, 30)
+	_create_pool_for_scene(&"turret_shots", TurretShotScene, 20)
 
-# NEW: Public function to clean up all active instances.
+# Public function to clean up all active instances.
 func reset():
 	for pool_name in _pools:
 		var pool = _pools[pool_name]

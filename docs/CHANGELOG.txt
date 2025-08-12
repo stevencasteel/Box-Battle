@@ -120,3 +120,22 @@
       ░ ■ The boss's attack telegraph system is now context-aware, displaying a
       ░   long rectangle for the lunge path and a square for projectile attacks,
       ░   improving visual clarity for the player.                            
+
+
+
+   █  Added                                                                   
+      ░ ■ Implemented a new "Turret" minion enemy. This stationary enemy      
+      ░   detects the player within a set range and fires projectiles, proving
+      ░   the reusability of the unified state machine and component architecture.
+
+   █  Changed                                                                 
+      ░ ■ The encounter system has been upgraded to support spawning a list of 
+      ░   minions from the level layout file, in addition to the main boss.   
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a bug where turrets would stop firing after a few shots by  
+      ░   refactoring their state machine logic to be continuous rather than  
+      ░   reliant on a one-shot `await` call in the `enter` function.         
+      ░ ■ Fixed a critical bug where projectiles were being permanently deleted
+      ░   instead of returned to the `ObjectPool`, by creating a dedicated    
+      ░   `TurretShot` scene with the correct pooling metadata.               
