@@ -1,9 +1,12 @@
-[gd_scene load_steps=6 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=9 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
 [ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
 [ext_resource type="Script" path="res://src/entities/components/armor_component.gd" id="4_armor"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="5_pattern_single"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot.tres" id="6_pattern_volley"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="7_pattern_lunge"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -12,6 +15,9 @@ size = Vector2(60, 60)
 collision_layer = 12
 collision_mask = 3
 script = ExtResource("1_26qjf")
+phase_1_patterns = [ExtResource("5_pattern_single"), ExtResource("6_pattern_volley")]
+phase_2_patterns = [ExtResource("5_pattern_single"), ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")]
+phase_3_patterns = [ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")]
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -30.0

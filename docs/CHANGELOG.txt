@@ -34,12 +34,19 @@
 
 
 
-
-
-
-
-
-
+   █  Architectural Changes                                                   
+      ░ ■ Converted all gameplay tuning data into editor-friendly Resources.   
+      ░   The `CombatConfig` now uses `@export` hints to generate sliders and  
+      ░   organized groups in the Godot Inspector for easy tuning.            
+      ░ ■ Refactored the `BaseBoss` to be fully data-driven. Attack patterns   
+      ░   for each phase are now assigned via exported arrays in the Inspector,
+      ░   decoupling boss design from hard-coded script paths.                
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a "modulo by zero" crash in the boss's idle state by adding
+      ░   a guard clause to handle cases where no attack patterns are assigned.
+      ░ ■ Corrected a resource loading error caused by duplicated UIDs in the  
+      ░   `base_boss.tscn` file, ensuring exported resources load correctly.  ```
 
 
 

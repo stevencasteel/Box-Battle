@@ -1,5 +1,6 @@
 # src/entities/boss/base_boss.gd
-# The boss now correctly tears down its components to prevent memory leaks.
+# The boss is now fully data-driven. Its attack patterns for each phase
+# are now configured in the editor via exported Resource arrays.
 class_name BaseBoss
 extends CharacterBody2D
 
@@ -12,38 +13,29 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @onready var state_machine: BaseStateMachine = $StateMachine
 @onready var armor_component: ArmorComponent = $ArmorComponent
 
+# --- DATA ---
 var b_data: BossStateData
 var player: CharacterBody2D = null
-
-var phases_remaining: int = 3
-@export var phase_2_threshold: float = 0.7
-@export var phase_3_threshold: float = 0.4
-
-var phase_1_patterns: Array[AttackPattern] = []
-var phase_2_patterns: Array[AttackPattern] = []
-var phase_3_patterns: Array[AttackPattern] = []
-var current_attack_patterns: Array[AttackPattern] = []
-
 var _active_attack_tween: Tween
 var _is_dead: bool = false
+var phases_remaining: int = 3
+
+# --- EDITOR CONFIGURATION ---
+@export_group("Phase Configuration")
+@export_range(0.0, 1.0, 0.01) var phase_2_threshold: float = 0.7
+@export_range(0.0, 1.0, 0.01) var phase_3_threshold: float = 0.4
+
+# THE FIX: Attack patterns are now exposed to the editor.
+@export_group("Attack Patterns")
+@export var phase_1_patterns: Array[AttackPattern] = []
+@export var phase_2_patterns: Array[AttackPattern] = []
+@export var phase_3_patterns: Array[AttackPattern] = []
+var current_attack_patterns: Array[AttackPattern] = []
 
 func _ready():
 	add_to_group("enemy")
 	
-	var single_shot = load("res://src/entities/boss/attack_patterns/single_shot.tres")
-	var volley_shot = load("res://src/entities/boss/attack_patterns/volley_shot.tres")
-	var lunge_attack = load("res://src/entities/boss/attack_patterns/lunge_attack.tres")
-	
-	phase_1_patterns = [single_shot, volley_shot]
-	
-	var single_shot_p2 = single_shot.duplicate(); single_shot_p2.cooldown *= 0.8
-	var volley_shot_p2 = volley_shot.duplicate(); volley_shot_p2.cooldown *= 0.8
-	phase_2_patterns = [single_shot_p2, volley_shot_p2, lunge_attack]
-
-	var volley_shot_p3 = volley_shot_p2.duplicate(); volley_shot_p3.cooldown *= 0.8
-	var lunge_attack_p3 = lunge_attack.duplicate(); lunge_attack_p3.cooldown *= 0.9
-	phase_3_patterns = [volley_shot_p3, lunge_attack_p3]
-	
+	# THE FIX: Set the initial attack patterns from the exported array.
 	current_attack_patterns = phase_1_patterns
 	
 	b_data = BossStateData.new()
@@ -64,7 +56,6 @@ func _ready():
 	}
 	state_machine.setup(states, State.COOLDOWN)
 
-# THE FIX: This function now ensures all components are safely torn down.
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
@@ -117,11 +108,12 @@ func _on_health_threshold_reached(health_percentage: float):
 
 	if new_phases_remaining != phases_remaining:
 		phases_remaining = new_phases_remaining
+		# THE FIX: Set the current patterns from the exported arrays.
 		match phases_remaining:
 			2: current_attack_patterns = phase_2_patterns
 			1: current_attack_patterns = phase_3_patterns
 		
-		print("VERIFICATION: Boss has ", phases_remaining, " phases remaining.")
+		print("VERIFICATION: Boss has entered a new phase. Phases remaining: ", phases_remaining)
 		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout():
