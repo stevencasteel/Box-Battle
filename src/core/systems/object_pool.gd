@@ -1,7 +1,7 @@
 # src/core/systems/object_pool.gd
 #
-# This version now has a public `reset()` method to clean up all active
-# objects, and includes a new pool for the Turret's projectiles.
+# This version is hardened against race conditions by using call_deferred
+# to safely deactivate instances.
 extends Node
 
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
@@ -68,8 +68,15 @@ func return_instance(p_instance: Node):
 
 	var pool_name = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
+		# If the instance doesn't belong to a known pool, just delete it.
 		p_instance.queue_free()
 		return
 	
-	p_instance.deactivate()
-	_pools[pool_name].inactive.append(p_instance)
+	# THE FIX: Defer the deactivation call. This ensures any same-frame
+	# logic can complete before the node is disabled and moved.
+	p_instance.call_deferred("deactivate")
+	
+	# To prevent the same instance from being returned multiple times in one frame,
+	# we can check if it's already in the inactive list.
+	if not _pools[pool_name].inactive.has(p_instance):
+		_pools[pool_name].inactive.append(p_instance)

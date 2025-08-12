@@ -20,6 +20,32 @@
 
 
 
+
+
+
+
+
+
+
+
+   █  Architectural Changes                                                   
+      ░ ■ Hardened the `ObjectPool` against race conditions by deferring the   
+      ░   deactivation of returned instances, preventing same-frame access errors.
+      ░ ■ Hardened the `Sequencer` by adding a `cancel_all()` method that is   
+      ░   now called by the `SceneManager` during scene transitions, preventing
+      ░   sequences from running across scenes.                               
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a critical race condition where the `ArenaBuilder` would finish
+      ░   before the boss intro sequence could spawn the boss.                 
+      ░ ■ Hardened the player's pogo attack physics query. It now correctly    
+      ░   iterates through all potential targets to find a valid `IDamageable`,
+      ░   making the mechanic more reliable against complex colliders.        
+
+
+
+
+
    █  Architectural Changes                                                   
       ░ ■ Unified the state machine architecture to be purely object-based.    
       ░   This removes inconsistent lifecycle logic and makes the system more  

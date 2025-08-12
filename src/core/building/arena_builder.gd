@@ -1,7 +1,7 @@
 # src/core/building/arena_builder.gd
 #
-# The ArenaBuilder can now spawn a list of minions in addition to the
-# primary player and boss entities.
+# The ArenaBuilder now correctly awaits the completion of the intro
+# sequence, ensuring the boss is spawned before the level is returned.
 extends Node
 
 var _current_build_data: LevelBuildData
@@ -31,8 +31,13 @@ func build_level_async() -> Node:
 
 	await _spawn_player_async()
 	await _spawn_hud_async()
-	await _spawn_minions_async() # NEW: Spawn minions
+	await _spawn_minions_async()
+	
 	_intro_sequence_handle = _run_intro_sequence()
+	# THE FIX: Wait for the intro sequence to fully complete before proceeding.
+	# This ensures the boss is spawned before the loading screen transitions away.
+	if is_instance_valid(_intro_sequence_handle):
+		await _intro_sequence_handle.finished
 
 	await get_tree().process_frame
 	
@@ -60,7 +65,6 @@ func _spawn_hud_async() -> void:
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 
-# NEW: Function to loop through and spawn all defined minions.
 func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
 		var instance = load(spawn_data.scene_path).instantiate()

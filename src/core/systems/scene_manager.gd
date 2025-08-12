@@ -1,15 +1,16 @@
 # src/core/systems/scene_manager.gd
 #
-# A centralized singleton for handling all scene transitions. It now also
-# cleans up the ObjectPool to prevent projectiles from persisting.
+# A centralized singleton for handling all scene transitions. It now
+# cleans up both the ObjectPool and the Sequencer for a clean slate.
 extends Node
 
 # --- Private Methods ---
 
 # The core, private function that handles the actual scene change.
 func _switch_to_scene(path: String) -> void:
-	# THE FIX: Clean up all active projectiles before changing scenes.
+	# THE FIX: Clean up all active projectiles AND cancel all running sequences.
 	ObjectPool.reset()
+	Sequencer.cancel_all()
 	get_tree().call_deferred("change_scene_to_file", path)
 
 
