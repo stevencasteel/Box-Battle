@@ -1,9 +1,8 @@
 # src/entities/boss/base_boss.gd
-# The boss can now perform a new "Armored Lunge" attack in its later phases.
+# The boss now correctly tears down its components to prevent memory leaks.
 class_name BaseBoss
 extends CharacterBody2D
 
-# MODIFIED: Added LUNGE state.
 enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -11,7 +10,6 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @onready var patrol_timer: Timer = $PatrolTimer
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var state_machine: BaseStateMachine = $StateMachine
-# NEW: Direct reference to the ArmorComponent.
 @onready var armor_component: ArmorComponent = $ArmorComponent
 
 var b_data: BossStateData
@@ -40,12 +38,10 @@ func _ready():
 	
 	var single_shot_p2 = single_shot.duplicate(); single_shot_p2.cooldown *= 0.8
 	var volley_shot_p2 = volley_shot.duplicate(); volley_shot_p2.cooldown *= 0.8
-	# Add the lunge attack to Phase 2.
 	phase_2_patterns = [single_shot_p2, volley_shot_p2, lunge_attack]
 
 	var volley_shot_p3 = volley_shot_p2.duplicate(); volley_shot_p3.cooldown *= 0.8
 	var lunge_attack_p3 = lunge_attack.duplicate(); lunge_attack_p3.cooldown *= 0.9
-	# Add the lunge attack to Phase 3.
 	phase_3_patterns = [volley_shot_p3, lunge_attack_p3]
 	
 	current_attack_patterns = phase_1_patterns
@@ -64,16 +60,16 @@ func _ready():
 		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
 		State.COOLDOWN: BossStateCooldown.new(self, state_machine, b_data),
 		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
-		# NEW: Instantiate the Lunge state.
 		State.LUNGE: BossStateLunge.new(self, state_machine, b_data),
 	}
 	state_machine.setup(states, State.COOLDOWN)
 
+# THE FIX: This function now ensures all components are safely torn down.
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
-		if state_machine: state_machine.teardown()
-		if health_component: health_component.teardown()
+		if is_instance_valid(state_machine): state_machine.teardown()
+		if is_instance_valid(health_component): health_component.teardown()
 		b_data = null
 
 func _physics_process(delta):

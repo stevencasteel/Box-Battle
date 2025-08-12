@@ -1,5 +1,6 @@
 # src/entities/minions/turret.gd
-# The main context script for the stationary Turret minion.
+# The Turret now correctly tears down its components to prevent memory leaks
+# and includes guard clauses to prevent race conditions on death.
 class_name Turret
 extends CharacterBody2D
 
@@ -14,7 +15,6 @@ enum State { IDLE, ATTACK }
 var t_data: TurretStateData
 var player: CharacterBody2D
 
-# Configurable properties
 var fire_rate: float = 2.0
 var detection_radius: float = 400.0
 
@@ -42,12 +42,17 @@ func _ready():
 	
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+		if is_instance_valid(state_machine): state_machine.teardown()
+		if is_instance_valid(health_component): health_component.teardown()
+		t_data = null
+
 func die():
 	queue_free()
 
 func fire_at_player():
 	if not is_instance_valid(player): return
-	# THE FIX: Request a projectile from the correct, dedicated pool.
 	var shot = ObjectPool.get_instance(&"turret_shots")
 	if not shot: return
 	shot.direction = (player.global_position - global_position).normalized()
@@ -55,9 +60,13 @@ func fire_at_player():
 	shot.activate()
 
 func _on_range_detector_body_entered(body):
+	# THE FIX: Add a guard clause to prevent crash on death.
+	if not t_data: return
 	if body.is_in_group("player"):
 		t_data.is_player_in_range = true
 
 func _on_range_detector_body_exited(body):
+	# THE FIX: Add a guard clause to prevent crash on death.
+	if not t_data: return
 	if body.is_in_group("player"):
 		t_data.is_player_in_range = false

@@ -11,10 +11,49 @@
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
+
+
+
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                            [UNRELEASED]                              ██  ║
+║  ██                  [0.7.0] - NEEDS TITLE - 2025-08-XX                  ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
+
+
+
+   █  Architectural Changes                                                   
+      ░ ■ Unified the state machine architecture to be purely object-based.    
+      ░   This removes inconsistent lifecycle logic and makes the system more  
+      ░   robust against memory leaks.                                        
+      ░ ■ Implemented a formal `teardown` pattern in all state machines and    
+      ░   entity components to ensure proper cleanup and prevent cyclic references.
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a critical race condition that caused the game to crash when
+      ░   a Turret minion was destroyed.                                      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
+║  ██                  [0.6.0] - NEEDS TITLE - 2025-08-11                  ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
 
 
 

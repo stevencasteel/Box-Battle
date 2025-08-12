@@ -1,7 +1,7 @@
 # src/entities/components/base_state_machine.gd
 #
-# A reusable, node-based state machine manager. An entity (like Player or Boss)
-# will own this node and use it to manage its states.
+# A reusable, node-based state machine manager. It now ensures all states
+# are treated as pure Objects and are cleaned up correctly.
 class_name BaseStateMachine
 extends Node
 
@@ -24,7 +24,7 @@ func setup(p_states: Dictionary, p_initial_state_key):
 	self.states = p_states
 	change_state(p_initial_state_key)
 
-# CORRECTED: The teardown function is restored.
+# THE FIX: The teardown function now correctly calls teardown on each state.
 func teardown():
 	if current_state:
 		current_state.exit()
@@ -34,7 +34,9 @@ func teardown():
 			state.teardown()
 	states.clear()
 	current_state = null
+	print("VERIFICATION: BaseStateMachine torn down successfully.")
 
+# THE FIX: This function now treats states as pure objects. No add_child/queue_free.
 func change_state(new_state_key, msg := {}):
 	if not states.has(new_state_key):
 		push_warning("StateMachine: Attempted to change to unknown state '%s'." % new_state_key)

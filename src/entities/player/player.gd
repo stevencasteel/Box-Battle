@@ -1,6 +1,6 @@
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine. It now delegates all
-# state management logic to its StateMachine child node.
+# This script is the "Context" for the State Machine. It now correctly
+# tears down its components to prevent memory leaks.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -89,13 +89,14 @@ func _ready():
 	
 	_emit_healing_charges_changed_event()
 
+# THE FIX: This function now ensures all components are safely torn down.
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
-		if state_machine: state_machine.teardown()
-		if health_component: health_component.teardown()
-		if combat_component: combat_component.teardown()
-		if input_component: input_component.teardown()
-		p_data = null
+		if is_instance_valid(state_machine): state_machine.teardown()
+		if is_instance_valid(health_component): health_component.teardown()
+		if is_instance_valid(combat_component): combat_component.teardown()
+		if is_instance_valid(input_component): input_component.teardown()
+		p_data = null # Release reference to the data resource
 
 func _physics_process(delta):
 	_update_timers(delta)
@@ -133,7 +134,6 @@ func _update_timers(delta):
 func _emit_healing_charges_changed_event():
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
-	# CORRECTED: Removed the third argument (`self`).
 	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 	healing_charges_changed.emit(p_data.healing_charges)
 
@@ -202,7 +202,6 @@ func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	# CORRECTED: Removed the third argument (`self`).
 	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 
