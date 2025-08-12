@@ -11,7 +11,7 @@
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
-║  ▓▓▓-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       BOX BATTLE BOSS CONCEPTS                       ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
@@ -75,6 +75,43 @@
 ║                                                                              ║
 ║   ▒  Ledge Grab: A brief pause/slowdown when hitting the top edge of a wall  ║
 ║      to create a more forgiving window for wall-jumping.                     ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██           ADVANCED COMBAT & FEEDBACK CONCEPTS (from Audit)           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   A collection of high-impact ideas for improving the "game feel" of combat. ║
+║                                                                              ║
+║   ▒  Hit-Stop / Hit-Freeze: A micro-pause (e.g., 0.05 seconds) of the entire ║
+║      game simulation when a high-impact melee hit connects. This adds a      ║
+║      feeling of weight and power to attacks.                                 ║
+║                                                                              ║
+║   ▒  Attack-Interrupting Windows: Specific boss telegraph animations could   ║
+║      have a brief "vulnerable" window. Landing a hit during this window      ║
+║      would interrupt the boss's attack and potentially trigger a mini-stun.  ║
+║                                                                              ║
+║   ▒  Cinematic Phase Transitions: When the boss's health crosses a threshold,║
+║      it could enter a brief, invulnerable `PhaseChange` state, play a unique ║
+║      animation or visual effect, and then resume combat with its new attack  ║
+║      patterns. This makes the phase shifts feel like significant events.     ║
+║                                                                              ║
+║   ▒  Enhanced Stun Feedback: As the boss's stun meter fills, provide clear   ║
+║      feedback to the player. This could include a subtle vignette effect, a  ║
+║      pulsing glow on the boss, or a rising audio cue that indicates a stun   ║
+║      is imminent.                                                            ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                 DEVELOPER TOOLS & TOOLING (from Audit)               ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Ideas for internal systems that would improve the development workflow.    ║
+║                          _NOTE: This is not user-facing text._               ║
+║                                                                              ║
+║   ▒  Diagnostics Singleton: A dedicated global service for logging important ║
+║      but non-crashing gameplay events. For example, it could record every    ║
+║      time a pogo attack fails its physics check, or when a damage calculation║
+║      is ignored due to invincibility. This would create a detailed log to help║
+║      reproduce and debug subtle, hard-to-find edge cases.                    ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                UI / UX ENHANCEMENT CONCEPTS                          ██  ║

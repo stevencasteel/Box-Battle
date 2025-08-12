@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 11 19:06:01 CDT 2025
+Generated on: Tue Aug 12 10:18:15 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -128,6 +128,13 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── input_component.gd
     │   │   ├── telegraph_component.gd
     │   │   └── telegraph_component.tscn
+    │   ├── minions
+    │   │   ├── states
+    │   │   │   ├── state_turret_attack.gd
+    │   │   │   └── state_turret_idle.gd
+    │   │   ├── turret.gd
+    │   │   ├── turret.tscn
+    │   │   └── turret_state_data.gd
     │   └── player
     │       ├── data
     │       │   └── player_state_data.gd
@@ -146,7 +153,9 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── boss_shot.gd
     │   ├── boss_shot.tscn
     │   ├── player_shot.gd
-    │   └── player_shot.tscn
+    │   ├── player_shot.tscn
+    │   ├── turret_shot.gd
+    │   └── turret_shot.tscn
     ├── scenes
     │   ├── dev
     │   │   ├── test_ui.gd
@@ -199,7 +208,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-49 directories, 142 files
+51 directories, 149 files
 
 
 =====================================
@@ -219,127 +228,158 @@ FILE: ./docs/TODO.txt
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              PHASE 1: THE CORE SYSTEMS REFACTOR                      ██  ║
+║  ██              PHASE 1: ARCHITECTURAL UNIFICATION                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   This phase is our highest priority. We will refactor the existing code to  ║
-║   align with professional design principles. This is the hard, foundational ║
-║   work that enables all future features to be built cleanly and efficiently. ║
+║   This is our highest priority. We will unify the project around a set of    ║
+║   strict, professional patterns to eliminate inconsistencies and make the    ║
+║   entire codebase more predictable and maintainable.                         ║
 ║                                                                              ║
-║   ■  1. Implement the Event Bus                                              ║
-║      ░  WHY: This is the new central nervous system for the game. It will    ║
-║      ░  decouple all our systems, from UI to gameplay to audio, making the   ║
-║      ░  entire codebase more modular and easier to manage (Dependency Inversion).║
+║   □  1. Unify the State Machine Model to be Purely Object-Based              ║
+║      ░  WHY: The codebase inconsistently treats states as both pure `Object`s║
+║      ░  and `Node`s. This creates lifecycle confusion and risks memory leaks.║
+║      ░  Committing to a single, lightweight `Object`-based model is cleaner. ║
 ║      ░  HOW:                                                                 ║
-║      ░    1. Create a new autoload singleton: `EventBus.gd`.                 ║
-║      ░    2. Implement three core functions: `on(event, callback)`,          ║
-║      ░       `off(event, callback)`, and `emit(event, payload)`.             ║
-║      ░    3. Create `EventCatalog.gd` to store all event names as constants. ║
-║      ░    4. Refactor existing direct signal connections (e.g., in `game_hud.gd`)║
-║      ░       to use the Event Bus. The HUD will listen for global events like ║
-║      ░       `EventCatalog.PLAYER_HEALTH_CHANGED` instead of connecting directly.║
+║      ░    1. Confirm `BaseState` extends `Object`.                           ║
+║      ░    2. Audit all state machine implementations (`Player`, `BaseBoss`,  ║
+║      ░       `Turret`) and remove any code that uses `add_child(state)` or   ║
+║      ░       `state.queue_free()`.                                           ║
+║      ░    3. Ensure `BaseStateMachine.teardown()` calls a `teardown()` method║
+║      ░       on every state instance to break potential cyclic references.   ║
 ║                                                                              ║
-║   ■  2. Refactor Player to use the State Pattern                             ║
-║      ░  WHY: `player.gd` is a large, monolithic script. This refactor will   ║
-║      ░  decouple the logic for each state into its own class, making the     ║
-║      ░  system cleaner and easier to extend (Open/Closed Principle).         ║
-║      ░  HOW: Follow the detailed plan to create a `states` subdirectory for  ║
-║      ░  the player, create a `PlayerState` base class, and migrate the logic ║
-║      ░  for each state into its own file. `player.gd` will become a "Context"║
-║      ░  that simply manages the current state object.                        ║
+║   □  2. Convert All Data to Editor-Friendly `@export` Resources              ║
+║      ░  WHY: To empower rapid, code-free tuning and balancing by exposing all║
+║      ░  gameplay values directly in the Godot Inspector with intuitive controls.║
+║      ░  HOW:                                                                 ║
+║      ░    1. In `combat_config.gd`, use `@export_group` and `@export_range`  ║
+║      ░       to turn the flat list of variables into organized sliders.      ║
+║      ░    2. In `attack_pattern.gd`, `@export` all key properties (cooldown, ║
+║      ░       telegraph duration, etc.) so attacks can be designed in the editor.║
+║      ░    3. In `base_boss.gd`, change `phase_X_patterns` from `load()` calls║
+║      ░       to `@export var phase_patterns: Array[AttackPattern]`, allowing ║
+║      ░       designers to drag-and-drop `.tres` files in the Inspector.      ║
 ║                                                                              ║
-║   ■  3. Implement the Centralized Sequencer                                  ║
-║      ░  WHY: To eliminate scattered `Timer` nodes and `await` calls for      ║
-║      ░  scripted events. This provides a clean, readable way to create       ║
-║      ░  cinematic sequences like boss intros or multi-stage attacks.         ║
-║      ░  HOW: Create a new autoload singleton: `Sequencer.gd`. Implement a    ║
-║      ░  `run_sequence(steps: Array)` function that can process a list of     ║
-║      ░  commands like `wait`, `emit` (on Event Bus), and `call` (a function).║
-║                                                                              ║
-║   ■  4. Refactor Base Boss to use the State Pattern                          ║
-║      ░  WHY: To mirror the player's clean architecture, preparing the boss   ║
-║      ░  for the advanced "kitchen sink" mechanics planned for a later phase. ║
-║      ░  HOW: Apply the exact same State Pattern as used for the Player,      ║
-║      ░  creating a `states` subdirectory and migrating state logic into      ║
-║      ░  separate, focused class files.                                       ║
-║                                                                              ║
-║   ■  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
-║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs. Separating these ║
-║      ░  roles will make the level generation pipeline more robust and easier ║
-║      ░  to maintain.                                                         ║
-║      ░  HOW: Split the current logic into three new classes:                 ║
-║      ░    - `LevelParser.gd`: Reads data from layout/encounter files.        ║
-║      ░    - `TerrainBuilder.gd`: Creates the static level geometry (tiles).  ║
-║      ░    - `EncounterDirector.gd`: Spawns all dynamic entities (player, boss).║
-║      ░  `ArenaBuilder.gd` will become a simple coordinator of these new classes.║
+║   □  3. Formalize Dependency Injection with an EntityFactory                 ║
+║      ░  WHY: To eliminate fragile `get_node("string")` lookups and create a  ║
+║      ░  single, verifiable place where all entity components are wired together.║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a new `EntityFactory.gd` singleton.                      ║
+║      ░    2. Create a `build_player(scene, config)` function inside it. Move ║
+║      ░       all the component `setup()` logic from `player.gd`'s `_ready()` ║
+║      ░       into this new function.                                         ║
+║      ░    3. The `ArenaBuilder` will now call `EntityFactory.build_player()` ║
+║      ░       instead of just instantiating the scene.                        ║
+║      ░    4. This centralizes dependency wiring and makes scene dependencies explicit.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██            PHASE 2: DATA-DRIVEN & VISUAL FOUNDATION                  ██  ║
+║  ██            PHASE 2: SYSTEM HARDENING & ROBUSTNESS                    ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   This phase separates hard-coded values from our logic and builds the key   ║
-║   visual components needed to achieve our "Framer + Geometry Wars" aesthetic.║
+║   This phase focuses on eliminating subtle but critical runtime bugs. These  ║
+║   changes will make our core systems resilient to edge cases and race conditions.║
 ║                                                                              ║
-║   ■  1. Implement Data-Driven Configs (JSON)                                 ║
-║      ░  WHY: To centralize all tuning and balancing numbers (damage, health, ║
-║      ░  cooldowns) into external, human-readable files. This allows for rapid║
-║      ░  iteration without changing any code.                                 ║
-║      ░  HOW: Create a `Config.gd` singleton that loads `.json` files on start.║
-║      ░  Move all combat-related values from `Constants.gd` into a new        ║
-║      ░  `combat_config.json`. Refactor code to pull values from this config. ║
+║   □  1. Harden the ObjectPool against Race Conditions                        ║
+║      ░  WHY: Returning a projectile to the pool and trying to access it in   ║
+║      ░  the same physics frame can cause crashes. We must defer deactivation.║
+║      ░  HOW:                                                                 ║
+║      ░    1. In `object_pool.gd`, modify `return_instance` to call           ║
+║      ░       `instance.call_deferred("deactivate")` instead of calling it directly.║
+║      ░    2. This ensures the instance is disabled on the *next* frame, giving║
+║      ░       all same-frame logic time to complete safely.                   ║
 ║                                                                              ║
-║   ■  2. Implement the Global Palette System                                  ║
-║      ░  WHY: To enforce a consistent, project-wide color scheme. This is a   ║
-║      ░  critical prerequisite for the UI overhaul.                           ║
-║      ░  HOW: Create a `Palette.gd` singleton. Define the 32-step grayscale   ║
-║      ░  array and create semantic constant names (e.g., `COLOR_PLAYER`).     ║
-║      ░  Replace all hard-coded colors with calls to this new Palette.        ║
+║   □  2. Harden the Sequencer against Scene Transitions                       ║
+║      ░  WHY: A long-running sequence could continue running in the background║
+║      ░  after a scene change, causing errors or unexpected behavior.         ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Add a `cancel_all()` function to `sequencer.gd` that iterates   ║
+║      ░       through all active sequence handles and cancels them.           ║
+║      ░    2. In `scene_manager.gd`, call `Sequencer.cancel_all()` at the     ║
+║      ░       beginning of the `_switch_to_scene` function to ensure a clean slate.║
 ║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              PHASE 3: GAMEPLAY & FEEL ENHANCEMENT                    ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   With a solid architecture, we can now focus on making the game feel amazing.║
-║                                                                              ║
-║   □  1. Refine Player Combat Mechanics ("Game Juice")                        ║
-║      ░  □ Enhanced Melee Hitbox: Implement a two-part hitbox where the inner ║
-║      ░    box deals 1.5x damage and the outer deals 1.0x damage.             ║
-║      ░  □ Input Buffering: Add buffering for attack and dash inputs.         ║
-║      ░  □ Pogo-Fall Prevention: Add a brief grace period after a pogo to     ║
-║      ░    prevent accidental fast-falling.                                   ║
-║                                                                              ║
-║   □  2. Implement "Kitchen Sink" Base Boss Features                          ║
-║      ░  □ Health Phases: Boss transitions to new states at health thresholds.║
-║      ░  □ Armor/Weak Points: Implement an `is_armored` state.                ║
-║      ░  □ Clear Attack Telegraphing: Create a dedicated `Telegraph` state.   ║
-║                                                                              ║
-║   □  3. Implement a Minion Enemy Type                                        ║
-║      ░  Create a simple Turret enemy to test our data-driven spawning and    ║
-║      ░  component-based architecture (e.g., by reusing the HealthComponent). ║
+║   □  3. Harden Physics Queries against Child Colliders                       ║
+║      ░  WHY: Physics queries can return a child collider before a parent. Code║
+║      ░  that naively takes `results[0]` will fail to find the `IDamageable`  ║
+║      ░  script on the parent, causing attacks to fail.                       ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Audit all uses of `intersect_shape` (e.g., in `state_attack.gd`).║
+║      ░    2. Replace logic that uses `results[0]` with a `for` loop that     ║
+║      ░       iterates all results and uses `CombatUtils.find_damageable()` on║
+║      ░       each collider. The first valid target found is the one to use.  ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██           PHASE 4: FUTURE EXPANSION & DEFERRED TASKS                 ██  ║
+║  ██              PHASE 3: CORE GAMEPLAY & "GAME JUICE"                   ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   With a hardened architecture, we can now focus on making the game feel amazing.║
+║                                                                              ║
+║   □  1. Implement Input Buffering for Attack & Dash                          ║
+║      ░  WHY: This is the highest-impact "game feel" improvement. It makes the║
+║      ░  controls feel responsive and fair, forgiving minor timing mistakes.  ║
+║      ░  HOW: Add `attack_buffer_timer` and `dash_buffer_timer` to            ║
+║      ░  `player_state_data.gd`. In `input_component.gd`, set these timers on ║
+║      ░  input. In states like `Move` and `Fall`, check if a buffer is active ║
+║      ░  and the action is permitted, then execute and reset the timer.       ║
+║                                                                              ║
+║   □  2. Implement the Two-Tier Melee Hitbox                                  ║
+║      ░  WHY: To reward risky, close-range combat and add depth to melee.     ║
+║      ░  HOW: In `player.tscn`, add a second, smaller `Area2D` named          ║
+║      ░  `InnerHitbox`. In the `Attack` state, connect both hitboxes'         ║
+║      ░  `body_entered` signals to a handler that applies different damage/stun.║
+║                                                                              ║
+║   □  3. Implement the Boss Stun System                                       ║
+║      ░  WHY: To create windows of opportunity for the player and make combat ║
+║      ░  more dynamic than a pure DPS race.                                   ║
+║      ░  HOW: Create a `StunComponent` for the boss. When the boss takes damage,║
+║      ░  this component adds to a stun value. When full, it emits a           ║
+║      ░  `stun_meter_full` signal. The `BaseBoss` state machine will listen for║
+║      ░  this and transition to a new, vulnerable `BossStateStun`.            ║
+║                                                                              ║
+║   □  4. Implement Pogo-Fall Prevention                                       ║
+║      ░  WHY: To prevent the frustrating experience of accidentally fast-falling║
+║      ░  immediately after a successful pogo bounce.                          ║
+║      ░  HOW: In the `Player` script, after a successful pogo, start a very   ║
+║      ░  short timer (e.g., 0.1s) during which the "fast-fall" input is ignored.║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██             PHASE 4: IN-EDITOR TOOLING & VALIDATION                  ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This phase focuses on building an internal "immune system" for the project.║
+║   These tools will catch errors before the game is even run.                 ║
+║                                                                              ║
+║   □  1. Implement In-Editor Scene Validation via `@tool` Scripts             ║
+║      ░  WHY: To get immediate, visual feedback in the Godot editor when a    ║
+║      ░  scene is misconfigured (e.g., a critical node is missing).           ║
+║      ░  HOW: Add the `@tool` annotation to scripts like `base_boss.gd`.      ║
+║      ░  Implement the `_get_configuration_warnings()` function. Inside, check║
+║      ░  if required child nodes (like `HealthComponent`) exist. If not, return║
+║      ░  an error string. Godot will display a ⚠️ icon in the Scene Tree.      ║
+║                                                                              ║
+║   □  2. Create a Central `SceneValidator` Utility                            ║
+║      ░  WHY: To avoid duplicating validation logic in every script and to    ║
+║      ░  create a single source of truth for scene "contracts."               ║
+║      ░  HOW: Create a new `SceneValidator.gd` singleton. Move the logic from ║
+║      ░  the individual `_get_configuration_warnings()` functions into this   ║
+║      ░  utility. The `@tool` scripts will then just call the central validator.║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██           PHASE 5: FUTURE EXPANSION & DEFERRED TASKS                 ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║
 ║                                                                              ║
-║   □  UI Overhaul Part 1: The `StyledMenuItem`                                ║
-║      ░  WHY: To create the cornerstone visual component for our new UI. We   ║
-║      ░  will perfect this one piece before replacing the entire menu system. ║
-║      ░  HOW: Create a new scene, `StyledMenuItem.tscn`, that extends `Control`.║
-║      ░  It will use the `_draw()` function and shaders to render itself      ║
-║      ░  procedurally with frosted glass, backlighting, and reactive effects, ║
-║      ░  all driven by the `Palette` and `EventBus`.                          ║
+║   □  UI Overhaul                                                             ║
+║      ░  □ Refactor all procedural menus to use Godot's built-in `Container`  ║
+║      ░    nodes (`VBoxContainer`, etc.) to fix layout bugs like `BUG-UI001`. ║
+║      ░  □ Create the cornerstone `StyledMenuItem` visual component.          ║
 ║                                                                              ║
-║   ░  Full UI System Replacement (using `StyledMenuItem`)                     ║
 ║   ░  Diegetic UI Implementation                                              ║
 ║   ░  Dynamic Music Layering System                                           ║
 ║   ░  Adaptive Boss AI Tactics Layer                                          ║
 ║   ░  Player Loadout System                                                   ║
 ║   ░  Special Game Modes (Boss Rush, Time Attack)                             ║
 ║   ░  Cleanup or remove `test_ui` scene and related dev assets.               ║
-║   ░  Screen Shake (Explicitly deferred to avoid visual noise during debugging)║
-║   ░  Dynamic Camera (Explicitly deferred per design decision)                ║
+║   ░  Screen Shake (Deferred to avoid visual noise during debugging)          ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
@@ -2177,6 +2217,25 @@ FILE: ./docs/CHANGELOG.txt
       ░   long rectangle for the lunge path and a square for projectile attacks,
       ░   improving visual clarity for the player.                            
 
+
+
+   █  Added                                                                   
+      ░ ■ Implemented a new "Turret" minion enemy. This stationary enemy      
+      ░   detects the player within a set range and fires projectiles, proving
+      ░   the reusability of the unified state machine and component architecture.
+
+   █  Changed                                                                 
+      ░ ■ The encounter system has been upgraded to support spawning a list of 
+      ░   minions from the level layout file, in addition to the main boss.   
+                                                                              
+   █  Fixed                                                                   
+      ░ ■ Resolved a bug where turrets would stop firing after a few shots by  
+      ░   refactoring their state machine logic to be continuous rather than  
+      ░   reliant on a one-shot `await` call in the `enter` function.         
+      ░ ■ Fixed a critical bug where projectiles were being permanently deleted
+      ░   instead of returned to the `ObjectPool`, by creating a dedicated    
+      ░   `TurretShot` scene with the correct pooling metadata.               
+
 =====================================
 FILE: ./docs/BRAINSTORM.txt
 =====================================
@@ -2193,7 +2252,7 @@ FILE: ./docs/BRAINSTORM.txt
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
-║  ▓▓▓-▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       BOX BATTLE BOSS CONCEPTS                       ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
@@ -2257,6 +2316,43 @@ FILE: ./docs/BRAINSTORM.txt
 ║                                                                              ║
 ║   ▒  Ledge Grab: A brief pause/slowdown when hitting the top edge of a wall  ║
 ║      to create a more forgiving window for wall-jumping.                     ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██           ADVANCED COMBAT & FEEDBACK CONCEPTS (from Audit)           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   A collection of high-impact ideas for improving the "game feel" of combat. ║
+║                                                                              ║
+║   ▒  Hit-Stop / Hit-Freeze: A micro-pause (e.g., 0.05 seconds) of the entire ║
+║      game simulation when a high-impact melee hit connects. This adds a      ║
+║      feeling of weight and power to attacks.                                 ║
+║                                                                              ║
+║   ▒  Attack-Interrupting Windows: Specific boss telegraph animations could   ║
+║      have a brief "vulnerable" window. Landing a hit during this window      ║
+║      would interrupt the boss's attack and potentially trigger a mini-stun.  ║
+║                                                                              ║
+║   ▒  Cinematic Phase Transitions: When the boss's health crosses a threshold,║
+║      it could enter a brief, invulnerable `PhaseChange` state, play a unique ║
+║      animation or visual effect, and then resume combat with its new attack  ║
+║      patterns. This makes the phase shifts feel like significant events.     ║
+║                                                                              ║
+║   ▒  Enhanced Stun Feedback: As the boss's stun meter fills, provide clear   ║
+║      feedback to the player. This could include a subtle vignette effect, a  ║
+║      pulsing glow on the boss, or a rising audio cue that indicates a stun   ║
+║      is imminent.                                                            ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                 DEVELOPER TOOLS & TOOLING (from Audit)               ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Ideas for internal systems that would improve the development workflow.    ║
+║                          _NOTE: This is not user-facing text._               ║
+║                                                                              ║
+║   ▒  Diagnostics Singleton: A dedicated global service for logging important ║
+║      but non-crashing gameplay events. For example, it could record every    ║
+║      time a pogo attack fails its physics check, or when a damage calculation║
+║      is ignored due to invincibility. This would create a detailed log to help║
+║      reproduce and debug subtle, hard-to-find edge cases.                    ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                UI / UX ENHANCEMENT CONCEPTS                          ██  ║
@@ -4508,10 +4604,12 @@ const SCRIPT_ARENA_00_ENCOUNTER = "res://src/arenas/arena_00_encounter.gd"
 const SCENE_PLAYER = "res://src/entities/player/player.tscn"
 const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"
 
-# --- BOSS & RELATED ---
+# --- BOSS, MINIONS & RELATED ---
 const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
 const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
 const SCENE_TELEGRAPH_COMPONENT = "res://src/entities/components/telegraph_component.tscn"
+const SCENE_TURRET = "res://src/entities/minions/turret.tscn"
+const SCENE_TURRET_SHOT = "res://src/projectiles/turret_shot.tscn"
 
 # --- UI & HUD ---
 const SCENE_GAME_HUD = "res://src/ui/game_hud/game_hud.tscn"
@@ -4847,20 +4945,23 @@ func go_to_scene(path: String) -> void:
 FILE: ./src/core/systems/object_pool.gd
 =====================================
 # src/core/systems/object_pool.gd
+#
 # This version now has a public `reset()` method to clean up all active
-# objects, which is crucial for preventing visual bugs during scene transitions.
+# objects, and includes a new pool for the Turret's projectiles.
 extends Node
 
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
+const TurretShotScene = preload(AssetPaths.SCENE_TURRET_SHOT)
 
 var _pools: Dictionary = {}
 
 func _ready():
 	_create_pool_for_scene(&"player_shots", PlayerShotScene, 15)
 	_create_pool_for_scene(&"boss_shots", BossShotScene, 30)
+	_create_pool_for_scene(&"turret_shots", TurretShotScene, 20)
 
-# NEW: Public function to clean up all active instances.
+# Public function to clean up all active instances.
 func reset():
 	for pool_name in _pools:
 		var pool = _pools[pool_name]
@@ -5189,8 +5290,8 @@ FILE: ./src/core/building/level_parser.gd
 =====================================
 # src/core/building/level_parser.gd
 #
-# Responsibility: To parse the raw data from layout and encounter scripts.
-# It now explicitly records the grid positions of empty/background tiles.
+# The parser is now capable of identifying and storing data for
+# multiple, user-defined minion spawn markers.
 class_name LevelParser
 extends RefCounted
 
@@ -5198,29 +5299,24 @@ const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
 
 func parse_level_data(encounter_script: Script) -> LevelBuildData:
 	var data = LevelBuildData.new()
-	if not is_instance_valid(encounter_script):
-		push_error("LevelParser: Received an invalid encounter script.")
-		return data
+	if not is_instance_valid(encounter_script): return data
 
 	data.encounter_script_object = encounter_script
 
-	var constants_map = encounter_script.get_script_constant_map()
-	if not constants_map.has("LAYOUT_SCRIPT_PATH"):
-		push_error("LevelParser: Encounter script '%s' is missing 'LAYOUT_SCRIPT_PATH' constant." % encounter_script.resource_path)
-		return data
+	var constants = encounter_script.get_script_constant_map()
+	if not constants.has("LAYOUT_SCRIPT_PATH"): return data
 
-	var layout_path: String = constants_map["LAYOUT_SCRIPT_PATH"]
-	var layout_script: Script = load(layout_path)
-	if not is_instance_valid(layout_script):
-		push_error("LevelParser: Failed to load layout script at path defined in encounter: %s" % layout_path)
-		return data
+	var layout_script: Script = load(constants["LAYOUT_SCRIPT_PATH"])
+	if not is_instance_valid(layout_script): return data
 	
 	var terrain_data_array: Array = layout_script.TERRAIN_DATA
 	var grid_height = terrain_data_array.size()
 	var grid_width = 0
-	if grid_height > 0:
-		grid_width = terrain_data_array[0].length()
+	if grid_height > 0: grid_width = terrain_data_array[0].length()
 	data.dimensions_tiles = Vector2i(grid_width, grid_height)
+	
+	# Get the minion spawn dictionary from the encounter script.
+	var minion_spawn_dict = constants.get("MINION_SPAWNS", {})
 
 	for y in range(grid_height):
 		var row_string: String = terrain_data_array[y]
@@ -5230,20 +5326,21 @@ func parse_level_data(encounter_script: Script) -> LevelBuildData:
 			var tile_world_pos = GridUtilsScript.grid_to_world(tile_grid_pos)
 
 			match tile_char:
-				'#':
-					data.terrain_tiles.append(tile_world_pos)
-				'-':
-					data.oneway_platforms.append(tile_world_pos)
-				'^':
-					data.hazard_tiles.append(tile_world_pos)
-				'.': # MODIFIED: Explicitly track background tiles from the ASCII map.
-					data.background_tiles.append(tile_grid_pos)
+				'#': data.terrain_tiles.append(tile_world_pos)
+				'-': data.oneway_platforms.append(tile_world_pos)
+				'^': data.hazard_tiles.append(tile_world_pos)
+				'.': data.background_tiles.append(tile_grid_pos)
 				_:
-					data.background_tiles.append(tile_grid_pos) # Also treat spawn markers as background
-					if tile_char == encounter_script.PLAYER_SPAWN_MARKER:
+					data.background_tiles.append(tile_grid_pos)
+					if tile_char == constants["PLAYER_SPAWN_MARKER"]:
 						data.player_spawn_pos = tile_world_pos
-					elif tile_char == encounter_script.BOSS_SPAWN_MARKER:
+					elif tile_char == constants["BOSS_SPAWN_MARKER"]:
 						data.boss_spawn_pos = tile_world_pos
+					# NEW: Check if the character is a defined minion marker.
+					elif minion_spawn_dict.has(tile_char):
+						var scene_path = minion_spawn_dict[tile_char]
+						var spawn_data = LevelBuildData.MinionSpawnData.new(scene_path, tile_world_pos)
+						data.minion_spawns.append(spawn_data)
 	
 	return data
 
@@ -5387,49 +5484,53 @@ FILE: ./src/core/building/level_build_data.gd
 =====================================
 # src/core/builders/level_build_data.gd
 #
-# A custom Resource script that acts as a data container.
+# A custom Resource script that acts as a data container. It now
+# holds a list of minion spawn data.
 class_name LevelBuildData
 extends Resource
+
+# Inner class to hold data for a single minion spawn.
+class MinionSpawnData extends RefCounted:
+	var scene_path: String
+	var position: Vector2
+	func _init(p_path: String, p_pos: Vector2):
+		scene_path = p_path
+		position = p_pos
 
 var terrain_tiles: Array[Vector2] = []
 var oneway_platforms: Array[Vector2] = []
 var hazard_tiles: Array[Vector2] = []
-var background_tiles: Array[Vector2i] = [] # New: stores grid positions
+var background_tiles: Array[Vector2i] = []
 var player_spawn_pos: Vector2 = Vector2.ZERO
 var boss_spawn_pos: Vector2 = Vector2.ZERO
 var encounter_script_object: Object = null
 var dimensions_tiles: Vector2i = Vector2i.ZERO
+var minion_spawns: Array[MinionSpawnData] = []
 
 =====================================
 FILE: ./src/core/building/arena_builder.gd
 =====================================
 # src/core/building/arena_builder.gd
 #
-# This singleton is a high-level "Coordinator".
+# The ArenaBuilder can now spawn a list of minions in addition to the
+# primary player and boss entities.
 extends Node
 
 var _current_build_data: LevelBuildData
 var _current_level_container: Node
 var _intro_sequence_handle: SequenceHandle
 
-# MODIFIED: Signature is simple again, no camera needed.
 func build_level_async() -> Node:
-	if is_instance_valid(_intro_sequence_handle):
-		_intro_sequence_handle.cancel()
+	if is_instance_valid(_intro_sequence_handle): _intro_sequence_handle.cancel()
 	_intro_sequence_handle = null
 	
-	_current_level_container = Node.new()
-	_current_level_container.name = "LevelContainer"
+	_current_level_container = Node.new(); _current_level_container.name = "LevelContainer"
 
 	var encounter_path: String = GameManager.state.current_encounter_script_path
-	if encounter_path.is_empty():
-		push_error("ArenaBuilder: No encounter script specified.")
-		return _current_level_container
+	if encounter_path.is_empty(): return _current_level_container
 		
 	var encounter_script: Script = load(encounter_path)
-	if not is_instance_valid(encounter_script):
-		push_error("ArenaBuilder: Failed to load encounter script at: %s" % encounter_path)
-		return _current_level_container
+	if not is_instance_valid(encounter_script): return _current_level_container
 		
 	var parser = LevelParser.new()
 	_current_build_data = parser.parse_level_data(encounter_script)
@@ -5442,46 +5543,48 @@ func build_level_async() -> Node:
 
 	await _spawn_player_async()
 	await _spawn_hud_async()
+	await _spawn_minions_async() # NEW: Spawn minions
 	_intro_sequence_handle = _run_intro_sequence()
 
 	await get_tree().process_frame
 	
 	return _current_level_container
 
-# --- Encounter Director Logic (now part of ArenaBuilder) ---
+# --- Entity Spawning Logic ---
 
 func _spawn_player_async() -> void:
-	var player_instance = load(AssetPaths.SCENE_PLAYER).instantiate()
-	player_instance.global_position = _current_build_data.player_spawn_pos
-	_current_level_container.add_child(player_instance)
+	var instance = load(AssetPaths.SCENE_PLAYER).instantiate()
+	instance.global_position = _current_build_data.player_spawn_pos
+	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 
 func _spawn_boss_async() -> Node:
 	var boss_scene: PackedScene = _current_build_data.encounter_script_object.BOSS_SCENE
-	if not boss_scene:
-		push_error("ArenaBuilder: Could not find BOSS_SCENE in encounter script.")
-		return null
-
-	var boss_instance = boss_scene.instantiate()
-	boss_instance.global_position = _current_build_data.boss_spawn_pos
-	_current_level_container.add_child(boss_instance)
+	if not boss_scene: return null
+	var instance = boss_scene.instantiate()
+	instance.global_position = _current_build_data.boss_spawn_pos
+	_current_level_container.add_child(instance)
 	await get_tree().process_frame
-	return boss_instance
+	return instance
 
 func _spawn_hud_async() -> void:
-	var hud_instance = load(AssetPaths.SCENE_GAME_HUD).instantiate()
-	_current_level_container.add_child(hud_instance)
+	var instance = load(AssetPaths.SCENE_GAME_HUD).instantiate()
+	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 
+# NEW: Function to loop through and spawn all defined minions.
+func _spawn_minions_async() -> void:
+	for spawn_data in _current_build_data.minion_spawns:
+		var instance = load(spawn_data.scene_path).instantiate()
+		instance.global_position = spawn_data.position
+		_current_level_container.add_child(instance)
+		await get_tree().process_frame
+
 func _run_intro_sequence() -> SequenceHandle:
-	var wait_step = WaitStep.new()
-	wait_step.duration = 0.5
-	
+	var wait_step = WaitStep.new(); wait_step.duration = 0.5
 	var spawn_boss_step = CallableStep.new()
 	spawn_boss_step.callable = Callable(self, "_spawn_boss_async")
-
 	var intro_steps: Array[SequenceStep] = [wait_step, spawn_boss_step]
-	
 	return Sequencer.run_sequence(intro_steps)
 
 =====================================
@@ -5490,8 +5593,32 @@ FILE: ./src/arenas/arena_00_layout.gd
 # src/arenas/arena_00_layout.gd
 #
 # This file defines the physical terrain for Arena 00.
-# It is a simple, open box for testing and debugging.
+# It now includes two Turret (T) spawn points.
 extends Node
+
+const TERRAIN_DATA = [
+	"####################",
+	"#..................#",
+	"#....@.............#",
+	"#............&.....#",
+	"#.........#--#.....#",
+	"#.........#..#.....#",
+	"#.........#--#.....#",
+	"#.........#..#.....#",
+	"#..T......#..#.....#",
+	"#.........#..#.....#",
+	"#..................#",
+	"#..................#",
+	"#.........####.....#",
+	"#.........####.....#",
+	"#.........####.....#",
+	"####......####.....#",
+	"####......####..T..#",
+	"####...............#",
+	"#..................#",
+	"###############^^^##"
+]
+
 
 # --- COORDINATE LEGEND ---
 #
@@ -5526,44 +5653,16 @@ extends Node
 # --- ENTITY MARKERS (For visual reference only) ---
 # @ = Player Spawn
 # & = Boss Spawn
-#
-const TERRAIN_DATA = [
-	"####################", # 1
-	"#..................#", # 2
-	"#....@.............#", # 3
-	"#............&.....#", # 4
-	"#.........#--#.....#", # 5
-	"#.........#..#.....#", # 6
-	"#.........#--#.....#", # 7
-	"#.........#..#.....#", # 8
-	"#.........#..#.....#", # 9
-	"#.........#..#.....#", # 10
-	"#..................#", # 11
-	"#..................#", # 12
-	"#.........####.....#", # 13
-	"#.........####.....#", # 14
-	"#.........####.....#", # 15
-	"####......####.....#", # 16
-	"####......####.....#", # 17
-	"####...............#", # 18
-	"#..................#", # 19
-	"###############^^^##"  # 20
-]
+# NEEDS UPDATED TURRET
 
 
 =====================================
 FILE: ./src/arenas/arena_00_encounter.gd
 =====================================
 # src/arenas/arena_00_encounter.gd
-#
-# This file defines the dynamic entities and patterns for Arena 00.
-# It acts as a "level script" or "director" for the fight.
+# This encounter file now defines a list of spawnable minions.
 extends Node
 
-# --- NEW: DATA-DRIVEN LAYOUT ---
-# This constant explicitly defines which layout file this encounter uses.
-# The ArenaBuilder will read this path directly, removing any assumptions
-# about file naming conventions.
 const LAYOUT_SCRIPT_PATH = "res://src/arenas/arena_00_layout.gd"
 
 # --- BOSS DATA ---
@@ -5572,6 +5671,11 @@ const BOSS_SPAWN_MARKER = "&"
 
 # --- PLAYER DATA ---
 const PLAYER_SPAWN_MARKER = "@"
+
+# --- MINION DATA ---
+const MINION_SPAWNS = {
+	"T": AssetPaths.SCENE_TURRET
+}
 
 =====================================
 FILE: ./src/api/interfaces/i_damageable.gd
@@ -5644,6 +5748,39 @@ rect = Rect2(-20, -20, 40, 40)
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
 
 =====================================
+FILE: ./src/projectiles/turret_shot.tscn
+=====================================
+[gd_scene load_steps=3 format=3 uid="uid://d1e2f3g4h5i6j"]
+
+[ext_resource type="Script" path="res://src/projectiles/turret_shot.gd" id="1_turret_shot_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_turretshot"]
+size = Vector2(20, 20)
+
+[node name="TurretShot" type="Area2D"]
+collision_layer = 16
+collision_mask = 65
+script = ExtResource("1_turret_shot_script")
+metadata/pool_name = &"turret_shots"
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+color = Color(0.898039, 0.898039, 0.898039, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_turretshot")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+rect = Rect2(-10, -10, 20, 20)
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
+
+
+=====================================
 FILE: ./src/projectiles/boss_shot.tscn
 =====================================
 [gd_scene load_steps=3 format=3 uid="uid://cxnmr7yrvchve"]
@@ -5672,6 +5809,46 @@ shape = SubResource("RectangleShape2D_bossshot")
 rect = Rect2(-30, -30, 60, 60)
 
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
+
+=====================================
+FILE: ./src/projectiles/turret_shot.gd
+=====================================
+# src/projectiles/turret_shot.gd
+# The projectile for the Turret minion.
+extends Area2D
+
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+
+var direction = Vector2.LEFT
+var speed = 500.0
+var damage = 1
+
+func _ready():
+	add_to_group("enemy_projectile")
+	$ColorRect.color = Palette.COLOR_UI_ACCENT_PRIMARY
+
+func activate():
+	process_mode = PROCESS_MODE_INHERIT
+	collision_shape.disabled = false
+
+func deactivate():
+	process_mode = PROCESS_MODE_DISABLED
+	collision_shape.disabled = true
+	global_position = Vector2(-1000, -1000)
+
+func _physics_process(delta):
+	global_position += direction * speed * delta
+
+func _on_body_entered(body):
+	var damageable = CombatUtils.find_damageable(body)
+	if damageable:
+		damageable.apply_damage(damage, self)
+	
+	ObjectPool.return_instance(self)
+
+func _on_screen_exited():
+	ObjectPool.return_instance(self)
+
 
 =====================================
 FILE: ./src/projectiles/player_shot.gd
@@ -6740,6 +6917,195 @@ func process_physics(_delta: float):
 
 func process_input(_event: InputEvent):
 	pass
+
+=====================================
+FILE: ./src/entities/minions/turret.gd
+=====================================
+# src/entities/minions/turret.gd
+# The main context script for the stationary Turret minion.
+class_name Turret
+extends CharacterBody2D
+
+enum State { IDLE, ATTACK }
+
+@onready var visual: Polygon2D = $Visual
+@onready var health_component: HealthComponent = $HealthComponent
+@onready var state_machine: BaseStateMachine = $StateMachine
+@onready var attack_timer: Timer = $AttackTimer
+@onready var range_detector_shape: CollisionShape2D = $RangeDetector/CollisionShape2D
+
+var t_data: TurretStateData
+var player: CharacterBody2D
+
+# Configurable properties
+var fire_rate: float = 2.0
+var detection_radius: float = 400.0
+
+func _ready():
+	add_to_group("enemy")
+	t_data = TurretStateData.new()
+	
+	var circle_shape = CircleShape2D.new()
+	circle_shape.radius = detection_radius
+	range_detector_shape.shape = circle_shape
+	
+	health_component.setup(self, {
+		"data_resource": t_data,
+		"config": CombatDB.config
+	})
+	health_component.died.connect(die)
+	
+	player = get_tree().get_first_node_in_group("player")
+	
+	var states = {
+		State.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(self, state_machine, t_data),
+		State.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(self, state_machine, t_data)
+	}
+	state_machine.setup(states, State.IDLE)
+	
+	visual.color = Palette.COLOR_TERRAIN_SECONDARY
+
+func die():
+	queue_free()
+
+func fire_at_player():
+	if not is_instance_valid(player): return
+	# THE FIX: Request a projectile from the correct, dedicated pool.
+	var shot = ObjectPool.get_instance(&"turret_shots")
+	if not shot: return
+	shot.direction = (player.global_position - global_position).normalized()
+	shot.global_position = global_position
+	shot.activate()
+
+func _on_range_detector_body_entered(body):
+	if body.is_in_group("player"):
+		t_data.is_player_in_range = true
+
+func _on_range_detector_body_exited(body):
+	if body.is_in_group("player"):
+		t_data.is_player_in_range = false
+
+=====================================
+FILE: ./src/entities/minions/turret_state_data.gd
+=====================================
+# src/entities/minions/turret_state_data.gd
+# A Resource that holds all shared state data for the Turret minion.
+class_name TurretStateData
+extends Resource
+
+# --- Health & Combat ---
+var max_health: int = 3
+var health: int = 3:
+	set(value):
+		health = clamp(value, 0, max_health)
+
+var is_invincible: bool = false
+
+# --- Targeting ---
+var is_player_in_range: bool = false
+
+
+=====================================
+FILE: ./src/entities/minions/states/state_turret_attack.gd
+=====================================
+# src/entities/minions/states/state_turret_attack.gd
+# The state for when the turret is actively firing. The re-firing logic
+# is now correctly placed in process_physics.
+extends BaseState
+class_name TurretStateAttack
+
+var turret: Turret
+
+func enter(_msg := {}):
+	self.turret = owner as Turret
+	if not turret: return
+	
+	# Fire the first shot immediately upon entering the state.
+	turret.fire_at_player()
+	turret.attack_timer.start(turret.fire_rate)
+
+func process_physics(_delta: float):
+	if not turret: return
+
+	# Condition 1: If the player leaves the detection range, go back to idle.
+	if not state_data.is_player_in_range:
+		state_machine.change_state(turret.State.IDLE)
+		return
+
+	# Condition 2: If the attack cooldown has finished, fire again.
+	if turret.attack_timer.is_stopped():
+		turret.fire_at_player()
+		turret.attack_timer.start(turret.fire_rate)
+
+
+=====================================
+FILE: ./src/entities/minions/states/state_turret_idle.gd
+=====================================
+# src/entities/minions/states/state_turret_idle.gd
+# The state for when the turret is waiting for the player.
+extends BaseState
+class_name TurretStateIdle
+
+var turret: Turret
+
+func enter(_msg := {}):
+	self.turret = owner as Turret
+	if not turret: return
+
+func exit():
+	# Ensure the timer is stopped so the Attack state starts fresh.
+	if is_instance_valid(turret):
+		turret.attack_timer.stop()
+
+func process_physics(_delta: float):
+	if not turret: return
+	
+	if state_data.is_player_in_range:
+		state_machine.change_state(turret.State.ATTACK)
+
+=====================================
+FILE: ./src/entities/minions/turret.tscn
+=====================================
+[gd_scene load_steps=5 format=3 uid="uid://c7d8e9f0g1h2i"]
+
+[ext_resource type="Script" path="res://src/entities/minions/turret.gd" id="1_turret_script"]
+[ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_health_comp"]
+[ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_turretbody"]
+size = Vector2(50, 50)
+
+[node name="Turret" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_turret_script")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.490196, 0.490196, 0.490196, 1)
+polygon = PackedVector2Array(-25, -25, 25, -25, 25, 25, -25, 25)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_turretbody")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health_comp")
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("3_fsm")
+
+[node name="AttackTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[node name="RangeDetector" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RangeDetector"]
+
+[connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
+[connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]
+
 
 =====================================
 FILE: ./src/entities/player/player.tscn

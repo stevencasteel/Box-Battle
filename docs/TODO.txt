@@ -12,126 +12,157 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              PHASE 1: THE CORE SYSTEMS REFACTOR                      ██  ║
+║  ██              PHASE 1: ARCHITECTURAL UNIFICATION                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   This phase is our highest priority. We will refactor the existing code to  ║
-║   align with professional design principles. This is the hard, foundational ║
-║   work that enables all future features to be built cleanly and efficiently. ║
+║   This is our highest priority. We will unify the project around a set of    ║
+║   strict, professional patterns to eliminate inconsistencies and make the    ║
+║   entire codebase more predictable and maintainable.                         ║
 ║                                                                              ║
-║   ■  1. Implement the Event Bus                                              ║
-║      ░  WHY: This is the new central nervous system for the game. It will    ║
-║      ░  decouple all our systems, from UI to gameplay to audio, making the   ║
-║      ░  entire codebase more modular and easier to manage (Dependency Inversion).║
+║   □  1. Unify the State Machine Model to be Purely Object-Based              ║
+║      ░  WHY: The codebase inconsistently treats states as both pure `Object`s║
+║      ░  and `Node`s. This creates lifecycle confusion and risks memory leaks.║
+║      ░  Committing to a single, lightweight `Object`-based model is cleaner. ║
 ║      ░  HOW:                                                                 ║
-║      ░    1. Create a new autoload singleton: `EventBus.gd`.                 ║
-║      ░    2. Implement three core functions: `on(event, callback)`,          ║
-║      ░       `off(event, callback)`, and `emit(event, payload)`.             ║
-║      ░    3. Create `EventCatalog.gd` to store all event names as constants. ║
-║      ░    4. Refactor existing direct signal connections (e.g., in `game_hud.gd`)║
-║      ░       to use the Event Bus. The HUD will listen for global events like ║
-║      ░       `EventCatalog.PLAYER_HEALTH_CHANGED` instead of connecting directly.║
+║      ░    1. Confirm `BaseState` extends `Object`.                           ║
+║      ░    2. Audit all state machine implementations (`Player`, `BaseBoss`,  ║
+║      ░       `Turret`) and remove any code that uses `add_child(state)` or   ║
+║      ░       `state.queue_free()`.                                           ║
+║      ░    3. Ensure `BaseStateMachine.teardown()` calls a `teardown()` method║
+║      ░       on every state instance to break potential cyclic references.   ║
 ║                                                                              ║
-║   ■  2. Refactor Player to use the State Pattern                             ║
-║      ░  WHY: `player.gd` is a large, monolithic script. This refactor will   ║
-║      ░  decouple the logic for each state into its own class, making the     ║
-║      ░  system cleaner and easier to extend (Open/Closed Principle).         ║
-║      ░  HOW: Follow the detailed plan to create a `states` subdirectory for  ║
-║      ░  the player, create a `PlayerState` base class, and migrate the logic ║
-║      ░  for each state into its own file. `player.gd` will become a "Context"║
-║      ░  that simply manages the current state object.                        ║
+║   □  2. Convert All Data to Editor-Friendly `@export` Resources              ║
+║      ░  WHY: To empower rapid, code-free tuning and balancing by exposing all║
+║      ░  gameplay values directly in the Godot Inspector with intuitive controls.║
+║      ░  HOW:                                                                 ║
+║      ░    1. In `combat_config.gd`, use `@export_group` and `@export_range`  ║
+║      ░       to turn the flat list of variables into organized sliders.      ║
+║      ░    2. In `attack_pattern.gd`, `@export` all key properties (cooldown, ║
+║      ░       telegraph duration, etc.) so attacks can be designed in the editor.║
+║      ░    3. In `base_boss.gd`, change `phase_X_patterns` from `load()` calls║
+║      ░       to `@export var phase_patterns: Array[AttackPattern]`, allowing ║
+║      ░       designers to drag-and-drop `.tres` files in the Inspector.      ║
 ║                                                                              ║
-║   ■  3. Implement the Centralized Sequencer                                  ║
-║      ░  WHY: To eliminate scattered `Timer` nodes and `await` calls for      ║
-║      ░  scripted events. This provides a clean, readable way to create       ║
-║      ░  cinematic sequences like boss intros or multi-stage attacks.         ║
-║      ░  HOW: Create a new autoload singleton: `Sequencer.gd`. Implement a    ║
-║      ░  `run_sequence(steps: Array)` function that can process a list of     ║
-║      ░  commands like `wait`, `emit` (on Event Bus), and `call` (a function).║
-║                                                                              ║
-║   ■  4. Refactor Base Boss to use the State Pattern                          ║
-║      ░  WHY: To mirror the player's clean architecture, preparing the boss   ║
-║      ░  for the advanced "kitchen sink" mechanics planned for a later phase. ║
-║      ░  HOW: Apply the exact same State Pattern as used for the Player,      ║
-║      ░  creating a `states` subdirectory and migrating state logic into      ║
-║      ░  separate, focused class files.                                       ║
-║                                                                              ║
-║   ■  5. Refactor ArenaBuilder using Single Responsibility Principle (SRP)    ║
-║      ░  WHY: `ArenaBuilder.gd` currently has too many jobs. Separating these ║
-║      ░  roles will make the level generation pipeline more robust and easier ║
-║      ░  to maintain.                                                         ║
-║      ░  HOW: Split the current logic into three new classes:                 ║
-║      ░    - `LevelParser.gd`: Reads data from layout/encounter files.        ║
-║      ░    - `TerrainBuilder.gd`: Creates the static level geometry (tiles).  ║
-║      ░    - `EncounterDirector.gd`: Spawns all dynamic entities (player, boss).║
-║      ░  `ArenaBuilder.gd` will become a simple coordinator of these new classes.║
+║   □  3. Formalize Dependency Injection with an EntityFactory                 ║
+║      ░  WHY: To eliminate fragile `get_node("string")` lookups and create a  ║
+║      ░  single, verifiable place where all entity components are wired together.║
+║      ░  HOW:                                                                 ║
+║      ░    1. Create a new `EntityFactory.gd` singleton.                      ║
+║      ░    2. Create a `build_player(scene, config)` function inside it. Move ║
+║      ░       all the component `setup()` logic from `player.gd`'s `_ready()` ║
+║      ░       into this new function.                                         ║
+║      ░    3. The `ArenaBuilder` will now call `EntityFactory.build_player()` ║
+║      ░       instead of just instantiating the scene.                        ║
+║      ░    4. This centralizes dependency wiring and makes scene dependencies explicit.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██            PHASE 2: DATA-DRIVEN & VISUAL FOUNDATION                  ██  ║
+║  ██            PHASE 2: SYSTEM HARDENING & ROBUSTNESS                    ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   This phase separates hard-coded values from our logic and builds the key   ║
-║   visual components needed to achieve our "Framer + Geometry Wars" aesthetic.║
+║   This phase focuses on eliminating subtle but critical runtime bugs. These  ║
+║   changes will make our core systems resilient to edge cases and race conditions.║
 ║                                                                              ║
-║   ■  1. Implement Data-Driven Configs (JSON)                                 ║
-║      ░  WHY: To centralize all tuning and balancing numbers (damage, health, ║
-║      ░  cooldowns) into external, human-readable files. This allows for rapid║
-║      ░  iteration without changing any code.                                 ║
-║      ░  HOW: Create a `Config.gd` singleton that loads `.json` files on start.║
-║      ░  Move all combat-related values from `Constants.gd` into a new        ║
-║      ░  `combat_config.json`. Refactor code to pull values from this config. ║
+║   □  1. Harden the ObjectPool against Race Conditions                        ║
+║      ░  WHY: Returning a projectile to the pool and trying to access it in   ║
+║      ░  the same physics frame can cause crashes. We must defer deactivation.║
+║      ░  HOW:                                                                 ║
+║      ░    1. In `object_pool.gd`, modify `return_instance` to call           ║
+║      ░       `instance.call_deferred("deactivate")` instead of calling it directly.║
+║      ░    2. This ensures the instance is disabled on the *next* frame, giving║
+║      ░       all same-frame logic time to complete safely.                   ║
 ║                                                                              ║
-║   ■  2. Implement the Global Palette System                                  ║
-║      ░  WHY: To enforce a consistent, project-wide color scheme. This is a   ║
-║      ░  critical prerequisite for the UI overhaul.                           ║
-║      ░  HOW: Create a `Palette.gd` singleton. Define the 32-step grayscale   ║
-║      ░  array and create semantic constant names (e.g., `COLOR_PLAYER`).     ║
-║      ░  Replace all hard-coded colors with calls to this new Palette.        ║
+║   □  2. Harden the Sequencer against Scene Transitions                       ║
+║      ░  WHY: A long-running sequence could continue running in the background║
+║      ░  after a scene change, causing errors or unexpected behavior.         ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Add a `cancel_all()` function to `sequencer.gd` that iterates   ║
+║      ░       through all active sequence handles and cancels them.           ║
+║      ░    2. In `scene_manager.gd`, call `Sequencer.cancel_all()` at the     ║
+║      ░       beginning of the `_switch_to_scene` function to ensure a clean slate.║
 ║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              PHASE 3: GAMEPLAY & FEEL ENHANCEMENT                    ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   With a solid architecture, we can now focus on making the game feel amazing.║
-║                                                                              ║
-║   □  1. Refine Player Combat Mechanics ("Game Juice")                        ║
-║      ░  □ Enhanced Melee Hitbox: Implement a two-part hitbox where the inner ║
-║      ░    box deals 1.5x damage and the outer deals 1.0x damage.             ║
-║      ░  □ Input Buffering: Add buffering for attack and dash inputs.         ║
-║      ░  □ Pogo-Fall Prevention: Add a brief grace period after a pogo to     ║
-║      ░    prevent accidental fast-falling.                                   ║
-║                                                                              ║
-║   □  2. Implement "Kitchen Sink" Base Boss Features                          ║
-║      ░  □ Health Phases: Boss transitions to new states at health thresholds.║
-║      ░  □ Armor/Weak Points: Implement an `is_armored` state.                ║
-║      ░  □ Clear Attack Telegraphing: Create a dedicated `Telegraph` state.   ║
-║                                                                              ║
-║   □  3. Implement a Minion Enemy Type                                        ║
-║      ░  Create a simple Turret enemy to test our data-driven spawning and    ║
-║      ░  component-based architecture (e.g., by reusing the HealthComponent). ║
+║   □  3. Harden Physics Queries against Child Colliders                       ║
+║      ░  WHY: Physics queries can return a child collider before a parent. Code║
+║      ░  that naively takes `results[0]` will fail to find the `IDamageable`  ║
+║      ░  script on the parent, causing attacks to fail.                       ║
+║      ░  HOW:                                                                 ║
+║      ░    1. Audit all uses of `intersect_shape` (e.g., in `state_attack.gd`).║
+║      ░    2. Replace logic that uses `results[0]` with a `for` loop that     ║
+║      ░       iterates all results and uses `CombatUtils.find_damageable()` on║
+║      ░       each collider. The first valid target found is the one to use.  ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██           PHASE 4: FUTURE EXPANSION & DEFERRED TASKS                 ██  ║
+║  ██              PHASE 3: CORE GAMEPLAY & "GAME JUICE"                   ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   With a hardened architecture, we can now focus on making the game feel amazing.║
+║                                                                              ║
+║   □  1. Implement Input Buffering for Attack & Dash                          ║
+║      ░  WHY: This is the highest-impact "game feel" improvement. It makes the║
+║      ░  controls feel responsive and fair, forgiving minor timing mistakes.  ║
+║      ░  HOW: Add `attack_buffer_timer` and `dash_buffer_timer` to            ║
+║      ░  `player_state_data.gd`. In `input_component.gd`, set these timers on ║
+║      ░  input. In states like `Move` and `Fall`, check if a buffer is active ║
+║      ░  and the action is permitted, then execute and reset the timer.       ║
+║                                                                              ║
+║   □  2. Implement the Two-Tier Melee Hitbox                                  ║
+║      ░  WHY: To reward risky, close-range combat and add depth to melee.     ║
+║      ░  HOW: In `player.tscn`, add a second, smaller `Area2D` named          ║
+║      ░  `InnerHitbox`. In the `Attack` state, connect both hitboxes'         ║
+║      ░  `body_entered` signals to a handler that applies different damage/stun.║
+║                                                                              ║
+║   □  3. Implement the Boss Stun System                                       ║
+║      ░  WHY: To create windows of opportunity for the player and make combat ║
+║      ░  more dynamic than a pure DPS race.                                   ║
+║      ░  HOW: Create a `StunComponent` for the boss. When the boss takes damage,║
+║      ░  this component adds to a stun value. When full, it emits a           ║
+║      ░  `stun_meter_full` signal. The `BaseBoss` state machine will listen for║
+║      ░  this and transition to a new, vulnerable `BossStateStun`.            ║
+║                                                                              ║
+║   □  4. Implement Pogo-Fall Prevention                                       ║
+║      ░  WHY: To prevent the frustrating experience of accidentally fast-falling║
+║      ░  immediately after a successful pogo bounce.                          ║
+║      ░  HOW: In the `Player` script, after a successful pogo, start a very   ║
+║      ░  short timer (e.g., 0.1s) during which the "fast-fall" input is ignored.║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██             PHASE 4: IN-EDITOR TOOLING & VALIDATION                  ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This phase focuses on building an internal "immune system" for the project.║
+║   These tools will catch errors before the game is even run.                 ║
+║                                                                              ║
+║   □  1. Implement In-Editor Scene Validation via `@tool` Scripts             ║
+║      ░  WHY: To get immediate, visual feedback in the Godot editor when a    ║
+║      ░  scene is misconfigured (e.g., a critical node is missing).           ║
+║      ░  HOW: Add the `@tool` annotation to scripts like `base_boss.gd`.      ║
+║      ░  Implement the `_get_configuration_warnings()` function. Inside, check║
+║      ░  if required child nodes (like `HealthComponent`) exist. If not, return║
+║      ░  an error string. Godot will display a ⚠️ icon in the Scene Tree.      ║
+║                                                                              ║
+║   □  2. Create a Central `SceneValidator` Utility                            ║
+║      ░  WHY: To avoid duplicating validation logic in every script and to    ║
+║      ░  create a single source of truth for scene "contracts."               ║
+║      ░  HOW: Create a new `SceneValidator.gd` singleton. Move the logic from ║
+║      ░  the individual `_get_configuration_warnings()` functions into this   ║
+║      ░  utility. The `@tool` scripts will then just call the central validator.║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██           PHASE 5: FUTURE EXPANSION & DEFERRED TASKS                 ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║
 ║                                                                              ║
-║   □  UI Overhaul Part 1: The `StyledMenuItem`                                ║
-║      ░  WHY: To create the cornerstone visual component for our new UI. We   ║
-║      ░  will perfect this one piece before replacing the entire menu system. ║
-║      ░  HOW: Create a new scene, `StyledMenuItem.tscn`, that extends `Control`.║
-║      ░  It will use the `_draw()` function and shaders to render itself      ║
-║      ░  procedurally with frosted glass, backlighting, and reactive effects, ║
-║      ░  all driven by the `Palette` and `EventBus`.                          ║
+║   □  UI Overhaul                                                             ║
+║      ░  □ Refactor all procedural menus to use Godot's built-in `Container`  ║
+║      ░    nodes (`VBoxContainer`, etc.) to fix layout bugs like `BUG-UI001`. ║
+║      ░  □ Create the cornerstone `StyledMenuItem` visual component.          ║
 ║                                                                              ║
-║   ░  Full UI System Replacement (using `StyledMenuItem`)                     ║
 ║   ░  Diegetic UI Implementation                                              ║
 ║   ░  Dynamic Music Layering System                                           ║
 ║   ░  Adaptive Boss AI Tactics Layer                                          ║
 ║   ░  Player Loadout System                                                   ║
 ║   ░  Special Game Modes (Boss Rush, Time Attack)                             ║
 ║   ░  Cleanup or remove `test_ui` scene and related dev assets.               ║
-║   ░  Screen Shake (Explicitly deferred to avoid visual noise during debugging)║
-║   ░  Dynamic Camera (Explicitly deferred per design decision)                ║
+║   ░  Screen Shake (Deferred to avoid visual noise during debugging)          ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
