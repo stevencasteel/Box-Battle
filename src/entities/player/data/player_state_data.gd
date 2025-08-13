@@ -1,7 +1,7 @@
 # src/entities/player/data/player_state_data.gd
 #
 # A Resource that holds all shared state data for the Player. It now includes
-# validation logic in its setters to ensure data integrity.
+# validation logic in its setters and a dictionary to track melee hits.
 class_name PlayerStateData
 extends Resource
 
@@ -20,12 +20,14 @@ var healing_charges: int = 0:
 var determination_counter: int = 0
 var is_invincible: bool = false
 var is_dash_invincible: bool = false
+var hit_targets_this_swing: Dictionary = {} # NEW: Tracks entities hit in one swing.
 
 # --- Physics & Movement ---
 var air_jumps_left: int = 0
 var facing_direction: int = 1
 var last_wall_normal: Vector2 = Vector2.ZERO
 var can_dash: bool = true
+var pogo_fall_prevention_timer: float = 0.0 # NEW: For pogo-fall prevention
 
 # --- Timers ---
 var coyote_timer: float = 0.0

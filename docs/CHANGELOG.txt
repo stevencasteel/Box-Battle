@@ -23,6 +23,19 @@
 
 
 
+   █  Added                                                                   
+      ░ ■ Implemented a two-tier melee hitbox system to reward close-range combat.
+      ░   A single, wide hitbox now calculates damage based on the distance to
+      ░   the target, dealing high damage for close hits and standard damage
+      ░   for far hits.
+      ░ ■ The melee hitbox now dynamically changes its shape and position for
+      ░   upward attacks, ensuring the attack area is a precise square above
+      ░   the player as intended.
+
+
+
+
+
    █  Fixed                                                                   
       ░ ■ Hardened the player's pogo attack physics query. It now correctly    
       ░   iterates through all potential targets to find a valid `IDamageable`,

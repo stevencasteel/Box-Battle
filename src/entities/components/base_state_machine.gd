@@ -34,7 +34,6 @@ func teardown():
 			state.teardown()
 	states.clear()
 	current_state = null
-	print("VERIFICATION: BaseStateMachine torn down successfully.")
 
 # This function now correctly treats states as pure objects. No add_child/queue_free.
 func change_state(new_state_key, msg := {}):

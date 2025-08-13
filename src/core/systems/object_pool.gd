@@ -71,5 +71,3 @@ func return_instance(p_instance: Node):
 	
 	if not _pools[pool_name].inactive.has(p_instance):
 		_pools[pool_name].inactive.append(p_instance)
-		# THE FIX: Use a more descriptive print statement.
-		print("VERIFICATION: Returned '%s' to pool '%s'. Deactivation is deferred." % [p_instance.name, pool_name])

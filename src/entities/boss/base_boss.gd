@@ -115,7 +115,6 @@ func _on_health_threshold_reached(health_percentage: float):
 			2: current_attack_patterns = phase_2_patterns
 			1: current_attack_patterns = phase_3_patterns
 		
-		print("VERIFICATION: Boss has entered a new phase. Phases remaining: ", phases_remaining)
 		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout():

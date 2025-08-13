@@ -11,7 +11,6 @@ var is_armored: bool = false
 func activate():
 	is_armored = true
 	# Optional: Add visual feedback here later, like changing the boss's color.
-	print("VERIFICATION: ArmorComponent ACTIVATED.")
 
 func deactivate():
 	is_armored = false

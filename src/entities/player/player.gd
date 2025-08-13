@@ -1,6 +1,5 @@
 # src/entities/player/player.gd
-# This script is the "Context" for the State Machine. It now correctly
-# tears down its components and properly injects all dependencies.
+# Implements the new, robust single-hitbox system with distance-based damage.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -13,14 +12,21 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
-@onready var hitbox: Area2D = $Hitbox
 @onready var hurtbox: Area2D = $Hurtbox
 @onready var healing_timer: Timer = $HealingTimer
-@onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var combat_component: CombatComponent = $CombatComponent
 @onready var input_component: InputComponent = $InputComponent
 @onready var state_machine: BaseStateMachine = $StateMachine
+
+# NEW: Simplified hitbox references
+@onready var melee_hitbox: Area2D = $MeleeHitbox
+@onready var pogo_hitbox: Area2D = $PogoHitbox
+@onready var melee_hitbox_shape: CollisionShape2D = $MeleeHitbox/CollisionShape2D
+@onready var pogo_hitbox_shape: CollisionShape2D = $PogoHitbox/CollisionShape2D
+
+# --- Constants ---
+const CLOSE_RANGE_THRESHOLD = 75.0 # Pixels from player center for max damage
 
 # --- State Scripts (Loaded at Runtime) ---
 var MoveStateScript: Script
@@ -39,7 +45,6 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 # --- Engine Functions ---
 func _ready():
 	add_to_group("player")
-	
 	p_data = PlayerStateData.new()
 	
 	MoveStateScript = load("res://src/entities/player/states/state_move.gd")
@@ -51,21 +56,9 @@ func _ready():
 	HurtStateScript = load("res://src/entities/player/states/state_hurt.gd")
 	HealStateScript = load("res://src/entities/player/states/state_heal.gd")
 
-	# THE FIX: We now explicitly pass the config object to the InputComponent.
-	# This aligns with the "Owner-Driven Injection" pattern.
-	health_component.setup(self, {
-		"data_resource": p_data,
-		"config": CombatDB.config
-	})
-	combat_component.setup(self, {
-		"data_resource": p_data
-	})
-	input_component.setup(self, {
-		"data_resource": p_data,
-		"state_machine": state_machine,
-		"combat_component": combat_component,
-		"config": CombatDB.config
-	})
+	health_component.setup(self, { "data_resource": p_data, "config": CombatDB.config })
+	combat_component.setup(self, { "data_resource": p_data })
+	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "combat_component": combat_component, "config": CombatDB.config })
 	
 	var states = {
 		State.MOVE: MoveStateScript.new(self, state_machine, p_data),
@@ -77,13 +70,15 @@ func _ready():
 		State.HURT: HurtStateScript.new(self, state_machine, p_data),
 		State.HEAL: HealStateScript.new(self, state_machine, p_data),
 	}
-	
 	state_machine.setup(states, State.FALL)
 	
 	visual_sprite.color = Palette.COLOR_PLAYER
 	
-	hitbox.body_entered.connect(_on_hitbox_body_entered)
-	hitbox.area_entered.connect(_on_hitbox_area_entered)
+	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
+	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
+	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
+	pogo_hitbox.area_entered.connect(_on_hitbox_area_entered)
+	
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
@@ -126,6 +121,7 @@ func _update_timers(delta):
 	p_data.attack_cooldown_timer = max(0.0, p_data.attack_cooldown_timer - delta)
 	p_data.knockback_timer = max(0.0, p_data.knockback_timer - delta)
 	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
+	p_data.pogo_fall_prevention_timer = max(0.0, p_data.pogo_fall_prevention_timer - delta)
 	if p_data.is_charging and Input.is_action_pressed("ui_attack"):
 		p_data.charge_timer += delta
 
@@ -136,8 +132,7 @@ func _emit_healing_charges_changed_event():
 	healing_charges_changed.emit(p_data.healing_charges)
 
 func _check_for_contact_damage():
-	if p_data.is_invincible:
-		return
+	if p_data.is_invincible: return
 	for i in range(get_slide_collision_count()):
 		var col = get_slide_collision(i)
 		if col:
@@ -156,15 +151,30 @@ func _on_damage_dealt():
 		p_data.determination_counter = 0; p_data.healing_charges += 1
 		_emit_healing_charges_changed_event()
 
-func _on_hitbox_body_entered(body):
-	if p_data.is_pogo_attack:
-		combat_component.trigger_pogo(body)
+# --- Signal Handlers ---
+
+func _on_melee_hitbox_body_entered(body: Node):
+	var target_id = body.get_instance_id()
+	if p_data.hit_targets_this_swing.has(target_id): return
+
+	var distance = self.global_position.distance_to(body.global_position)
+	var damage = 1
+	if distance <= CLOSE_RANGE_THRESHOLD:
+		damage = 5
+		print("DEBUG: CLOSE HIT detected at distance %d. Applying %d damage." % [distance, damage])
 	else:
-		var damageable = CombatUtils.find_damageable(body)
-		if damageable:
-			var damage_result = damageable.apply_damage(1, self)
-			if damage_result["was_damaged"]:
-				_on_damage_dealt()
+		print("DEBUG: FAR HIT detected at distance %d. Applying %d damage." % [distance, damage])
+		
+	p_data.hit_targets_this_swing[target_id] = true
+	
+	var damageable = CombatUtils.find_damageable(body)
+	if damageable:
+		var damage_result = damageable.apply_damage(damage, self)
+		if damage_result["was_damaged"]:
+			_on_damage_dealt()
+
+func _on_pogo_hitbox_body_entered(body: Node):
+	combat_component.trigger_pogo(body)
 
 func _on_hitbox_area_entered(area):
 	if area.is_in_group("enemy_projectile"):
@@ -175,10 +185,8 @@ func _on_hitbox_area_entered(area):
 
 func _on_hurtbox_area_entered(area):
 	if p_data.is_invincible:
-		if area.is_in_group("enemy_projectile"):
-			ObjectPool.return_instance(area)
+		if area.is_in_group("enemy_projectile"): ObjectPool.return_instance(area)
 		return
-	
 	if area.is_in_group("enemy_projectile"):
 		var damage_result = health_component.apply_damage(1, area)
 		if damage_result["was_damaged"]:
@@ -188,16 +196,14 @@ func _on_hurtbox_area_entered(area):
 
 func _on_healing_timer_timeout():
 	if state_machine.current_state == state_machine.states[State.HEAL]:
-		p_data.health += 1
-		p_data.healing_charges -= 1
+		p_data.health += 1; p_data.healing_charges -= 1
 		health_component.health_changed.emit(p_data.health, p_data.max_health)
 		_emit_healing_charges_changed_event()
 		state_machine.change_state(State.MOVE)
 
 func _on_health_component_health_changed(current, max_val):
 	var ev = PlayerHealthChangedEvent.new()
-	ev.current_health = current
-	ev.max_health = max_val
+	ev.current_health = current; ev.max_health = max_val
 	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 

@@ -19,7 +19,6 @@ func run_sequence(steps: Array[SequenceStep]) -> SequenceHandle:
 
 # NEW: Public function to cancel all running sequences.
 func cancel_all():
-	print("VERIFICATION: Sequencer cancelling all active handles.")
 	# Iterate over a copy, because cancelling a handle will modify the original array.
 	for handle in _active_handles.duplicate():
 		handle.cancel()

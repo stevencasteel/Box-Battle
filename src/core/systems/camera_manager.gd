@@ -14,5 +14,3 @@ func center_camera_on_arena(camera: Camera2D, arena_size_tiles: Vector2i):
 	
 	# The position is the exact center. The engine's pixel snap will handle the rest.
 	camera.position = arena_pixel_size / 2.0
-	
-	print("VERIFICATION: Camera centered on arena.")
