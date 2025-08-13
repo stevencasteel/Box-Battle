@@ -3,7 +3,7 @@
 # Responsibility: To create all static level geometry. It now uses Polygon2D
 # for visuals to prevent conflicts with the debug drawing system.
 class_name TerrainBuilder
-extends RefCounted
+extends Node
 
 const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
 
@@ -50,12 +50,11 @@ func _create_background_tile(parent_node: Node, grid_pos: Vector2i):
 	parent_node.add_child(visual_rect)
 	parent_node.move_child(visual_rect, 0)
 
-# --- MODIFIED: Uses Polygon2D for visuals ---
 func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = 2
-	static_body.add_to_group("world")
+	static_body.add_to_group(Identifiers.Groups.WORLD)
 	
 	var collision_shape := CollisionShape2D.new()
 	var rectangle_shape := RectangleShape2D.new()
@@ -74,13 +73,12 @@ func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	
 	parent_node.add_child(static_body)
 
-# --- MODIFIED: Uses Polygon2D for visuals ---
 func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = 2
-	static_body.add_to_group("world")
-	static_body.add_to_group("oneway_platforms")
+	static_body.add_to_group(Identifiers.Groups.WORLD)
+	static_body.add_to_group(Identifiers.Groups.ONEWAY_PLATFORMS)
 	
 	var collision_shape := CollisionShape2D.new()
 	collision_shape.one_way_collision = true
@@ -104,13 +102,12 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	
 	parent_node.add_child(static_body)
 
-# --- MODIFIED: Uses Polygon2D for visuals ---
 func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = 10
-	static_body.add_to_group("world")
-	static_body.add_to_group("hazard")
+	static_body.add_to_group(Identifiers.Groups.WORLD)
+	static_body.add_to_group(Identifiers.Groups.HAZARD)
 	
 	var collision_shape := CollisionShape2D.new()
 	var rectangle_shape := RectangleShape2D.new()

@@ -1,5 +1,5 @@
 # src/entities/player/player.gd
-# CORRECTED: All damage application logic is now robust and uses the new contracts.
+# CORRECTED: Uses Identifiers constants for group checks.
 extends CharacterBody2D
 
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
@@ -35,16 +35,14 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 
 # --- Engine Functions ---
 func _ready():
-	add_to_group("player")
+	add_to_group(Identifiers.Groups.PLAYER)
 	p_data = PlayerStateData.new()
 	p_data.config = CombatDB.config 
 	
-	# Component Setup
 	health_component.setup(self, { "data_resource": p_data, "config": p_data.config })
 	combat_component.setup(self, { "data_resource": p_data })
 	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "combat_component": combat_component, "config": p_data.config })
 	
-	# State Machine Setup (using the new, standardized method)
 	var states = {
 		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, p_data),
 		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, p_data),
@@ -57,7 +55,6 @@ func _ready():
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
 	
-	# Signal Connections
 	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
 	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
 	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
@@ -70,7 +67,6 @@ func _ready():
 
 	visual_sprite.color = Palette.COLOR_PLAYER
 	_emit_healing_charges_changed_event()
-	print("VERIFICATION: All components now conform to ComponentInterface.")
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
@@ -123,11 +119,11 @@ func _check_for_contact_damage():
 		if not col: continue
 		
 		var collider = col.get_collider()
-		if not (is_instance_valid(collider) and (collider.is_in_group("enemy") or collider.is_in_group("hazard"))): continue
+		if not (is_instance_valid(collider) and (collider.is_in_group(Identifiers.Groups.ENEMY) or collider.is_in_group(Identifiers.Groups.HAZARD))): continue
 		
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
-		damage_info.source_node = collider # The thing we collided with is the source
+		damage_info.source_node = collider
 		var damage_result = health_component.apply_damage(damage_info)
 		
 		if damage_result.was_damaged:
@@ -142,7 +138,6 @@ func _on_damage_dealt():
 		p_data.determination_counter = 0; p_data.healing_charges += 1
 		_emit_healing_charges_changed_event()
 
-# --- Signal Handlers (Connected in Editor or _ready) ---
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
 	if p_data.hit_targets_this_swing.has(target_id): return
@@ -151,7 +146,7 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
-		damage_info.source_node = self # The player is the source of the melee attack
+		damage_info.source_node = self
 		var distance = self.global_position.distance_to(body.global_position)
 		damage_info.amount = 5 if distance <= CLOSE_RANGE_THRESHOLD else 1
 			
@@ -163,7 +158,7 @@ func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
 
 func _on_hitbox_area_entered(area: Area2D) -> void:
-	if area.is_in_group("enemy_projectile"):
+	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		if p_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
 		else:
@@ -171,13 +166,13 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 
 func _on_hurtbox_area_entered(area: Area2D) -> void:
 	if p_data.is_invincible or p_data.is_dash_invincible:
-		if area.is_in_group("enemy_projectile"): ObjectPool.return_instance(area)
+		if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE): ObjectPool.return_instance(area)
 		return
 	
-	if area.is_in_group("enemy_projectile"):
+	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
-		damage_info.source_node = area # The projectile is the source
+		damage_info.source_node = area
 		var damage_result = health_component.apply_damage(damage_info)
 		
 		if damage_result.was_damaged:

@@ -35,6 +35,7 @@ PhysicsLayers="*res://src/core/util/physics_layers.gd"
 CombatUtils="*res://src/core/util/combat_utils.gd"
 GridUtils="*res://src/core/util/grid_utils.gd"
 CameraManager="*res://src/core/systems/camera_manager.gd"
+Identifiers="*res://src/core/util/identifiers.gd"
 
 [display]
 

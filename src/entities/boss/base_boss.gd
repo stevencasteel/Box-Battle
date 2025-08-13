@@ -1,6 +1,5 @@
 # src/entities/boss/base_boss.gd
-# This script now correctly uses a preloaded utility with static functions
-# for its in-editor validation checks.
+# CORRECTED: Uses Identifiers constants for group checks.
 @tool
 class_name BaseBoss
 extends CharacterBody2D
@@ -50,17 +49,15 @@ func _ready():
 
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 
-	add_to_group("enemy")
+	add_to_group(Identifiers.Groups.ENEMY)
 	current_attack_patterns = phase_1_patterns
 	
 	b_data = BossStateData.new()
 	b_data.config = CombatDB.config
 	
-	# Component Setup
 	health_component.setup(self, { "data_resource": b_data, "config": b_data.config })
 	armor_component.setup(self)
 	
-	# State Machine Setup
 	var states = {
 		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
 		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
@@ -70,13 +67,12 @@ func _ready():
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
 	
-	# Signal Connections
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
 	
-	if get_tree().get_first_node_in_group("player"):
-		player = get_tree().get_first_node_in_group("player")
+	if get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER):
+		player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
@@ -119,7 +115,7 @@ func _update_player_tracking():
 func fire_shot_at_player():
 	if _is_dead: return
 	if not is_instance_valid(player): return
-	var shot = ObjectPool.get_instance(&"boss_shots")
+	var shot = ObjectPool.get_instance(Identifiers.Pools.BOSS_SHOTS)
 	if not shot: return
 	_update_player_tracking()
 	shot.direction = (player.global_position - global_position).normalized()

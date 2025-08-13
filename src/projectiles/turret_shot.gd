@@ -1,5 +1,5 @@
 # src/projectiles/turret_shot.gd
-# CORRECTED: Uses the correct static function call syntax.
+# CORRECTED: Uses Identifiers constants for group checks.
 extends Area2D
 
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
@@ -11,7 +11,7 @@ var speed = 500.0
 var damage = 1
 
 func _ready():
-	add_to_group("enemy_projectile")
+	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 	$ColorRect.color = Palette.COLOR_UI_ACCENT_PRIMARY
 
 func activate():
@@ -27,7 +27,7 @@ func _physics_process(delta):
 	global_position += direction * speed * delta
 
 func _on_body_entered(body: Node) -> void:
-	var damageable = CombatUtilsScript.find_damageable(body) # CORRECTED CALL
+	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = damage

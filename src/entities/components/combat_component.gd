@@ -1,5 +1,5 @@
 # src/entities/components/combat_component.gd
-# CORRECTED: Uses the correct static function call syntax.
+# CORRECTED: Uses Identifiers constants for group checks.
 class_name CombatComponent
 extends ComponentInterface
 
@@ -26,7 +26,7 @@ func teardown() -> void:
 func fire_shot():
 	p_data.attack_cooldown_timer = p_data.config.player_attack_cooldown
 	
-	var shot = ObjectPool.get_instance(&"player_shots")
+	var shot = ObjectPool.get_instance(Identifiers.Pools.PLAYER_SHOTS)
 	if not shot: return
 	
 	var shot_dir = Vector2(p_data.facing_direction, 0)
@@ -42,11 +42,11 @@ func trigger_pogo(pogo_target: Node) -> bool:
 
 	var should_bounce = false
 	
-	if p_data.is_pogo_attack and pogo_target.is_in_group("enemy_projectile"):
+	if p_data.is_pogo_attack and pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		should_bounce = true
 		ObjectPool.return_instance(pogo_target)
 	
-	var damageable = CombatUtilsScript.find_damageable(pogo_target) # CORRECTED CALL
+	var damageable = CombatUtilsScript.find_damageable(pogo_target)
 	if is_instance_valid(damageable):
 		should_bounce = true
 		var damage_info = DamageInfo.new()
@@ -57,7 +57,7 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		if damage_result.was_damaged:
 			damage_dealt.emit()
 
-	if pogo_target is StaticBody2D and pogo_target.is_in_group("world"):
+	if pogo_target is StaticBody2D and pogo_target.is_in_group(Identifiers.Groups.WORLD):
 		should_bounce = true
 
 	if should_bounce:

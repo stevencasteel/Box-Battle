@@ -30,7 +30,10 @@
       ░   `PlayerStateData` resource, which is populated by the `Player` owner
       ░   node. This completes a critical step in adhering to the Dependency
       ░   Inversion Principle, making states more modular and testable.
-
+      ░ ■ Hardened system contracts by creating a new `Identifiers` singleton
+      ░   to hold all string-based group names and pool keys. All scripts
+      ░   were refactored to use these constants, eliminating the risk of
+      ░   runtime errors from string typos and improving code safety.
 
    █  Architectural Changes
       ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
@@ -72,7 +75,9 @@
       ░ ■ Fixed a bug where Turret minions would continue to fire after the
       ░   boss was defeated. The central `game.gd` script now finds and calls a
       ░   new `deactivate()` method on all remaining minions upon boss death.
-
+      ░ ■ Resolved a critical autoload naming conflict caused by `class_name`
+      ░   hiding the `Identifiers` singleton, which previously caused a cascade
+      ░   of parse errors across the entire project.
 
 
 

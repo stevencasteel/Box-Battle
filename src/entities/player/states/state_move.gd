@@ -19,7 +19,7 @@ func process_physics(delta: float):
 	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
 		if owner.get_last_slide_collision():
 			var floor_collider = owner.get_last_slide_collision().get_collider()
-			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
+			if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
 				owner.position.y += 2
 				state_data.jump_buffer_timer = 0
 				state_machine.change_state(owner.State.FALL)

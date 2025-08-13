@@ -11,9 +11,9 @@ const TurretShotScene = preload(AssetPaths.SCENE_TURRET_SHOT)
 var _pools: Dictionary = {}
 
 func _ready():
-	_create_pool_for_scene(&"player_shots", PlayerShotScene, 15)
-	_create_pool_for_scene(&"boss_shots", BossShotScene, 30)
-	_create_pool_for_scene(&"turret_shots", TurretShotScene, 20)
+	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, PlayerShotScene, 15)
+	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, BossShotScene, 30)
+	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, TurretShotScene, 20)
 
 func reset():
 	for pool_name in _pools:

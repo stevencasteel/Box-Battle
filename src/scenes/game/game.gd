@@ -1,12 +1,12 @@
 # src/scenes/game/game.gd
-# The game scene now correctly awaits the death cinematic sequence handle.
+# CORRECTED: Uses Identifiers constants for group checks.
 extends Node
 
 var player_node: Node = null
 var level_container: Node = null
 @onready var camera: Camera2D = $Camera2D
 var _boss_died_token: int = 0
-var _death_sequence_handle: SequenceHandle # To track the victory sequence
+var _death_sequence_handle: SequenceHandle
 
 func _ready():
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
@@ -26,7 +26,7 @@ func _ready():
 			var terrain_builder = TerrainBuilder.new()
 			terrain_builder.fill_viewport(level_container, build_data, camera)
 
-	player_node = get_tree().get_first_node_in_group("player")
+	player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
 
@@ -43,9 +43,7 @@ func _on_boss_died(payload: Dictionary):
 	if is_instance_valid(player_node): player_node.set_physics_process(false)
 	var boss_node = payload.get("boss_node")
 
-	# THE FIX: Deactivate all active minions when the boss dies.
 	_deactivate_all_minions()
-	print("VERIFICATION: All minions deactivated on boss death.")
 
 	var wait_step_1 = WaitStep.new(); wait_step_1.duration = 1.0
 	var wait_step_2 = WaitStep.new(); wait_step_2.duration = 1.5
@@ -60,11 +58,7 @@ func _on_boss_died(payload: Dictionary):
 		SceneManager.go_to_victory()
 
 func _deactivate_all_minions():
-	# We get all nodes in the "enemy" group. Since the boss is already dead
-	# and will be removed, this will effectively target all remaining minions.
-	var minions = get_tree().get_nodes_in_group("enemy")
+	var minions = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
 	for minion in minions:
-		# Check if the minion has the deactivate method before calling it.
-		# This makes the system robust for future enemy types.
 		if minion.has_method("deactivate"):
 			minion.deactivate()

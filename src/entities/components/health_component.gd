@@ -1,6 +1,5 @@
 # src/entities/components/health_component.gd
-# CORRECTED: Hit-flash logic is now more robust and uses metadata to
-# prevent color restoration bugs.
+# CORRECTED: Uses Identifiers constants for group checks.
 class_name HealthComponent
 extends ComponentInterface
 
@@ -19,7 +18,6 @@ var max_health: int
 var invincibility_duration: float
 var knockback_speed: float
 var hazard_knockback_speed: float
-# REMOVED: var original_color: Color - We will no longer use this variable.
 
 func _ready():
 	add_child(invincibility_timer)
@@ -43,7 +41,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 
 	max_health = entity_data.max_health
 	
-	if owner_node.is_in_group("player"):
+	if owner_node.is_in_group(Identifiers.Groups.PLAYER):
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
@@ -54,7 +52,6 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	
 	entity_data.health = max_health
 	
-	# THE FIX: Store the true original color in the sprite's metadata at setup time.
 	var sprite = get_visual_sprite()
 	if is_instance_valid(sprite) and not sprite.has_meta("original_color"):
 		sprite.set_meta("original_color", sprite.color)
@@ -110,14 +107,13 @@ func _calculate_knockback(source: Node) -> Vector2:
 	if knockback_speed == 0 or not is_instance_valid(source): return Vector2.ZERO
 	var knockback_dir = (owner_node.global_position - source.global_position).normalized()
 	var speed = knockback_speed
-	if source.is_in_group("hazard"):
+	if source.is_in_group(Identifiers.Groups.HAZARD):
 		speed = hazard_knockback_speed
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
 
 func _trigger_hit_flash():
 	var sprite = get_visual_sprite()
 	if is_instance_valid(sprite):
-		# If this is the first hit-flash, store the original color.
 		if not sprite.has_meta("original_color"):
 			sprite.set_meta("original_color", sprite.color)
 			
@@ -132,6 +128,5 @@ func get_visual_sprite() -> ColorRect:
 func _on_hit_flash_timer_timeout():
 	var sprite = get_visual_sprite()
 	if is_instance_valid(sprite):
-		# THE FIX: Always restore from the unchanging metadata value.
 		if sprite.has_meta("original_color"):
 			sprite.color = sprite.get_meta("original_color")
