@@ -7,4 +7,4 @@ func enter(_msg := {}):
 	owner.patrol_timer.start()
 
 func process_physics(_delta: float):
-	owner.velocity.x = state_data.facing_direction * state_data.patrol_speed
+	owner.velocity.x = state_data.facing_direction * state_data.config.boss_patrol_speed

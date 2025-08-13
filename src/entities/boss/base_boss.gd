@@ -36,7 +36,6 @@ var phases_remaining: int = 3
 @export var phase_3_patterns: Array[AttackPattern] = []
 var current_attack_patterns: Array[AttackPattern] = []
 
-# THE FIX: The validation function is now a simple, direct call.
 func _get_configuration_warnings() -> PackedStringArray:
 	return Validator.validate_boss_scene(self)
 
@@ -54,9 +53,10 @@ func _ready():
 	current_attack_patterns = phase_1_patterns
 	
 	b_data = BossStateData.new()
-	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
+	b_data.config = CombatDB.config # THE INJECTION
+	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
-	health_component.setup(self, { "data_resource": b_data, "config": CombatDB.config })
+	health_component.setup(self, { "data_resource": b_data, "config": b_data.config })
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
@@ -81,7 +81,9 @@ func _notification(what):
 
 func _physics_process(delta):
 	if Engine.is_editor_hint(): return
-	if not is_on_floor(): velocity.y += CombatDB.config.gravity * delta
+	if not is_on_floor(): 
+		velocity.y += b_data.config.gravity * delta # USE INJECTED CONFIG
+	
 	move_and_slide()
 	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
 		b_data.facing_direction *= -1.0

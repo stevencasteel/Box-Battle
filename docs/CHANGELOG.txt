@@ -19,6 +19,10 @@
 ║                                                                              ║
 
 
+
+
+
+
    █  Architectural Changes
       ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
       ░   state machine, fully decoupling all states from the global `CombatDB`
@@ -44,3 +48,11 @@
       ░   Responsibility Principle. Its sole purpose is now to find a valid
       ░   `IDamageable` target, delegating the final application of damage
       ░   to the calling script.
+
+
+
+
+      ░ ■ Extended the "Owner-Driven Injection" pattern to the `BaseBoss`
+      ░   and its state machine. All boss states are now fully decoupled
+      ░   from global singletons, mirroring the clean architecture of the
+      ░   Player and unifying the entity design across the project.

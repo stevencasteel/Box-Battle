@@ -4,6 +4,9 @@
 class_name BossStateData
 extends Resource
 
+# --- Configuration Reference ---
+var config: CombatConfig
+
 # --- Health & Combat ---
 var max_health: int = 30
 var health: int = 30:
@@ -15,4 +18,3 @@ var current_attack: int # Using the enum from base_boss.gd
 
 # --- Physics & Movement ---
 var facing_direction: float = -1.0
-var patrol_speed: float = 100.0
