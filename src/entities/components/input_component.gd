@@ -25,8 +25,8 @@ func teardown() -> void:
 	combat_component = null
 	state_machine = null
 
-# CORRECTED: Renamed to `_physics_process` to match Godot's engine callback.
 func _physics_process(_delta):
+	# THE FIX: Read directly from the unified CombatDB.
 	if Input.is_action_just_pressed("ui_jump"):
 		p_data.jump_buffer_timer = CombatDB.config.player_jump_buffer
 	
@@ -39,6 +39,7 @@ func _physics_process(_delta):
 	
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
+			# THE FIX: Read directly from the unified CombatDB.
 			if p_data.charge_timer >= CombatDB.config.player_charge_time:
 				combat_component.fire_shot()
 			else:
@@ -51,7 +52,6 @@ func _physics_process(_delta):
 	if owner_node.is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and p_data.healing_charges > 0 and is_zero_approx(owner_node.velocity.x):
 		state_machine.change_state(owner_node.State.HEAL)
 
-# CORRECTED: Renamed to `_unhandled_input` to match Godot's engine callback.
 func _unhandled_input(event: InputEvent):
 	if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
 		state_machine.current_state.process_input(event)

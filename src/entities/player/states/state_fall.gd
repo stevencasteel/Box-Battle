@@ -22,6 +22,7 @@ func process_physics(delta: float):
 
 func _apply_gravity(delta):
 	var gravity_multiplier = 1.0
+	# THE FIX: Read directly from the unified CombatDB.
 	if Input.is_action_pressed("ui_down"):
 		gravity_multiplier = CombatDB.config.player_fast_fall_gravity_multiplier
 	owner.velocity.y += CombatDB.config.gravity * gravity_multiplier * delta
@@ -35,6 +36,7 @@ func _perform_air_jump():
 	state_machine.change_state(owner.State.JUMP)
 	
 func _perform_wall_jump():
+	# THE FIX: Read directly from the unified CombatDB.
 	owner.velocity.x = state_data.last_wall_normal.x * CombatDB.config.player_wall_jump_force_x
 	state_data.coyote_timer = 0
 	state_data.wall_coyote_timer = 0

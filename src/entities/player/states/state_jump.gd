@@ -3,6 +3,7 @@
 extends BaseState
 
 func enter(_msg := {}):
+	# THE FIX: Read directly from the unified CombatDB.
 	owner.velocity.y = -CombatDB.config.player_jump_force
 	state_data.coyote_timer = 0
 	state_data.jump_buffer_timer = 0
@@ -10,6 +11,7 @@ func enter(_msg := {}):
 func process_physics(delta: float):
 	owner.apply_horizontal_movement()
 	
+	# THE FIX: Read directly from the unified CombatDB.
 	if Input.is_action_just_released("ui_jump") and owner.velocity.y < 0:
 		owner.velocity.y *= CombatDB.config.player_jump_release_dampener
 
@@ -22,6 +24,7 @@ func process_physics(delta: float):
 	_check_for_wall_slide()
 
 func _apply_gravity(delta):
+	# THE FIX: Read directly from the unified CombatDB.
 	owner.velocity.y += CombatDB.config.gravity * delta
 	if owner.velocity.y > 0.0:
 		state_machine.change_state(owner.State.FALL)

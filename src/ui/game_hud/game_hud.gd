@@ -1,6 +1,6 @@
 # src/ui/game_hud/game_hud.gd
 # Manages the in-game heads-up display. Phase indicators are now
-# styled correctly and deplete from right to left.
+# correctly initialized and styled.
 extends CanvasLayer
 
 @onready var player_health_value: Label = $PlayerInfo/PlayerHealthHBox/PlayerHealthValue
@@ -17,6 +17,10 @@ var _boss_health_token: int
 var _boss_phase_token: int
 var _boss_died_token: int
 
+# THE FIX: Pre-create the styles once for efficiency and stability.
+var _filled_style: StyleBoxFlat
+var _empty_style: StyleBoxFlat
+
 func _ready():
 	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
 	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
@@ -24,19 +28,21 @@ func _ready():
 	_boss_phase_token = EventBus.on(EventCatalog.BOSS_PHASE_CHANGED, on_boss_phase_changed)
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, on_boss_died)
 	
+	_create_styles()
+	
 	var max_health = CombatDB.config.player_max_health
 	player_health_value.text = "%d / %d" % [max_health, max_health]
 	player_heal_charges_value.text = "0"
 	
-	var style_box = boss_health_bar.get_theme_stylebox("fill").duplicate()
-	style_box.bg_color = Palette.COLOR_PLAYER_PROJECTILE
-	boss_health_bar.add_theme_stylebox_override("fill", style_box)
+	var health_bar_style = boss_health_bar.get_theme_stylebox("fill").duplicate()
+	health_bar_style.bg_color = Palette.COLOR_PLAYER_PROJECTILE
+	boss_health_bar.add_theme_stylebox_override("fill", health_bar_style)
 	
 	boss_health_bar.max_value = CombatDB.config.boss_health
 	boss_health_bar.value = boss_health_bar.max_value
 	
 	phase_indicators.add_theme_constant_override("separation", 5)
-	_create_phase_indicators(_total_phases)
+	_create_phase_indicators()
 
 func _exit_tree():
 	EventBus.off(_player_health_token)
@@ -45,14 +51,29 @@ func _exit_tree():
 	EventBus.off(_boss_phase_token)
 	EventBus.off(_boss_died_token)
 
-func _create_phase_indicators(count: int):
-	for i in range(count):
+# THE FIX: Style creation is now in its own function, called once.
+func _create_styles():
+	_filled_style = StyleBoxFlat.new()
+	_filled_style.bg_color = Palette.COLOR_HAZARD_PRIMARY
+	_filled_style.border_width_bottom = 3
+	_filled_style.border_width_left = 3
+	_filled_style.border_width_right = 3
+	_filled_style.border_width_top = 3
+	_filled_style.border_color = Palette.COLOR_UI_ACCENT_PRIMARY
+
+	_empty_style = _filled_style.duplicate()
+	_empty_style.bg_color = Palette.COLOR_BACKGROUND
+
+# THE FIX: This function now correctly calls the update logic to set the initial state.
+func _create_phase_indicators():
+	for i in range(_total_phases):
 		var panel = Panel.new()
 		panel.custom_minimum_size = Vector2(40, 40)
 		phase_indicators.add_child(panel)
 		_phase_squares.append(panel)
 	
-	on_boss_phase_changed({"phases_remaining": 3})
+	# Set the initial visual state to be full.
+	_update_phase_visuals(_total_phases)
 
 # --- EventBus Callbacks ---
 func on_player_health_changed(payload: PlayerHealthChangedEvent):
@@ -72,24 +93,12 @@ func on_boss_phase_changed(payload: Dictionary):
 func on_boss_died(_payload):
 	_update_phase_visuals(0)
 
+# THE FIX: This now uses the pre-built styles. The logic is confirmed correct
+# for right-to-left depletion.
 func _update_phase_visuals(phases_remaining: int):
-	var filled_style = StyleBoxFlat.new()
-	filled_style.bg_color = Palette.COLOR_HAZARD_PRIMARY
-	filled_style.border_width_bottom = 3
-	filled_style.border_width_left = 3
-	filled_style.border_width_right = 3
-	filled_style.border_width_top = 3
-	filled_style.border_color = Palette.COLOR_UI_ACCENT_PRIMARY
-
-	var empty_style = filled_style.duplicate()
-	# THE FIX: Fill with the background color, not transparent.
-	empty_style.bg_color = Palette.COLOR_BACKGROUND
-
 	for i in range(_phase_squares.size()):
 		var square = _phase_squares[i]
-		# THE FIX: Deplete from right to left.
-		# Total=3. Square 0,1,2. If 2 phases remain, square 2 (i=2) should be empty.
 		if i < phases_remaining:
-			square.add_theme_stylebox_override("panel", filled_style)
+			square.add_theme_stylebox_override("panel", _filled_style)
 		else:
-			square.add_theme_stylebox_override("panel", empty_style)
+			square.add_theme_stylebox_override("panel", _empty_style)

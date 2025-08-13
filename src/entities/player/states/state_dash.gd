@@ -8,6 +8,7 @@ var _dash_direction: Vector2
 func enter(_msg := {}):
 	state_data.is_dash_invincible = true
 	state_data.can_dash = false
+	# THE FIX: Read all values directly from the unified CombatDB.
 	state_data.dash_duration_timer = CombatDB.config.player_dash_duration
 	state_data.dash_cooldown_timer = CombatDB.config.player_dash_cooldown
 	
@@ -17,10 +18,9 @@ func enter(_msg := {}):
 func exit():
 	state_data.is_dash_invincible = false
 	
-	# THE CHANGE: Apply momentum cancellation to ALL dashes.
-	if _dash_direction.y != 0: # If dash is vertical (up or down)
+	if _dash_direction.y != 0:
 		owner.velocity.y = 0.0
-	if _dash_direction.x != 0: # If dash is horizontal
+	if _dash_direction.x != 0:
 		owner.velocity.x = 0.0
 
 func process_physics(_delta: float):

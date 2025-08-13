@@ -3,10 +3,12 @@
 extends BaseState
 
 func enter(_msg := {}):
+	# THE FIX: Read directly from the unified CombatDB.
 	state_data.air_jumps_left = CombatDB.config.player_max_air_jumps
 	state_data.can_dash = true
 
 func process_physics(delta: float):
+	# THE FIX: Read directly from the unified CombatDB.
 	state_data.coyote_timer = CombatDB.config.player_coyote_time
 	
 	owner.velocity.y += CombatDB.config.gravity * delta

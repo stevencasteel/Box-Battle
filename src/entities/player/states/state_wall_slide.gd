@@ -4,6 +4,7 @@ extends BaseState
 
 func enter(_msg := {}):
 	state_data.can_dash = true
+	# THE FIX: Read directly from the unified CombatDB.
 	state_data.air_jumps_left = CombatDB.config.player_max_air_jumps
 
 func exit():
@@ -11,6 +12,7 @@ func exit():
 		state_data.facing_direction = sign(state_data.last_wall_normal.x)
 
 func process_physics(delta: float):
+	# THE FIX: Read all values directly from the unified CombatDB.
 	var gravity = CombatDB.config.gravity
 	var wall_slide_speed = CombatDB.config.player_wall_slide_speed
 	owner.velocity.y = min(owner.velocity.y + gravity * delta, wall_slide_speed)
@@ -34,6 +36,7 @@ func process_physics(delta: float):
 		return
 
 func _perform_wall_jump():
+	# THE FIX: Read directly from the unified CombatDB.
 	owner.velocity.y = -CombatDB.config.player_wall_jump_force_y
 	owner.velocity.x = state_data.last_wall_normal.x * CombatDB.config.player_wall_jump_force_x
 	state_data.jump_buffer_timer = 0

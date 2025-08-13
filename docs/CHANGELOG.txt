@@ -26,6 +26,39 @@
 
 
 
+
+
+   █  Architectural Changes                                                   
+      ░ ■ Unified the project's configuration system to be exclusively driven
+      ░   by the `CombatDB` singleton and its associated `CombatConfig.tres`
+      ░   Resource. All legacy `Config.gd` calls have been removed.
+      ░ ■ Enhanced `CombatConfig.gd` with `@export_group` and `@export_range`
+      ░   to provide a clean, designer-friendly UI in the Godot Inspector.
+
+   █  Fixed                                                                   
+      ░ ■ Resolved a visual regression where the boss phase indicators on the 
+      ░   Game HUD were not initialized correctly. The styling logic is now more
+      ░   performant and visually stable.
+
+
+
+
+fix(architecture): Unify state machine lifecycle and resolve UID conflicts
+Implements a robust teardown pattern for the state machine system to prevent memory leaks and resolves asset database corruption.
+
+State Machine Unification:
+- Adds a `teardown()` method to the `BaseState` class to define the contract for breaking cyclic references.
+- The `BaseStateMachine.teardown()` function now iterates through all state instances and calls their respective `teardown()` methods, ensuring `Owner -> State` references are nullified.
+- This completes the task of unifying the state machine to be a pure, memory-safe object-based model.
+
+Resource UID Fix:
+- Resolves a "invalid UID" warning on startup by manually removing the corrupted UID references from `combat_config.tres` and `main.tscn`.
+- This allows Godot's importer to re-establish correct links to the script resources, restoring asset database integrity.
+
+
+
+
+
    █  Changed                                                                 
       ░ ■ Reverted experimental implementation of attack and dash input buffering.
       ░   After playtesting, the feature was found to negatively impact the   

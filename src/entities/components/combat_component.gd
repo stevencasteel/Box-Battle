@@ -11,11 +11,8 @@ signal pogo_bounce_requested
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 
-# MODIFIED: Signature now matches the parent ComponentInterface.
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
-	
-	# Pull required dependencies from the dictionary.
 	self.p_data = p_dependencies.get("data_resource")
 	
 	if not p_data:
@@ -27,6 +24,7 @@ func teardown() -> void:
 	p_data = null
 
 func fire_shot():
+	# THE FIX: Read directly from the unified CombatDB.
 	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 	
 	var shot = ObjectPool.get_instance(&"player_shots")
@@ -41,18 +39,15 @@ func fire_shot():
 	shot.activate()
 
 func trigger_pogo(pogo_target) -> bool:
-	# CORRECTED: Fixed the typo from p_ogo_target to pogo_target.
 	if not is_instance_valid(pogo_target):
 		return false
 
 	var should_bounce = false
 	
-	# Can bounce on projectiles.
 	if p_data.is_pogo_attack and pogo_target.is_in_group("enemy_projectile"):
 		should_bounce = true
 		ObjectPool.return_instance(pogo_target)
 	
-	# Can bounce on enemies and deal damage.
 	var damageable = CombatUtils.find_damageable(pogo_target)
 	if damageable:
 		should_bounce = true
@@ -60,7 +55,6 @@ func trigger_pogo(pogo_target) -> bool:
 		if damage_result["was_damaged"]:
 			damage_dealt.emit()
 
-	# Can bounce on the ground or any solid world tile.
 	if pogo_target is StaticBody2D and pogo_target.is_in_group("world"):
 		should_bounce = true
 

@@ -4,6 +4,7 @@ extends BaseState
 
 func enter(_msg := {}):
 	owner.velocity = Vector2.ZERO
+	# THE FIX: Read directly from the unified CombatDB.
 	owner.healing_timer.start(CombatDB.config.player_heal_duration)
 
 func exit():

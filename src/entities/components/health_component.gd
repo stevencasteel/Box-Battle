@@ -11,7 +11,7 @@ signal health_threshold_reached(health_percentage: float)
 
 var entity_data: Resource
 var owner_node: CharacterBody2D
-var armor_component: ArmorComponent # NEW: Reference to the armor component
+var armor_component: ArmorComponent
 
 @onready var invincibility_timer: Timer = Timer.new()
 @onready var hit_flash_timer: Timer = Timer.new()
@@ -21,8 +21,6 @@ var invincibility_duration: float
 var knockback_speed: float
 var hazard_knockback_speed: float
 var original_color: Color
-
-const IDamageable = preload("res://src/api/interfaces/i_damageable.gd")
 
 func _ready():
 	add_child(invincibility_timer)
@@ -39,24 +37,25 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.entity_data = p_dependencies.get("data_resource")
 	var cfg: CombatConfig = p_dependencies.get("config")
 	
-	# NEW: Get a reference to the armor component, if it exists.
 	self.armor_component = owner_node.get_node_or_null("ArmorComponent")
 	
 	if not entity_data or not cfg:
 		push_error("HealthComponent.setup: Missing required dependencies ('data_resource', 'config').")
 		return
 
+	# THE FIX: Read all values directly from the unified CombatDB config resource.
 	if owner_node.is_in_group("player"):
 		max_health = cfg.player_max_health
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
-	else:
-		max_health = cfg.boss_health
+	else: # Assuming any other entity is a boss/minion
+		max_health = cfg.boss_health # Minions will use this for now
 		invincibility_duration = cfg.boss_invincibility_duration
 		knockback_speed = 0
 		hazard_knockback_speed = 0
 	
+	entity_data.max_health = max_health # Make sure the data resource knows its max
 	entity_data.health = max_health
 	if is_instance_valid(get_visual_sprite()):
 		original_color = get_visual_sprite().color
@@ -69,9 +68,7 @@ func teardown() -> void:
 	armor_component = null
 
 func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invincibility: bool = false) -> Dictionary:
-	# NEW: Armor Check. If the armor component exists and is active, ignore damage.
 	if is_instance_valid(armor_component) and armor_component.is_armored:
-		# Optional: Play a "clink" sound effect here for feedback.
 		return {"was_damaged": false, "knockback_velocity": Vector2.ZERO}
 
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
@@ -81,7 +78,7 @@ func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invin
 
 	var health_before_damage = entity_data.health
 	entity_data.health -= damage_amount
-	health_changed.emit(entity_data.health, entity_data.max_health)
+	health_changed.emit(entity_data.health, max_health)
 	
 	_trigger_hit_flash()
 	

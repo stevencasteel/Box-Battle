@@ -35,11 +35,12 @@ var current_attack_patterns: Array[AttackPattern] = []
 func _ready():
 	add_to_group("enemy")
 	
-	# THE FIX: Set the initial attack patterns from the exported array.
 	current_attack_patterns = phase_1_patterns
 	
 	b_data = BossStateData.new()
+	# THE FIX: Read directly from the unified CombatDB.
 	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
+	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	health_component.setup(self, { "data_resource": b_data, "config": CombatDB.config })
 	health_component.health_changed.connect(_on_health_component_health_changed)
@@ -64,12 +65,14 @@ func _notification(what):
 		b_data = null
 
 func _physics_process(delta):
+	# THE FIX: Read directly from the unified CombatDB.
 	if not is_on_floor(): velocity.y += CombatDB.config.gravity * delta
 	move_and_slide()
 	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
 		b_data.facing_direction *= -1.0
 
 func get_health_thresholds() -> Array[float]: return [phase_2_threshold, phase_3_threshold]
+
 func die():
 	if _is_dead: return
 	_is_dead = true
@@ -108,7 +111,6 @@ func _on_health_threshold_reached(health_percentage: float):
 
 	if new_phases_remaining != phases_remaining:
 		phases_remaining = new_phases_remaining
-		# THE FIX: Set the current patterns from the exported arrays.
 		match phases_remaining:
 			2: current_attack_patterns = phase_2_patterns
 			1: current_attack_patterns = phase_3_patterns

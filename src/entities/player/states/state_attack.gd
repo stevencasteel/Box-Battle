@@ -18,6 +18,7 @@ func enter(_msg := {}):
 	
 	# --- MELEE ATTACK LOGIC ---
 	else:
+		# THE FIX: Read directly from the unified CombatDB.
 		state_data.attack_duration_timer = CombatDB.config.player_attack_duration
 		state_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
 		
@@ -33,13 +34,13 @@ func exit():
 
 func process_physics(delta: float):
 	if not state_data.is_pogo_attack:
+		# THE FIX: Read directly from the unified CombatDB.
 		var friction = CombatDB.config.player_attack_friction
 		owner.velocity = owner.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
 	if state_data.attack_duration_timer <= 0:
 		state_machine.change_state(owner.State.FALL)
 
-# THE FIX: This function now iterates through all query results to find a valid target.
 func _check_for_immediate_pogo() -> bool:
 	var query = PhysicsShapeQueryParameters2D.new()
 	query.shape = owner.hitbox_shape.shape
@@ -48,22 +49,15 @@ func _check_for_immediate_pogo() -> bool:
 	query.exclude = [owner]
 	query.collide_with_areas = true
 	
-	# Get all potential targets from the physics space.
 	var results = owner.get_world_2d().direct_space_state.intersect_shape(query)
 	
-	# If there are no results, we can stop immediately.
 	if results.is_empty():
 		return false
 	
-	# Loop through every collider the pogo check hit.
 	for result in results:
-		# Use our robust utility to find the actual damageable entity.
-		# This correctly handles child collision shapes.
 		var pogo_target = result.collider
 		if owner.combat_component.trigger_pogo(pogo_target):
-			# As soon as we successfully trigger a pogo, we're done.
 			print("VERIFICATION: Pogo attack successfully triggered.")
 			return true
 	
-	# If we looped through all results and none were valid pogo targets, fail.
 	return false

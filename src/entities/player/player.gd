@@ -89,19 +89,19 @@ func _ready():
 	
 	_emit_healing_charges_changed_event()
 
-# THE FIX: This function now ensures all components are safely torn down.
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(state_machine): state_machine.teardown()
 		if is_instance_valid(health_component): health_component.teardown()
 		if is_instance_valid(combat_component): combat_component.teardown()
 		if is_instance_valid(input_component): input_component.teardown()
-		p_data = null # Release reference to the data resource
+		p_data = null
 
 func _physics_process(delta):
 	_update_timers(delta)
 	move_and_slide()
 	_check_for_contact_damage()
+	# THE FIX: Read directly from the unified CombatDB.
 	if is_on_wall() and not is_on_floor():
 		p_data.wall_coyote_timer = CombatDB.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
@@ -109,6 +109,7 @@ func _physics_process(delta):
 # --- Public Helper Functions (for States) ---
 
 func apply_horizontal_movement():
+	# THE FIX: Read directly from the unified CombatDB.
 	velocity.x = Input.get_axis("ui_left", "ui_right") * CombatDB.config.player_speed
 	if not is_zero_approx(velocity.x):
 		p_data.facing_direction = sign(velocity.x)
@@ -154,6 +155,7 @@ func _check_for_contact_damage():
 				break
 
 func _on_damage_dealt():
+	# THE FIX: Read directly from the unified CombatDB.
 	if p_data.healing_charges >= CombatDB.config.player_max_healing_charges: return
 	p_data.determination_counter += 1
 	if p_data.determination_counter >= CombatDB.config.player_determination_per_charge:
@@ -209,6 +211,7 @@ func _on_health_component_died():
 	died.emit()
 
 func _on_pogo_bounce_requested():
+	# THE FIX: Read directly from the unified CombatDB.
 	velocity.y = -CombatDB.config.player_pogo_force
 	position.y -= 1
 	p_data.can_dash = true
