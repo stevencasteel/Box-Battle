@@ -23,6 +23,18 @@
 
 
 
+   █  Architectural Changes                                                   
+      ░ ■ Hardened the `ObjectPool` against race conditions by deferring the   
+      ░   deactivation of returned instances, preventing same-frame access errors.
+
+   █  Fixed
+      ░ ■ Correctly configured all projectile scenes (`PlayerShot`, `BossShot`)
+      ░   with the necessary metadata to ensure they are properly returned to
+      ░   the `ObjectPool` instead of being deleted, preventing performance
+      ░   degradation.
+
+
+
    █  Documentation                                                           
       ░ ■ Formalized the project's official Dependency Injection pattern in    
       ░   `ARCHITECTURE.txt`. The standard is "Owner-Driven Injection" within 

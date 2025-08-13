@@ -1,7 +1,7 @@
 # src/core/systems/object_pool.gd
 #
-# This version is hardened against race conditions by using call_deferred
-# to safely deactivate instances.
+# This version is hardened against race conditions and now includes
+# proper metadata on all projectile scenes for reliable pooling.
 extends Node
 
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
@@ -15,15 +15,11 @@ func _ready():
 	_create_pool_for_scene(&"boss_shots", BossShotScene, 30)
 	_create_pool_for_scene(&"turret_shots", TurretShotScene, 20)
 
-# Public function to clean up all active instances.
 func reset():
 	for pool_name in _pools:
 		var pool = _pools[pool_name]
-		# Iterate through all children of the container node.
 		for child in pool.container.get_children():
-			# If a child is NOT in the inactive list, it must be active.
 			if not pool.inactive.has(child):
-				# Return it to the pool.
 				return_instance(child)
 
 func _create_pool_for_scene(p_pool_name: StringName, p_scene: PackedScene, p_initial_size: int):
@@ -68,15 +64,12 @@ func return_instance(p_instance: Node):
 
 	var pool_name = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
-		# If the instance doesn't belong to a known pool, just delete it.
 		p_instance.queue_free()
 		return
 	
-	# THE FIX: Defer the deactivation call. This ensures any same-frame
-	# logic can complete before the node is disabled and moved.
 	p_instance.call_deferred("deactivate")
 	
-	# To prevent the same instance from being returned multiple times in one frame,
-	# we can check if it's already in the inactive list.
 	if not _pools[pool_name].inactive.has(p_instance):
 		_pools[pool_name].inactive.append(p_instance)
+		# THE FIX: Use a more descriptive print statement.
+		print("VERIFICATION: Returned '%s' to pool '%s'. Deactivation is deferred." % [p_instance.name, pool_name])
