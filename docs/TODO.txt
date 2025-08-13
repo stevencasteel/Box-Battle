@@ -12,117 +12,20 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              PHASE 1: ARCHITECTURAL UNIFICATION                      ██  ║
+║  ██                       PHASE 1: PUT TITLE HERE                        ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   This is our highest priority. We will unify the project around a set of    ║
-║   strict, professional patterns to eliminate inconsistencies and make the    ║
-║   entire codebase more predictable and maintainable.                         ║
 ║                                                                              ║
-║   ■  1. Unify the State Machine Model to be Purely Object-Based              ║
-║      ░  WHY: The codebase inconsistently treats states as both pure `Object`s║
-║      ░  and `Node`s. This creates lifecycle confusion and risks memory leaks.║
-║      ░  Committing to a single, lightweight `Object`-based model is cleaner. ║
-║      ░  HOW:                                                                 ║
-║      ░    1. Confirm `BaseState` extends `Object`.                           ║
-║      ░    2. Audit all state machine implementations (`Player`, `BaseBoss`,  ║
-║      ░       `Turret`) and remove any code that uses `add_child(state)` or   ║
-║      ░       `state.queue_free()`.                                           ║
-║      ░    3. Ensure `BaseStateMachine.teardown()` calls a `teardown()` method║
-║      ░       on every state instance to break potential cyclic references.   ║
 ║                                                                              ║
-║   ■  2. Convert All Data to Editor-Friendly `@export` Resources              ║
-║      ░  WHY: To empower rapid, code-free tuning and balancing by exposing all║
-║      ░  gameplay values directly in the Godot Inspector with intuitive controls.║
-║      ░  HOW:                                                                 ║
-║      ░    1. In `combat_config.gd`, use `@export_group` and `@export_range`  ║
-║      ░       to turn the flat list of variables into organized sliders.      ║
-║      ░    2. In `attack_pattern.gd`, `@export` all key properties (cooldown, ║
-║      ░       telegraph duration, etc.) so attacks can be designed in the editor.║
-║      ░    3. In `base_boss.gd`, change `phase_X_patterns` from `load()` calls║
-║      ░       to `@export var phase_patterns: Array[AttackPattern]`, allowing ║
-║      ░       designers to drag-and-drop `.tres` files in the Inspector.      ║
 ║                                                                              ║
-║   ■  3. Formalize Dependency Injection with Owner-Driven Injection           ║
-║      ░  WHY: To eliminate fragile `get_node("string")` lookups and create a  ║
-║      ░  single, verifiable place where all entity components are wired together.║
-║      ░  HOW:                                                                 ║
-║      ░    1. Formalize the "Owner-Driven Injection" pattern in ARCHITECTURE.txt.║
-║      ░    2. Refactor components to receive all dependencies (including configs)║
-║      ░       via their `setup()` method, never calling singletons directly.  ║
-║      ░    3. This centralizes dependency wiring and makes scene dependencies explicit.║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██            PHASE 2: SYSTEM HARDENING & ROBUSTNESS                    ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This phase focuses on eliminating subtle but critical runtime bugs. These  ║
-║   changes will make our core systems resilient to edge cases and race conditions.║
-║                                                                              ║
-║   ■  1. Harden the ObjectPool against Race Conditions                        ║
-║      ░  WHY: Returning a projectile to the pool and trying to access it in   ║
-║      ░  the same physics frame can cause crashes. We must defer deactivation.║
-║      ░  HOW:                                                                 ║
-║      ░    1. In `object_pool.gd`, modify `return_instance` to call           ║
-║      ░       `instance.call_deferred("deactivate")` instead of calling it directly.║
-║      ░    2. This ensures the instance is disabled on the *next* frame, giving║
-║      ░       all same-frame logic time to complete safely.                   ║
-║                                                                              ║
-║   ■  2. Harden the Sequencer against Scene Transitions                       ║
-║      ░  WHY: A long-running sequence could continue running in the background║
-║      ░  after a scene change, causing errors or unexpected behavior.         ║
-║      ░  HOW:                                                                 ║
-║      ░    1. Add a `cancel_all()` function to `sequencer.gd` that iterates   ║
-║      ░       through all active sequence handles and cancels them.           ║
-║      ░    2. In `scene_manager.gd`, call `Sequencer.cancel_all()` at the     ║
-║      ░       beginning of the `_switch_to_scene` function to ensure a clean slate.║
-║                                                                              ║
-║   ■  3. Harden Physics Queries against Child Colliders                       ║
-║      ░  WHY: Physics queries can return a child collider before a parent. Code║
-║      ░  that naively takes `results[0]` will fail to find the `IDamageable`  ║
-║      ░  script on the parent, causing attacks to fail.                       ║
-║      ░  HOW:                                                                 ║
-║      ░    1. Audit all uses of `intersect_shape` (e.g., in `state_attack.gd`).║
-║      ░    2. Replace logic that uses `results[0]` with a `for` loop that     ║
-║      ░       iterates all results and uses `CombatUtils.find_damageable()` on║
-║      ░       each collider. The first valid target found is the one to use.  ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              PHASE 3: COMBAT REFINEMENT & GAME FEEL                  ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This phase refined the core combat mechanics to add depth and improve      ║
-║   the player experience.                                                     ║
-║                                                                              ║
-║   ■  1. Implement the Two-Tier Melee Hitbox                                  ║
-║      ░  WHY: To reward risky, close-range combat and add depth to melee.     ║
-║      ░  HOW: Use a single wide hitbox and calculate damage based on the      ║
-║      ░  distance from the player to the target.                              ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██             PHASE 4: IN-EDITOR TOOLING & VALIDATION                  ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This phase focuses on building an internal "immune system" for the project.║
-║   These tools will catch errors before the game is even run.                 ║
-║                                                                              ║
-║   □  1. Implement In-Editor Scene Validation via `@tool` Scripts             ║
-║      ░  WHY: To get immediate, visual feedback in the Godot editor when a    ║
-║      ░  scene is misconfigured (e.g., a critical node is missing).           ║
-║      ░  HOW: Add the `@tool` annotation to scripts like `base_boss.gd`.      ║
-║      ░  Implement the `_get_configuration_warnings()` function. Inside, check║
-║      ░  if required child nodes (like `HealthComponent`) exist. If not, return║
-║      ░  an error string. Godot will display a ⚠️ icon in the Scene Tree.      ║
-║                                                                              ║
-║   □  2. Create a Central `SceneValidator` Utility                            ║
-║      ░  WHY: To avoid duplicating validation logic in every script and to    ║
-║      ░  create a single source of truth for scene "contracts."               ║
-║      ░  HOW: Create a new `SceneValidator.gd` singleton. Move the logic from ║
-║      ░  the individual `_get_configuration_warnings()` functions into this   ║
-║      ░  utility. The `@tool` scripts will then just call the central validator.║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                           DEFERRED TASKS                             ██  ║
+║  ██                     INDEFINITELY DEFERRED TASKS                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║

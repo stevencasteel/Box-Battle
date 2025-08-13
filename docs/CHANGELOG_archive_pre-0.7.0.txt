@@ -12,6 +12,160 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║                                                                              ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██           [0.7.0] - DATA-DRIVEN ARCHITECTURE - 2025-08-13            ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
+║                                                                              ║
+║      This version completes the transformation to a fully data-driven        ║
+║      architecture, implements robust memory management patterns, and         ║ 
+║      enhances the combat system with distance-based mechanics and            ║
+║      comprehensive scene validation tools.                                   ║                                                                 ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Unified the project's configuration system to be exclusively driven ║
+║      ░   by the `CombatDB` singleton and its `CombatConfig.tres` Resource.   ║
+║      ░   All legacy `Config.gd` calls have been removed for consistency.     ║
+║      ░ ■ Converted all gameplay tuning data into editor-friendly Resources   ║
+║      ░   with `@export_group` and `@export_range` hints for designer-friendly║
+║      ░   UI in the Godot Inspector.                                          ║
+║      ░ ■ Refactored the `BaseBoss` to be fully data-driven, with attack      ║
+║      ░   patterns for each phase assigned via exported arrays in Inspector,  ║
+║      ░   decoupling boss design from hard-coded script paths.                ║
+║      ░ ■ Unified the state machine architecture to be purely object-based,   ║
+║      ░   removing inconsistent lifecycle logic and implementing formal       ║
+║      ░   `teardown` patterns to prevent memory leaks and cyclic references.  ║
+║      ░ ■ Created a central, static `SceneValidator` utility to house all     ║
+║      ░   in-editor validation logic, adhering to the DRY principle.          ║
+║      ░ ■ Hardened the `Sequencer` by adding a `cancel_all()` method called   ║
+║      ░   by `SceneManager` during scene transitions, preventing sequences    ║
+║      ░   from running across scenes.                                         ║
+║      ░ ■ Hardened the `ObjectPool` against race conditions by deferring the  ║
+║      ░   deactivation of returned instances to prevent same-frame access.    ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented a two-tier melee hitbox system using distance-based     ║
+║      ░   damage calculation, rewarding close-range attacks with higher damage║
+║      ░   while maintaining a single, wide hitbox for better usability.       ║
+║      ░ ■ The melee hitbox now dynamically changes shape and position for     ║
+║      ░   upward attacks, ensuring precise square coverage above the player.  ║
+║      ░ ■ Implemented in-editor scene validation for `BaseBoss` with warning  ║
+║      ░   icons in the Scene Tree when required component nodes are missing.  ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Reverted experimental attack and dash input buffering after         ║
+║      ░   playtesting revealed it negatively impacted the precise, deliberate ║
+║      ░   combat feel. Retained the existing responsive input model.          ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Hardened the player's pogo attack physics query to correctly iterate║
+║      ░   through all potential targets to find valid `IDamageable` objects,  ║
+║      ░   making the mechanic more reliable against complex colliders.        ║
+║      ░ ■ Resolved a critical race condition where the `ArenaBuilder` could   ║
+║      ░   finish building before the boss intro sequence spawned the boss by  ║
+║      ░   correctly awaiting a `SequenceHandle`.                              ║
+║      ░ ■ Correctly configured all projectile scenes with necessary metadata  ║
+║      ░   to ensure proper return to `ObjectPool` instead of deletion,        ║
+║      ░   preventing performance degradation.                                 ║
+║      ░ ■ Resolved a visual regression where boss phase indicators on the Game║
+║      ░   HUD were not initialized correctly with more performant styling.    ║
+║      ░ ■ Resolved a "modulo by zero" crash in the boss's idle state by adding║
+║      ░   guard clauses for cases where no attack patterns are assigned.      ║
+║      ░ ■ Resolved a critical race condition that caused crashes when Turret  ║
+║      ░   minions were destroyed.                                             ║
+║      ░ ■ Corrected resource loading errors caused by duplicated UIDs in      ║
+║      ░   `base_boss.tscn` and `combat_config.tres` files.                    ║
+║      ░ ■ Fixed asset database corruption by manually removing corrupted UID  ║
+║      ░   references, allowing Godot's importer to re-establish correct links.║
+║                                                                              ║
+║   █  Documentation                                                           ║
+║      ░ ■ Formalized the project's official Dependency Injection pattern in   ║
+║      ░   `ARCHITECTURE.txt` as "Owner-Driven Injection" within entity        ║
+║      ░   `_ready()` functions, leveraging Godot's lifecycle guarantees.      ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██            [0.6.0] - DYNAMIC ENCOUNTERS - 2025-08-11                 ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
+║                                                                              ║
+║      This version introduces dynamic multi-phase boss encounters, minion     ║
+║      support, widescreen compatibility, and comprehensive visual and         ║
+║      performance improvements to create engaging, scalable combat scenarios. ║                                                                 ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Hardened the `Sequencer` to return a `SequenceHandle`, allowing     ║
+║      ░   cinematic sequences to be safely cancelled to prevent state bugs.   ║
+║      ░ ■ Hardened the `ObjectPool` by replacing fragile, name-based node     ║
+║      ░   lookups with direct references, making the system more robust.      ║
+║      ░ ■ Decoupled game logic from screen resolution by creating `GridUtils` ║
+║      ░   singleton to handle conversions between tile and world coordinates. ║
+║      ░ ■ Implemented `CameraManager` to dynamically fit camera to arena's    ║
+║      ░   logical size, enabling support for non-square aspect ratios.        ║
+║      ░ ■ Enhanced `TerrainBuilder` to procedurally fill the entire camera    ║
+║      ░   viewport with background tiles, creating seamless play areas.       ║
+║      ░ ■ Created data-driven `AttackPattern` resources, allowing boss attack ║
+║      ░   properties to be designed and tuned in the editor instead of        ║
+║      ░   being hard-coded in scripts.                                        ║
+║      ░ ■ Implemented reusable `TelegraphComponent` scene to provide consistent║
+║      ░   visual warnings for all enemy attacks with context-aware displays.  ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented dynamic, three-phase boss fight system where bosses     ║
+║      ░   become more aggressive as health decreases, using faster cooldowns  ║
+║      ░   and complex attack patterns in later phases.                        ║
+║      ░ ■ Added real-time phase indicator icons to Game HUD that visually     ║
+║      ░   represent the boss's current phase and deplete right-to-left.       ║
+║      ░ ■ Created templated boss death sequence using `Sequencer` for         ║
+║      ░   cinematic pause before victory screen appears.                      ║
+║      ░ ■ Implemented `ArmorComponent` to allow phases of boss invulnerability,║
+║      ░   supporting "armored lunge" attacks where boss becomes invulnerable  ║
+║      ░   and performs high-speed dashes across the arena.                    ║
+║      ░ ■ Implemented "Turret" minion enemy system with stationary enemies    ║
+║      ░   that detect players and fire projectiles, proving reusability of    ║
+║      ░   unified state machine and component architecture.                   ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Project display settings updated to widescreen 16:9 (1920x1080)    ║
+║      ░   from previous 1000x1000 square format for modern display support.   ║
+║      ░ ■ Refactored `BaseBoss` and state machine to be fully data-driven,    ║
+║      ░   with `AttackState` reading `AttackPattern` resources and `IdleState`║
+║      ░   responsible for pattern selection.                                  ║
+║      ░ ■ Enhanced Player's dash mechanic with momentum cancellation at end   ║
+║      ░   for precise "hard stop" feel and controlled aerial maneuvers.       ║
+║      ░ ■ `HealthComponent` now detects health threshold crossings and emits  ║
+║      ░   signals for phase transitions, and is "armor-aware" to check for    ║
+║      ░   active `ArmorComponent` before applying damage.                     ║
+║      ░ ■ Encounter system upgraded to support spawning lists of minions from ║
+║      ░   level layout files in addition to main bosses.                      ║
+║      ░ ■ Refactored procedural UI menus to use container nodes for better    ║
+║      ░   resizing behavior across different aspect ratios.                   ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved potential memory leak in `EventBus` by implementing        ║
+║      ░   self-cleaning mechanism that automatically prunes dead subscriptions║
+║      ░   during emit cycles.                                                 ║
+║      ░ ■ Corrected several `async`/`await` errors in `Sequencer` and         ║
+║      ░   `CallableStep` to ensure reliable execution of async functions.     ║
+║      ░ ■ Resolved long-standing visual bug where debug collision shapes were ║
+║      ░   incorrectly culled at viewport edges by correcting engine's update  ║
+║      ░   order in `game.gd` scene.                                           ║
+║      ░ ■ Replaced all `ColorRect` nodes used for in-world visuals with       ║
+║      ░   `Polygon2D` nodes to prevent potential rendering conflicts.         ║
+║      ░ ■ Fixed critical race condition where killing boss would not trigger  ║
+║      ░   victory screen by moving logic to global `EventBus`.                ║
+║      ░ ■ Resolved "zombie attack" bug where boss could still fire projectiles║
+║      ░   after dying by adding `_is_dead` state flag.                        ║
+║      ░ ■ Fixed bug where active projectiles persisted across scene           ║
+║      ░   transitions by adding global reset function to `ObjectPool`.        ║
+║      ░ ■ Resolved bug where turrets stopped firing after few shots by        ║
+║      ░   refactoring state machine logic to be continuous rather than        ║
+║      ░   reliant on one-shot `await` calls in enter functions.               ║
+║      ░ ■ Fixed critical bug where projectiles were permanently deleted       ║
+║      ░   instead of returned to `ObjectPool` by creating dedicated           ║
+║      ░   `TurretShot` scene with correct pooling metadata.                   ║
+║      ░ ■ Addressed several minor UI layout bugs for better consistency       ║
+║      ░   across different screen resolutions.                                ║
+║                                                                              ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██          [0.5.0] - ARCHITECTURAL UNIFICATION - 2025-08-10            ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
