@@ -19,10 +19,9 @@ func enter(_msg := {}):
 			state_machine.change_state(owner.State.FALL)
 			return
 	else:
-		state_data.attack_duration_timer = CombatDB.config.player_attack_duration
-		state_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
+		state_data.attack_duration_timer = state_data.config.player_attack_duration
+		state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
 		
-		# THE FIX: Dynamically set the shape and position of the single MeleeHitbox.
 		if Input.is_action_pressed("ui_up"):
 			owner.melee_hitbox_shape.shape = UPWARD_ATTACK_SHAPE
 			owner.melee_hitbox_shape.position = Vector2(0, -40)
@@ -40,7 +39,7 @@ func exit():
 
 func process_physics(delta: float):
 	if not state_data.is_pogo_attack:
-		var friction = CombatDB.config.player_attack_friction
+		var friction = state_data.config.player_attack_friction
 		owner.velocity = owner.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
 	if state_data.attack_duration_timer <= 0:

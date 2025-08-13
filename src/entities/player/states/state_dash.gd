@@ -8,12 +8,11 @@ var _dash_direction: Vector2
 func enter(_msg := {}):
 	state_data.is_dash_invincible = true
 	state_data.can_dash = false
-	# THE FIX: Read all values directly from the unified CombatDB.
-	state_data.dash_duration_timer = CombatDB.config.player_dash_duration
-	state_data.dash_cooldown_timer = CombatDB.config.player_dash_cooldown
+	state_data.dash_duration_timer = state_data.config.player_dash_duration
+	state_data.dash_cooldown_timer = state_data.config.player_dash_cooldown
 	
 	_dash_direction = _get_dash_direction()
-	owner.velocity = _dash_direction * CombatDB.config.player_dash_speed
+	owner.velocity = _dash_direction * state_data.config.player_dash_speed
 
 func exit():
 	state_data.is_dash_invincible = false

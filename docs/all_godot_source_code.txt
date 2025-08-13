@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug 13 12:47:03 CDT 2025
+Generated on: Wed Aug 13 13:50:03 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -2167,6 +2167,14 @@ FILE: ./docs/CHANGELOG.txt
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
 ║                                                                              ║
 
+
+   █  Architectural Changes
+      ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
+      ░   state machine, fully decoupling all states from the global `CombatDB`
+      ░   singleton. States now receive their configuration through the
+      ░   `PlayerStateData` resource, which is populated by the `Player` owner
+      ░   node. This completes a critical step in adhering to the Dependency
+      ░   Inversion Principle, making states more modular and testable.
 
 =====================================
 FILE: ./docs/BRAINSTORM.txt
@@ -7242,6 +7250,7 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 func _ready():
 	add_to_group("player")
 	p_data = PlayerStateData.new()
+	p_data.config = CombatDB.config # THE INJECTION: Owner injects the config into the data resource.
 	
 	MoveStateScript = load("res://src/entities/player/states/state_move.gd")
 	FallStateScript = load("res://src/entities/player/states/state_fall.gd")
@@ -7422,17 +7431,19 @@ FILE: ./src/entities/player/states/state_jump.gd
 extends BaseState
 
 func enter(_msg := {}):
-	# THE FIX: Read directly from the unified CombatDB.
-	owner.velocity.y = -CombatDB.config.player_jump_force
+	# THE FIX: Read directly from the injected config via the state_data resource.
+	owner.velocity.y = -state_data.config.player_jump_force
 	state_data.coyote_timer = 0
 	state_data.jump_buffer_timer = 0
+	
+	print("VERIFICATION: state_jump.gd is now using the injected config.")
 
 func process_physics(delta: float):
 	owner.apply_horizontal_movement()
 	
-	# THE FIX: Read directly from the unified CombatDB.
+	# THE FIX: Read directly from the injected config.
 	if Input.is_action_just_released("ui_jump") and owner.velocity.y < 0:
-		owner.velocity.y *= CombatDB.config.player_jump_release_dampener
+		owner.velocity.y *= state_data.config.player_jump_release_dampener
 
 	_apply_gravity(delta)
 	
@@ -7443,8 +7454,8 @@ func process_physics(delta: float):
 	_check_for_wall_slide()
 
 func _apply_gravity(delta):
-	# THE FIX: Read directly from the unified CombatDB.
-	owner.velocity.y += CombatDB.config.gravity * delta
+	# THE FIX: Read directly from the injected config.
+	owner.velocity.y += state_data.config.gravity * delta
 	if owner.velocity.y > 0.0:
 		state_machine.change_state(owner.State.FALL)
 
@@ -7465,12 +7476,11 @@ var _dash_direction: Vector2
 func enter(_msg := {}):
 	state_data.is_dash_invincible = true
 	state_data.can_dash = false
-	# THE FIX: Read all values directly from the unified CombatDB.
-	state_data.dash_duration_timer = CombatDB.config.player_dash_duration
-	state_data.dash_cooldown_timer = CombatDB.config.player_dash_cooldown
+	state_data.dash_duration_timer = state_data.config.player_dash_duration
+	state_data.dash_cooldown_timer = state_data.config.player_dash_cooldown
 	
 	_dash_direction = _get_dash_direction()
-	owner.velocity = _dash_direction * CombatDB.config.player_dash_speed
+	owner.velocity = _dash_direction * state_data.config.player_dash_speed
 
 func exit():
 	state_data.is_dash_invincible = false
@@ -7498,8 +7508,7 @@ extends BaseState
 
 func enter(_msg := {}):
 	owner.velocity = Vector2.ZERO
-	# THE FIX: Read directly from the unified CombatDB.
-	owner.healing_timer.start(CombatDB.config.player_heal_duration)
+	owner.healing_timer.start(state_data.config.player_heal_duration)
 
 func exit():
 	owner._cancel_heal()
@@ -7517,17 +7526,15 @@ extends BaseState
 
 func enter(_msg := {}):
 	state_data.can_dash = true
-	# THE FIX: Read directly from the unified CombatDB.
-	state_data.air_jumps_left = CombatDB.config.player_max_air_jumps
+	state_data.air_jumps_left = state_data.config.player_max_air_jumps
 
 func exit():
 	if state_data.last_wall_normal != Vector2.ZERO:
 		state_data.facing_direction = sign(state_data.last_wall_normal.x)
 
 func process_physics(delta: float):
-	# THE FIX: Read all values directly from the unified CombatDB.
-	var gravity = CombatDB.config.gravity
-	var wall_slide_speed = CombatDB.config.player_wall_slide_speed
+	var gravity = state_data.config.gravity
+	var wall_slide_speed = state_data.config.player_wall_slide_speed
 	owner.velocity.y = min(owner.velocity.y + gravity * delta, wall_slide_speed)
 	
 	state_data.facing_direction = sign(-state_data.last_wall_normal.x)
@@ -7549,9 +7556,8 @@ func process_physics(delta: float):
 		return
 
 func _perform_wall_jump():
-	# THE FIX: Read directly from the unified CombatDB.
-	owner.velocity.y = -CombatDB.config.player_wall_jump_force_y
-	owner.velocity.x = state_data.last_wall_normal.x * CombatDB.config.player_wall_jump_force_x
+	owner.velocity.y = -state_data.config.player_wall_jump_force_y
+	owner.velocity.x = state_data.last_wall_normal.x * state_data.config.player_wall_jump_force_x
 	state_data.jump_buffer_timer = 0
 	state_data.coyote_timer = 0
 	state_data.wall_coyote_timer = 0
@@ -7581,10 +7587,9 @@ func enter(_msg := {}):
 			state_machine.change_state(owner.State.FALL)
 			return
 	else:
-		state_data.attack_duration_timer = CombatDB.config.player_attack_duration
-		state_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
+		state_data.attack_duration_timer = state_data.config.player_attack_duration
+		state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
 		
-		# THE FIX: Dynamically set the shape and position of the single MeleeHitbox.
 		if Input.is_action_pressed("ui_up"):
 			owner.melee_hitbox_shape.shape = UPWARD_ATTACK_SHAPE
 			owner.melee_hitbox_shape.position = Vector2(0, -40)
@@ -7602,7 +7607,7 @@ func exit():
 
 func process_physics(delta: float):
 	if not state_data.is_pogo_attack:
-		var friction = CombatDB.config.player_attack_friction
+		var friction = state_data.config.player_attack_friction
 		owner.velocity = owner.velocity.move_toward(Vector2.ZERO, friction * delta)
 	
 	if state_data.attack_duration_timer <= 0:
@@ -7636,16 +7641,12 @@ FILE: ./src/entities/player/states/state_hurt.gd
 extends BaseState
 
 func enter(_msg := {}):
-	# THE FIX: Read directly from the unified CombatDB.
-	state_data.knockback_timer = CombatDB.config.player_knockback_duration
-	
+	state_data.knockback_timer = state_data.config.player_knockback_duration
 	state_data.is_charging = false
 	owner._cancel_heal()
 
-
 func process_physics(delta: float):
-	# THE FIX: Read directly from the unified CombatDB.
-	owner.velocity.y += CombatDB.config.gravity * delta
+	owner.velocity.y += state_data.config.gravity * delta
 	owner.velocity.x = move_toward(owner.velocity.x, 0, 800 * delta)
 
 	if state_data.knockback_timer <= 0:
@@ -7678,10 +7679,9 @@ func process_physics(delta: float):
 
 func _apply_gravity(delta):
 	var gravity_multiplier = 1.0
-	# THE FIX: Read directly from the unified CombatDB.
 	if Input.is_action_pressed("ui_down"):
-		gravity_multiplier = CombatDB.config.player_fast_fall_gravity_multiplier
-	owner.velocity.y += CombatDB.config.gravity * gravity_multiplier * delta
+		gravity_multiplier = state_data.config.player_fast_fall_gravity_multiplier
+	owner.velocity.y += state_data.config.gravity * gravity_multiplier * delta
 
 func _check_for_wall_slide():
 	if state_data.wall_coyote_timer > 0 and not owner.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -state_data.last_wall_normal.x:
@@ -7692,8 +7692,7 @@ func _perform_air_jump():
 	state_machine.change_state(owner.State.JUMP)
 	
 func _perform_wall_jump():
-	# THE FIX: Read directly from the unified CombatDB.
-	owner.velocity.x = state_data.last_wall_normal.x * CombatDB.config.player_wall_jump_force_x
+	owner.velocity.x = state_data.last_wall_normal.x * state_data.config.player_wall_jump_force_x
 	state_data.coyote_timer = 0
 	state_data.wall_coyote_timer = 0
 	state_machine.change_state(owner.State.JUMP)
@@ -7706,15 +7705,14 @@ FILE: ./src/entities/player/states/state_move.gd
 extends BaseState
 
 func enter(_msg := {}):
-	# THE FIX: Read directly from the unified CombatDB.
-	state_data.air_jumps_left = CombatDB.config.player_max_air_jumps
+	state_data.air_jumps_left = state_data.config.player_max_air_jumps
 	state_data.can_dash = true
+	print("VERIFICATION: All player states are now using the injected config.")
 
 func process_physics(delta: float):
-	# THE FIX: Read directly from the unified CombatDB.
-	state_data.coyote_timer = CombatDB.config.player_coyote_time
+	state_data.coyote_timer = state_data.config.player_coyote_time
 	
-	owner.velocity.y += CombatDB.config.gravity * delta
+	owner.velocity.y += state_data.config.gravity * delta
 	owner.apply_horizontal_movement()
 
 	if not owner.is_on_floor():
@@ -7744,6 +7742,9 @@ FILE: ./src/entities/player/data/player_state_data.gd
 class_name PlayerStateData
 extends Resource
 
+# --- NEW: Configuration Reference ---
+var config: CombatConfig # This will hold the reference to the global combat config.
+
 # --- Health & Combat ---
 var max_health: int = 5
 var max_healing_charges: int = 1
@@ -7759,14 +7760,14 @@ var healing_charges: int = 0:
 var determination_counter: int = 0
 var is_invincible: bool = false
 var is_dash_invincible: bool = false
-var hit_targets_this_swing: Dictionary = {} # NEW: Tracks entities hit in one swing.
+var hit_targets_this_swing: Dictionary = {}
 
 # --- Physics & Movement ---
 var air_jumps_left: int = 0
 var facing_direction: int = 1
 var last_wall_normal: Vector2 = Vector2.ZERO
 var can_dash: bool = true
-var pogo_fall_prevention_timer: float = 0.0 # NEW: For pogo-fall prevention
+var pogo_fall_prevention_timer: float = 0.0
 
 # --- Timers ---
 var coyote_timer: float = 0.0

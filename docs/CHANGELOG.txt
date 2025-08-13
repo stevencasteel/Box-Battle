@@ -17,3 +17,12 @@
 ║  ██                 [0.8.0] - NO TITLE YET - 2025-XX-XX                  ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
 ║                                                                              ║
+
+
+   █  Architectural Changes
+      ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
+      ░   state machine, fully decoupling all states from the global `CombatDB`
+      ░   singleton. States now receive their configuration through the
+      ░   `PlayerStateData` resource, which is populated by the `Player` owner
+      ░   node. This completes a critical step in adhering to the Dependency
+      ░   Inversion Principle, making states more modular and testable.

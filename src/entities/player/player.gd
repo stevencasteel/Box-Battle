@@ -46,6 +46,7 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 func _ready():
 	add_to_group("player")
 	p_data = PlayerStateData.new()
+	p_data.config = CombatDB.config # THE INJECTION: Owner injects the config into the data resource.
 	
 	MoveStateScript = load("res://src/entities/player/states/state_move.gd")
 	FallStateScript = load("res://src/entities/player/states/state_fall.gd")

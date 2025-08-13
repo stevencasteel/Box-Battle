@@ -5,6 +5,9 @@
 class_name PlayerStateData
 extends Resource
 
+# --- NEW: Configuration Reference ---
+var config: CombatConfig # This will hold the reference to the global combat config.
+
 # --- Health & Combat ---
 var max_health: int = 5
 var max_healing_charges: int = 1
@@ -20,14 +23,14 @@ var healing_charges: int = 0:
 var determination_counter: int = 0
 var is_invincible: bool = false
 var is_dash_invincible: bool = false
-var hit_targets_this_swing: Dictionary = {} # NEW: Tracks entities hit in one swing.
+var hit_targets_this_swing: Dictionary = {}
 
 # --- Physics & Movement ---
 var air_jumps_left: int = 0
 var facing_direction: int = 1
 var last_wall_normal: Vector2 = Vector2.ZERO
 var can_dash: bool = true
-var pogo_fall_prevention_timer: float = 0.0 # NEW: For pogo-fall prevention
+var pogo_fall_prevention_timer: float = 0.0
 
 # --- Timers ---
 var coyote_timer: float = 0.0
