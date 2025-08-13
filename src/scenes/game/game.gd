@@ -32,7 +32,6 @@ func _ready():
 
 func _exit_tree():
 	EventBus.off(_boss_died_token)
-	# Ensure our sequence is cancelled if the game scene exits unexpectedly
 	if is_instance_valid(_death_sequence_handle):
 		_death_sequence_handle.cancel()
 	get_tree().paused = false
@@ -44,16 +43,28 @@ func _on_boss_died(payload: Dictionary):
 	if is_instance_valid(player_node): player_node.set_physics_process(false)
 	var boss_node = payload.get("boss_node")
 
+	# THE FIX: Deactivate all active minions when the boss dies.
+	_deactivate_all_minions()
+	print("VERIFICATION: All minions deactivated on boss death.")
+
 	var wait_step_1 = WaitStep.new(); wait_step_1.duration = 1.0
 	var wait_step_2 = WaitStep.new(); wait_step_2.duration = 1.5
 	var death_sequence: Array[SequenceStep] = [wait_step_1, wait_step_2]
 	
-	# THE FIX: Get the handle and await its `finished` signal.
 	_death_sequence_handle = Sequencer.run_sequence(death_sequence)
 	await _death_sequence_handle.finished
 	
 	if is_instance_valid(boss_node): boss_node.queue_free()
 	
-	# Check if the handle was cancelled before proceeding
 	if is_instance_valid(_death_sequence_handle):
 		SceneManager.go_to_victory()
+
+func _deactivate_all_minions():
+	# We get all nodes in the "enemy" group. Since the boss is already dead
+	# and will be removed, this will effectively target all remaining minions.
+	var minions = get_tree().get_nodes_in_group("enemy")
+	for minion in minions:
+		# Check if the minion has the deactivate method before calling it.
+		# This makes the system robust for future enemy types.
+		if minion.has_method("deactivate"):
+			minion.deactivate()

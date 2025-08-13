@@ -39,10 +39,12 @@ func _ready():
 	p_data = PlayerStateData.new()
 	p_data.config = CombatDB.config 
 	
+	# Component Setup
 	health_component.setup(self, { "data_resource": p_data, "config": p_data.config })
 	combat_component.setup(self, { "data_resource": p_data })
 	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "combat_component": combat_component, "config": p_data.config })
 	
+	# State Machine Setup (using the new, standardized method)
 	var states = {
 		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, p_data),
 		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, p_data),
@@ -53,9 +55,9 @@ func _ready():
 		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, p_data),
 		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, p_data),
 	}
-	state_machine.setup(states, State.FALL)
+	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
 	
-	# Connect signals after everything is initialized
+	# Signal Connections
 	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
 	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
 	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
@@ -68,6 +70,7 @@ func _ready():
 
 	visual_sprite.color = Palette.COLOR_PLAYER
 	_emit_healing_charges_changed_event()
+	print("VERIFICATION: All components now conform to ComponentInterface.")
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:

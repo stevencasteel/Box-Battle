@@ -32,22 +32,50 @@
       ░   Inversion Principle, making states more modular and testable.
 
 
-         █  Architectural Changes
+   █  Architectural Changes
       ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
-      ░   state machine, fully decoupling all states from the global `CombatDB`
-      ░   singleton. States now receive their configuration through the
-      ░   `PlayerStateData` resource, which is populated by the `Player` owner
-      ░   node. This completes a critical step in adhering to the Dependency
-      ░   Inversion Principle, making states more modular and testable.
+      ░   and BaseBoss state machines. All states are now fully decoupled from
+      ░   global singletons and receive their configuration through their
+      ░   respective data resources (`PlayerStateData`, `BossStateData`).
       ░ ■ Formalized the project's damage system by creating typed `Resource`
       ░   contracts (`DamageInfo`, `DamageResult`), replacing the previous
-      ░   use of primitive integers and untyped Dictionaries. This provides
-      ░   compile-time safety, enables IDE autocompletion, and makes the
-      ░   combat API self-documenting and significantly more robust.
-      ░ ■ Refined the `CombatUtils` singleton to adhere to the Single
-      ░   Responsibility Principle. Its sole purpose is now to find a valid
-      ░   `IDamageable` target, delegating the final application of damage
-      ░   to the calling script.
+      ░   use of primitive integers and untyped Dictionaries for robust,
+      ░   self-documenting, and type-safe combat interactions.
+      ░ ■ Standardized all entity components, including `BaseStateMachine` and
+      ░   `ArmorComponent`, to formally implement the `ComponentInterface`
+      ░   contract. This unifies the lifecycle and setup for all entity
+      ░   behaviors across the entire project.
+      ░ ■ Refined `CombatUtils` to adhere to SRP; its sole responsibility is
+      ░   now finding a valid `IDamageable` target.
+
+   █  Fixed
+      ░ ■ Resolved a visual bug where entity hit-flash colors would not reset
+      ░   correctly. The `HealthComponent` now uses a more robust metadata-
+      ░   based system to store and restore original entity colors.
+      ░ ■ Fixed a "zombie minion" bug where Turrets would continue to fire
+      ░   after the boss was defeated. The game director now deactivates all
+      ░   minions upon boss death.
+      ░ ■ Corrected a parse error in `Turret.gd` caused by an incorrect setup
+      ░   call signature after the `BaseStateMachine` was refactored.
+      ░ ■ Eliminated `STATIC_CALLED_ON_INSTANCE` warnings by refactoring all
+      ░   calls to `CombatUtils.find_damageable` to use the correct static
+      ░   script-based syntax.
+
+
+
+
+
+   █  Fixed
+      ░ ■ Resolved a visual bug where the boss's hit-flash color would not
+      ░   reset correctly. The `HealthComponent` now uses a more robust
+      ░   metadata-based system to store and restore original entity colors.
+      ░ ■ Fixed a bug where Turret minions would continue to fire after the
+      ░   boss was defeated. The central `game.gd` script now finds and calls a
+      ░   new `deactivate()` method on all remaining minions upon boss death.
+
+
+
+
 
 
 

@@ -4,15 +4,20 @@
 # be queried by other components (like HealthComponent) to determine if
 # damage should be ignored.
 class_name ArmorComponent
-extends Node
+extends ComponentInterface
 
 var is_armored: bool = false
 
+func setup(_p_owner: Node, _p_dependencies: Dictionary = {}) -> void:
+	# This component currently requires no setup.
+	pass
+
+func teardown() -> void:
+	# This component holds no references, so no teardown is needed.
+	pass
+
 func activate():
 	is_armored = true
-	# Optional: Add visual feedback here later, like changing the boss's color.
 
 func deactivate():
 	is_armored = false
-	# Optional: Revert visual feedback here.
-	print("VERIFICATION: ArmorComponent DEACTIVATED.")

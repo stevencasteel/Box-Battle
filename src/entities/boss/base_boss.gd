@@ -5,7 +5,6 @@
 class_name BaseBoss
 extends CharacterBody2D
 
-# THE FIX: Preload the validator script to make its static functions available.
 const Validator = preload("res://src/core/util/scene_validator.gd")
 
 enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
@@ -49,21 +48,19 @@ func _ready():
 
 	if Engine.is_editor_hint(): return
 
+	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
+
 	add_to_group("enemy")
 	current_attack_patterns = phase_1_patterns
 	
 	b_data = BossStateData.new()
-	b_data.config = CombatDB.config # THE INJECTION
+	b_data.config = CombatDB.config
 	
-	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
+	# Component Setup
 	health_component.setup(self, { "data_resource": b_data, "config": b_data.config })
-	health_component.health_changed.connect(_on_health_component_health_changed)
-	health_component.died.connect(_on_health_component_died)
-	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
+	armor_component.setup(self)
 	
-	if get_tree().get_first_node_in_group("player"):
-		player = get_tree().get_first_node_in_group("player")
-	
+	# State Machine Setup
 	var states = {
 		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
 		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
@@ -71,7 +68,15 @@ func _ready():
 		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
 		State.LUNGE: BossStateLunge.new(self, state_machine, b_data),
 	}
-	state_machine.setup(states, State.COOLDOWN)
+	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
+	
+	# Signal Connections
+	health_component.health_changed.connect(_on_health_component_health_changed)
+	health_component.died.connect(_on_health_component_died)
+	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
+	
+	if get_tree().get_first_node_in_group("player"):
+		player = get_tree().get_first_node_in_group("player")
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
@@ -82,7 +87,7 @@ func _notification(what):
 func _physics_process(delta):
 	if Engine.is_editor_hint(): return
 	if not is_on_floor(): 
-		velocity.y += b_data.config.gravity * delta # USE INJECTED CONFIG
+		velocity.y += b_data.config.gravity * delta
 	
 	move_and_slide()
 	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():

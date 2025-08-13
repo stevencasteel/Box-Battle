@@ -3,6 +3,9 @@
 class_name TurretStateData
 extends Resource
 
+# --- Configuration Reference ---
+var config: CombatConfig
+
 # --- Health & Combat ---
 var max_health: int = 3
 var health: int = 3:

@@ -1,6 +1,6 @@
 # src/entities/minions/turret.gd
-# The Turret now correctly tears down its components to prevent memory leaks
-# and includes guard clauses to prevent race conditions on death.
+# CORRECTED: The Turret now uses the standardized component setup method for its
+# state machine, resolving the parse error.
 class_name Turret
 extends CharacterBody2D
 
@@ -21,26 +21,32 @@ var detection_radius: float = 400.0
 func _ready():
 	add_to_group("enemy")
 	t_data = TurretStateData.new()
+	t_data.config = CombatDB.config
 	
 	var circle_shape = CircleShape2D.new()
 	circle_shape.radius = detection_radius
 	range_detector_shape.shape = circle_shape
 	
+	# --- Component Setup ---
 	health_component.setup(self, {
 		"data_resource": t_data,
-		"config": CombatDB.config
+		"config": t_data.config
 	})
-	health_component.died.connect(die)
 	
-	player = get_tree().get_first_node_in_group("player")
-	
+	# --- State Machine Initialization ---
 	var states = {
 		State.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(self, state_machine, t_data),
 		State.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(self, state_machine, t_data)
 	}
-	state_machine.setup(states, State.IDLE)
+	state_machine.setup(self, { "states": states, "initial_state_key": State.IDLE })
+	
+	# --- Signal Connections ---
+	health_component.died.connect(die)
+	
+	player = get_tree().get_first_node_in_group("player")
 	
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
+	# REMOVED: print("VERIFICATION: Turret setup is corrected and unified.")
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
@@ -59,14 +65,22 @@ func fire_at_player():
 	shot.global_position = global_position
 	shot.activate()
 
+func deactivate():
+	# Gracefully shut down the turret's brain and timers
+	if is_instance_valid(state_machine):
+		state_machine.teardown()
+	if is_instance_valid(attack_timer):
+		attack_timer.stop()
+	set_physics_process(false)
+	# Stops the Area2D from detecting new bodies
+	$RangeDetector.monitoring = false
+
 func _on_range_detector_body_entered(body):
-	# THE FIX: Add a guard clause to prevent crash on death.
 	if not t_data: return
 	if body.is_in_group("player"):
 		t_data.is_player_in_range = true
 
 func _on_range_detector_body_exited(body):
-	# THE FIX: Add a guard clause to prevent crash on death.
 	if not t_data: return
 	if body.is_in_group("player"):
 		t_data.is_player_in_range = false

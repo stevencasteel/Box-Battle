@@ -1,5 +1,6 @@
 # src/entities/components/health_component.gd
-# CORRECTED: Now fully functional with the typed DamageInfo/DamageResult contract.
+# CORRECTED: Hit-flash logic is now more robust and uses metadata to
+# prevent color restoration bugs.
 class_name HealthComponent
 extends ComponentInterface
 
@@ -18,7 +19,7 @@ var max_health: int
 var invincibility_duration: float
 var knockback_speed: float
 var hazard_knockback_speed: float
-var original_color: Color
+# REMOVED: var original_color: Color - We will no longer use this variable.
 
 func _ready():
 	add_child(invincibility_timer)
@@ -52,8 +53,11 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		hazard_knockback_speed = 0
 	
 	entity_data.health = max_health
-	if is_instance_valid(get_visual_sprite()):
-		original_color = get_visual_sprite().color
+	
+	# THE FIX: Store the true original color in the sprite's metadata at setup time.
+	var sprite = get_visual_sprite()
+	if is_instance_valid(sprite) and not sprite.has_meta("original_color"):
+		sprite.set_meta("original_color", sprite.color)
 	
 	health_changed.emit(entity_data.health, max_health)
 
@@ -113,7 +117,11 @@ func _calculate_knockback(source: Node) -> Vector2:
 func _trigger_hit_flash():
 	var sprite = get_visual_sprite()
 	if is_instance_valid(sprite):
-		sprite.color = Palette.get_color(16)
+		# If this is the first hit-flash, store the original color.
+		if not sprite.has_meta("original_color"):
+			sprite.set_meta("original_color", sprite.color)
+			
+		sprite.color = Palette.COLOR_UI_ACCENT_PRIMARY
 		hit_flash_timer.start()
 
 func get_visual_sprite() -> ColorRect:
@@ -124,4 +132,6 @@ func get_visual_sprite() -> ColorRect:
 func _on_hit_flash_timer_timeout():
 	var sprite = get_visual_sprite()
 	if is_instance_valid(sprite):
-		sprite.color = original_color
+		# THE FIX: Always restore from the unchanging metadata value.
+		if sprite.has_meta("original_color"):
+			sprite.color = sprite.get_meta("original_color")

@@ -1,9 +1,9 @@
 # src/entities/components/base_state_machine.gd
 #
-# A reusable, node-based state machine manager. It now ensures all states
-# are treated as pure Objects and are cleaned up correctly.
+# A reusable, node-based state machine manager. It now conforms to the
+# ComponentInterface contract for a unified entity architecture.
 class_name BaseStateMachine
-extends Node
+extends ComponentInterface
 
 var states: Dictionary = {}
 var current_state: BaseState
@@ -20,22 +20,26 @@ func _physics_process(delta: float):
 	if current_state:
 		current_state.process_physics(delta)
 
-func setup(p_states: Dictionary, p_initial_state_key):
-	self.states = p_states
-	change_state(p_initial_state_key)
+func setup(_p_owner: Node, p_dependencies: Dictionary = {}) -> void:
+	# The setup method now conforms to the standard interface.
+	# It expects a dictionary containing the states and the initial state key.
+	assert(p_dependencies.has("states"), "StateMachine setup requires a 'states' dictionary.")
+	assert(p_dependencies.has("initial_state_key"), "StateMachine setup requires an 'initial_state_key'.")
+	
+	self.states = p_dependencies["states"]
+	var initial_state_key = p_dependencies["initial_state_key"]
+	
+	change_state(initial_state_key)
 
-# THE FIX: The teardown function now correctly calls teardown on each state.
 func teardown():
 	if current_state:
 		current_state.exit()
-	# Call teardown on each individual state to break cyclic references.
 	for state in states.values():
 		if state.has_method("teardown"):
 			state.teardown()
 	states.clear()
 	current_state = null
 
-# This function now correctly treats states as pure objects. No add_child/queue_free.
 func change_state(new_state_key, msg := {}):
 	if not states.has(new_state_key):
 		push_warning("StateMachine: Attempted to change to unknown state '%s'." % new_state_key)
@@ -51,5 +55,4 @@ func change_state(new_state_key, msg := {}):
 	current_state.enter(msg)
 
 func _exit_tree():
-	# Call teardown on exit to be safe, though the owner should call it first.
 	teardown()
