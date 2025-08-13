@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3 uid="uid://kov03lmcorvh"]
 
-[ext_resource type="Script" uid="uid://okv7r7dpfyxf" path="res://src/core/data/config/combat_config.gd" id="1_config"]
+[ext_resource type="Script" path="res://src/core/data/config/combat_config.gd" id="1_config"]
 
 [resource]
 script = ExtResource("1_config")

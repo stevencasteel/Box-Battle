@@ -36,13 +36,13 @@ func teardown():
 	current_state = null
 	print("VERIFICATION: BaseStateMachine torn down successfully.")
 
-# THE FIX: This function now treats states as pure objects. No add_child/queue_free.
+# This function now correctly treats states as pure objects. No add_child/queue_free.
 func change_state(new_state_key, msg := {}):
 	if not states.has(new_state_key):
 		push_warning("StateMachine: Attempted to change to unknown state '%s'." % new_state_key)
 		return
 
-	if current_state == states[new_state_key]:
+	if current_state == states.get(new_state_key):
 		return
 
 	if current_state:
