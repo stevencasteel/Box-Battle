@@ -38,6 +38,7 @@ func _execute_sequence(steps: Array[SequenceStep], handle: SequenceHandle) -> vo
 		return
 
 	for step in steps:
+		# THE FIX: Check if the sequence has been cancelled before executing the next step.
 		if not handle.is_running:
 			return
 

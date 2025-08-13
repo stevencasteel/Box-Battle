@@ -20,6 +20,16 @@
 
 
 
+   █  Architectural Changes                                                   
+      ░ ■ Hardened the `Sequencer` by adding a `cancel_all()` method that is   
+      ░   now called by the `SceneManager` during scene transitions, preventing
+      ░   sequences from running across scenes.                               
+
+   █  Fixed                                                                   
+      ░ ■ Resolved a critical race condition where the `ArenaBuilder` could finish
+      ░   building the level before the boss intro sequence had spawned the boss,
+      ░   by correctly awaiting a `SequenceHandle`.
+
 
 
 

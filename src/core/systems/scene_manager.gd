@@ -4,8 +4,6 @@
 # cleans up both the ObjectPool and the Sequencer for a clean slate.
 extends Node
 
-# --- Private Methods ---
-
 # The core, private function that handles the actual scene change.
 func _switch_to_scene(path: String) -> void:
 	# THE FIX: Clean up all active projectiles AND cancel all running sequences.

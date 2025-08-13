@@ -1,11 +1,12 @@
 # src/scenes/game/game.gd
-# The game scene now correctly awaits the death cinematic sequence.
+# The game scene now correctly awaits the death cinematic sequence handle.
 extends Node
 
 var player_node: Node = null
 var level_container: Node = null
 @onready var camera: Camera2D = $Camera2D
 var _boss_died_token: int = 0
+var _death_sequence_handle: SequenceHandle # To track the victory sequence
 
 func _ready():
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
@@ -31,6 +32,9 @@ func _ready():
 
 func _exit_tree():
 	EventBus.off(_boss_died_token)
+	# Ensure our sequence is cancelled if the game scene exits unexpectedly
+	if is_instance_valid(_death_sequence_handle):
+		_death_sequence_handle.cancel()
 	get_tree().paused = false
 
 func _on_player_died():
@@ -45,8 +49,11 @@ func _on_boss_died(payload: Dictionary):
 	var death_sequence: Array[SequenceStep] = [wait_step_1, wait_step_2]
 	
 	# THE FIX: Get the handle and await its `finished` signal.
-	var handle = Sequencer.run_sequence(death_sequence)
-	await handle.finished
+	_death_sequence_handle = Sequencer.run_sequence(death_sequence)
+	await _death_sequence_handle.finished
 	
 	if is_instance_valid(boss_node): boss_node.queue_free()
-	SceneManager.go_to_victory()
+	
+	# Check if the handle was cancelled before proceeding
+	if is_instance_valid(_death_sequence_handle):
+		SceneManager.go_to_victory()

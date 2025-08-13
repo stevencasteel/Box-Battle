@@ -1,7 +1,7 @@
 # src/core/building/arena_builder.gd
 #
 # The ArenaBuilder now correctly awaits the completion of the intro
-# sequence, ensuring the boss is spawned before the level is returned.
+# sequence handle, ensuring the boss is spawned before the level is returned.
 extends Node
 
 var _current_build_data: LevelBuildData
@@ -33,17 +33,15 @@ func build_level_async() -> Node:
 	await _spawn_hud_async()
 	await _spawn_minions_async()
 	
+	# THE FIX: Store the handle returned by the sequencer.
 	_intro_sequence_handle = _run_intro_sequence()
-	# THE FIX: Wait for the intro sequence to fully complete before proceeding.
-	# This ensures the boss is spawned before the loading screen transitions away.
+	# Now, wait for the intro sequence to fully complete before proceeding.
 	if is_instance_valid(_intro_sequence_handle):
 		await _intro_sequence_handle.finished
 
 	await get_tree().process_frame
 	
 	return _current_level_container
-
-# --- Entity Spawning Logic ---
 
 func _spawn_player_async() -> void:
 	var instance = load(AssetPaths.SCENE_PLAYER).instantiate()

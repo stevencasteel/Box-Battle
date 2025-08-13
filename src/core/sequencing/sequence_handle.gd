@@ -1,7 +1,7 @@
 # src/core/sequencing/sequence_handle.gd
 #
-# A handle that represents a running sequence. It now emits a signal
-# when the sequence is completed or cancelled.
+# A handle that represents a running sequence. It allows for safe cancellation
+# and emits a signal when the sequence is completed or cancelled.
 class_name SequenceHandle
 extends RefCounted
 
