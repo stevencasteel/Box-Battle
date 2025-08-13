@@ -26,3 +26,21 @@
       ░   `PlayerStateData` resource, which is populated by the `Player` owner
       ░   node. This completes a critical step in adhering to the Dependency
       ░   Inversion Principle, making states more modular and testable.
+
+
+         █  Architectural Changes
+      ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
+      ░   state machine, fully decoupling all states from the global `CombatDB`
+      ░   singleton. States now receive their configuration through the
+      ░   `PlayerStateData` resource, which is populated by the `Player` owner
+      ░   node. This completes a critical step in adhering to the Dependency
+      ░   Inversion Principle, making states more modular and testable.
+      ░ ■ Formalized the project's damage system by creating typed `Resource`
+      ░   contracts (`DamageInfo`, `DamageResult`), replacing the previous
+      ░   use of primitive integers and untyped Dictionaries. This provides
+      ░   compile-time safety, enables IDE autocompletion, and makes the
+      ░   combat API self-documenting and significantly more robust.
+      ░ ■ Refined the `CombatUtils` singleton to adhere to the Single
+      ░   Responsibility Principle. Its sole purpose is now to find a valid
+      ░   `IDamageable` target, delegating the final application of damage
+      ░   to the calling script.

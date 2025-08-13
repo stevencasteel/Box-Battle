@@ -1,7 +1,5 @@
 # src/entities/components/health_component.gd
-#
-# This component is now architecturally sound. It no longer makes assumptions
-# about its owner and reads core stats directly from the injected data resource.
+# CORRECTED: Now fully functional with the typed DamageInfo/DamageResult contract.
 class_name HealthComponent
 extends ComponentInterface
 
@@ -26,7 +24,6 @@ func _ready():
 	add_child(invincibility_timer)
 	add_child(hit_flash_timer)
 	invincibility_timer.one_shot = true
-	hit_flash_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
 	
 	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
@@ -43,20 +40,17 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		push_error("HealthComponent.setup: Missing required dependencies ('data_resource', 'config').")
 		return
 
-	# THE FIX: The data resource is the source of truth for max_health.
-	# The config is the source of truth for behavioral properties.
 	max_health = entity_data.max_health
 	
 	if owner_node.is_in_group("player"):
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
-	else: # Bosses, Turrets, and other enemies
+	else:
 		invincibility_duration = cfg.boss_invincibility_duration
 		knockback_speed = 0
 		hazard_knockback_speed = 0
 	
-	# This ensures the entity starts at full health.
 	entity_data.health = max_health
 	if is_instance_valid(get_visual_sprite()):
 		original_color = get_visual_sprite().color
@@ -68,17 +62,19 @@ func teardown() -> void:
 	owner_node = null
 	armor_component = null
 
-func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invincibility: bool = false) -> Dictionary:
+func apply_damage(damage_info: DamageInfo) -> DamageResult:
+	var result = DamageResult.new()
+	
 	if is_instance_valid(armor_component) and armor_component.is_armored:
-		return {"was_damaged": false, "knockback_velocity": Vector2.ZERO}
+		return result
 
 	var is_dash_invincible = entity_data.get("is_dash_invincible") if "is_dash_invincible" in entity_data else false
 	
-	if (entity_data.is_invincible or is_dash_invincible) and not p_bypass_invincibility:
-		return {"was_damaged": false, "knockback_velocity": Vector2.ZERO}
+	if (entity_data.is_invincible or is_dash_invincible) and not damage_info.bypass_invincibility:
+		return result
 
 	var health_before_damage = entity_data.health
-	entity_data.health -= damage_amount
+	entity_data.health -= damage_info.amount
 	health_changed.emit(entity_data.health, max_health)
 	
 	_trigger_hit_flash()
@@ -86,14 +82,15 @@ func apply_damage(damage_amount: int, damage_source: Node = null, p_bypass_invin
 	entity_data.is_invincible = true
 	invincibility_timer.start(invincibility_duration)
 	
-	var knockback_info = _calculate_knockback(damage_source)
+	result.knockback_velocity = _calculate_knockback(damage_info.source_node)
 	
 	_check_for_threshold_crossing(health_before_damage, entity_data.health)
 	
 	if entity_data.health <= 0:
 		died.emit()
-		
-	return {"was_damaged": true, "knockback_velocity": knockback_info}
+	
+	result.was_damaged = true
+	return result
 
 func _check_for_threshold_crossing(health_before: int, health_after: int):
 	if not owner_node.has_method("get_health_thresholds"): return
@@ -105,17 +102,18 @@ func _check_for_threshold_crossing(health_before: int, health_after: int):
 		if old_percent > threshold and new_percent <= threshold:
 			health_threshold_reached.emit(threshold)
 
-func _calculate_knockback(damage_source: Node) -> Vector2:
-	if knockback_speed == 0 or not damage_source: return Vector2.ZERO
-	var knockback_dir = (owner_node.global_position - damage_source.global_position).normalized()
+func _calculate_knockback(source: Node) -> Vector2:
+	if knockback_speed == 0 or not is_instance_valid(source): return Vector2.ZERO
+	var knockback_dir = (owner_node.global_position - source.global_position).normalized()
 	var speed = knockback_speed
-	if damage_source.is_in_group("hazard"):
+	if source.is_in_group("hazard"):
 		speed = hazard_knockback_speed
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
 
 func _trigger_hit_flash():
-	if is_instance_valid(get_visual_sprite()):
-		get_visual_sprite().color = Palette.get_color(16)
+	var sprite = get_visual_sprite()
+	if is_instance_valid(sprite):
+		sprite.color = Palette.get_color(16)
 		hit_flash_timer.start()
 
 func get_visual_sprite() -> ColorRect:
@@ -124,5 +122,6 @@ func get_visual_sprite() -> ColorRect:
 	return null
 
 func _on_hit_flash_timer_timeout():
-	if is_instance_valid(get_visual_sprite()):
-		get_visual_sprite().color = original_color
+	var sprite = get_visual_sprite()
+	if is_instance_valid(sprite):
+		sprite.color = original_color

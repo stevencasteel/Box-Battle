@@ -1,6 +1,8 @@
 # src/projectiles/turret_shot.gd
-# The projectile for the Turret minion.
+# CORRECTED: Uses the correct static function call syntax.
 extends Area2D
+
+const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
@@ -24,10 +26,13 @@ func deactivate():
 func _physics_process(delta):
 	global_position += direction * speed * delta
 
-func _on_body_entered(body):
-	var damageable = CombatUtils.find_damageable(body)
-	if damageable:
-		damageable.apply_damage(damage, self)
+func _on_body_entered(body: Node) -> void:
+	var damageable = CombatUtilsScript.find_damageable(body) # CORRECTED CALL
+	if is_instance_valid(damageable):
+		var damage_info = DamageInfo.new()
+		damage_info.amount = damage
+		damage_info.source_node = self
+		damageable.apply_damage(damage_info)
 	
 	ObjectPool.return_instance(self)
 

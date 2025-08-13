@@ -6,6 +6,7 @@
 extends Node
 
 # --- CORE SYSTEMS ---
+const SCRIPT_COMBAT_UTILS = "res://src/core/util/combat_utils.gd"
 const SCENE_MAIN = "res://src/scenes/main/main.tscn"
 const SCENE_GAME = "res://src/scenes/game/game.tscn"
 const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn"

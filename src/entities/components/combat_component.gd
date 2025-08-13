@@ -1,9 +1,9 @@
 # src/entities/components/combat_component.gd
-#
-# A component that handles the execution of the player's combat abilities.
-# It is now decoupled and emits signals for its owner to react to.
+# CORRECTED: Uses the correct static function call syntax.
 class_name CombatComponent
 extends ComponentInterface
+
+const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
 signal damage_dealt
 signal pogo_bounce_requested
@@ -24,8 +24,7 @@ func teardown() -> void:
 	p_data = null
 
 func fire_shot():
-	# THE FIX: Read directly from the unified CombatDB.
-	p_data.attack_cooldown_timer = CombatDB.config.player_attack_cooldown
+	p_data.attack_cooldown_timer = p_data.config.player_attack_cooldown
 	
 	var shot = ObjectPool.get_instance(&"player_shots")
 	if not shot: return
@@ -38,9 +37,8 @@ func fire_shot():
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
 	shot.activate()
 
-func trigger_pogo(pogo_target) -> bool:
-	if not is_instance_valid(pogo_target):
-		return false
+func trigger_pogo(pogo_target: Node) -> bool:
+	if not is_instance_valid(pogo_target): return false
 
 	var should_bounce = false
 	
@@ -48,11 +46,15 @@ func trigger_pogo(pogo_target) -> bool:
 		should_bounce = true
 		ObjectPool.return_instance(pogo_target)
 	
-	var damageable = CombatUtils.find_damageable(pogo_target)
-	if damageable:
+	var damageable = CombatUtilsScript.find_damageable(pogo_target) # CORRECTED CALL
+	if is_instance_valid(damageable):
 		should_bounce = true
-		var damage_result = damageable.apply_damage(1, owner_node, true)
-		if damage_result["was_damaged"]:
+		var damage_info = DamageInfo.new()
+		damage_info.amount = 1
+		damage_info.source_node = owner_node
+		damage_info.bypass_invincibility = true
+		var damage_result = damageable.apply_damage(damage_info)
+		if damage_result.was_damaged:
 			damage_dealt.emit()
 
 	if pogo_target is StaticBody2D and pogo_target.is_in_group("world"):

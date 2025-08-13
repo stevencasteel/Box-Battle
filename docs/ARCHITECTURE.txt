@@ -190,3 +190,18 @@ Common places to check when adding features:
 - Pools: `src/core/ObjectPool.gd`
 
 (When you update any of these, please mirror the change into this doc.)
+
+
+
+
+Damage / Hit Flow (canonical)
+1. A hit is detected (Area2D overlap, raycast, or collision callback).
+2. The damage-dealing script (e.g., `player_shot.gd`) creates and populates a
+   `DamageInfo` resource, setting the amount and source node.
+3. The script calls `CombatUtils.find_damageable(target_node)` to get the component
+   that can receive damage.
+4. If a valid `damageable` component is found, the script calls `damageable.apply_damage(damage_info)`.
+5. The `HealthComponent` processes the `DamageInfo`, applies health changes,
+   calculates knockback, and returns a typed `DamageResult` resource.
+6. The original script receives the `DamageResult` and can react to it (e.g.,
+   by applying the knockback velocity to the player).

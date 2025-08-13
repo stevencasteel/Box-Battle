@@ -1,14 +1,15 @@
 # src/api/interfaces/i_damageable.gd
 #
-# The "Interface" contract for any object in the game that can take damage.
-# Any script that inherits from this must implement the apply_damage function.
+# The "Interface" contract for any object that can take damage. This is a
+# conceptual interface and is not meant to be extended directly. It serves as
+# project documentation for the damage system's API.
 #
-# In GDScript, this is a conceptual interface. We check for compliance
-# by using `target.has_method("apply_damage")`.
-extends Node
+# We check for compliance by using `target.has_method("apply_damage")`.
+class_name IDamageable
 
 # --- The Contract ---
 #
-# func apply_damage(damage_amount: int, damage_source: Node = null, bypass_invincibility: bool = false) -> Dictionary:
-#   must return a dictionary, e.g., {"was_damaged": bool, "knockback_velocity": Vector2}
+# func apply_damage(damage_info: DamageInfo) -> DamageResult:
+#   Must accept a DamageInfo resource.
+#   Must return a DamageResult resource.
 #
