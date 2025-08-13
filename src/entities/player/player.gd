@@ -1,5 +1,6 @@
 # src/entities/player/player.gd
-# CORRECTED: Uses Identifiers constants for group checks.
+# REFACTORED: The _ready function is now broken into smaller helper methods
+# to improve readability and adhere to the Single Responsibility Principle.
 extends CharacterBody2D
 
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
@@ -34,36 +35,14 @@ var p_data: PlayerStateData
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 
 # --- Engine Functions ---
+
 func _ready():
 	add_to_group(Identifiers.Groups.PLAYER)
-	p_data = PlayerStateData.new()
-	p_data.config = CombatDB.config 
 	
-	health_component.setup(self, { "data_resource": p_data, "config": p_data.config })
-	combat_component.setup(self, { "data_resource": p_data })
-	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "combat_component": combat_component, "config": p_data.config })
-	
-	var states = {
-		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, p_data),
-		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, p_data),
-		State.JUMP: load("res://src/entities/player/states/state_jump.gd").new(self, state_machine, p_data),
-		State.DASH: load("res://src/entities/player/states/state_dash.gd").new(self, state_machine, p_data),
-		State.WALL_SLIDE: load("res://src/entities/player/states/state_wall_slide.gd").new(self, state_machine, p_data),
-		State.ATTACK: load("res://src/entities/player/states/state_attack.gd").new(self, state_machine, p_data),
-		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, p_data),
-		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, p_data),
-	}
-	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
-	
-	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
-	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
-	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
-	pogo_hitbox.area_entered.connect(_on_hitbox_area_entered)
-	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	health_component.health_changed.connect(_on_health_component_health_changed)
-	health_component.died.connect(_on_health_component_died)
-	combat_component.damage_dealt.connect(_on_damage_dealt)
-	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
+	_initialize_data()
+	_initialize_components()
+	_initialize_state_machine()
+	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
 	_emit_healing_charges_changed_event()
@@ -83,6 +62,41 @@ func _physics_process(delta):
 	if is_on_wall() and not is_on_floor():
 		p_data.wall_coyote_timer = p_data.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
+
+# --- Private Helper Functions ---
+
+func _initialize_data():
+	p_data = PlayerStateData.new()
+	p_data.config = CombatDB.config
+
+func _initialize_components():
+	health_component.setup(self, { "data_resource": p_data, "config": p_data.config })
+	combat_component.setup(self, { "data_resource": p_data })
+	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "combat_component": combat_component, "config": p_data.config })
+
+func _initialize_state_machine():
+	var states = {
+		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, p_data),
+		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, p_data),
+		State.JUMP: load("res://src/entities/player/states/state_jump.gd").new(self, state_machine, p_data),
+		State.DASH: load("res://src/entities/player/states/state_dash.gd").new(self, state_machine, p_data),
+		State.WALL_SLIDE: load("res://src/entities/player/states/state_wall_slide.gd").new(self, state_machine, p_data),
+		State.ATTACK: load("res://src/entities/player/states/state_attack.gd").new(self, state_machine, p_data),
+		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, p_data),
+		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, p_data),
+	}
+	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
+
+func _connect_signals():
+	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
+	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
+	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
+	pogo_hitbox.area_entered.connect(_on_hitbox_area_entered)
+	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
+	health_component.health_changed.connect(_on_health_component_health_changed)
+	health_component.died.connect(_on_health_component_died)
+	combat_component.damage_dealt.connect(_on_damage_dealt)
+	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 func apply_horizontal_movement():
 	velocity.x = Input.get_axis("ui_left", "ui_right") * p_data.config.player_speed
@@ -138,6 +152,7 @@ func _on_damage_dealt():
 		p_data.determination_counter = 0; p_data.healing_charges += 1
 		_emit_healing_charges_changed_event()
 
+# --- Signal Handlers (Connected in Editor or _ready) ---
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
 	if p_data.hit_targets_this_swing.has(target_id): return

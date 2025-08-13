@@ -34,6 +34,10 @@
       ░   to hold all string-based group names and pool keys. All scripts
       ░   were refactored to use these constants, eliminating the risk of
       ░   runtime errors from string typos and improving code safety.
+      ░ ■ Refactored the `_ready` functions in `Player` and `BaseBoss` to
+      ░   adhere to the Single Responsibility Principle. All initialization
+      ░   logic is now delegated to smaller, clearly named helper methods,
+      ░   improving code readability and maintainability.
 
    █  Architectural Changes
       ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player

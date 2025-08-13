@@ -1,5 +1,6 @@
 # src/entities/boss/base_boss.gd
-# CORRECTED: Uses Identifiers constants for group checks.
+# REFACTORED: The _ready function is now broken into smaller helper methods
+# to improve readability and adhere to the Single Responsibility Principle.
 @tool
 class_name BaseBoss
 extends CharacterBody2D
@@ -46,33 +47,13 @@ func _ready():
 	armor_component = $ArmorComponent
 
 	if Engine.is_editor_hint(): return
-
-	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
-
-	add_to_group(Identifiers.Groups.ENEMY)
-	current_attack_patterns = phase_1_patterns
 	
-	b_data = BossStateData.new()
-	b_data.config = CombatDB.config
+	_initialize_data()
+	_initialize_components()
+	_initialize_state_machine()
+	_connect_signals()
 	
-	health_component.setup(self, { "data_resource": b_data, "config": b_data.config })
-	armor_component.setup(self)
-	
-	var states = {
-		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
-		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
-		State.COOLDOWN: BossStateCooldown.new(self, state_machine, b_data),
-		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
-		State.LUNGE: BossStateLunge.new(self, state_machine, b_data),
-	}
-	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
-	
-	health_component.health_changed.connect(_on_health_component_health_changed)
-	health_component.died.connect(_on_health_component_died)
-	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
-	
-	if get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER):
-		player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
@@ -88,6 +69,36 @@ func _physics_process(delta):
 	move_and_slide()
 	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
 		b_data.facing_direction *= -1.0
+
+# --- Private Helper Functions ---
+
+func _initialize_data():
+	add_to_group(Identifiers.Groups.ENEMY)
+	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
+	current_attack_patterns = phase_1_patterns
+	b_data = BossStateData.new()
+	b_data.config = CombatDB.config
+
+func _initialize_components():
+	health_component.setup(self, { "data_resource": b_data, "config": b_data.config })
+	armor_component.setup(self)
+
+func _initialize_state_machine():
+	var states = {
+		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
+		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
+		State.COOLDOWN: BossStateCooldown.new(self, state_machine, b_data),
+		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
+		State.LUNGE: BossStateLunge.new(self, state_machine, b_data),
+	}
+	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
+
+func _connect_signals():
+	health_component.health_changed.connect(_on_health_component_health_changed)
+	health_component.died.connect(_on_health_component_died)
+	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
+
+# --- Public API & Logic ---
 
 func get_health_thresholds() -> Array[float]: return [phase_2_threshold, phase_3_threshold]
 
@@ -121,6 +132,8 @@ func fire_shot_at_player():
 	shot.direction = (player.global_position - global_position).normalized()
 	shot.global_position = global_position
 	shot.activate()
+
+# --- Signal Handlers ---
 	
 func _on_health_threshold_reached(health_percentage: float):
 	var new_phases_remaining = phases_remaining
