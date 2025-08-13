@@ -20,6 +20,15 @@
 
 
 
+
+
+
+   █  Fixed                                                                   
+      ░ ■ Hardened the player's pogo attack physics query. It now correctly    
+      ░   iterates through all potential targets to find a valid `IDamageable`,
+      ░   making the mechanic more reliable against complex colliders.
+
+
    █  Architectural Changes                                                   
       ░ ■ Hardened the `Sequencer` by adding a `cancel_all()` method that is   
       ░   now called by the `SceneManager` during scene transitions, preventing

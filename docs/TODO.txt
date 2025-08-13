@@ -19,7 +19,7 @@
 ║   strict, professional patterns to eliminate inconsistencies and make the    ║
 ║   entire codebase more predictable and maintainable.                         ║
 ║                                                                              ║
-║   □  1. Unify the State Machine Model to be Purely Object-Based              ║
+║   ■  1. Unify the State Machine Model to be Purely Object-Based              ║
 ║      ░  WHY: The codebase inconsistently treats states as both pure `Object`s║
 ║      ░  and `Node`s. This creates lifecycle confusion and risks memory leaks.║
 ║      ░  Committing to a single, lightweight `Object`-based model is cleaner. ║
@@ -31,7 +31,7 @@
 ║      ░    3. Ensure `BaseStateMachine.teardown()` calls a `teardown()` method║
 ║      ░       on every state instance to break potential cyclic references.   ║
 ║                                                                              ║
-║   □  2. Convert All Data to Editor-Friendly `@export` Resources              ║
+║   ■  2. Convert All Data to Editor-Friendly `@export` Resources              ║
 ║      ░  WHY: To empower rapid, code-free tuning and balancing by exposing all║
 ║      ░  gameplay values directly in the Godot Inspector with intuitive controls.║
 ║      ░  HOW:                                                                 ║
@@ -43,17 +43,14 @@
 ║      ░       to `@export var phase_patterns: Array[AttackPattern]`, allowing ║
 ║      ░       designers to drag-and-drop `.tres` files in the Inspector.      ║
 ║                                                                              ║
-║   □  3. Formalize Dependency Injection with an EntityFactory                 ║
+║   ■  3. Formalize Dependency Injection with Owner-Driven Injection           ║
 ║      ░  WHY: To eliminate fragile `get_node("string")` lookups and create a  ║
 ║      ░  single, verifiable place where all entity components are wired together.║
 ║      ░  HOW:                                                                 ║
-║      ░    1. Create a new `EntityFactory.gd` singleton.                      ║
-║      ░    2. Create a `build_player(scene, config)` function inside it. Move ║
-║      ░       all the component `setup()` logic from `player.gd`'s `_ready()` ║
-║      ░       into this new function.                                         ║
-║      ░    3. The `ArenaBuilder` will now call `EntityFactory.build_player()` ║
-║      ░       instead of just instantiating the scene.                        ║
-║      ░    4. This centralizes dependency wiring and makes scene dependencies explicit.║
+║      ░    1. Formalize the "Owner-Driven Injection" pattern in ARCHITECTURE.txt.║
+║      ░    2. Refactor components to receive all dependencies (including configs)║
+║      ░       via their `setup()` method, never calling singletons directly.  ║
+║      ░    3. This centralizes dependency wiring and makes scene dependencies explicit.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██            PHASE 2: SYSTEM HARDENING & ROBUSTNESS                    ██  ║
@@ -62,7 +59,7 @@
 ║   This phase focuses on eliminating subtle but critical runtime bugs. These  ║
 ║   changes will make our core systems resilient to edge cases and race conditions.║
 ║                                                                              ║
-║   □  1. Harden the ObjectPool against Race Conditions                        ║
+║   ■  1. Harden the ObjectPool against Race Conditions                        ║
 ║      ░  WHY: Returning a projectile to the pool and trying to access it in   ║
 ║      ░  the same physics frame can cause crashes. We must defer deactivation.║
 ║      ░  HOW:                                                                 ║
@@ -71,7 +68,7 @@
 ║      ░    2. This ensures the instance is disabled on the *next* frame, giving║
 ║      ░       all same-frame logic time to complete safely.                   ║
 ║                                                                              ║
-║   □  2. Harden the Sequencer against Scene Transitions                       ║
+║   ■  2. Harden the Sequencer against Scene Transitions                       ║
 ║      ░  WHY: A long-running sequence could continue running in the background║
 ║      ░  after a scene change, causing errors or unexpected behavior.         ║
 ║      ░  HOW:                                                                 ║
@@ -80,7 +77,7 @@
 ║      ░    2. In `scene_manager.gd`, call `Sequencer.cancel_all()` at the     ║
 ║      ░       beginning of the `_switch_to_scene` function to ensure a clean slate.║
 ║                                                                              ║
-║   □  3. Harden Physics Queries against Child Colliders                       ║
+║   ■  3. Harden Physics Queries against Child Colliders                       ║
 ║      ░  WHY: Physics queries can return a child collider before a parent. Code║
 ║      ░  that naively takes `results[0]` will fail to find the `IDamageable`  ║
 ║      ░  script on the parent, causing attacks to fail.                       ║
