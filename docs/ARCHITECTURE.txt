@@ -27,20 +27,14 @@
 ║      where adding a new player ability means adding a new file, not changing ║
 ║      existing, stable code.                                                  ║
 ║                                                                              ║
-║   █  Liskov Substitution Principle: Subclasses must be substitutable for their║
-║      base classes. A `FireBoss` must be able to do everything a `BaseBoss` can.║
-║                                                                              ║
-║   █  Interface Segregation Principle: We avoid creating "fat" classes that   ║
-║      are forced to have functions they don't need.                           ║
-║                                                                              ║
-║   █  Dependency Inversion Principle: High-level code (like `game.gd`) should ║
-║      not depend on the specific implementation of low-level code (like the   ║
-║      `ArenaBuilder`). It should depend on an abstraction (the `build_level()`║
-║      function contract). Signals are a key tool for this.                    ║
+║   █  Dependency Inversion Principle: High-level code (like `player.gd`) should ║
+║      not depend on the specific implementation of low-level code (like an    ║
+║      individual state script). It should depend on an abstraction (the `BaseState`║
+║      contract).                                                              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                       KEY ARCHITECTURAL PATTERNS                     ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   █  The State Pattern: This is the primary pattern for managing complex     ║
 ║      entities. The logic for each state (e.g., `Move`, `Attack`, `Dash`) is  ║
@@ -49,9 +43,9 @@
 ║      reference to the current state and delegating all processing to it.     ║
 ║                                                                              ║
 ║   █  Singleton-Driven Core: Global systems are managed by Autoload singletons.║
-║      ░  `Palette.gd`: Manages all game colors for a cohesive aesthetic.      ║
-║      ░  `AssetPaths.gd`: A central, pre-loading registry for all assets.     ║
-║      ░  Other singletons (`AudioManager`, `CombatDB`, etc.) serve dedicated roles.║
+║      ░  These are primarily for stateless utility services (`CombatUtils`,   ║
+║      ░  `GridUtils`), cross-system communication (`EventBus`), and asset     ║
+║      ░  management (`ObjectPool`, `AssetPaths`, `Palette`).                  ║
 ║                                                                              ║
 ║   █  Data-Driven Design via Resources: All tunable gameplay values (damage,  ║
 ║      cooldowns, health) are defined in custom `Resource` files (`.tres`).    ║
@@ -62,38 +56,37 @@
 ║      logic but should not directly control their owner. To maintain this     ║
 ║      decoupling, components use Godot's built-in signals to announce that    ║
 ║      something has happened. The owner node (e.g., `player.gd`) listens for  ║
-║      these signals and decides how to react. For example, the               ║
-║      `CombatComponent` emits `pogo_bounce_requested`, and the `Player` script║
-║      implements the actual physics bounce.                                   ║
+║      these signals and decides how to react.                                 ║
 ║                                                                              ║
-║   █  Dependency Injection (DI): The Official Pattern                         ║
-║      ░  The project standard is **Owner-Driven Injection**, performed within ║
-║      ░  an entity's `_ready()` function. This pattern is robust because it   ║
-║      ░  aligns perfectly with Godot's Node Lifecycle. By the time `_ready()` ║
-║      ░  is called, the engine guarantees that the node and all of its children║
-║      ░  (defined in the `.tscn` file) are instantiated and accessible. The   ║
-║      ░  owner node is the ideal place to wire its own components together.   ║
+║   █  Dependency Injection: The Official Pattern                              ║
+║      ░  **The Rule:** Components and States must be fully decoupled from     ║
+║      ░  global systems. They should **NEVER** call a global singleton like   ║
+║      ░  `CombatDB`, `Palette`, or `AssetPaths` directly. All external        ║
+║      ░  dependencies must be passed in by their owner.                       ║
+║      ░                                                                       ║
+║      ░  **The Pattern: Owner-Driven Injection.** This is the project standard.║
+║      ░  It is performed within an entity's `_ready()` function, which aligns ║
+║      ░  perfectly with Godot's Node Lifecycle. By the time `_ready()` is     ║
+║      ░  called, the engine guarantees that the node and all of its children  ║
+║      ░  are instantiated and accessible. The owner node is therefore the     ║
+║      ░  ideal place to wire its own components together.                     ║
 ║      ░                                                                       ║
 ║      ░  Example (`player.gd`):                                               ║
 ║      ░  ```gdscript                                                          ║
 ║      ░  func _ready():                                                       ║
-║      ░      # Player gets its own child nodes via @onready                   ║
-║      ░      # and then "injects" them as dependencies into other components. ║
+║      ░      # The Player gets its child nodes (e.g., input_component) and    ║
+║      ░      # its global dependencies (e.g., CombatDB.config). It then       ║
+║      ░      # "injects" them into the component via a setup dictionary.      ║
 ║      ░      input_component.setup(self, {                                    ║
+║      ░          "data_resource": p_data,                                     ║
 ║      ░          "state_machine": state_machine,                              ║
-║      ░          "combat_component": combat_component                         ║
+║      ░          "combat_component": combat_component,                        ║
+║      ░          "config": CombatDB.config                                    ║
 ║      ░      })                                                               ║
 ║      ░  ```                                                                  ║
 ║      ░                                                                       ║
-║      ░  **Anti-Pattern to Avoid: Global Factory Injection**                  ║
-║      ░  A previous attempt to use a global `EntityFactory` to centralize DI  ║
-║      ░  failed. This pattern creates a critical race condition because it    ║
-║      ░  instantiates a node and tries to access its children *before* the    ║
-║      ░  node has entered the Scene Tree. As a result, `@onready` variables   ║
-║      ░  are still `null` at the time of injection, leading to crashes.       ║
-║      ░                                                                       ║
-║      ░  Therefore, all component wiring MUST be handled by the entity that   ║
-║      ░  owns them, inside the `_ready()` function.                           ║
+║      ░  This pattern makes dependencies explicit, improves testability, and  ║
+║      ░  makes components highly reusable in different contexts.              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                         COLLABORATION WORKFLOW                       ██  ║
@@ -106,7 +99,6 @@
 ║   5. Confirm & Proceed: The Human confirms success and defines the next goal.║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
-
 ARCHITECTURE SUMMARY
 ====================
 

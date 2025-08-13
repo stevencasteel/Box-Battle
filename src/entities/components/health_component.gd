@@ -1,7 +1,7 @@
 # src/entities/components/health_component.gd
 #
-# This component is now "armor-aware". Before applying damage, it checks
-# if the owner has an ArmorComponent and if that component is active.
+# This component is now architecturally sound. It no longer makes assumptions
+# about its owner and reads core stats directly from the injected data resource.
 class_name HealthComponent
 extends ComponentInterface
 
@@ -43,19 +43,20 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		push_error("HealthComponent.setup: Missing required dependencies ('data_resource', 'config').")
 		return
 
-	# THE FIX: Read all values directly from the unified CombatDB config resource.
+	# THE FIX: The data resource is the source of truth for max_health.
+	# The config is the source of truth for behavioral properties.
+	max_health = entity_data.max_health
+	
 	if owner_node.is_in_group("player"):
-		max_health = cfg.player_max_health
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
-	else: # Assuming any other entity is a boss/minion
-		max_health = cfg.boss_health # Minions will use this for now
+	else: # Bosses, Turrets, and other enemies
 		invincibility_duration = cfg.boss_invincibility_duration
 		knockback_speed = 0
 		hazard_knockback_speed = 0
 	
-	entity_data.max_health = max_health # Make sure the data resource knows its max
+	# This ensures the entity starts at full health.
 	entity_data.health = max_health
 	if is_instance_valid(get_visual_sprite()):
 		original_color = get_visual_sprite().color

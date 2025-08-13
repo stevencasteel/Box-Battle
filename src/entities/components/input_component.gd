@@ -1,6 +1,7 @@
 # src/entities/components/input_component.gd
 #
-# A component that centralizes all input polling and processing for the player.
+# A component that centralizes all input polling. It is now fully decoupled
+# from global singletons and receives all dependencies from its owner.
 class_name InputComponent
 extends ComponentInterface
 
@@ -8,15 +9,19 @@ var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 var combat_component: CombatComponent
 var state_machine: BaseStateMachine
+var _config: CombatConfig # Internal reference to the injected config
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
+	
+	# THE FIX: Store references to all injected dependencies.
 	self.p_data = p_dependencies.get("data_resource")
 	self.state_machine = p_dependencies.get("state_machine")
 	self.combat_component = p_dependencies.get("combat_component")
+	self._config = p_dependencies.get("config")
 	
-	if not p_data or not state_machine or not combat_component:
-		push_error("InputComponent.setup: Missing required dependencies.")
+	if not p_data or not state_machine or not combat_component or not _config:
+		push_error("InputComponent.setup: Missing one or more required dependencies.")
 		return
 
 func teardown() -> void:
@@ -24,11 +29,12 @@ func teardown() -> void:
 	p_data = null
 	combat_component = null
 	state_machine = null
+	_config = null
 
 func _physics_process(_delta):
-	# THE FIX: Read directly from the unified CombatDB.
+	# THE FIX: Use the internal _config reference instead of the global singleton.
 	if Input.is_action_just_pressed("ui_jump"):
-		p_data.jump_buffer_timer = CombatDB.config.player_jump_buffer
+		p_data.jump_buffer_timer = _config.player_jump_buffer
 	
 	if not state_machine.states.find_key(state_machine.current_state) in owner_node.ACTION_ALLOWED_STATES:
 		return
@@ -39,8 +45,8 @@ func _physics_process(_delta):
 	
 	if Input.is_action_just_released("ui_attack"):
 		if p_data.is_charging:
-			# THE FIX: Read directly from the unified CombatDB.
-			if p_data.charge_timer >= CombatDB.config.player_charge_time:
+			# THE FIX: Use the internal _config reference.
+			if p_data.charge_timer >= _config.player_charge_time:
 				combat_component.fire_shot()
 			else:
 				state_machine.change_state(owner_node.State.ATTACK)

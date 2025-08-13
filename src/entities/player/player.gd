@@ -1,6 +1,6 @@
 # src/entities/player/player.gd
 # This script is the "Context" for the State Machine. It now correctly
-# tears down its components to prevent memory leaks.
+# tears down its components and properly injects all dependencies.
 extends CharacterBody2D
 
 # --- Signals ---
@@ -51,6 +51,8 @@ func _ready():
 	HurtStateScript = load("res://src/entities/player/states/state_hurt.gd")
 	HealStateScript = load("res://src/entities/player/states/state_heal.gd")
 
+	# THE FIX: We now explicitly pass the config object to the InputComponent.
+	# This aligns with the "Owner-Driven Injection" pattern.
 	health_component.setup(self, {
 		"data_resource": p_data,
 		"config": CombatDB.config
@@ -61,7 +63,8 @@ func _ready():
 	input_component.setup(self, {
 		"data_resource": p_data,
 		"state_machine": state_machine,
-		"combat_component": combat_component
+		"combat_component": combat_component,
+		"config": CombatDB.config
 	})
 	
 	var states = {
@@ -101,15 +104,11 @@ func _physics_process(delta):
 	_update_timers(delta)
 	move_and_slide()
 	_check_for_contact_damage()
-	# THE FIX: Read directly from the unified CombatDB.
 	if is_on_wall() and not is_on_floor():
 		p_data.wall_coyote_timer = CombatDB.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
 
-# --- Public Helper Functions (for States) ---
-
 func apply_horizontal_movement():
-	# THE FIX: Read directly from the unified CombatDB.
 	velocity.x = Input.get_axis("ui_left", "ui_right") * CombatDB.config.player_speed
 	if not is_zero_approx(velocity.x):
 		p_data.facing_direction = sign(velocity.x)
@@ -117,8 +116,6 @@ func apply_horizontal_movement():
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
-
-# --- Private Helper Functions ---
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
@@ -138,8 +135,6 @@ func _emit_healing_charges_changed_event():
 	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 	healing_charges_changed.emit(p_data.healing_charges)
 
-# --- Signal Handlers ---
-
 func _check_for_contact_damage():
 	if p_data.is_invincible:
 		return
@@ -155,7 +150,6 @@ func _check_for_contact_damage():
 				break
 
 func _on_damage_dealt():
-	# THE FIX: Read directly from the unified CombatDB.
 	if p_data.healing_charges >= CombatDB.config.player_max_healing_charges: return
 	p_data.determination_counter += 1
 	if p_data.determination_counter >= CombatDB.config.player_determination_per_charge:
@@ -211,7 +205,6 @@ func _on_health_component_died():
 	died.emit()
 
 func _on_pogo_bounce_requested():
-	# THE FIX: Read directly from the unified CombatDB.
 	velocity.y = -CombatDB.config.player_pogo_force
 	position.y -= 1
 	p_data.can_dash = true
