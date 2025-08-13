@@ -5,7 +5,6 @@ extends BaseState
 func enter(_msg := {}):
 	state_data.air_jumps_left = state_data.config.player_max_air_jumps
 	state_data.can_dash = true
-	print("VERIFICATION: All player states are now using the injected config.")
 
 func process_physics(delta: float):
 	state_data.coyote_timer = state_data.config.player_coyote_time

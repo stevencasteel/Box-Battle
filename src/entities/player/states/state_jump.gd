@@ -7,8 +7,6 @@ func enter(_msg := {}):
 	owner.velocity.y = -state_data.config.player_jump_force
 	state_data.coyote_timer = 0
 	state_data.jump_buffer_timer = 0
-	
-	print("VERIFICATION: state_jump.gd is now using the injected config.")
 
 func process_physics(delta: float):
 	owner.apply_horizontal_movement()
