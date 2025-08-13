@@ -20,7 +20,21 @@
 
 
 
+   █  Added                                                                   
+      ░ ■ Implemented a two-tier melee hitbox system using a single, wide      
+      ░   hitbox that calculates damage based on distance from the player,     
+      ░   rewarding close-range attacks.                                      
+      ░ ■ The melee hitbox now dynamically changes shape for upward attacks.   
+      ░ ■ Implemented in-editor scene validation for `BaseBoss`. A warning icon
+      ░   now appears in the Scene Tree if required component nodes are missing,
+      ░   preventing configuration errors before runtime.                     
 
+   █  Architectural Changes                                                   
+      ░ ■ Created a central, static `SceneValidator` utility to house all      
+      ░   in-editor validation logic, adhering to the DRY principle.          
+
+
+      
 
 
    █  Added                                                                   

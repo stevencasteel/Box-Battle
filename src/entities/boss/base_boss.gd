@@ -1,17 +1,22 @@
 # src/entities/boss/base_boss.gd
-# The boss is now fully data-driven. Its attack patterns for each phase
-# are now configured in the editor via exported Resource arrays.
+# This script now correctly uses a preloaded utility with static functions
+# for its in-editor validation checks.
+@tool
 class_name BaseBoss
 extends CharacterBody2D
 
+# THE FIX: Preload the validator script to make its static functions available.
+const Validator = preload("res://src/core/util/scene_validator.gd")
+
 enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 
-@onready var visual_sprite: ColorRect = $ColorRect
-@onready var cooldown_timer: Timer = $CooldownTimer
-@onready var patrol_timer: Timer = $PatrolTimer
-@onready var health_component: HealthComponent = $HealthComponent
-@onready var state_machine: BaseStateMachine = $StateMachine
-@onready var armor_component: ArmorComponent = $ArmorComponent
+# --- Node References ---
+var visual_sprite: ColorRect
+var cooldown_timer: Timer
+var patrol_timer: Timer
+var health_component: HealthComponent
+var state_machine: BaseStateMachine
+var armor_component: ArmorComponent
 
 # --- DATA ---
 var b_data: BossStateData
@@ -25,28 +30,39 @@ var phases_remaining: int = 3
 @export_range(0.0, 1.0, 0.01) var phase_2_threshold: float = 0.7
 @export_range(0.0, 1.0, 0.01) var phase_3_threshold: float = 0.4
 
-# THE FIX: Attack patterns are now exposed to the editor.
 @export_group("Attack Patterns")
 @export var phase_1_patterns: Array[AttackPattern] = []
 @export var phase_2_patterns: Array[AttackPattern] = []
 @export var phase_3_patterns: Array[AttackPattern] = []
 var current_attack_patterns: Array[AttackPattern] = []
 
+# THE FIX: The validation function is now a simple, direct call.
+func _get_configuration_warnings() -> PackedStringArray:
+	return Validator.validate_boss_scene(self)
+
 func _ready():
+	visual_sprite = $ColorRect
+	cooldown_timer = $CooldownTimer
+	patrol_timer = $PatrolTimer
+	health_component = $HealthComponent
+	state_machine = $StateMachine
+	armor_component = $ArmorComponent
+
+	if Engine.is_editor_hint(): return
+
 	add_to_group("enemy")
-	
 	current_attack_patterns = phase_1_patterns
 	
 	b_data = BossStateData.new()
-	# THE FIX: Read directly from the unified CombatDB.
 	b_data.patrol_speed = CombatDB.config.boss_patrol_speed
-	
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	health_component.setup(self, { "data_resource": b_data, "config": CombatDB.config })
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
-	player = get_tree().get_first_node_in_group("player")
+	
+	if get_tree().get_first_node_in_group("player"):
+		player = get_tree().get_first_node_in_group("player")
 	
 	var states = {
 		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
@@ -59,13 +75,12 @@ func _ready():
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
-		if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
 		if is_instance_valid(state_machine): state_machine.teardown()
 		if is_instance_valid(health_component): health_component.teardown()
 		b_data = null
 
 func _physics_process(delta):
-	# THE FIX: Read directly from the unified CombatDB.
+	if Engine.is_editor_hint(): return
 	if not is_on_floor(): velocity.y += CombatDB.config.gravity * delta
 	move_and_slide()
 	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
@@ -114,7 +129,6 @@ func _on_health_threshold_reached(health_percentage: float):
 		match phases_remaining:
 			2: current_attack_patterns = phase_2_patterns
 			1: current_attack_patterns = phase_3_patterns
-		
 		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout():

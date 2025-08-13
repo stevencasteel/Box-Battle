@@ -88,43 +88,16 @@
 ║      ░       each collider. The first valid target found is the one to use.  ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██              PHASE 3: CORE GAMEPLAY & "GAME JUICE"                   ██  ║
+║  ██              PHASE 3: COMBAT REFINEMENT & GAME FEEL                  ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   With a hardened architecture, we can now focus on making the game feel amazing.║
+║   This phase refined the core combat mechanics to add depth and improve      ║
+║   the player experience.                                                     ║
 ║                                                                              ║
-║   □  1. Implement Input Buffering for Attack & Dash                          ║
-║      ░  WHY: This is the highest-impact "game feel" improvement. It makes the║
-║      ░  controls feel responsive and fair, forgiving minor timing mistakes.  ║
-║      ░  HOW: Add `attack_buffer_timer` and `dash_buffer_timer` to            ║
-║      ░  `player_state_data.gd`. In `input_component.gd`, set these timers on ║
-║      ░  input. In states like `Move` and `Fall`, check if a buffer is active ║
-║      ░  and the action is permitted, then execute and reset the timer.       ║
-
-      ░  ▓ Input Buffering (DEFERRED): An initial implementation of attack and  
-      ░    dash input buffering was tested and reverted. The feature was found
-      ░    to detract from the game's intended precise feel.      
-
-║                                                                              ║
-║   □  2. Implement the Two-Tier Melee Hitbox                                  ║
+║   ■  1. Implement the Two-Tier Melee Hitbox                                  ║
 ║      ░  WHY: To reward risky, close-range combat and add depth to melee.     ║
-║      ░  HOW: In `player.tscn`, add a second, smaller `Area2D` named          ║
-║      ░  `InnerHitbox`. In the `Attack` state, connect both hitboxes'         ║
-║      ░  `body_entered` signals to a handler that applies different damage/stun.║
-║                                                                              ║
-║   □  3. Implement the Boss Stun System                                       ║
-║      ░  WHY: To create windows of opportunity for the player and make combat ║
-║      ░  more dynamic than a pure DPS race.                                   ║
-║      ░  HOW: Create a `StunComponent` for the boss. When the boss takes damage,║
-║      ░  this component adds to a stun value. When full, it emits a           ║
-║      ░  `stun_meter_full` signal. The `BaseBoss` state machine will listen for║
-║      ░  this and transition to a new, vulnerable `BossStateStun`.            ║
-║                                                                              ║
-║   □  4. Implement Pogo-Fall Prevention                                       ║
-║      ░  WHY: To prevent the frustrating experience of accidentally fast-falling║
-║      ░  immediately after a successful pogo bounce.                          ║
-║      ░  HOW: In the `Player` script, after a successful pogo, start a very   ║
-║      ░  short timer (e.g., 0.1s) during which the "fast-fall" input is ignored.║
+║      ░  HOW: Use a single wide hitbox and calculate damage based on the      ║
+║      ░  distance from the player to the target.                              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██             PHASE 4: IN-EDITOR TOOLING & VALIDATION                  ██  ║
@@ -149,10 +122,16 @@
 ║      ░  utility. The `@tool` scripts will then just call the central validator.║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██           PHASE 5: FUTURE EXPANSION & DEFERRED TASKS                 ██  ║
+║  ██                           DEFERRED TASKS                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║
+║                                                                              ║
+║   □  Pogo-Fall Prevention                                                    ║
+║      ░  WHY: To prevent the frustrating experience of accidentally fast-falling║
+║      ░  immediately after a successful pogo bounce.                          ║
+║      ░  HOW: In the `Player` script, after a successful pogo, start a very   ║
+║      ░  short timer (e.g., 0.1s) during which the "fast-fall" input is ignored.║
 ║                                                                              ║
 ║   □  UI Overhaul                                                             ║
 ║      ░  □ Refactor all procedural menus to use Godot's built-in `Container`  ║
