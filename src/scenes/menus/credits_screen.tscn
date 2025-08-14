@@ -1,0 +1,84 @@
+[gd_scene load_steps=5 format=3 uid="uid://c5v6x7y81aa0b"]
+
+[ext_resource type="Script" uid="uid://b5n30r8nhclsb" path="res://src/scenes/menus/credits_screen.gd" id="1_credits_script"]
+[ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
+[ext_resource type="FontFile" uid="uid://b41cqy3luy6se" path="res://assets/fonts/font_main_black.ttf" id="3_font_black"]
+[ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/ui/components/mute_button/mute_button.tscn" id="4_mute_button"]
+
+[node name="CreditsScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_credits_script")
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TopSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.972549, 0.972549, 1)
+theme_override_fonts/font = ExtResource("3_font_black")
+theme_override_font_sizes/font_size = 128
+text = "CREDITS"
+horizontal_alignment = 1
+
+[node name="CreditsLabelContainer" type="Control" parent="MainVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 450)
+layout_mode = 2
+
+[node name="ExpandSpacer" type="Control" parent="MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackButton" parent="MainVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+text = "BACK"
+font_size = 64
+
+[node name="BottomSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+
+[node name="MuteButtonContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 350
+
+[node name="MuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0

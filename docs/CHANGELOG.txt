@@ -13,19 +13,71 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                 [0.8.0] - NO TITLE YET - 2025-XX-XX                  ██  ║
+║  ██                 [0.9.0] - NO TITLE YET - 2025-XX-XX                  ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
+
+
+
+
+
+
+
+
+
+
+
+
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                 [0.8.0] - NO TITLE YET - 2025-08-14                  ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
 ║                                                                              ║
 
 
-
-
-
  - - - start separating via the time it was submitted - - -
 
+   █  Architectural Changes
+      ░ ■ Completed a full-scale UI refactor, migrating the entire menu
+      ░   system to a new, scene-based architecture. All menus now exist as
+      ░   self-contained scenes in a new `src/scenes/menus` directory,
+      ░   built with robust Container nodes for consistent, editor-friendly layout.
+      ░ ■ Deprecated and removed the `GlobalHud` autoload. Its functionality
+      ░   was replaced by a new, reusable `MuteButton` component, which is
+      ░   now instanced directly in each menu scene, improving encapsulation.
+      ░ ■ Formalized the project's directory structure by creating dedicated
+      ░   top-level scene folders (`menus`, `game_over`, `victory`), clarifying
+      ░   the distinction between primary game states and reusable UI components.
 
+   █  Added
+      ░ ■ Created new, rebuilt versions of all menu screens (Title, Options,
+      ░   Sound, Controls, Credits) using the new component-based architecture.
+      ░ ■ Implemented `@tool` scripts across all new UI scenes, making them
+      ░   fully visible and editable within the Godot editor.
 
+   █  Changed
+      ░ ■ Overhauled the `game_over` and `victory` screens, upgrading them to
+      ░   the new `StyledMenuItem` component and modern scene structure.
+      ░ ■ Standardized the naming convention for all UI-related assets (audio,
+      ░   fonts, sprites) to a consistent `[type]_[context]_[descriptor]`
+      ░   pattern (e.g., `music_menu_loop.mp3`).
+
+   █  Removed
+      ░ ■ Deleted the entire legacy `src/ui/screens` directory and all of its
+      ░   obsolete, procedurally-generated menu files.
+      ░ ■ Deleted the now-empty `src/scenes/dev` directory.
+      ░ ■ Removed the obsolete `GlobalHud` scene and script files.
+      ░ ■ Deleted all legacy `menu-item-*.png` sprite assets, which are no
+      ░   longer used by the new procedurally drawn buttons.
+
+   █  Fixed
+      ░ ■ Permanently resolved all persistent `invalid UID` warnings by
+      ░   manually re-saving all refactored scenes, forcing Godot to update
+      ░   its asset database and cache. The project now runs with a clean log.
+      ░ ■ Corrected all remaining script errors caused by the asset rename by
+      ░   updating font and audio path constants in all components.
+
+ - - - start separating via the time it was submitted - - -
 
    █  Architectural Changes
       ░ ■ Deprecated the `GlobalHud` autoload in favor of a new, reusable
@@ -52,14 +104,7 @@
       ░ ■ Resolved a scene-loading crash caused by an incorrect `@onready`
       ░   variable in the new options menu script.
 
-
-
-
-
-
-
-
-
+ - - - start separating via the time it was submitted - - -
 
    █  Architectural Changes
       ░ ■ Began the official "UI Overhaul" by creating a new prototype title
@@ -80,13 +125,7 @@
       ░   input handling.
 
 
-
-
-
-
-
-
-
+ - - - start separating via the time it was submitted - - -
 
    █  Architectural Changes
       ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
@@ -134,8 +173,7 @@
       ░   script-based syntax.
 
 
-
-
+ - - - start separating via the time it was submitted - - -
 
    █  Fixed
       ░ ■ Resolved a visual bug where the boss's hit-flash color would not
@@ -148,10 +186,7 @@
       ░   hiding the `Identifiers` singleton, which previously caused a cascade
       ░   of parse errors across the entire project.
 
-
-
-
-
+ - - - start separating via the time it was submitted - - -
 
 
       ░ ■ Extended the "Owner-Driven Injection" pattern to the `BaseBoss`

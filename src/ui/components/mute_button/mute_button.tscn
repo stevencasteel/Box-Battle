@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://d1g2h3i4j5k6l"]
+
+[ext_resource type="Texture2D" uid="uid://dmdfbw1txq0nf" path="res://assets/sprites/ui/icons/icon_ui_sound_off.png" id="1_g0pcd"]
+[ext_resource type="Script" uid="uid://cotrj67gsvbw8" path="res://src/ui/components/mute_button/mute_button.gd" id="1_mute_button_script"]
+
+[node name="MuteButton" type="TextureButton"]
+focus_mode = 0
+texture_normal = ExtResource("1_g0pcd")
+script = ExtResource("1_mute_button_script")

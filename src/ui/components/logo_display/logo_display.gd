@@ -36,7 +36,8 @@ func _gui_input(event: InputEvent) -> void:
 			queue_redraw()
 		else:
 			if is_pressed:
-				AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
+				# THE FIX: Use the new constant name for the select sound effect.
+				AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 				emit_signal("pressed", logo_name)
 				is_pressed = false
 				queue_redraw()
@@ -59,7 +60,8 @@ func set_glow_alpha(value: float):
 func _on_mouse_entered():
 	is_hovered = true
 	CursorManager.set_pointer_state(true)
-	AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE)
+	# THE FIX: Use the new constant name for the move sound effect.
+	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 	_animate_hover(true)
 
 func _on_mouse_exited():
@@ -76,7 +78,6 @@ func _animate_hover(p_is_hovered: bool):
 	
 	_active_tween = create_tween().set_parallel(true)
 	var target_glow_size = 20.0 if p_is_hovered else 0.0
-	# THE FIX: Increased target alpha from 0.1 to 0.2
 	var target_glow_alpha = 0.2 if p_is_hovered else 0.0
 	var duration = 0.3 if p_is_hovered else 0.2
 	

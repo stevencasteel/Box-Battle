@@ -44,12 +44,13 @@ func _on_item_focused(focused_item: Control):
 		current_selection = index
 	
 	_update_cursors(focused_item)
-	AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE)
+	# THE FIX: Use the new constant name for the move sound effect.
+	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 
 func _change_selection(amount: int):
-	# THE FIX: If there's only one item, play an error sound and stop.
 	if menu_items.size() <= 1:
-		AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_ERROR)
+		# THE FIX: Use the new constant name for the error sound effect.
+		AudioManager.play_sfx(AssetPaths.SFX_UI_ERROR)
 		return
 
 	var new_selection = (current_selection + amount + menu_items.size()) % menu_items.size()

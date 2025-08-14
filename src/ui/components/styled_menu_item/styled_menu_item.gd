@@ -20,7 +20,8 @@ var _font: Font
 var _active_tween: Tween
 
 func _ready() -> void:
-	_font = load(AssetPaths.FONT_BOLD)
+	# THE FIX: Use the new, correct constant name for the font.
+	_font = load(AssetPaths.FONT_MAIN_BOLD)
 	focus_mode = FOCUS_ALL
 	mouse_filter = MOUSE_FILTER_STOP
 	
@@ -33,7 +34,7 @@ func _ready() -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_accept") and has_focus():
 		get_viewport().set_input_as_handled()
-		AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
+		AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 		emit_signal("pressed")
 		_show_keyboard_press_feedback()
 		return
@@ -44,7 +45,7 @@ func _gui_input(event: InputEvent) -> void:
 			queue_redraw()
 		else:
 			if is_pressed:
-				AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
+				AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 				emit_signal("pressed")
 				is_pressed = false
 				queue_redraw()
@@ -136,7 +137,6 @@ func _animate_selection(p_is_selected: bool):
 	
 	_active_tween = create_tween().set_parallel(true)
 	var target_glow_size = 28.0 if p_is_selected else 0.0
-	# THE FIX: Increased target alpha from 0.1 to 0.2
 	var target_glow_alpha = 0.2 if p_is_selected else 0.0
 	var duration = 0.3 if p_is_selected else 0.2
 	
