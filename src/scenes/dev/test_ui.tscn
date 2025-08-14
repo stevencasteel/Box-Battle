@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dma2j2a2h30d1"]
 
-[ext_resource type="Script" uid="uid://cyfvs7mg1lxlj" path="res://src/scenes/dev/test_ui.gd" id="1_test_ui_script"]
+[ext_resource type="Script" uid="uid://d3gcr71ay74kd" path="res://src/scenes/dev/test_ui.gd" id="1_test_ui_script"]
 [ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
 
 [node name="TestUI" type="Control"]
@@ -34,4 +34,5 @@ offset_right = 200.0
 offset_bottom = 40.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_mode = 2
 text = "TEST BUTTON"

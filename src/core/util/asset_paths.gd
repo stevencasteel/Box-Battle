@@ -37,6 +37,10 @@ const SCENE_OPTIONS_MENU = "res://src/ui/screens/options_menu/options_menu.tscn"
 const SCENE_SOUND_MENU = "res://src/ui/screens/sound_menu/sound_menu.tscn"
 const SCENE_CONTROLS_MENU = "res://src/ui/screens/controls_menu/controls_menu.tscn"
 const SCENE_CREDITS_MENU = "res://src/ui/screens/credits_menu/credits_menu.tscn"
+const SCENE_TEST_TITLE_SCREEN = "res://src/scenes/dev/test_title_screen.tscn"
+const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
+const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
+const SCENE_GUI_TITLE_SCREEN = "res://src/scenes/dev/gui_title_screen.tscn"
 
 const SPRITE_TITLE = "res://assets/sprites/ui/title/box_battle_title.png"
 const SPRITE_MENU_CURSOR = "res://assets/sprites/ui/menu/menu-cursor.png"
@@ -54,6 +58,9 @@ const SPRITE_CHECKBOX_CHECKED = "res://assets/sprites/ui/checkbox/checkbox-check
 const SPRITE_CHECKBOX_UNCHECKED = "res://assets/sprites/ui/checkbox/checkbox-unchecked.png"
 const SPRITE_ICON_SOUND_ON = "res://assets/sprites/ui/icons/icon-sound-on.png"
 const SPRITE_ICON_SOUND_OFF = "res://assets/sprites/ui/icons/icon-sound-off.png"
+const SPRITE_LOGO_GODOT = "res://assets/sprites/ui/logos/godot_logo.png"
+const SPRITE_LOGO_NEWGROUNDS = "res://assets/sprites/ui/logos/newgrounds_logo.png"
+const SPRITE_LOGO_ITCH = "res://assets/sprites/ui/logos/itch_logo.png"
 
 # --- FONTS ---
 const FONT_BLACK = "res://assets/fonts/MPLUSRounded1c-Black.ttf"
@@ -69,7 +76,7 @@ const AUDIO_SFX_MENU_SELECT = "res://assets/audio/sfx/menu-select.mp3"
 const AUDIO_SFX_START_CHIME = "res://assets/audio/sfx/start-chime.mp3"
 
 
-# --- NEW: VALIDATION SYSTEM ---
+# --- VALIDATION SYSTEM ---
 # This function runs at startup to verify that every path defined in this
 # script actually points to a real file.
 func validate_all_paths() -> void:

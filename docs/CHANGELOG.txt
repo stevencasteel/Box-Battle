@@ -20,6 +20,30 @@
 
 
 
+   █  Architectural Changes
+      ░ ■ Began the official "UI Overhaul" by creating a new prototype title
+      ░   screen (`gui_title_screen.tscn`) that is fully scene-based and
+      ░   leverages Godot's Container nodes for a robust, designer-friendly
+      ░   layout, establishing the pattern for all future menu development.
+
+   █  Added
+      ░ ■ Created `StyledMenuItem`, a new reusable, component-based menu item
+      ░   that is procedurally drawn and highly configurable (size, text, font size).
+      ░ ■ Created `LogoDisplay`, a new reusable component for interactive
+      ░   footer logos with hover and press feedback.
+
+   █  Fixed
+      ░ ■ Resolved a critical input bug where only the first of several UI
+      ░   components would correctly process mouse clicks. Components now use
+      ░   the correct `mouse_filter` property for reliable, engine-idiomatic
+      ░   input handling.
+
+
+
+
+
+
+
 
 
 

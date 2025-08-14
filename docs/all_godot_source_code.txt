@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug 13 15:14:58 CDT 2025
+Generated on: Thu Aug 14 12:09:38 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -31,6 +31,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── all_script_errors.txt
 │   ├── create_all_godot_source_code_txt.command
 │   ├── create_all_godot_source_code_txt.sh
+│   ├── last_commit_command.txt
 │   └── sprint_0_audit
 │       ├── ADR-002_Communication_Patterns.md
 │       ├── ADR.md
@@ -103,6 +104,7 @@ PROJECT DIRECTORY STRUCTURE:
     │       ├── combat_utils.gd
     │       ├── constants.gd
     │       ├── grid_utils.gd
+    │       ├── identifiers.gd
     │       ├── palette.gd
     │       ├── physics_layers.gd
     │       └── scene_validator.gd
@@ -164,6 +166,10 @@ PROJECT DIRECTORY STRUCTURE:
     │   └── turret_shot.tscn
     ├── scenes
     │   ├── dev
+    │   │   ├── gui_title_screen.gd
+    │   │   ├── gui_title_screen.tscn
+    │   │   ├── test_title_screen.gd
+    │   │   ├── test_title_screen.tscn
     │   │   ├── test_ui.gd
     │   │   └── test_ui.tscn
     │   ├── game
@@ -179,6 +185,9 @@ PROJECT DIRECTORY STRUCTURE:
         ├── components
         │   ├── custom_slider
         │   │   └── custom_slider.gd
+        │   ├── logo_display
+        │   │   ├── logo_display.gd
+        │   │   └── logo_display.tscn
         │   └── styled_menu_item
         │       ├── styled_menu_item.gd
         │       └── styled_menu_item.tscn
@@ -213,7 +222,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-51 directories, 154 files
+52 directories, 162 files
 
 
 =====================================
@@ -772,6 +781,11 @@ Run in Box Battle folder for all errors in Terminal
 
 "/Applications/Godot.app/Contents/MacOS/Godot" --verbose --check-only "/Users/stevencasteel/Desktop/GODOT/BOX BATTLE" > all_script_errors.txt
 
+
+=====================================
+FILE: ./docs/last_commit_command.txt
+=====================================
+git reset --hard origin/main
 
 =====================================
 FILE: ./docs/DESIGN.txt
@@ -2187,6 +2201,30 @@ FILE: ./docs/CHANGELOG.txt
 
 
 
+   █  Architectural Changes
+      ░ ■ Began the official "UI Overhaul" by creating a new prototype title
+      ░   screen (`gui_title_screen.tscn`) that is fully scene-based and
+      ░   leverages Godot's Container nodes for a robust, designer-friendly
+      ░   layout, establishing the pattern for all future menu development.
+
+   █  Added
+      ░ ■ Created `StyledMenuItem`, a new reusable, component-based menu item
+      ░   that is procedurally drawn and highly configurable (size, text, font size).
+      ░ ■ Created `LogoDisplay`, a new reusable component for interactive
+      ░   footer logos with hover and press feedback.
+
+   █  Fixed
+      ░ ■ Resolved a critical input bug where only the first of several UI
+      ░   components would correctly process mouse clicks. Components now use
+      ░   the correct `mouse_filter` property for reliable, engine-idiomatic
+      ░   input handling.
+
+
+
+
+
+
+
 
 
 
@@ -2197,7 +2235,14 @@ FILE: ./docs/CHANGELOG.txt
       ░   `PlayerStateData` resource, which is populated by the `Player` owner
       ░   node. This completes a critical step in adhering to the Dependency
       ░   Inversion Principle, making states more modular and testable.
-
+      ░ ■ Hardened system contracts by creating a new `Identifiers` singleton
+      ░   to hold all string-based group names and pool keys. All scripts
+      ░   were refactored to use these constants, eliminating the risk of
+      ░   runtime errors from string typos and improving code safety.
+      ░ ■ Refactored the `_ready` functions in `Player` and `BaseBoss` to
+      ░   adhere to the Single Responsibility Principle. All initialization
+      ░   logic is now delegated to smaller, clearly named helper methods,
+      ░   improving code readability and maintainability.
 
    █  Architectural Changes
       ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
@@ -2239,7 +2284,9 @@ FILE: ./docs/CHANGELOG.txt
       ░ ■ Fixed a bug where Turret minions would continue to fire after the
       ░   boss was defeated. The central `game.gd` script now finds and calls a
       ░   new `deactivate()` method on all remaining minions upon boss death.
-
+      ░ ■ Resolved a critical autoload naming conflict caused by `class_name`
+      ░   hiding the `Identifiers` singleton, which previously caused a cascade
+      ░   of parse errors across the entire project.
 
 
 
@@ -2724,6 +2771,7 @@ PhysicsLayers="*res://src/core/util/physics_layers.gd"
 CombatUtils="*res://src/core/util/combat_utils.gd"
 GridUtils="*res://src/core/util/grid_utils.gd"
 CameraManager="*res://src/core/systems/camera_manager.gd"
+Identifiers="*res://src/core/util/identifiers.gd"
 
 [display]
 
@@ -3117,126 +3165,76 @@ script = ExtResource("1_hud_script")
 FILE: ./src/ui/menu_manager/menu_manager.gd
 =====================================
 # src/ui/menu_manager/menu_manager.gd
-#
-# A reusable script for creating keyboard and mouse-navigable menus. An instance
-# of this is created by each menu scene to manage its own set of buttons.
+# MODIFIED: Audio feedback is now enabled for navigation.
 extends Node
 
-# --- Inner Class: MenuItem ---
-# A simple data structure to bundle a button node with its "type" (for sounds).
-class MenuItem:
-	var button: TextureButton
-	var type: String
-
-	func _init(btn: TextureButton, btn_type: String):
-		self.button = btn
-		self.type = btn_type
-
-# --- Variables ---
-var menu_items = []
+var menu_items: Array[Control] = []
 var current_selection = 0
-var cursor_left: TextureRect
-var cursor_right: TextureRect
+
+var _cursor_left: ColorRect
+var _cursor_right: ColorRect
 
 func _ready():
-	# Create the cursor sprites using the safe path from AssetPaths.
-	cursor_left = TextureRect.new()
-	cursor_left.texture = load(AssetPaths.SPRITE_MENU_CURSOR)
-	cursor_left.flip_h = true # Point it inwards.
-	add_child(cursor_left)
+	_cursor_left = ColorRect.new()
+	_cursor_left.size = Vector2(20, 20)
+	_cursor_left.color = Palette.COLOR_UI_ACCENT_PRIMARY
+	_cursor_left.visible = false
+	add_child(_cursor_left)
 
-	cursor_right = TextureRect.new()
-	cursor_right.texture = load(AssetPaths.SPRITE_MENU_CURSOR)
-	add_child(cursor_right)
+	_cursor_right = ColorRect.new()
+	_cursor_right.size = Vector2(20, 20)
+	_cursor_right.color = Palette.COLOR_UI_ACCENT_PRIMARY
+	_cursor_right.visible = false
+	add_child(_cursor_right)
 
-	cursor_left.visible = false
-	cursor_right.visible = false
+func setup_menu(items: Array[Control]):
+	if items.is_empty(): return
+	self.menu_items = items
+	
+	for item in menu_items:
+		item.focus_entered.connect(_update_cursors.bind(item))
+		# NEW: Play sound when focus changes via keyboard OR mouse
+		item.focus_entered.connect(func(): AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE))
 
-# The main setup function, called by the parent menu scene.
-func setup_menu(items: Array):
-	menu_items = items
+
+func _unhandled_input(event):
 	if menu_items.is_empty(): return
 
-	for i in range(menu_items.size()):
-		var menu_item = menu_items[i]
-		# Connect signals for each button.
-		# When the mouse enters a button, we call our own function to handle it.
-		menu_item.button.mouse_entered.connect(_on_mouse_entered.bind(i))
-		# When the mouse leaves, we tell the cursor manager to reset the cursor state.
-		menu_item.button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		# When the button is pressed (by click or keyboard), we handle the sound.
-		menu_item.button.pressed.connect(_on_item_pressed.bind(i))
-
-	# Set the initial selection to the first item.
-	current_selection = 0
-	# Wait one frame to ensure all buttons have their positions calculated.
-	await get_tree().process_frame
-	# Now update the cursors to point to the first item.
-	_update_cursors()
-	cursor_left.visible = true
-	cursor_right.visible = true
-
-# Catches unhandled input for keyboard/controller navigation.
-func _unhandled_input(event):
 	if event.is_action_pressed("ui_down"):
 		_change_selection(1)
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_up"):
 		_change_selection(-1)
-	elif event.is_action_pressed("ui_accept"):
-		if not menu_items.is_empty():
-			menu_items[current_selection].button.emit_signal("pressed")
+		get_viewport().set_input_as_handled()
 
-# Plays context-specific sounds based on the button type.
-func _on_item_pressed(index: int):
-	if index < 0 or index >= menu_items.size(): return
-
-	var item_type = menu_items[index].type
-	match item_type:
-		"BACK":
-			AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_BACK)
-		"START":
-			AudioManager.play_sfx(AssetPaths.AUDIO_SFX_START_CHIME)
-		_: # Default case for "SELECT" or any other type.
-			AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
-
-# Handles the logic for changing the selected item via keyboard.
 func _change_selection(amount: int):
 	if menu_items.size() <= 1:
+		# THE FIX: Audio call is now active.
 		AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_ERROR)
 		return
 
 	var new_selection = (current_selection + amount + menu_items.size()) % menu_items.size()
+	current_selection = new_selection
+	
+	menu_items[current_selection].grab_focus()
 
-	if new_selection != current_selection:
-		current_selection = new_selection
-		AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE)
-		_update_cursors()
-	else:
-		# This case can happen if there's only one item.
-		AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_ERROR)
-
-# Called when the mouse pointer enters a button's collision shape.
-func _on_mouse_entered(index: int):
-	CursorManager.set_pointer_state(true)
-	if current_selection != index:
-		current_selection = index
-		AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE)
-		_update_cursors()
-
-# Moves the visual cursors to frame the currently selected button.
-func _update_cursors():
-	if menu_items.is_empty(): return
-
-	var selected_button = menu_items[current_selection].button
-	var button_pos = selected_button.position
-	var button_size = selected_button.size
+func _update_cursors(selected_item: Control):
+	await get_tree().process_frame
+	
+	if not is_instance_valid(selected_item): return
+	
+	var item_pos = selected_item.global_position
+	var item_size = selected_item.size
 	var cursor_padding = 40
-
-	cursor_left.position.x = button_pos.x - cursor_left.size.x - cursor_padding
-	cursor_left.position.y = button_pos.y + (button_size.y - cursor_left.size.y) / 2
-
-	cursor_right.position.x = button_pos.x + button_size.x + cursor_padding
-	cursor_right.position.y = button_pos.y + (button_size.y - cursor_right.size.y) / 2
+	
+	_cursor_left.global_position.y = item_pos.y + (item_size.y - _cursor_left.size.y) / 2
+	_cursor_left.global_position.x = item_pos.x - cursor_padding - _cursor_left.size.x
+	
+	_cursor_right.global_position.y = item_pos.y + (item_size.y - _cursor_right.size.y) / 2
+	_cursor_right.global_position.x = item_pos.x + item_size.x + cursor_padding
+	
+	_cursor_left.visible = true
+	_cursor_right.visible = true
 
 =====================================
 FILE: ./src/ui/screens/game_over_screen/game_over_screen.tscn
@@ -3884,49 +3882,76 @@ script = ExtResource("1_menu_item_script")
 FILE: ./src/ui/components/styled_menu_item/styled_menu_item.gd
 =====================================
 # src/ui/components/styled_menu_item/styled_menu_item.gd
-#
 # The core logic for our new, reusable, procedurally-drawn menu item.
-# This component will be the cornerstone of our "Framer + Geometry Wars" UI.
-# It extends Control and uses the _draw() function to render itself.
 @tool
 class_name StyledMenuItem
 extends Control
 
-# --- Animated Properties ---
-# REMOVED: corner_radius is no longer needed.
+signal pressed
+
+@export var text: String = "Menu Item" : set = set_text
+# THE FIX: Expose font_size so it can be changed per instance.
+@export var font_size: int = 48 : set = set_font_size
+
 @export var glow_size: float = 0.0 : set = set_glow_size
 @export var glow_alpha: float = 0.0 : set = set_glow_alpha
 
-# --- Properties ---
-@export var text: String = "Menu Item" : set = set_text
-
-# --- State ---
 var is_hovered: bool = false
 var is_pressed: bool = false
-var is_selected: bool = false # For keyboard/controller navigation
+var is_selected: bool = false
 
-# --- Internal References ---
 var _font: Font
 var _active_tween: Tween
 
 func _ready() -> void:
 	_font = load(AssetPaths.FONT_BOLD)
+	focus_mode = FOCUS_ALL
+	mouse_filter = MOUSE_FILTER_STOP
+	
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
+	resized.connect(queue_redraw)
+	focus_entered.connect(_on_focus_entered)
+	focus_exited.connect(_on_focus_exited)
 
-# --- The Core Drawing Function ---
+func _gui_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_accept") and has_focus():
+		get_viewport().set_input_as_handled()
+		AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
+		emit_signal("pressed")
+		_show_keyboard_press_feedback()
+		return
+
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.is_pressed():
+			is_pressed = true
+			queue_redraw()
+		else:
+			if is_pressed:
+				AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
+				emit_signal("pressed")
+				is_pressed = false
+				queue_redraw()
+
+func _show_keyboard_press_feedback() -> void:
+	is_pressed = true
+	queue_redraw()
+	await get_tree().create_timer(0.1).timeout
+	if not is_instance_valid(self): return
+	is_pressed = false
+	queue_redraw()
+
 func _draw() -> void:
-	# --- Step 1: Draw the Glow Effect ---
-	if glow_size > 0.0 and glow_alpha > 0.0:
-		_draw_glow()
-
-	# --- Step 2: Draw the Main Button ---
 	var bg_color: Color
 	var text_color: Color
 	var border_color: Color
 	var border_width: float = 3.0
 
-	if is_hovered or is_selected:
+	if is_pressed:
+		bg_color = Palette.get_color(2)
+		text_color = Palette.COLOR_TEXT_PRIMARY
+		border_color = Palette.COLOR_UI_ACCENT_PRIMARY
+	elif is_hovered or is_selected:
 		bg_color = Palette.COLOR_UI_ACCENT_PRIMARY
 		text_color = Palette.COLOR_BACKGROUND
 		border_color = Palette.get_color(4)
@@ -3935,35 +3960,30 @@ func _draw() -> void:
 		text_color = Palette.COLOR_TEXT_PRIMARY
 		border_color = Palette.COLOR_UI_ACCENT_PRIMARY
 
-	# REVERTED: Draw sharp rectangles for the background and border.
+	if (is_hovered or is_selected) and glow_size > 0.0 and glow_alpha > 0.0:
+		var glow_base_color = Palette.COLOR_UI_GLOW
+		var final_glow_color = Color(glow_base_color.r, glow_base_color.g, glow_base_color.b, glow_alpha)
+		var glow_rect = Rect2(Vector2.ZERO, size).grow(glow_size)
+		draw_rect(glow_rect, final_glow_color)
+
 	draw_rect(Rect2(Vector2.ZERO, size), bg_color)
 	draw_rect(Rect2(Vector2.ZERO, size), border_color, false, border_width)
-	
-	# --- Step 3: Draw the Text ---
-	var font_size = 48
+
+	# THE FIX: Use the font_size variable instead of a hardcoded value.
 	var text_width = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size).x
 	var text_pos_x = (size.x - text_width) / 2
 	var text_pos_y = (size.y / 2) + (font_size / 3.0)
 	draw_string(_font, Vector2(text_pos_x, text_pos_y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color)
 
-# --- Drawing Helpers ---
-func _draw_glow() -> void:
-	var glow_base_color = Palette.COLOR_UI_GLOW
-	var final_glow_color = Color(glow_base_color.r, glow_base_color.g, glow_base_color.b, glow_alpha)
-	var glow_rect = Rect2(Vector2.ZERO, size).grow(glow_size)
-	
-	# REVERTED: Draw a sharp rectangle for the glow.
-	draw_rect(glow_rect, final_glow_color)
-
-# REMOVED: The _draw_rounded_rect and _draw_rounded_rect_border functions are no longer needed.
-
-# --- Property Setters ---
 func set_text(new_text: String):
 	if text != new_text:
 		text = new_text
 		queue_redraw()
 
-# REMOVED: The set_corner_radius function is no longer needed.
+func set_font_size(new_size: int):
+	if font_size != new_size:
+		font_size = new_size
+		queue_redraw()
 
 func set_glow_size(value: float):
 	glow_size = value
@@ -3973,26 +3993,39 @@ func set_glow_alpha(value: float):
 	glow_alpha = value
 	queue_redraw()
 
-# --- Signal Handlers ---
 func _on_mouse_entered() -> void:
 	is_hovered = true
+	grab_focus()
 	CursorManager.set_pointer_state(true)
+
+func _on_mouse_exited() -> void:
+	is_hovered = false
+	if is_pressed:
+		is_pressed = false
+		queue_redraw()
+	CursorManager.set_pointer_state(false)
+
+func _on_focus_entered():
+	is_selected = true
+	_animate_selection(true)
+	queue_redraw()
+
+func _on_focus_exited():
+	is_selected = false
+	_animate_selection(false)
+	queue_redraw()
+
+func _animate_selection(p_is_selected: bool):
 	if _active_tween and _active_tween.is_valid():
 		_active_tween.kill()
 	
 	_active_tween = create_tween().set_parallel(true)
-	_active_tween.tween_property(self, "glow_size", 28.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_active_tween.tween_property(self, "glow_alpha", 0.1, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-
-func _on_mouse_exited() -> void:
-	is_hovered = false
-	CursorManager.set_pointer_state(false)
-	if _active_tween and _active_tween.is_valid():
-		_active_tween.kill()
-		
-	_active_tween = create_tween().set_parallel(true)
-	_active_tween.tween_property(self, "glow_size", 0.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_active_tween.tween_property(self, "glow_alpha", 0.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	var target_glow_size = 28.0 if p_is_selected else 0.0
+	var target_glow_alpha = 0.1 if p_is_selected else 0.0
+	var duration = 0.3 if p_is_selected else 0.2
+	
+	_active_tween.tween_property(self, "glow_size", target_glow_size, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_active_tween.tween_property(self, "glow_alpha", target_glow_alpha, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
 =====================================
@@ -4066,6 +4099,117 @@ func _on_knob_mouse_entered():
 func _on_knob_mouse_exited():
 	if not is_dragging:
 		CursorManager.set_pointer_state(false)
+
+=====================================
+FILE: ./src/ui/components/logo_display/logo_display.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://b1c2d3e4f5g6h"]
+
+[ext_resource type="Script" path="res://src/ui/components/logo_display/logo_display.gd" id="1_logo_script"]
+
+[node name="LogoDisplay" type="Control"]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_logo_script")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+=====================================
+FILE: ./src/ui/components/logo_display/logo_display.gd
+=====================================
+@tool
+class_name LogoDisplay
+extends Control
+
+signal pressed(logo_name)
+
+@onready var texture_rect: TextureRect = $TextureRect
+
+@export var texture: Texture2D:
+	set(value):
+		texture = value
+		if is_instance_valid(texture_rect):
+			texture_rect.texture = texture
+
+@export var logo_name: String = "Logo"
+@export var glow_size: float = 0.0 : set = set_glow_size
+@export var glow_alpha: float = 0.0 : set = set_glow_alpha
+
+var is_hovered: bool = false
+var is_pressed: bool = false
+var _active_tween: Tween
+
+func _ready():
+	mouse_filter = MOUSE_FILTER_STOP
+	
+	if is_instance_valid(texture_rect) and texture:
+		texture_rect.texture = texture
+
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.is_pressed():
+			is_pressed = true
+			queue_redraw()
+		else:
+			if is_pressed:
+				# THE FIX: Play the selection sound on click.
+				AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
+				emit_signal("pressed", logo_name)
+				is_pressed = false
+				queue_redraw()
+
+func _draw() -> void:
+	if is_hovered and glow_size > 0.0 and glow_alpha > 0.0:
+		var glow_base_color = Palette.COLOR_UI_GLOW
+		var final_glow_color = Color(glow_base_color.r, glow_base_color.g, glow_base_color.b, glow_alpha)
+		var glow_rect = Rect2(Vector2.ZERO, size).grow(glow_size)
+		draw_rect(glow_rect, final_glow_color)
+
+func set_glow_size(value: float):
+	glow_size = value
+	queue_redraw()
+
+func set_glow_alpha(value: float):
+	glow_alpha = value
+	queue_redraw()
+
+func _on_mouse_entered():
+	is_hovered = true
+	CursorManager.set_pointer_state(true)
+	AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE)
+	_animate_hover(true)
+
+func _on_mouse_exited():
+	is_hovered = false
+	if is_pressed:
+		is_pressed = false
+		queue_redraw()
+	CursorManager.set_pointer_state(false)
+	_animate_hover(false)
+
+func _animate_hover(p_is_hovered: bool):
+	if _active_tween and _active_tween.is_valid():
+		_active_tween.kill()
+	
+	_active_tween = create_tween().set_parallel(true)
+	var target_glow_size = 20.0 if p_is_hovered else 0.0
+	var target_glow_alpha = 0.1 if p_is_hovered else 0.0
+	var duration = 0.3 if p_is_hovered else 0.2
+	
+	_active_tween.tween_property(self, "glow_size", target_glow_size, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_active_tween.tween_property(self, "glow_alpha", target_glow_alpha, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 =====================================
 FILE: ./src/scenes/loading/loading_screen.tscn
@@ -4190,14 +4334,14 @@ script = ExtResource("1_game_script")
 FILE: ./src/scenes/game/game.gd
 =====================================
 # src/scenes/game/game.gd
-# The game scene now correctly awaits the death cinematic sequence handle.
+# CORRECTED: Uses Identifiers constants for group checks.
 extends Node
 
 var player_node: Node = null
 var level_container: Node = null
 @onready var camera: Camera2D = $Camera2D
 var _boss_died_token: int = 0
-var _death_sequence_handle: SequenceHandle # To track the victory sequence
+var _death_sequence_handle: SequenceHandle
 
 func _ready():
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
@@ -4217,7 +4361,7 @@ func _ready():
 			var terrain_builder = TerrainBuilder.new()
 			terrain_builder.fill_viewport(level_container, build_data, camera)
 
-	player_node = get_tree().get_first_node_in_group("player")
+	player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
 
@@ -4234,9 +4378,7 @@ func _on_boss_died(payload: Dictionary):
 	if is_instance_valid(player_node): player_node.set_physics_process(false)
 	var boss_node = payload.get("boss_node")
 
-	# THE FIX: Deactivate all active minions when the boss dies.
 	_deactivate_all_minions()
-	print("VERIFICATION: All minions deactivated on boss death.")
 
 	var wait_step_1 = WaitStep.new(); wait_step_1.duration = 1.0
 	var wait_step_2 = WaitStep.new(); wait_step_2.duration = 1.5
@@ -4251,14 +4393,236 @@ func _on_boss_died(payload: Dictionary):
 		SceneManager.go_to_victory()
 
 func _deactivate_all_minions():
-	# We get all nodes in the "enemy" group. Since the boss is already dead
-	# and will be removed, this will effectively target all remaining minions.
-	var minions = get_tree().get_nodes_in_group("enemy")
+	var minions = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
 	for minion in minions:
-		# Check if the minion has the deactivate method before calling it.
-		# This makes the system robust for future enemy types.
 		if minion.has_method("deactivate"):
 			minion.deactivate()
+
+=====================================
+FILE: ./src/scenes/dev/gui_title_screen.tscn
+=====================================
+[gd_scene load_steps=8 format=3 uid="uid://beattfyix2423"]
+
+[ext_resource type="Script" uid="uid://i8wrnl0qhpb6" path="res://src/scenes/dev/gui_title_screen.gd" id="1_gui_title_script"]
+[ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
+[ext_resource type="PackedScene" uid="uid://b1c2d3e4f5g6h" path="res://src/ui/components/logo_display/logo_display.tscn" id="3_logo_display"]
+[ext_resource type="Texture2D" uid="uid://t2u26wkw02xm" path="res://assets/sprites/ui/logos/newgrounds_logo.png" id="4_logo_ng"]
+[ext_resource type="Texture2D" uid="uid://2gqa4m05wd20" path="res://assets/sprites/ui/logos/godot_logo.png" id="5_logo_godot"]
+[ext_resource type="Texture2D" uid="uid://d0fuu548hoouq" path="res://assets/sprites/ui/logos/itch_logo.png" id="6_logo_itch"]
+[ext_resource type="FontFile" uid="uid://8lowjix2qis2" path="res://assets/fonts/MPLUSRounded1c-Black.ttf" id="7_font_black"]
+
+[node name="GuiTitleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gui_title_script")
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TopSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.972549, 0.972549, 1)
+theme_override_fonts/font = ExtResource("7_font_black")
+theme_override_font_sizes/font_size = 128
+text = "BOX BATTLE"
+horizontal_alignment = 1
+
+[node name="TitleMenuSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="MenuItemsVBox" type="VBoxContainer" parent="MainVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="StartButton" parent="MainVBox/MenuItemsVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+focus_mode = 2
+font_size = 64
+
+[node name="OptionsButton" parent="MainVBox/MenuItemsVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+focus_mode = 2
+font_size = 64
+
+[node name="ExitButton" parent="MainVBox/MenuItemsVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+focus_mode = 2
+font_size = 64
+
+[node name="ExpandSpacer" type="Control" parent="MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FooterHBox" type="HBoxContainer" parent="MainVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 50
+alignment = 1
+
+[node name="NewgroundsLogo" parent="MainVBox/FooterHBox" instance=ExtResource("3_logo_display")]
+unique_name_in_owner = true
+layout_mode = 2
+texture = ExtResource("4_logo_ng")
+logo_name = "Newgrounds"
+
+[node name="GodotLogo" parent="MainVBox/FooterHBox" instance=ExtResource("3_logo_display")]
+unique_name_in_owner = true
+layout_mode = 2
+texture = ExtResource("5_logo_godot")
+logo_name = "Godot"
+
+[node name="ItchLogo" parent="MainVBox/FooterHBox" instance=ExtResource("3_logo_display")]
+unique_name_in_owner = true
+layout_mode = 2
+texture = ExtResource("6_logo_itch")
+logo_name = "Itch"
+
+[node name="BottomSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+
+=====================================
+FILE: ./src/scenes/dev/test_title_screen.gd
+=====================================
+# src/scenes/dev/test_title_screen.gd
+# REFACTORED: This version uses a clean, hierarchical container system
+# for a much simpler and more robust layout.
+extends Control
+
+const StyledMenuItemScene = preload(AssetPaths.SCENE_STYLED_MENU_ITEM)
+const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+const LogoDisplayScene = preload(AssetPaths.SCENE_LOGO_DISPLAY)
+
+func _ready():
+	print("New Test Title Screen Initialized.")
+
+	var bg = ColorRect.new()
+	bg.color = Palette.COLOR_BACKGROUND
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(bg)
+
+	var main_vbox = VBoxContainer.new()
+	main_vbox.set_anchors_preset(Control.PRESET_CENTER)
+	main_vbox.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	main_vbox.grow_vertical = Control.GROW_DIRECTION_BOTH
+	add_child(main_vbox)
+
+	var title_label = Label.new()
+	title_label.text = "BOX BATTLE"
+	title_label.add_theme_font_override("font", load(AssetPaths.FONT_BLACK))
+	title_label.add_theme_font_size_override("font_size", 128)
+	title_label.add_theme_color_override("font_color", Palette.COLOR_TEXT_HEADER)
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+	var menu_items_vbox = VBoxContainer.new()
+	menu_items_vbox.alignment = VBoxContainer.ALIGNMENT_CENTER
+	var start_button = StyledMenuItemScene.instantiate(); start_button.text = "START GAME"
+	var options_button = StyledMenuItemScene.instantiate(); options_button.text = "OPTIONS"
+	var exit_button = StyledMenuItemScene.instantiate(); exit_button.text = "EXIT"
+	
+	# SETTING 1: To increase space between OPTIONS and EXIT, change this value.
+	exit_button.add_theme_constant_override("margin_top", 80)
+	
+	menu_items_vbox.add_child(start_button)
+	menu_items_vbox.add_child(options_button)
+	menu_items_vbox.add_child(exit_button)
+
+	var footer_hbox = HBoxContainer.new()
+	footer_hbox.alignment = HBoxContainer.ALIGNMENT_CENTER
+	footer_hbox.add_theme_constant_override("separation", 50)
+	var newgrounds_logo = LogoDisplayScene.instantiate(); newgrounds_logo.texture = load(AssetPaths.SPRITE_LOGO_NEWGROUNDS)
+	var godot_logo = LogoDisplayScene.instantiate(); godot_logo.texture = load(AssetPaths.SPRITE_LOGO_GODOT)
+	var itch_logo = LogoDisplayScene.instantiate(); itch_logo.texture = load(AssetPaths.SPRITE_LOGO_ITCH)
+	footer_hbox.add_child(newgrounds_logo)
+	footer_hbox.add_child(godot_logo)
+	footer_hbox.add_child(itch_logo)
+
+	# --- Add sections to the main container and SET SPACING ---
+	
+	# Set top padding to 0 as requested
+	var top_spacer = Control.new(); top_spacer.custom_minimum_size.y = 0
+	main_vbox.add_child(top_spacer)
+	
+	main_vbox.add_child(title_label)
+	
+	var title_menu_spacer = Control.new(); title_menu_spacer.custom_minimum_size.y = 20
+	main_vbox.add_child(title_menu_spacer)
+	
+	main_vbox.add_child(menu_items_vbox)
+	
+	var expand_spacer = Control.new(); expand_spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	main_vbox.add_child(expand_spacer)
+
+	main_vbox.add_child(footer_hbox)
+	
+	# SETTING 2: To increase space between EXIT and the LOGOS, increase this value.
+	# This adds padding to the bottom of the screen, pushing the logos up.
+	var bottom_spacer = Control.new(); bottom_spacer.custom_minimum_size.y = 50
+	main_vbox.add_child(bottom_spacer)
+	
+	menu_items_vbox.add_theme_constant_override("separation", 35)
+
+	# --- Menu Manager Setup ---
+	start_button.pressed.connect(_on_start_button_pressed)
+	options_button.pressed.connect(_on_options_button_pressed)
+	exit_button.pressed.connect(_on_exit_button_pressed)
+	
+	var menu_manager = MenuManagerScript.new()
+	add_child(menu_manager)
+
+	var menu_items: Array[Control] = [start_button, options_button, exit_button]
+	menu_manager.setup_menu(menu_items)
+	
+	await get_tree().process_frame
+	start_button.grab_focus()
+
+# --- Signal Handlers ---
+func _on_start_button_pressed():
+	print("Start Button Pressed")
+
+func _on_options_button_pressed():
+	print("Options Button Pressed")
+
+func _on_exit_button_pressed():
+	print("Exit Button Pressed")
+	get_tree().quit()
+
 
 =====================================
 FILE: ./src/scenes/dev/test_ui.gd
@@ -4274,12 +4638,29 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
 
+
+=====================================
+FILE: ./src/scenes/dev/test_title_screen.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://dkljf83kdjfhs"]
+
+[ext_resource type="Script" path="res://src/scenes/dev/test_title_screen.gd" id="1_test_title"]
+
+[node name="TestTitleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_test_title")
+
 =====================================
 FILE: ./src/scenes/dev/test_ui.tscn
 =====================================
 [gd_scene load_steps=3 format=3 uid="uid://dma2j2a2h30d1"]
 
-[ext_resource type="Script" uid="uid://cyfvs7mg1lxlj" path="res://src/scenes/dev/test_ui.gd" id="1_test_ui_script"]
+[ext_resource type="Script" uid="uid://d3gcr71ay74kd" path="res://src/scenes/dev/test_ui.gd" id="1_test_ui_script"]
 [ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
 
 [node name="TestUI" type="Control"]
@@ -4313,8 +4694,55 @@ offset_right = 200.0
 offset_bottom = 40.0
 grow_horizontal = 2
 grow_vertical = 2
+focus_mode = 2
 text = "TEST BUTTON"
 
+
+=====================================
+FILE: ./src/scenes/dev/gui_title_screen.gd
+=====================================
+# src/scenes/dev/gui_title_screen.gd
+# This script configures the layout and logic for the nodes defined in the .tscn file.
+extends Control
+
+const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+
+# Get references to the nodes from the scene tree
+@onready var background_color: ColorRect = $BackgroundColor
+@onready var start_button: StyledMenuItem = %StartButton
+@onready var options_button: StyledMenuItem = %OptionsButton
+@onready var exit_button: StyledMenuItem = %ExitButton
+@onready var newgrounds_logo: LogoDisplay = %NewgroundsLogo
+@onready var godot_logo: LogoDisplay = %GodotLogo
+@onready var itch_logo: LogoDisplay = %ItchLogo
+
+func _ready():
+	# --- Configure elements that need runtime setup ---
+	background_color.color = Palette.COLOR_BACKGROUND
+	
+	start_button.text = "START GAME"
+	options_button.text = "OPTIONS"
+	exit_button.text = "EXIT"
+
+	# --- Connect signals and set up navigation logic ---
+	start_button.pressed.connect(func(): print("Start Pressed"))
+	options_button.pressed.connect(func(): print("Options Pressed"))
+	exit_button.pressed.connect(get_tree().quit)
+	
+	newgrounds_logo.pressed.connect(_on_logo_pressed)
+	godot_logo.pressed.connect(_on_logo_pressed)
+	itch_logo.pressed.connect(_on_logo_pressed)
+	
+	var menu_manager = MenuManagerScript.new()
+	add_child(menu_manager)
+	var menu_items: Array[Control] = [start_button, options_button, exit_button]
+	menu_manager.setup_menu(menu_items)
+	
+	await get_tree().process_frame
+	start_button.grab_focus()
+
+func _on_logo_pressed(logo_name: String):
+	print("%s Pressed" % logo_name)
 
 =====================================
 FILE: ./src/scenes/main/main.tscn
@@ -4331,18 +4759,14 @@ script = ExtResource("1_main_script")
 FILE: ./src/scenes/main/main.gd
 =====================================
 # src/scenes/main/main.gd
-# This is the main entry point for the game, as defined in project.godot.
-# Its only job is to immediately delegate to the SceneManager.
 extends Node
 
 func _ready():
-	# Validate asset paths in debug builds.
 	if OS.is_debug_build():
 		AssetPaths.validate_all_paths()
-
-	# Delegate the initial scene load to our new centralized manager.
-	SceneManager.go_to_title_screen()
-
+	
+	# MODIFIED: Point to the new GUI-based title screen
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_TITLE_SCREEN)
 
 =====================================
 FILE: ./src/core/sequencing/sequence_step.gd
@@ -4661,6 +5085,34 @@ func get_color(index: int) -> Color:
 	return Color.MAGENTA # Return a highly visible error color
 
 =====================================
+FILE: ./src/core/util/identifiers.gd
+=====================================
+# src/core/util/identifiers.gd
+# A central authority for all string-based identifiers used in the project,
+# such as group names and pool keys. Using these constants prevents bugs
+# caused by typos in raw strings.
+extends Node
+
+# Usage: Identifiers.Groups.PLAYER
+class Groups:
+	const PLAYER = "player"
+	const ENEMY = "enemy"
+	const WORLD = "world"
+	const HAZARD = "hazard"
+	const ONEWAY_PLATFORMS = "oneway_platforms"
+	const PLAYER_PROJECTILE = "player_projectile"
+	const ENEMY_PROJECTILE = "enemy_projectile"
+
+# Usage: Identifiers.Pools.PLAYER_SHOTS
+class Pools:
+	const PLAYER_SHOTS = &"player_shots"
+	const BOSS_SHOTS = &"boss_shots"
+	const TURRET_SHOTS = &"turret_shots"
+
+# This script is intentionally minimal and has no _ready() function.
+
+
+=====================================
 FILE: ./src/core/util/asset_paths.gd
 =====================================
 # src/core/util/asset_paths.gd
@@ -4702,6 +5154,10 @@ const SCENE_OPTIONS_MENU = "res://src/ui/screens/options_menu/options_menu.tscn"
 const SCENE_SOUND_MENU = "res://src/ui/screens/sound_menu/sound_menu.tscn"
 const SCENE_CONTROLS_MENU = "res://src/ui/screens/controls_menu/controls_menu.tscn"
 const SCENE_CREDITS_MENU = "res://src/ui/screens/credits_menu/credits_menu.tscn"
+const SCENE_TEST_TITLE_SCREEN = "res://src/scenes/dev/test_title_screen.tscn"
+const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
+const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
+const SCENE_GUI_TITLE_SCREEN = "res://src/scenes/dev/gui_title_screen.tscn"
 
 const SPRITE_TITLE = "res://assets/sprites/ui/title/box_battle_title.png"
 const SPRITE_MENU_CURSOR = "res://assets/sprites/ui/menu/menu-cursor.png"
@@ -4719,6 +5175,9 @@ const SPRITE_CHECKBOX_CHECKED = "res://assets/sprites/ui/checkbox/checkbox-check
 const SPRITE_CHECKBOX_UNCHECKED = "res://assets/sprites/ui/checkbox/checkbox-unchecked.png"
 const SPRITE_ICON_SOUND_ON = "res://assets/sprites/ui/icons/icon-sound-on.png"
 const SPRITE_ICON_SOUND_OFF = "res://assets/sprites/ui/icons/icon-sound-off.png"
+const SPRITE_LOGO_GODOT = "res://assets/sprites/ui/logos/godot_logo.png"
+const SPRITE_LOGO_NEWGROUNDS = "res://assets/sprites/ui/logos/newgrounds_logo.png"
+const SPRITE_LOGO_ITCH = "res://assets/sprites/ui/logos/itch_logo.png"
 
 # --- FONTS ---
 const FONT_BLACK = "res://assets/fonts/MPLUSRounded1c-Black.ttf"
@@ -4734,7 +5193,7 @@ const AUDIO_SFX_MENU_SELECT = "res://assets/audio/sfx/menu-select.mp3"
 const AUDIO_SFX_START_CHIME = "res://assets/audio/sfx/start-chime.mp3"
 
 
-# --- NEW: VALIDATION SYSTEM ---
+# --- VALIDATION SYSTEM ---
 # This function runs at startup to verify that every path defined in this
 # script actually points to a real file.
 func validate_all_paths() -> void:
@@ -5035,9 +5494,9 @@ const TurretShotScene = preload(AssetPaths.SCENE_TURRET_SHOT)
 var _pools: Dictionary = {}
 
 func _ready():
-	_create_pool_for_scene(&"player_shots", PlayerShotScene, 15)
-	_create_pool_for_scene(&"boss_shots", BossShotScene, 30)
-	_create_pool_for_scene(&"turret_shots", TurretShotScene, 20)
+	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, PlayerShotScene, 15)
+	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, BossShotScene, 30)
+	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, TurretShotScene, 20)
 
 func reset():
 	for pool_name in _pools:
@@ -5095,7 +5554,6 @@ func return_instance(p_instance: Node):
 	
 	if not _pools[pool_name].inactive.has(p_instance):
 		_pools[pool_name].inactive.append(p_instance)
-
 
 =====================================
 FILE: ./src/core/systems/audio_manager.gd
@@ -5432,7 +5890,7 @@ FILE: ./src/core/building/terrain_builder.gd
 # Responsibility: To create all static level geometry. It now uses Polygon2D
 # for visuals to prevent conflicts with the debug drawing system.
 class_name TerrainBuilder
-extends RefCounted
+extends Node
 
 const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
 
@@ -5479,12 +5937,11 @@ func _create_background_tile(parent_node: Node, grid_pos: Vector2i):
 	parent_node.add_child(visual_rect)
 	parent_node.move_child(visual_rect, 0)
 
-# --- MODIFIED: Uses Polygon2D for visuals ---
 func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = 2
-	static_body.add_to_group("world")
+	static_body.add_to_group(Identifiers.Groups.WORLD)
 	
 	var collision_shape := CollisionShape2D.new()
 	var rectangle_shape := RectangleShape2D.new()
@@ -5503,13 +5960,12 @@ func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	
 	parent_node.add_child(static_body)
 
-# --- MODIFIED: Uses Polygon2D for visuals ---
 func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = 2
-	static_body.add_to_group("world")
-	static_body.add_to_group("oneway_platforms")
+	static_body.add_to_group(Identifiers.Groups.WORLD)
+	static_body.add_to_group(Identifiers.Groups.ONEWAY_PLATFORMS)
 	
 	var collision_shape := CollisionShape2D.new()
 	collision_shape.one_way_collision = true
@@ -5533,13 +5989,12 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	
 	parent_node.add_child(static_body)
 
-# --- MODIFIED: Uses Polygon2D for visuals ---
 func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = 10
-	static_body.add_to_group("world")
-	static_body.add_to_group("hazard")
+	static_body.add_to_group(Identifiers.Groups.WORLD)
+	static_body.add_to_group(Identifiers.Groups.HAZARD)
 	
 	var collision_shape := CollisionShape2D.new()
 	var rectangle_shape := RectangleShape2D.new()
@@ -5888,7 +6343,6 @@ rect = Rect2(-10, -10, 20, 20)
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
 
-
 =====================================
 FILE: ./src/projectiles/boss_shot.tscn
 =====================================
@@ -5924,7 +6378,7 @@ rect = Rect2(-30, -30, 60, 60)
 FILE: ./src/projectiles/turret_shot.gd
 =====================================
 # src/projectiles/turret_shot.gd
-# CORRECTED: Uses the correct static function call syntax.
+# CORRECTED: Uses Identifiers constants for group checks.
 extends Area2D
 
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
@@ -5936,7 +6390,7 @@ var speed = 500.0
 var damage = 1
 
 func _ready():
-	add_to_group("enemy_projectile")
+	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 	$ColorRect.color = Palette.COLOR_UI_ACCENT_PRIMARY
 
 func activate():
@@ -5952,7 +6406,7 @@ func _physics_process(delta):
 	global_position += direction * speed * delta
 
 func _on_body_entered(body: Node) -> void:
-	var damageable = CombatUtilsScript.find_damageable(body) # CORRECTED CALL
+	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = damage
@@ -6371,8 +6825,8 @@ func process_physics(_delta: float):
 FILE: ./src/entities/boss/base_boss.gd
 =====================================
 # src/entities/boss/base_boss.gd
-# This script now correctly uses a preloaded utility with static functions
-# for its in-editor validation checks.
+# REFACTORED: The _ready function is now broken into smaller helper methods
+# to improve readability and adhere to the Single Responsibility Principle.
 @tool
 class_name BaseBoss
 extends CharacterBody2D
@@ -6419,36 +6873,13 @@ func _ready():
 	armor_component = $ArmorComponent
 
 	if Engine.is_editor_hint(): return
-
-	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
-
-	add_to_group("enemy")
-	current_attack_patterns = phase_1_patterns
 	
-	b_data = BossStateData.new()
-	b_data.config = CombatDB.config
+	_initialize_data()
+	_initialize_components()
+	_initialize_state_machine()
+	_connect_signals()
 	
-	# Component Setup
-	health_component.setup(self, { "data_resource": b_data, "config": b_data.config })
-	armor_component.setup(self)
-	
-	# State Machine Setup
-	var states = {
-		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
-		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
-		State.COOLDOWN: BossStateCooldown.new(self, state_machine, b_data),
-		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
-		State.LUNGE: BossStateLunge.new(self, state_machine, b_data),
-	}
-	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
-	
-	# Signal Connections
-	health_component.health_changed.connect(_on_health_component_health_changed)
-	health_component.died.connect(_on_health_component_died)
-	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
-	
-	if get_tree().get_first_node_in_group("player"):
-		player = get_tree().get_first_node_in_group("player")
+	player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
@@ -6464,6 +6895,36 @@ func _physics_process(delta):
 	move_and_slide()
 	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
 		b_data.facing_direction *= -1.0
+
+# --- Private Helper Functions ---
+
+func _initialize_data():
+	add_to_group(Identifiers.Groups.ENEMY)
+	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
+	current_attack_patterns = phase_1_patterns
+	b_data = BossStateData.new()
+	b_data.config = CombatDB.config
+
+func _initialize_components():
+	health_component.setup(self, { "data_resource": b_data, "config": b_data.config })
+	armor_component.setup(self)
+
+func _initialize_state_machine():
+	var states = {
+		State.IDLE: BossStateIdle.new(self, state_machine, b_data),
+		State.ATTACK: BossStateAttack.new(self, state_machine, b_data),
+		State.COOLDOWN: BossStateCooldown.new(self, state_machine, b_data),
+		State.PATROL: BossStatePatrol.new(self, state_machine, b_data),
+		State.LUNGE: BossStateLunge.new(self, state_machine, b_data),
+	}
+	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
+
+func _connect_signals():
+	health_component.health_changed.connect(_on_health_component_health_changed)
+	health_component.died.connect(_on_health_component_died)
+	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
+
+# --- Public API & Logic ---
 
 func get_health_thresholds() -> Array[float]: return [phase_2_threshold, phase_3_threshold]
 
@@ -6491,12 +6952,14 @@ func _update_player_tracking():
 func fire_shot_at_player():
 	if _is_dead: return
 	if not is_instance_valid(player): return
-	var shot = ObjectPool.get_instance(&"boss_shots")
+	var shot = ObjectPool.get_instance(Identifiers.Pools.BOSS_SHOTS)
 	if not shot: return
 	_update_player_tracking()
 	shot.direction = (player.global_position - global_position).normalized()
 	shot.global_position = global_position
 	shot.activate()
+
+# --- Signal Handlers ---
 	
 func _on_health_threshold_reached(health_percentage: float):
 	var new_phases_remaining = phases_remaining
@@ -6716,7 +7179,7 @@ func start_telegraph(duration: float, p_size: Vector2, p_position: Vector2, p_co
 FILE: ./src/entities/components/combat_component.gd
 =====================================
 # src/entities/components/combat_component.gd
-# CORRECTED: Uses the correct static function call syntax.
+# CORRECTED: Uses Identifiers constants for group checks.
 class_name CombatComponent
 extends ComponentInterface
 
@@ -6743,7 +7206,7 @@ func teardown() -> void:
 func fire_shot():
 	p_data.attack_cooldown_timer = p_data.config.player_attack_cooldown
 	
-	var shot = ObjectPool.get_instance(&"player_shots")
+	var shot = ObjectPool.get_instance(Identifiers.Pools.PLAYER_SHOTS)
 	if not shot: return
 	
 	var shot_dir = Vector2(p_data.facing_direction, 0)
@@ -6759,11 +7222,11 @@ func trigger_pogo(pogo_target: Node) -> bool:
 
 	var should_bounce = false
 	
-	if p_data.is_pogo_attack and pogo_target.is_in_group("enemy_projectile"):
+	if p_data.is_pogo_attack and pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		should_bounce = true
 		ObjectPool.return_instance(pogo_target)
 	
-	var damageable = CombatUtilsScript.find_damageable(pogo_target) # CORRECTED CALL
+	var damageable = CombatUtilsScript.find_damageable(pogo_target)
 	if is_instance_valid(damageable):
 		should_bounce = true
 		var damage_info = DamageInfo.new()
@@ -6774,7 +7237,7 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		if damage_result.was_damaged:
 			damage_dealt.emit()
 
-	if pogo_target is StaticBody2D and pogo_target.is_in_group("world"):
+	if pogo_target is StaticBody2D and pogo_target.is_in_group(Identifiers.Groups.WORLD):
 		should_bounce = true
 
 	if should_bounce:
@@ -6831,8 +7294,7 @@ color = Color(1, 1, 1, 0.392157)
 FILE: ./src/entities/components/health_component.gd
 =====================================
 # src/entities/components/health_component.gd
-# CORRECTED: Hit-flash logic is now more robust and uses metadata to
-# prevent color restoration bugs.
+# CORRECTED: Uses Identifiers constants for group checks.
 class_name HealthComponent
 extends ComponentInterface
 
@@ -6851,7 +7313,6 @@ var max_health: int
 var invincibility_duration: float
 var knockback_speed: float
 var hazard_knockback_speed: float
-# REMOVED: var original_color: Color - We will no longer use this variable.
 
 func _ready():
 	add_child(invincibility_timer)
@@ -6875,7 +7336,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 
 	max_health = entity_data.max_health
 	
-	if owner_node.is_in_group("player"):
+	if owner_node.is_in_group(Identifiers.Groups.PLAYER):
 		invincibility_duration = cfg.player_invincibility_duration
 		knockback_speed = cfg.player_knockback_speed
 		hazard_knockback_speed = cfg.player_hazard_knockback_speed
@@ -6886,7 +7347,6 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	
 	entity_data.health = max_health
 	
-	# THE FIX: Store the true original color in the sprite's metadata at setup time.
 	var sprite = get_visual_sprite()
 	if is_instance_valid(sprite) and not sprite.has_meta("original_color"):
 		sprite.set_meta("original_color", sprite.color)
@@ -6942,14 +7402,13 @@ func _calculate_knockback(source: Node) -> Vector2:
 	if knockback_speed == 0 or not is_instance_valid(source): return Vector2.ZERO
 	var knockback_dir = (owner_node.global_position - source.global_position).normalized()
 	var speed = knockback_speed
-	if source.is_in_group("hazard"):
+	if source.is_in_group(Identifiers.Groups.HAZARD):
 		speed = hazard_knockback_speed
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
 
 func _trigger_hit_flash():
 	var sprite = get_visual_sprite()
 	if is_instance_valid(sprite):
-		# If this is the first hit-flash, store the original color.
 		if not sprite.has_meta("original_color"):
 			sprite.set_meta("original_color", sprite.color)
 			
@@ -6964,7 +7423,6 @@ func get_visual_sprite() -> ColorRect:
 func _on_hit_flash_timer_timeout():
 	var sprite = get_visual_sprite()
 	if is_instance_valid(sprite):
-		# THE FIX: Always restore from the unchanging metadata value.
 		if sprite.has_meta("original_color"):
 			sprite.color = sprite.get_meta("original_color")
 
@@ -7076,8 +7534,7 @@ func process_input(_event: InputEvent):
 FILE: ./src/entities/minions/turret.gd
 =====================================
 # src/entities/minions/turret.gd
-# CORRECTED: The Turret now uses the standardized component setup method for its
-# state machine, resolving the parse error.
+# CORRECTED: Uses Identifiers constants for group checks.
 class_name Turret
 extends CharacterBody2D
 
@@ -7096,7 +7553,7 @@ var fire_rate: float = 2.0
 var detection_radius: float = 400.0
 
 func _ready():
-	add_to_group("enemy")
+	add_to_group(Identifiers.Groups.ENEMY)
 	t_data = TurretStateData.new()
 	t_data.config = CombatDB.config
 	
@@ -7104,26 +7561,22 @@ func _ready():
 	circle_shape.radius = detection_radius
 	range_detector_shape.shape = circle_shape
 	
-	# --- Component Setup ---
 	health_component.setup(self, {
 		"data_resource": t_data,
 		"config": t_data.config
 	})
 	
-	# --- State Machine Initialization ---
 	var states = {
 		State.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(self, state_machine, t_data),
 		State.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(self, state_machine, t_data)
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.IDLE })
 	
-	# --- Signal Connections ---
 	health_component.died.connect(die)
 	
-	player = get_tree().get_first_node_in_group("player")
+	player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
-	# REMOVED: print("VERIFICATION: Turret setup is corrected and unified.")
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
@@ -7136,30 +7589,28 @@ func die():
 
 func fire_at_player():
 	if not is_instance_valid(player): return
-	var shot = ObjectPool.get_instance(&"turret_shots")
+	var shot = ObjectPool.get_instance(Identifiers.Pools.TURRET_SHOTS)
 	if not shot: return
 	shot.direction = (player.global_position - global_position).normalized()
 	shot.global_position = global_position
 	shot.activate()
 
 func deactivate():
-	# Gracefully shut down the turret's brain and timers
 	if is_instance_valid(state_machine):
 		state_machine.teardown()
 	if is_instance_valid(attack_timer):
 		attack_timer.stop()
 	set_physics_process(false)
-	# Stops the Area2D from detecting new bodies
 	$RangeDetector.monitoring = false
 
 func _on_range_detector_body_entered(body):
 	if not t_data: return
-	if body.is_in_group("player"):
+	if body.is_in_group(Identifiers.Groups.PLAYER):
 		t_data.is_player_in_range = true
 
 func _on_range_detector_body_exited(body):
 	if not t_data: return
-	if body.is_in_group("player"):
+	if body.is_in_group(Identifiers.Groups.PLAYER):
 		t_data.is_player_in_range = false
 
 
@@ -7367,7 +7818,8 @@ script = ExtResource("5_fsm")
 FILE: ./src/entities/player/player.gd
 =====================================
 # src/entities/player/player.gd
-# CORRECTED: All damage application logic is now robust and uses the new contracts.
+# REFACTORED: The _ready function is now broken into smaller helper methods
+# to improve readability and adhere to the Single Responsibility Principle.
 extends CharacterBody2D
 
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
@@ -7402,43 +7854,17 @@ var p_data: PlayerStateData
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 
 # --- Engine Functions ---
+
 func _ready():
-	add_to_group("player")
-	p_data = PlayerStateData.new()
-	p_data.config = CombatDB.config 
+	add_to_group(Identifiers.Groups.PLAYER)
 	
-	# Component Setup
-	health_component.setup(self, { "data_resource": p_data, "config": p_data.config })
-	combat_component.setup(self, { "data_resource": p_data })
-	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "combat_component": combat_component, "config": p_data.config })
-	
-	# State Machine Setup (using the new, standardized method)
-	var states = {
-		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, p_data),
-		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, p_data),
-		State.JUMP: load("res://src/entities/player/states/state_jump.gd").new(self, state_machine, p_data),
-		State.DASH: load("res://src/entities/player/states/state_dash.gd").new(self, state_machine, p_data),
-		State.WALL_SLIDE: load("res://src/entities/player/states/state_wall_slide.gd").new(self, state_machine, p_data),
-		State.ATTACK: load("res://src/entities/player/states/state_attack.gd").new(self, state_machine, p_data),
-		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, p_data),
-		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, p_data),
-	}
-	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
-	
-	# Signal Connections
-	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
-	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
-	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
-	pogo_hitbox.area_entered.connect(_on_hitbox_area_entered)
-	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	health_component.health_changed.connect(_on_health_component_health_changed)
-	health_component.died.connect(_on_health_component_died)
-	combat_component.damage_dealt.connect(_on_damage_dealt)
-	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
+	_initialize_data()
+	_initialize_components()
+	_initialize_state_machine()
+	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
 	_emit_healing_charges_changed_event()
-	print("VERIFICATION: All components now conform to ComponentInterface.")
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
@@ -7455,6 +7881,41 @@ func _physics_process(delta):
 	if is_on_wall() and not is_on_floor():
 		p_data.wall_coyote_timer = p_data.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
+
+# --- Private Helper Functions ---
+
+func _initialize_data():
+	p_data = PlayerStateData.new()
+	p_data.config = CombatDB.config
+
+func _initialize_components():
+	health_component.setup(self, { "data_resource": p_data, "config": p_data.config })
+	combat_component.setup(self, { "data_resource": p_data })
+	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "combat_component": combat_component, "config": p_data.config })
+
+func _initialize_state_machine():
+	var states = {
+		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, p_data),
+		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, p_data),
+		State.JUMP: load("res://src/entities/player/states/state_jump.gd").new(self, state_machine, p_data),
+		State.DASH: load("res://src/entities/player/states/state_dash.gd").new(self, state_machine, p_data),
+		State.WALL_SLIDE: load("res://src/entities/player/states/state_wall_slide.gd").new(self, state_machine, p_data),
+		State.ATTACK: load("res://src/entities/player/states/state_attack.gd").new(self, state_machine, p_data),
+		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, p_data),
+		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, p_data),
+	}
+	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
+
+func _connect_signals():
+	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
+	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
+	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
+	pogo_hitbox.area_entered.connect(_on_hitbox_area_entered)
+	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
+	health_component.health_changed.connect(_on_health_component_health_changed)
+	health_component.died.connect(_on_health_component_died)
+	combat_component.damage_dealt.connect(_on_damage_dealt)
+	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 func apply_horizontal_movement():
 	velocity.x = Input.get_axis("ui_left", "ui_right") * p_data.config.player_speed
@@ -7491,11 +7952,11 @@ func _check_for_contact_damage():
 		if not col: continue
 		
 		var collider = col.get_collider()
-		if not (is_instance_valid(collider) and (collider.is_in_group("enemy") or collider.is_in_group("hazard"))): continue
+		if not (is_instance_valid(collider) and (collider.is_in_group(Identifiers.Groups.ENEMY) or collider.is_in_group(Identifiers.Groups.HAZARD))): continue
 		
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
-		damage_info.source_node = collider # The thing we collided with is the source
+		damage_info.source_node = collider
 		var damage_result = health_component.apply_damage(damage_info)
 		
 		if damage_result.was_damaged:
@@ -7519,7 +7980,7 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
-		damage_info.source_node = self # The player is the source of the melee attack
+		damage_info.source_node = self
 		var distance = self.global_position.distance_to(body.global_position)
 		damage_info.amount = 5 if distance <= CLOSE_RANGE_THRESHOLD else 1
 			
@@ -7531,7 +7992,7 @@ func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
 
 func _on_hitbox_area_entered(area: Area2D) -> void:
-	if area.is_in_group("enemy_projectile"):
+	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		if p_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
 		else:
@@ -7539,13 +8000,13 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 
 func _on_hurtbox_area_entered(area: Area2D) -> void:
 	if p_data.is_invincible or p_data.is_dash_invincible:
-		if area.is_in_group("enemy_projectile"): ObjectPool.return_instance(area)
+		if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE): ObjectPool.return_instance(area)
 		return
 	
-	if area.is_in_group("enemy_projectile"):
+	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
-		damage_info.source_node = area # The projectile is the source
+		damage_info.source_node = area
 		var damage_result = health_component.apply_damage(damage_info)
 		
 		if damage_result.was_damaged:
@@ -7875,7 +8336,7 @@ func process_physics(delta: float):
 	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
 		if owner.get_last_slide_collision():
 			var floor_collider = owner.get_last_slide_collision().get_collider()
-			if floor_collider and floor_collider.is_in_group("oneway_platforms"):
+			if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
 				owner.position.y += 2
 				state_data.jump_buffer_timer = 0
 				state_machine.change_state(owner.State.FALL)
