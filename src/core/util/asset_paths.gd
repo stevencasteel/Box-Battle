@@ -41,6 +41,12 @@ const SCENE_TEST_TITLE_SCREEN = "res://src/scenes/dev/test_title_screen.tscn"
 const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
 const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
 const SCENE_GUI_TITLE_SCREEN = "res://src/scenes/dev/gui_title_screen.tscn"
+const SCENE_GUI_OPTIONS_MENU = "res://src/scenes/dev/gui_options_menu.tscn"
+const SCENE_GUI_SOUND_MENU = "res://src/scenes/dev/gui_sound_menu.tscn"
+const SCENE_GUI_CONTROLS_MENU = "res://src/scenes/dev/gui_controls_menu.tscn"
+const SCENE_GUI_CREDITS_MENU = "res://src/scenes/dev/gui_credits_menu.tscn"
+# NEW SCENE PATH
+const SCENE_GUI_MUTE_BUTTON = "res://src/scenes/dev/gui_mute_button.tscn"
 
 const SPRITE_TITLE = "res://assets/sprites/ui/title/box_battle_title.png"
 const SPRITE_MENU_CURSOR = "res://assets/sprites/ui/menu/menu-cursor.png"

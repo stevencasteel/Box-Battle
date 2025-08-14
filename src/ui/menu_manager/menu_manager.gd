@@ -1,5 +1,5 @@
 # src/ui/menu_manager/menu_manager.gd
-# MODIFIED: Audio feedback is now enabled for navigation.
+# MODIFIED: The manager now correctly handles single-item menus.
 extends Node
 
 var menu_items: Array[Control] = []
@@ -26,10 +26,7 @@ func setup_menu(items: Array[Control]):
 	self.menu_items = items
 	
 	for item in menu_items:
-		item.focus_entered.connect(_update_cursors.bind(item))
-		# NEW: Play sound when focus changes via keyboard OR mouse
-		item.focus_entered.connect(func(): AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE))
-
+		item.focus_entered.connect(_on_item_focused.bind(item))
 
 func _unhandled_input(event):
 	if menu_items.is_empty(): return
@@ -41,16 +38,22 @@ func _unhandled_input(event):
 		_change_selection(-1)
 		get_viewport().set_input_as_handled()
 
+func _on_item_focused(focused_item: Control):
+	var index = menu_items.find(focused_item)
+	if index != -1:
+		current_selection = index
+	
+	_update_cursors(focused_item)
+	AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE)
+
 func _change_selection(amount: int):
+	# THE FIX: If there's only one item, play an error sound and stop.
 	if menu_items.size() <= 1:
-		# THE FIX: Audio call is now active.
 		AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_ERROR)
 		return
 
 	var new_selection = (current_selection + amount + menu_items.size()) % menu_items.size()
-	current_selection = new_selection
-	
-	menu_items[current_selection].grab_focus()
+	menu_items[new_selection].grab_focus()
 
 func _update_cursors(selected_item: Control):
 	await get_tree().process_frame

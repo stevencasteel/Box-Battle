@@ -20,6 +20,47 @@
 
 
 
+
+
+ - - - start separating via the time it was submitted - - -
+
+
+
+
+   █  Architectural Changes
+      ░ ■ Deprecated the `GlobalHud` autoload in favor of a new, reusable
+      ░   `GuiMuteButton` component placed directly in scenes. This completes
+      ░   the shift to a fully component-based, scene-driven UI architecture,
+      ░   eliminating a piece of legacy global state.
+
+   █  Added
+      ░ ■ Rebuilt and connected the entire menu flow (Title, Options, Sound,
+      ░   Controls, Credits) using the new scene-based architecture.
+      ░ ■ Implemented `@tool` scripts for all new menus, allowing them to be
+      ░   visually rendered and laid out directly in the Godot editor.
+      ░ ■ Added the new `GuiMuteButton` component to all menu screens for a
+      ░   consistent user experience.
+
+   █  Fixed
+      ░ ■ Resolved a critical state synchronization bug in `MenuManager` that
+      ░   caused unpredictable keyboard navigation after using the mouse. The
+      ░   manager now correctly syncs its state with Godot's focus system.
+      ░ ■ Hardened menu navigation by preventing non-button UI elements (sliders,
+      ░   checkboxes, mute icon) from being part of the keyboard focus chain.
+      ░ ■ Corrected the application's entry point to start the menu music
+      ░   globally, ensuring it plays seamlessly across all menu scenes.
+      ░ ■ Resolved a scene-loading crash caused by an incorrect `@onready`
+      ░   variable in the new options menu script.
+
+
+
+
+
+
+
+
+
+
    █  Architectural Changes
       ░ ■ Began the official "UI Overhaul" by creating a new prototype title
       ░   screen (`gui_title_screen.tscn`) that is fully scene-based and

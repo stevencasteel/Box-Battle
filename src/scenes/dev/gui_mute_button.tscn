@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1g2h3i4j5k6l"]
+
+[ext_resource type="Script" path="res://src/scenes/dev/gui_mute_button.gd" id="1_mute_button_script"]
+
+[node name="GuiMuteButton" type="TextureButton"]
+script = ExtResource("1_mute_button_script")

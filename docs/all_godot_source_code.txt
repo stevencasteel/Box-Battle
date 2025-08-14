@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Thu Aug 14 12:09:38 CDT 2025
+Generated on: Thu Aug 14 16:20:06 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -166,6 +166,16 @@ PROJECT DIRECTORY STRUCTURE:
     │   └── turret_shot.tscn
     ├── scenes
     │   ├── dev
+    │   │   ├── gui_controls_menu.gd
+    │   │   ├── gui_controls_menu.tscn
+    │   │   ├── gui_credits_menu.gd
+    │   │   ├── gui_credits_menu.tscn
+    │   │   ├── gui_mute_button.gd
+    │   │   ├── gui_mute_button.tscn
+    │   │   ├── gui_options_menu.gd
+    │   │   ├── gui_options_menu.tscn
+    │   │   ├── gui_sound_menu.gd
+    │   │   ├── gui_sound_menu.tscn
     │   │   ├── gui_title_screen.gd
     │   │   ├── gui_title_screen.tscn
     │   │   ├── test_title_screen.gd
@@ -222,7 +232,7 @@ PROJECT DIRECTORY STRUCTURE:
                 ├── victory_screen.gd
                 └── victory_screen.tscn
 
-52 directories, 162 files
+52 directories, 172 files
 
 
 =====================================
@@ -2201,6 +2211,47 @@ FILE: ./docs/CHANGELOG.txt
 
 
 
+
+
+ - - - start separating via the time it was submitted - - -
+
+
+
+
+   █  Architectural Changes
+      ░ ■ Deprecated the `GlobalHud` autoload in favor of a new, reusable
+      ░   `GuiMuteButton` component placed directly in scenes. This completes
+      ░   the shift to a fully component-based, scene-driven UI architecture,
+      ░   eliminating a piece of legacy global state.
+
+   █  Added
+      ░ ■ Rebuilt and connected the entire menu flow (Title, Options, Sound,
+      ░   Controls, Credits) using the new scene-based architecture.
+      ░ ■ Implemented `@tool` scripts for all new menus, allowing them to be
+      ░   visually rendered and laid out directly in the Godot editor.
+      ░ ■ Added the new `GuiMuteButton` component to all menu screens for a
+      ░   consistent user experience.
+
+   █  Fixed
+      ░ ■ Resolved a critical state synchronization bug in `MenuManager` that
+      ░   caused unpredictable keyboard navigation after using the mouse. The
+      ░   manager now correctly syncs its state with Godot's focus system.
+      ░ ■ Hardened menu navigation by preventing non-button UI elements (sliders,
+      ░   checkboxes, mute icon) from being part of the keyboard focus chain.
+      ░ ■ Corrected the application's entry point to start the menu music
+      ░   globally, ensuring it plays seamlessly across all menu scenes.
+      ░ ■ Resolved a scene-loading crash caused by an incorrect `@onready`
+      ░   variable in the new options menu script.
+
+
+
+
+
+
+
+
+
+
    █  Architectural Changes
       ░ ■ Began the official "UI Overhaul" by creating a new prototype title
       ░   screen (`gui_title_screen.tscn`) that is fully scene-based and
@@ -2758,7 +2809,6 @@ AudioManager="*res://src/core/systems/audio_manager.gd"
 CursorManager="*res://src/core/systems/cursor_manager.gd"
 Constants="*res://src/core/util/constants.gd"
 AssetPaths="*res://src/core/util/asset_paths.gd"
-GlobalHud="*res://src/ui/global_hud/global_hud.tscn"
 GameManager="*res://src/core/systems/game_manager.gd"
 SceneManager="*res://src/core/systems/scene_manager.gd"
 ArenaBuilder="*res://src/core/building/arena_builder.gd"
@@ -3165,7 +3215,7 @@ script = ExtResource("1_hud_script")
 FILE: ./src/ui/menu_manager/menu_manager.gd
 =====================================
 # src/ui/menu_manager/menu_manager.gd
-# MODIFIED: Audio feedback is now enabled for navigation.
+# MODIFIED: The manager now correctly handles single-item menus.
 extends Node
 
 var menu_items: Array[Control] = []
@@ -3192,10 +3242,7 @@ func setup_menu(items: Array[Control]):
 	self.menu_items = items
 	
 	for item in menu_items:
-		item.focus_entered.connect(_update_cursors.bind(item))
-		# NEW: Play sound when focus changes via keyboard OR mouse
-		item.focus_entered.connect(func(): AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE))
-
+		item.focus_entered.connect(_on_item_focused.bind(item))
 
 func _unhandled_input(event):
 	if menu_items.is_empty(): return
@@ -3207,16 +3254,22 @@ func _unhandled_input(event):
 		_change_selection(-1)
 		get_viewport().set_input_as_handled()
 
+func _on_item_focused(focused_item: Control):
+	var index = menu_items.find(focused_item)
+	if index != -1:
+		current_selection = index
+	
+	_update_cursors(focused_item)
+	AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_MOVE)
+
 func _change_selection(amount: int):
+	# THE FIX: If there's only one item, play an error sound and stop.
 	if menu_items.size() <= 1:
-		# THE FIX: Audio call is now active.
 		AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_ERROR)
 		return
 
 	var new_selection = (current_selection + amount + menu_items.size()) % menu_items.size()
-	current_selection = new_selection
-	
-	menu_items[current_selection].grab_focus()
+	menu_items[new_selection].grab_focus()
 
 func _update_cursors(selected_item: Control):
 	await get_tree().process_frame
@@ -3306,6 +3359,7 @@ func _ready():
 func _on_return_button_pressed():
 	# MODIFIED: Use the new SceneManager.
 	SceneManager.go_to_title_screen()
+
 
 =====================================
 FILE: ./src/ui/screens/controls_menu/controls_menu.gd
@@ -3890,7 +3944,6 @@ extends Control
 signal pressed
 
 @export var text: String = "Menu Item" : set = set_text
-# THE FIX: Expose font_size so it can be changed per instance.
 @export var font_size: int = 48 : set = set_font_size
 
 @export var glow_size: float = 0.0 : set = set_glow_size
@@ -3969,7 +4022,6 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), bg_color)
 	draw_rect(Rect2(Vector2.ZERO, size), border_color, false, border_width)
 
-	# THE FIX: Use the font_size variable instead of a hardcoded value.
 	var text_width = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size).x
 	var text_pos_x = (size.x - text_width) / 2
 	var text_pos_y = (size.y / 2) + (font_size / 3.0)
@@ -4021,7 +4073,8 @@ func _animate_selection(p_is_selected: bool):
 	
 	_active_tween = create_tween().set_parallel(true)
 	var target_glow_size = 28.0 if p_is_selected else 0.0
-	var target_glow_alpha = 0.1 if p_is_selected else 0.0
+	# THE FIX: Increased target alpha from 0.1 to 0.2
+	var target_glow_alpha = 0.2 if p_is_selected else 0.0
 	var duration = 0.3 if p_is_selected else 0.2
 	
 	_active_tween.tween_property(self, "glow_size", target_glow_size, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -4164,7 +4217,6 @@ func _gui_input(event: InputEvent) -> void:
 			queue_redraw()
 		else:
 			if is_pressed:
-				# THE FIX: Play the selection sound on click.
 				AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
 				emit_signal("pressed", logo_name)
 				is_pressed = false
@@ -4205,7 +4257,8 @@ func _animate_hover(p_is_hovered: bool):
 	
 	_active_tween = create_tween().set_parallel(true)
 	var target_glow_size = 20.0 if p_is_hovered else 0.0
-	var target_glow_alpha = 0.1 if p_is_hovered else 0.0
+	# THE FIX: Increased target alpha from 0.1 to 0.2
+	var target_glow_alpha = 0.2 if p_is_hovered else 0.0
 	var duration = 0.3 if p_is_hovered else 0.2
 	
 	_active_tween.tween_property(self, "glow_size", target_glow_size, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -4399,9 +4452,570 @@ func _deactivate_all_minions():
 			minion.deactivate()
 
 =====================================
+FILE: ./src/scenes/dev/gui_sound_menu.gd
+=====================================
+# src/scenes/dev/gui_sound_menu.gd
+@tool
+extends Control
+
+const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+const CustomSliderScript = preload(AssetPaths.SCRIPT_CUSTOM_SLIDER)
+
+@onready var menu_items_vbox: VBoxContainer = %MenuItemsVBox
+@onready var back_button: StyledMenuItem = %BackButton
+
+var master_volume_label: Label
+var music_volume_label: Label
+var sfx_volume_label: Label
+var master_mute_checkbox: TextureButton
+var music_mute_checkbox: TextureButton
+var sfx_mute_checkbox: TextureButton
+
+func _ready():
+	for c in menu_items_vbox.get_children():
+		c.queue_free()
+	
+	menu_items_vbox.add_child(_create_volume_row("MASTER", Settings.master_volume, "master"))
+	menu_items_vbox.add_child(_create_volume_row("MUSIC", Settings.music_volume, "music"))
+	menu_items_vbox.add_child(_create_volume_row("SFX", Settings.sfx_volume, "sfx"))
+
+	_update_ui_from_settings()
+	
+	if not Engine.is_editor_hint():
+		back_button.text = "BACK"
+		back_button.pressed.connect(_on_back_button_pressed)
+		
+		Settings.audio_settings_changed.connect(_update_ui_from_settings)
+		
+		var menu_manager = MenuManagerScript.new()
+		add_child(menu_manager)
+		
+		var menu_items: Array[Control] = [back_button]
+		menu_manager.setup_menu(menu_items)
+		
+		await get_tree().process_frame
+		back_button.grab_focus()
+	else:
+		back_button.text = "BACK"
+
+func _exit_tree():
+	if not Engine.is_editor_hint():
+		if Settings.audio_settings_changed.is_connected(_update_ui_from_settings):
+			Settings.audio_settings_changed.disconnect(_update_ui_from_settings)
+
+func _update_ui_from_settings():
+	if master_volume_label: master_volume_label.text = str(int(Settings.master_volume * 100))
+	if music_volume_label: music_volume_label.text = str(int(Settings.music_volume * 100))
+	if sfx_volume_label: sfx_volume_label.text = str(int(Settings.sfx_volume * 100))
+	
+	if master_mute_checkbox: _update_checkbox_texture(master_mute_checkbox, Settings.master_muted)
+	if music_mute_checkbox: _update_checkbox_texture(music_mute_checkbox, Settings.music_muted)
+	if sfx_mute_checkbox: _update_checkbox_texture(sfx_mute_checkbox, Settings.sfx_muted)
+
+func _create_volume_row(label_text: String, initial_volume: float, type: String) -> HBoxContainer:
+	var hbox = HBoxContainer.new()
+	hbox.alignment = HBoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 20)
+
+	var row_label = Label.new()
+	row_label.text = label_text
+	row_label.custom_minimum_size.x = 220
+	row_label.add_theme_font_override("font", load(AssetPaths.FONT_BOLD))
+	row_label.add_theme_font_size_override("font_size", 48)
+	hbox.add_child(row_label)
+
+	var slider = CustomSliderScript.new()
+	slider.set_value(initial_volume)
+	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	slider.focus_mode = FOCUS_NONE
+	hbox.add_child(slider)
+
+	var volume_label = Label.new()
+	volume_label.custom_minimum_size.x = 120
+	volume_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	volume_label.add_theme_font_override("font", load(AssetPaths.FONT_REGULAR))
+	volume_label.add_theme_font_size_override("font_size", 48)
+	hbox.add_child(volume_label)
+
+	var checkbox = TextureButton.new()
+	checkbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	checkbox.focus_mode = FOCUS_NONE
+	hbox.add_child(checkbox)
+	
+	match type:
+		"master":
+			master_volume_label = volume_label
+			master_mute_checkbox = checkbox
+			if not Engine.is_editor_hint():
+				slider.value_changed.connect(func(new_value): Settings.master_volume = new_value)
+				checkbox.pressed.connect(func(): Settings.master_muted = not Settings.master_muted)
+		"music":
+			music_volume_label = volume_label
+			music_mute_checkbox = checkbox
+			if not Engine.is_editor_hint():
+				slider.value_changed.connect(func(new_value): Settings.music_volume = new_value)
+				checkbox.pressed.connect(func(): Settings.music_muted = not Settings.music_muted)
+		"sfx":
+			sfx_volume_label = volume_label
+			sfx_mute_checkbox = checkbox
+			if not Engine.is_editor_hint():
+				slider.value_changed.connect(func(new_value): Settings.sfx_volume = new_value)
+				checkbox.pressed.connect(func(): Settings.sfx_muted = not Settings.sfx_muted)
+	
+	return hbox
+
+func _update_checkbox_texture(button_ref: TextureButton, is_muted: bool):
+	var new_texture = load(AssetPaths.SPRITE_CHECKBOX_UNCHECKED) if not is_muted else load(AssetPaths.SPRITE_CHECKBOX_CHECKED)
+	if button_ref.texture_normal != new_texture:
+		button_ref.texture_normal = new_texture
+
+func _on_back_button_pressed():
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_OPTIONS_MENU)
+
+=====================================
+FILE: ./src/scenes/dev/gui_mute_button.gd
+=====================================
+# src/scenes/dev/gui_mute_button.gd
+@tool
+extends TextureButton
+
+const ICON_SOUND_ON = preload(AssetPaths.SPRITE_ICON_SOUND_ON)
+const ICON_SOUND_OFF = preload(AssetPaths.SPRITE_ICON_SOUND_OFF)
+
+func _ready():
+	# THE FIX: Make this button invisible to keyboard/controller focus navigation.
+	# It can still be clicked by the mouse.
+	focus_mode = FOCUS_NONE
+	
+	_update_icon()
+
+	if not Engine.is_editor_hint():
+		self.pressed.connect(_on_pressed)
+		Settings.audio_settings_changed.connect(_update_icon)
+		mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+
+func _exit_tree():
+	if not Engine.is_editor_hint():
+		if Settings.audio_settings_changed.is_connected(_update_icon):
+			Settings.audio_settings_changed.disconnect(_update_icon)
+
+func _on_pressed():
+	Settings.music_muted = not Settings.music_muted
+	AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
+
+func _update_icon():
+	if Settings.music_muted:
+		self.texture_normal = ICON_SOUND_OFF
+	else:
+		self.texture_normal = ICON_SOUND_ON
+
+=====================================
+FILE: ./src/scenes/dev/gui_credits_menu.gd
+=====================================
+@tool
+extends Control
+
+const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+
+@onready var credits_label_container: Control = %CreditsLabelContainer
+@onready var back_button: StyledMenuItem = %BackButton
+
+const CREDITS_BBCODE = """
+[center]A Game By Steven Casteel[/center]
+[center][url=https://www.stevencasteel.com/]www.stevencasteel.com[/url][/center]
+
+[center]Built with the [url=https://godotengine.org/]Godot Engine[/url][/center]
+[center]AI-Assisted by [url=https://gemini.google.com/]Gemini[/url][/center]
+
+[center]Find me on [url=https://www.youtube.com/@stevencasteel]YouTube[/url] and [url=http://github.com/stevencasteel]GitHub[/url][/center]
+"""
+
+func _ready():
+	for c in credits_label_container.get_children():
+		c.queue_free()
+	
+	var credits_label = RichTextLabel.new()
+	credits_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	credits_label.bbcode_enabled = true
+	credits_label.mouse_filter = MOUSE_FILTER_PASS
+	credits_label.add_theme_font_override("normal_font", load(AssetPaths.FONT_REGULAR))
+	credits_label.add_theme_font_size_override("normal_font_size", 38)
+	credits_label.add_theme_color_override("default_color", Color.WHITE)
+	credits_label.text = CREDITS_BBCODE
+	credits_label_container.add_child(credits_label)
+	
+	if not Engine.is_editor_hint():
+		back_button.text = "BACK"
+		back_button.pressed.connect(_on_back_button_pressed)
+		
+		credits_label.meta_clicked.connect(_on_meta_clicked)
+		credits_label.meta_hover_started.connect(func(_meta): CursorManager.set_pointer_state(true))
+		credits_label.meta_hover_ended.connect(func(_meta): CursorManager.set_pointer_state(false))
+		
+		var menu_manager = MenuManagerScript.new()
+		add_child(menu_manager)
+		menu_manager.setup_menu([back_button])
+		
+		await get_tree().process_frame
+		back_button.grab_focus()
+	else:
+		back_button.text = "BACK"
+
+func _on_meta_clicked(meta):
+	OS.shell_open(str(meta))
+
+func _on_back_button_pressed():
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_OPTIONS_MENU)
+
+=====================================
+FILE: ./src/scenes/dev/gui_sound_menu.tscn
+=====================================
+[gd_scene load_steps=5 format=3 uid="uid://dsvv7o1v1j8t1"]
+
+[ext_resource type="Script" path="res://src/scenes/dev/gui_sound_menu.gd" id="1_sound_script"]
+[ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
+[ext_resource type="FontFile" uid="uid://8lowjix2qis2" path="res://assets/fonts/MPLUSRounded1c-Black.ttf" id="3_font_black"]
+[ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/scenes/dev/gui_mute_button.tscn" id="4_mute_button"]
+
+[node name="GuiSoundMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_sound_script")
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TopSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.972549, 0.972549, 1)
+theme_override_fonts/font = ExtResource("3_font_black")
+theme_override_font_sizes/font_size = 128
+text = "SOUND"
+horizontal_alignment = 1
+
+[node name="TitleMenuSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+
+[node name="MenuItemsVBox" type="VBoxContainer" parent="MainVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="ExpandSpacer" type="Control" parent="MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackButton" parent="MainVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+font_size = 64
+
+[node name="BottomSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+
+[node name="MuteButtonContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 350
+
+[node name="GuiMuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+
+=====================================
+FILE: ./src/scenes/dev/gui_options_menu.tscn
+=====================================
+[gd_scene load_steps=6 format=3 uid="uid://cuiywha4vccw"]
+
+[ext_resource type="Script" uid="uid://qg7usjvxed13" path="res://src/scenes/dev/gui_options_menu.gd" id="1_options_script"]
+[ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
+[ext_resource type="FontFile" uid="uid://8lowjix2qis2" path="res://assets/fonts/MPLUSRounded1c-Black.ttf" id="3_font_black"]
+[ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/scenes/dev/gui_mute_button.tscn" id="4_mute_button"]
+[ext_resource type="Texture2D" uid="uid://d1v0th7v6k80q" path="res://assets/sprites/ui/icons/icon-sound-off.png" id="5_dh75f"]
+
+[node name="GuiOptionsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_options_script")
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TopSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.972549, 0.972549, 1)
+theme_override_fonts/font = ExtResource("3_font_black")
+theme_override_font_sizes/font_size = 128
+text = "OPTIONS"
+horizontal_alignment = 1
+
+[node name="TitleMenuSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+
+[node name="MenuItemsVBox" type="VBoxContainer" parent="MainVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="SoundButton" parent="MainVBox/MenuItemsVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+focus_mode = 2
+font_size = 64
+
+[node name="ControlsButton" parent="MainVBox/MenuItemsVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+focus_mode = 2
+font_size = 64
+
+[node name="CreditsButton" parent="MainVBox/MenuItemsVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+focus_mode = 2
+font_size = 64
+
+[node name="ExpandSpacer" type="Control" parent="MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackButton" parent="MainVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+font_size = 64
+
+[node name="BottomSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+
+[node name="MuteButtonContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 350
+
+[node name="GuiMuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+texture_normal = ExtResource("5_dh75f")
+
+
+=====================================
+FILE: ./src/scenes/dev/gui_credits_menu.tscn
+=====================================
+[gd_scene load_steps=5 format=3 uid="uid://c5v6x7y8z9a0b"]
+
+[ext_resource type="Script" path="res://src/scenes/dev/gui_credits_menu.gd" id="1_credits_script"]
+[ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
+[ext_resource type="FontFile" uid="uid://8lowjix2qis2" path="res://assets/fonts/MPLUSRounded1c-Black.ttf" id="3_font_black"]
+[ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/scenes/dev/gui_mute_button.tscn" id="4_mute_button"]
+
+[node name="GuiCreditsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_credits_script")
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TopSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.972549, 0.972549, 1)
+theme_override_fonts/font = ExtResource("3_font_black")
+theme_override_font_sizes/font_size = 128
+text = "CREDITS"
+horizontal_alignment = 1
+
+[node name="CreditsLabelContainer" type="Control" parent="MainVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 450)
+layout_mode = 2
+
+[node name="ExpandSpacer" type="Control" parent="MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackButton" parent="MainVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+font_size = 64
+
+[node name="BottomSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+
+[node name="MuteButtonContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 350
+
+[node name="GuiMuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+
+=====================================
+FILE: ./src/scenes/dev/gui_options_menu.gd
+=====================================
+# src/scenes/dev/gui_options_menu.gd
+extends Control
+
+const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+
+# THE FIX: Removed the incorrect @onready var for CreditsLabelContainer.
+# These are the only nodes this script needs to know about.
+@onready var sound_button: StyledMenuItem = %SoundButton
+@onready var controls_button: StyledMenuItem = %ControlsButton
+@onready var credits_button: StyledMenuItem = %CreditsButton
+@onready var back_button: StyledMenuItem = %BackButton
+
+func _ready():
+	sound_button.text = "SOUND"
+	controls_button.text = "CONTROLS"
+	credits_button.text = "CREDITS"
+	back_button.text = "BACK"
+	
+	sound_button.pressed.connect(_on_sound_button_pressed)
+	controls_button.pressed.connect(_on_controls_button_pressed)
+	credits_button.pressed.connect(_on_credits_button_pressed)
+	back_button.pressed.connect(_on_back_button_pressed)
+	
+	var menu_manager = MenuManagerScript.new()
+	add_child(menu_manager)
+	
+	var menu_items: Array[Control] = [sound_button, controls_button, credits_button, back_button]
+	menu_manager.setup_menu(menu_items)
+	
+	await get_tree().process_frame
+	sound_button.grab_focus()
+
+func _on_sound_button_pressed():
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_SOUND_MENU)
+
+func _on_controls_button_pressed():
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_CONTROLS_MENU)
+
+func _on_credits_button_pressed():
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_CREDITS_MENU)
+
+func _on_back_button_pressed():
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_TITLE_SCREEN)
+
+
+=====================================
 FILE: ./src/scenes/dev/gui_title_screen.tscn
 =====================================
-[gd_scene load_steps=8 format=3 uid="uid://beattfyix2423"]
+[gd_scene load_steps=10 format=3 uid="uid://beattfyix2423"]
 
 [ext_resource type="Script" uid="uid://i8wrnl0qhpb6" path="res://src/scenes/dev/gui_title_screen.gd" id="1_gui_title_script"]
 [ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
@@ -4410,6 +5024,8 @@ FILE: ./src/scenes/dev/gui_title_screen.tscn
 [ext_resource type="Texture2D" uid="uid://2gqa4m05wd20" path="res://assets/sprites/ui/logos/godot_logo.png" id="5_logo_godot"]
 [ext_resource type="Texture2D" uid="uid://d0fuu548hoouq" path="res://assets/sprites/ui/logos/itch_logo.png" id="6_logo_itch"]
 [ext_resource type="FontFile" uid="uid://8lowjix2qis2" path="res://assets/fonts/MPLUSRounded1c-Black.ttf" id="7_font_black"]
+[ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/scenes/dev/gui_mute_button.tscn" id="8_mute_button"]
+[ext_resource type="Texture2D" uid="uid://d1v0th7v6k80q" path="res://assets/sprites/ui/icons/icon-sound-off.png" id="9_xycyg"]
 
 [node name="GuiTitleScreen" type="Control"]
 layout_mode = 3
@@ -4516,6 +5132,89 @@ logo_name = "Itch"
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 
+[node name="MuteButtonContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 350
+
+[node name="GuiMuteButton" parent="MuteButtonContainer" instance=ExtResource("8_mute_button")]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+texture_normal = ExtResource("9_xycyg")
+
+
+=====================================
+FILE: ./src/scenes/dev/gui_controls_menu.gd
+=====================================
+# src/scenes/dev/gui_controls_menu.gd
+@tool
+extends Control
+
+const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+
+@onready var controls_vbox: VBoxContainer = %ControlsVBox
+@onready var back_button: StyledMenuItem = %BackButton
+
+const CONTROLS_DATA = [
+	{ "action": "Movement", "keys": "Arrow Keys / WASD / Mouse" },
+	{ "action": "Primary Action", "keys": "X / . / Space / Left-Click" },
+	{ "action": "Secondary Action", "keys": "C / , / Shift / Right-Click" },
+	{ "action": "Tertiary Action", "keys": "Z / / / Ctrl / Middle-Click" },
+	{ "action": "Pause / Menu", "keys": "Enter / P / Escape" },
+	{ "action": "Back / Cancel", "keys": "Escape / Backspace" }
+]
+
+func _ready():
+	for c in controls_vbox.get_children():
+		c.queue_free()
+	
+	for data in CONTROLS_DATA:
+		controls_vbox.add_child(_create_control_row(data))
+
+	if not Engine.is_editor_hint():
+		back_button.text = "BACK"
+		back_button.pressed.connect(_on_back_button_pressed)
+		
+		var menu_manager = MenuManagerScript.new()
+		add_child(menu_manager)
+		menu_manager.setup_menu([back_button])
+		
+		await get_tree().process_frame
+		back_button.grab_focus()
+	else:
+		back_button.text = "BACK"
+
+func _create_control_row(data: Dictionary) -> HBoxContainer:
+	var hbox = HBoxContainer.new()
+	hbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	hbox.add_theme_constant_override("separation", 40)
+	
+	var action_label = Label.new()
+	action_label.text = data.action
+	action_label.custom_minimum_size.x = 400
+	action_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	action_label.add_theme_font_override("font", load(AssetPaths.FONT_BOLD))
+	action_label.add_theme_font_size_override("font_size", 36)
+	hbox.add_child(action_label)
+
+	var keys_label = Label.new()
+	keys_label.text = data.keys
+	keys_label.custom_minimum_size.x = 500
+	keys_label.add_theme_font_override("font", load(AssetPaths.FONT_REGULAR))
+	keys_label.add_theme_font_size_override("font_size", 36)
+	hbox.add_child(keys_label)
+	
+	return hbox
+
+func _on_back_button_pressed():
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_OPTIONS_MENU)
 
 =====================================
 FILE: ./src/scenes/dev/test_title_screen.gd
@@ -4625,6 +5324,123 @@ func _on_exit_button_pressed():
 
 
 =====================================
+FILE: ./src/scenes/dev/gui_controls_menu.tscn
+=====================================
+[gd_scene load_steps=5 format=3 uid="uid://df5wylg5n16f"]
+
+[ext_resource type="Script" path="res://src/scenes/dev/gui_controls_menu.gd" id="1_controls_script"]
+[ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
+[ext_resource type="FontFile" uid="uid://8lowjix2qis2" path="res://assets/fonts/MPLUSRounded1c-Black.ttf" id="3_font_black"]
+[ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/scenes/dev/gui_mute_button.tscn" id="4_mute_button"]
+
+[node name="GuiControlsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_controls_script")
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TopSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.972549, 0.972549, 1)
+theme_override_fonts/font = ExtResource("3_font_black")
+theme_override_font_sizes/font_size = 128
+text = "CONTROLS"
+horizontal_alignment = 1
+
+[node name="TitleMenuSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="ControlsRowHBox" type="HBoxContainer" parent="MainVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LeftSpacer" type="Control" parent="MainVBox/ControlsRowHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.8
+
+[node name="ControlsVBox" type="VBoxContainer" parent="MainVBox/ControlsRowHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="RightSpacer" type="Control" parent="MainVBox/ControlsRowHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+
+[node name="ExpandSpacer" type="Control" parent="MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackButton" parent="MainVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+font_size = 64
+
+[node name="BottomSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+
+[node name="MuteButtonContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 350
+
+[node name="GuiMuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+
+=====================================
+FILE: ./src/scenes/dev/gui_mute_button.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://d1g2h3i4j5k6l"]
+
+[ext_resource type="Script" path="res://src/scenes/dev/gui_mute_button.gd" id="1_mute_button_script"]
+
+[node name="GuiMuteButton" type="TextureButton"]
+script = ExtResource("1_mute_button_script")
+
+=====================================
 FILE: ./src/scenes/dev/test_ui.gd
 =====================================
 # src/scenes/dev/test_ui.gd
@@ -4717,6 +5533,8 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 @onready var itch_logo: LogoDisplay = %ItchLogo
 
 func _ready():
+	# THE FIX: The music logic has been removed from here and moved to main.gd.
+	
 	# --- Configure elements that need runtime setup ---
 	background_color.color = Palette.COLOR_BACKGROUND
 	
@@ -4725,8 +5543,8 @@ func _ready():
 	exit_button.text = "EXIT"
 
 	# --- Connect signals and set up navigation logic ---
-	start_button.pressed.connect(func(): print("Start Pressed"))
-	options_button.pressed.connect(func(): print("Options Pressed"))
+	start_button.pressed.connect(_on_start_button_pressed)
+	options_button.pressed.connect(_on_options_button_pressed)
 	exit_button.pressed.connect(get_tree().quit)
 	
 	newgrounds_logo.pressed.connect(_on_logo_pressed)
@@ -4741,8 +5559,15 @@ func _ready():
 	await get_tree().process_frame
 	start_button.grab_focus()
 
+func _on_start_button_pressed():
+	SceneManager.start_game(AssetPaths.SCRIPT_ARENA_00_ENCOUNTER)
+
+func _on_options_button_pressed():
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_OPTIONS_MENU)
+
 func _on_logo_pressed(logo_name: String):
 	print("%s Pressed" % logo_name)
+
 
 =====================================
 FILE: ./src/scenes/main/main.tscn
@@ -4765,7 +5590,10 @@ func _ready():
 	if OS.is_debug_build():
 		AssetPaths.validate_all_paths()
 	
-	# MODIFIED: Point to the new GUI-based title screen
+	# THE FIX: Start the menu music here, in the global entry point.
+	# This ensures it runs once and persists across all menu scenes.
+	AudioManager.play_music(AssetPaths.AUDIO_MUSIC_TITLE)
+	
 	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_TITLE_SCREEN)
 
 =====================================
@@ -5053,6 +5881,7 @@ const _palette: Array[Color] = [
 # --- SEMANTIC CONSTANTS ---
 # This is the most important part of the script. We refer to these constants
 # in our code, not the raw index numbers. This makes the code readable and
+
 # easy to update. If we want to make all hazards darker, we just change one
 # line here.
 
@@ -5073,7 +5902,8 @@ const COLOR_TEXT_HEADER: Color = _palette[30]
 const COLOR_UI_ACCENT_PRIMARY: Color = _palette[28]
 const COLOR_TEXT_PRIMARY: Color = _palette[26]
 const COLOR_TEXT_DISABLED: Color = _palette[16]
-const COLOR_UI_GLOW: Color = _palette[12]
+# THE FIX: Changed from _palette[12] to _palette[20] for a much brighter glow.
+const COLOR_UI_GLOW: Color = _palette[20]
 const COLOR_UI_PANEL_BG: Color = _palette[8]
 
 # --- Helper Function ---
@@ -5158,6 +5988,12 @@ const SCENE_TEST_TITLE_SCREEN = "res://src/scenes/dev/test_title_screen.tscn"
 const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
 const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
 const SCENE_GUI_TITLE_SCREEN = "res://src/scenes/dev/gui_title_screen.tscn"
+const SCENE_GUI_OPTIONS_MENU = "res://src/scenes/dev/gui_options_menu.tscn"
+const SCENE_GUI_SOUND_MENU = "res://src/scenes/dev/gui_sound_menu.tscn"
+const SCENE_GUI_CONTROLS_MENU = "res://src/scenes/dev/gui_controls_menu.tscn"
+const SCENE_GUI_CREDITS_MENU = "res://src/scenes/dev/gui_credits_menu.tscn"
+# NEW SCENE PATH
+const SCENE_GUI_MUTE_BUTTON = "res://src/scenes/dev/gui_mute_button.tscn"
 
 const SPRITE_TITLE = "res://assets/sprites/ui/title/box_battle_title.png"
 const SPRITE_MENU_CURSOR = "res://assets/sprites/ui/menu/menu-cursor.png"

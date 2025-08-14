@@ -22,6 +22,7 @@ const _palette: Array[Color] = [
 # --- SEMANTIC CONSTANTS ---
 # This is the most important part of the script. We refer to these constants
 # in our code, not the raw index numbers. This makes the code readable and
+
 # easy to update. If we want to make all hazards darker, we just change one
 # line here.
 
@@ -42,7 +43,8 @@ const COLOR_TEXT_HEADER: Color = _palette[30]
 const COLOR_UI_ACCENT_PRIMARY: Color = _palette[28]
 const COLOR_TEXT_PRIMARY: Color = _palette[26]
 const COLOR_TEXT_DISABLED: Color = _palette[16]
-const COLOR_UI_GLOW: Color = _palette[12]
+# THE FIX: Changed from _palette[12] to _palette[20] for a much brighter glow.
+const COLOR_UI_GLOW: Color = _palette[20]
 const COLOR_UI_PANEL_BG: Color = _palette[8]
 
 # --- Helper Function ---

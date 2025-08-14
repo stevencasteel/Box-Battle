@@ -7,7 +7,6 @@ extends Control
 signal pressed
 
 @export var text: String = "Menu Item" : set = set_text
-# THE FIX: Expose font_size so it can be changed per instance.
 @export var font_size: int = 48 : set = set_font_size
 
 @export var glow_size: float = 0.0 : set = set_glow_size
@@ -86,7 +85,6 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), bg_color)
 	draw_rect(Rect2(Vector2.ZERO, size), border_color, false, border_width)
 
-	# THE FIX: Use the font_size variable instead of a hardcoded value.
 	var text_width = _font.get_string_size(text, HORIZONTAL_ALIGNMENT_CENTER, -1, font_size).x
 	var text_pos_x = (size.x - text_width) / 2
 	var text_pos_y = (size.y / 2) + (font_size / 3.0)
@@ -138,7 +136,8 @@ func _animate_selection(p_is_selected: bool):
 	
 	_active_tween = create_tween().set_parallel(true)
 	var target_glow_size = 28.0 if p_is_selected else 0.0
-	var target_glow_alpha = 0.1 if p_is_selected else 0.0
+	# THE FIX: Increased target alpha from 0.1 to 0.2
+	var target_glow_alpha = 0.2 if p_is_selected else 0.0
 	var duration = 0.3 if p_is_selected else 0.2
 	
 	_active_tween.tween_property(self, "glow_size", target_glow_size, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)

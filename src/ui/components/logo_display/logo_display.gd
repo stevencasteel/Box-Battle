@@ -36,7 +36,6 @@ func _gui_input(event: InputEvent) -> void:
 			queue_redraw()
 		else:
 			if is_pressed:
-				# THE FIX: Play the selection sound on click.
 				AudioManager.play_sfx(AssetPaths.AUDIO_SFX_MENU_SELECT)
 				emit_signal("pressed", logo_name)
 				is_pressed = false
@@ -77,7 +76,8 @@ func _animate_hover(p_is_hovered: bool):
 	
 	_active_tween = create_tween().set_parallel(true)
 	var target_glow_size = 20.0 if p_is_hovered else 0.0
-	var target_glow_alpha = 0.1 if p_is_hovered else 0.0
+	# THE FIX: Increased target alpha from 0.1 to 0.2
+	var target_glow_alpha = 0.2 if p_is_hovered else 0.0
 	var duration = 0.3 if p_is_hovered else 0.2
 	
 	_active_tween.tween_property(self, "glow_size", target_glow_size, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)

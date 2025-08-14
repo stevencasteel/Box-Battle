@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://beattfyix2423"]
+[gd_scene load_steps=10 format=3 uid="uid://beattfyix2423"]
 
 [ext_resource type="Script" uid="uid://i8wrnl0qhpb6" path="res://src/scenes/dev/gui_title_screen.gd" id="1_gui_title_script"]
 [ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
@@ -7,6 +7,8 @@
 [ext_resource type="Texture2D" uid="uid://2gqa4m05wd20" path="res://assets/sprites/ui/logos/godot_logo.png" id="5_logo_godot"]
 [ext_resource type="Texture2D" uid="uid://d0fuu548hoouq" path="res://assets/sprites/ui/logos/itch_logo.png" id="6_logo_itch"]
 [ext_resource type="FontFile" uid="uid://8lowjix2qis2" path="res://assets/fonts/MPLUSRounded1c-Black.ttf" id="7_font_black"]
+[ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/scenes/dev/gui_mute_button.tscn" id="8_mute_button"]
+[ext_resource type="Texture2D" uid="uid://d1v0th7v6k80q" path="res://assets/sprites/ui/icons/icon-sound-off.png" id="9_xycyg"]
 
 [node name="GuiTitleScreen" type="Control"]
 layout_mode = 3
@@ -112,3 +114,20 @@ logo_name = "Itch"
 [node name="BottomSpacer" type="Control" parent="MainVBox"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+
+[node name="MuteButtonContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 350
+
+[node name="GuiMuteButton" parent="MuteButtonContainer" instance=ExtResource("8_mute_button")]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+texture_normal = ExtResource("9_xycyg")

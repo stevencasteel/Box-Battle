@@ -1,0 +1,103 @@
+[gd_scene load_steps=5 format=3 uid="uid://df5wylg5n16f"]
+
+[ext_resource type="Script" path="res://src/scenes/dev/gui_controls_menu.gd" id="1_controls_script"]
+[ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
+[ext_resource type="FontFile" uid="uid://8lowjix2qis2" path="res://assets/fonts/MPLUSRounded1c-Black.ttf" id="3_font_black"]
+[ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/scenes/dev/gui_mute_button.tscn" id="4_mute_button"]
+
+[node name="GuiControlsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_controls_script")
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="MainVBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TopSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MainVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.972549, 0.972549, 1)
+theme_override_fonts/font = ExtResource("3_font_black")
+theme_override_font_sizes/font_size = 128
+text = "CONTROLS"
+horizontal_alignment = 1
+
+[node name="TitleMenuSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="ControlsRowHBox" type="HBoxContainer" parent="MainVBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LeftSpacer" type="Control" parent="MainVBox/ControlsRowHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.8
+
+[node name="ControlsVBox" type="VBoxContainer" parent="MainVBox/ControlsRowHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="RightSpacer" type="Control" parent="MainVBox/ControlsRowHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+
+[node name="ExpandSpacer" type="Control" parent="MainVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackButton" parent="MainVBox" instance=ExtResource("2_styled_menu_item")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 100)
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 2
+font_size = 64
+
+[node name="BottomSpacer" type="Control" parent="MainVBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+
+[node name="MuteButtonContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 350
+
+[node name="GuiMuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0

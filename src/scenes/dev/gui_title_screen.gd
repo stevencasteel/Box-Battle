@@ -14,6 +14,8 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 @onready var itch_logo: LogoDisplay = %ItchLogo
 
 func _ready():
+	# THE FIX: The music logic has been removed from here and moved to main.gd.
+	
 	# --- Configure elements that need runtime setup ---
 	background_color.color = Palette.COLOR_BACKGROUND
 	
@@ -22,8 +24,8 @@ func _ready():
 	exit_button.text = "EXIT"
 
 	# --- Connect signals and set up navigation logic ---
-	start_button.pressed.connect(func(): print("Start Pressed"))
-	options_button.pressed.connect(func(): print("Options Pressed"))
+	start_button.pressed.connect(_on_start_button_pressed)
+	options_button.pressed.connect(_on_options_button_pressed)
 	exit_button.pressed.connect(get_tree().quit)
 	
 	newgrounds_logo.pressed.connect(_on_logo_pressed)
@@ -37,6 +39,12 @@ func _ready():
 	
 	await get_tree().process_frame
 	start_button.grab_focus()
+
+func _on_start_button_pressed():
+	SceneManager.start_game(AssetPaths.SCRIPT_ARENA_00_ENCOUNTER)
+
+func _on_options_button_pressed():
+	SceneManager.go_to_scene(AssetPaths.SCENE_GUI_OPTIONS_MENU)
 
 func _on_logo_pressed(logo_name: String):
 	print("%s Pressed" % logo_name)
