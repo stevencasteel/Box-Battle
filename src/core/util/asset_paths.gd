@@ -14,6 +14,10 @@ const SCRIPT_CUSTOM_SLIDER = "res://src/ui/components/custom_slider/custom_slide
 # --- DATA ---
 const ENCOUNTER_00 = "res://src/data/encounters/encounter_00.tres"
 
+# --- ARENAS & DEV ---
+const SCENE_ARENA_STAGE = "res://src/arenas/arena_stage.tscn"
+const SCENE_ARENA_BAKER_TEST = "res://src/arenas/arena_baker_test.tscn"
+
 # --- PLAYER & RELATED ---
 const SCENE_PLAYER = "res://src/entities/player/player.tscn"
 const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"

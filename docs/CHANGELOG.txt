@@ -21,7 +21,15 @@
 
 
 
+   █  Editor & Tooling
+      ░ ■ Successfully created a proof-of-concept "baking" tool that can
+      ░   procedurally generate a permanent tree of `ColorRect` nodes from a
+      ░   `LevelLayout` resource. This achieved the goal of a WYSIWYG editor
+      ░   preview for our data-driven levels and validated the workflow of
+      ░   generating scene content from `@tool` scripts. This success paves
+      ░   the way for a final migration to a more robust, native `TileMap` workflow.
 
+-------
 
 
    █  Code Quality & Tooling
