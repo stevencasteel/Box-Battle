@@ -1,6 +1,5 @@
 # src/entities/player/player.gd
-# REFACTORED: The _ready function is now broken into smaller helper methods
-# to improve readability and adhere to the Single Responsibility Principle.
+# MODIFIED: The call to FXManager for hit-stop has been commented out.
 extends CharacterBody2D
 
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
@@ -62,8 +61,44 @@ func _physics_process(delta):
 	if is_on_wall() and not is_on_floor():
 		p_data.wall_coyote_timer = p_data.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
+	
+	_process_global_actions()
+
+
+# --- Public API for States ---
+func apply_horizontal_movement():
+	var move_axis = input_component.buffer.get("move_axis", 0.0)
+	velocity.x = move_axis * p_data.config.player_speed
+	if not is_zero_approx(move_axis):
+		p_data.facing_direction = sign(move_axis)
+
+func apply_gravity(delta: float, multiplier: float = 1.0):
+	velocity.y += p_data.config.gravity * multiplier * delta
+
 
 # --- Private Helper Functions ---
+func _process_global_actions():
+	var current_state_key = state_machine.states.find_key(state_machine.current_state)
+	if not current_state_key in ACTION_ALLOWED_STATES:
+		return
+		
+	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
+		p_data.is_charging = true
+		p_data.charge_timer = 0.0
+	
+	if input_component.buffer.get("attack_released"):
+		if p_data.is_charging:
+			if p_data.charge_timer >= p_data.config.player_charge_time:
+				combat_component.fire_shot()
+			else:
+				state_machine.change_state(State.ATTACK)
+			p_data.is_charging = false
+	
+	if input_component.buffer.get("dash_pressed") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
+		state_machine.change_state(State.DASH)
+	
+	if is_on_floor() and input_component.buffer.get("down") and input_component.buffer.get("jump_pressed") and p_data.healing_charges > 0 and is_zero_approx(velocity.x):
+		state_machine.change_state(State.HEAL)
 
 func _initialize_data():
 	p_data = PlayerStateData.new()
@@ -98,26 +133,20 @@ func _connect_signals():
 	combat_component.damage_dealt.connect(_on_damage_dealt)
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
-func apply_horizontal_movement():
-	velocity.x = Input.get_axis("ui_left", "ui_right") * p_data.config.player_speed
-	if not is_zero_approx(velocity.x):
-		p_data.facing_direction = sign(velocity.x)
-
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
-	p_data.jump_buffer_timer = max(0.0, p_data.jump_buffer_timer - delta)
+	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
 	p_data.dash_cooldown_timer = max(0.0, p_data.dash_cooldown_timer - delta)
 	p_data.dash_duration_timer = max(0.0, p_data.dash_duration_timer - delta)
 	p_data.attack_duration_timer = max(0.0, p_data.attack_duration_timer - delta)
 	p_data.attack_cooldown_timer = max(0.0, p_data.attack_cooldown_timer - delta)
 	p_data.knockback_timer = max(0.0, p_data.knockback_timer - delta)
-	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
 	p_data.pogo_fall_prevention_timer = max(0.0, p_data.pogo_fall_prevention_timer - delta)
-	if p_data.is_charging and Input.is_action_pressed("ui_attack"):
+	if p_data.is_charging and input_component.buffer.get("attack_pressed"):
 		p_data.charge_timer += delta
 
 func _emit_healing_charges_changed_event():
@@ -152,7 +181,7 @@ func _on_damage_dealt():
 		p_data.determination_counter = 0; p_data.healing_charges += 1
 		_emit_healing_charges_changed_event()
 
-# --- Signal Handlers (Connected in Editor or _ready) ---
+# --- Signal Handlers ---
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
 	if p_data.hit_targets_this_swing.has(target_id): return
@@ -163,10 +192,14 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		var damage_info = DamageInfo.new()
 		damage_info.source_node = self
 		var distance = self.global_position.distance_to(body.global_position)
-		damage_info.amount = 5 if distance <= CLOSE_RANGE_THRESHOLD else 1
+		var is_close_range = distance <= CLOSE_RANGE_THRESHOLD
+		damage_info.amount = 5 if is_close_range else 1
 			
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
+			if is_close_range:
+				# FXManager.request_hit_stop(0.05)
+				pass
 			_on_damage_dealt()
 
 func _on_pogo_hitbox_body_entered(body: Node) -> void:

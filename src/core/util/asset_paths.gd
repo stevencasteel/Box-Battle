@@ -14,10 +14,6 @@ const SCRIPT_CUSTOM_SLIDER = "res://src/ui/components/custom_slider/custom_slide
 # --- DATA ---
 const ENCOUNTER_00 = "res://src/data/encounters/encounter_00.tres"
 
-# --- ARENAS & DEV ---
-const SCENE_ARENA_STAGE = "res://src/arenas/arena_stage.tscn"
-const SCENE_ARENA_BAKER_TEST = "res://src/arenas/arena_baker_test.tscn"
-
 # --- PLAYER & RELATED ---
 const SCENE_PLAYER = "res://src/entities/player/player.tscn"
 const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"
@@ -43,6 +39,9 @@ const SCENE_CREDITS_SCREEN = "res://src/scenes/menus/credits_screen.tscn"
 const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
 const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
 const SCENE_MUTE_BUTTON = "res://src/ui/components/mute_button/mute_button.tscn"
+
+# --- DEV TOOLS ---
+const SCENE_DEBUG_OVERLAY = "res://src/ui/dev/debug_overlay.tscn"
 
 # --- SPRITES & ICONS ---
 const SPRITE_TITLE_MAIN = "res://assets/sprites/ui/title/sprite_title_main.png"

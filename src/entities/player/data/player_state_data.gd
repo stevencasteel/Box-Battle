@@ -5,8 +5,8 @@
 class_name PlayerStateData
 extends Resource
 
-# --- NEW: Configuration Reference ---
-var config: CombatConfig # This will hold the reference to the global combat config.
+# --- Configuration Reference ---
+var config: CombatConfig
 
 # --- Health & Combat ---
 var max_health: int = 5
@@ -34,7 +34,6 @@ var pogo_fall_prevention_timer: float = 0.0
 
 # --- Timers ---
 var coyote_timer: float = 0.0
-var jump_buffer_timer: float = 0.0
 var wall_coyote_timer: float = 0.0
 var dash_duration_timer: float = 0.0
 var dash_cooldown_timer: float = 0.0

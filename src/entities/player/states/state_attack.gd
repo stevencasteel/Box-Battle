@@ -8,7 +8,7 @@ const FORWARD_ATTACK_SHAPE = preload("res://src/entities/player/data/forward_att
 const UPWARD_ATTACK_SHAPE = preload("res://src/entities/player/data/upward_attack_shape.tres")
 
 func enter(_msg := {}):
-	state_data.is_pogo_attack = Input.is_action_pressed("ui_down")
+	state_data.is_pogo_attack = owner.input_component.buffer.get("down")
 	state_data.hit_targets_this_swing.clear()
 
 	if state_data.is_pogo_attack:
@@ -22,7 +22,7 @@ func enter(_msg := {}):
 		state_data.attack_duration_timer = state_data.config.player_attack_duration
 		state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
 		
-		if Input.is_action_pressed("ui_up"):
+		if owner.input_component.buffer.get("up"):
 			owner.melee_hitbox_shape.shape = UPWARD_ATTACK_SHAPE
 			owner.melee_hitbox_shape.position = Vector2(0, -40)
 		else:

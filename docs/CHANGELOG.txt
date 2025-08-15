@@ -21,6 +21,36 @@
 
 
 
+
+
+-------
+
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Abstracted the input system by refactoring `InputComponent` to use a║
+║      ░   command buffer. All player states now read from this buffer         ║
+║      ░   instead of polling the global `Input` singleton, fully decoupling   ║
+║      ░   game logic from hardware input.                                     ║
+║      ░ ■ Centralized core physics logic by creating an `apply_gravity`       ║
+║      ░   helper function on the Player node. Duplicated gravity calculations ║
+║      ░   were removed from all relevant states, adhering to the DRY principle.║
+║      ░ ■ Established a new `FXManager` singleton to serve as a dedicated     ║
+║      ░   subsystem for "game feel" effects. This separates purely aesthetic  ║
+║      ░   feedback (like hit-stop) from core gameplay components, improving   ║
+║      ░   modularity and adhering to SRP.                                     ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented a toggleable Developer Debug Overlay (F1) that displays ║
+║      ░   the player's real-time state and velocity, significantly speeding up║
+║      ░   the debugging and tuning process.                                   ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a crash in `game.gd` caused by calling an `Input` singleton║
+║      ░   method on an `InputEvent` object in the `_unhandled_input` function.║
+║                                                                              ║
+
+-------
+
+
    █  Editor & Tooling
       ░ ■ Successfully created a proof-of-concept "baking" tool that can
       ░   procedurally generate a permanent tree of `ColorRect` nodes from a

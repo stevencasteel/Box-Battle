@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://debug_overlay_scene_id"]
+
+[ext_resource type="Script" path="res://src/ui/dev/debug_overlay.gd" id="1_debug_script"]
+
+[node name="DebugOverlay" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_debug_script")
+
+[node name="Label" type="Label" parent="."]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 420.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 24
+text = "LOADING DEBUG INFO..."

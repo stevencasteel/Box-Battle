@@ -1,5 +1,5 @@
 # src/entities/components/health_component.gd
-# CORRECTED: Uses Identifiers constants for group checks.
+# MODIFIED: The call to FXManager for hit-stop has been commented out.
 class_name HealthComponent
 extends ComponentInterface
 
@@ -91,6 +91,11 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 		died.emit()
 	
 	result.was_damaged = true
+	
+	if result.was_damaged and owner_node.is_in_group(Identifiers.Groups.PLAYER):
+		# FXManager.request_hit_stop(0.5)
+		pass
+	
 	return result
 
 func _check_for_threshold_crossing(health_before: int, health_after: int):

@@ -1,9 +1,10 @@
 # src/scenes/game/game.gd
-# CORRECTED: Uses Identifiers constants for group checks.
+# MODIFIED: Instances and manages the developer debug overlay.
 extends Node
 
 var player_node: Node = null
 var level_container: Node = null
+var debug_overlay: CanvasLayer = null # Reference to the overlay
 @onready var camera: Camera2D = $Camera2D
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
@@ -29,6 +30,17 @@ func _ready():
 	player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
+		
+	# Instance and add the debug overlay, then hide it by default.
+	debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
+	add_child(debug_overlay)
+	debug_overlay.visible = false
+
+func _unhandled_input(_event: InputEvent):
+	# CORRECTED: The check is now performed on the global Input singleton.
+	if Input.is_action_just_pressed("debug_toggle"):
+		if is_instance_valid(debug_overlay):
+			debug_overlay.visible = not debug_overlay.visible
 
 func _exit_tree():
 	EventBus.off(_boss_died_token)

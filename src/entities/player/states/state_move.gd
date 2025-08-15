@@ -9,22 +9,21 @@ func enter(_msg := {}):
 func process_physics(delta: float):
 	state_data.coyote_timer = state_data.config.player_coyote_time
 	
-	owner.velocity.y += state_data.config.gravity * delta
+	owner.apply_gravity(delta)
 	owner.apply_horizontal_movement()
 
 	if not owner.is_on_floor():
 		state_machine.change_state(owner.State.FALL)
 		return
 	
-	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
+	if owner.input_component.buffer.get("down") and owner.input_component.buffer.get("jump_pressed"):
 		if owner.get_last_slide_collision():
 			var floor_collider = owner.get_last_slide_collision().get_collider()
 			if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
 				owner.position.y += 2
-				state_data.jump_buffer_timer = 0
 				state_machine.change_state(owner.State.FALL)
 				return
 	
-	if state_data.jump_buffer_timer > 0:
+	if owner.input_component.buffer.get("jump_pressed"):
 		state_machine.change_state(owner.State.JUMP)
 		return

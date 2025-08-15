@@ -9,7 +9,7 @@ func enter(_msg := {}):
 	owner._cancel_heal()
 
 func process_physics(delta: float):
-	owner.velocity.y += state_data.config.gravity * delta
+	owner.apply_gravity(delta)
 	owner.velocity.x = move_toward(owner.velocity.x, 0, 800 * delta)
 
 	if state_data.knockback_timer <= 0:
