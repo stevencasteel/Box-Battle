@@ -3,9 +3,7 @@
 class_name LevelBuildData
 extends Resource
 
-# Inner class to hold data for a single minion spawn.
 class MinionSpawnData extends RefCounted:
-	# THE FIX: Renamed from scene_path to scene to accurately reflect its type.
 	var scene: PackedScene
 	var position: Vector2
 	func _init(p_scene: PackedScene, p_pos: Vector2):
@@ -18,6 +16,7 @@ var hazard_tiles: Array[Vector2] = []
 var background_tiles: Array[Vector2i] = []
 var player_spawn_pos: Vector2 = Vector2.ZERO
 var boss_spawn_pos: Vector2 = Vector2.ZERO
-var encounter_script_object: Object = null
+# THE FIX: Renamed to accurately reflect that it holds an EncounterData resource.
+var encounter_data_resource: EncounterData = null
 var dimensions_tiles: Vector2i = Vector2i.ZERO
 var minion_spawns: Array[MinionSpawnData] = []

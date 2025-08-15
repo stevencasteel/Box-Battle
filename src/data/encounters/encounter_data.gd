@@ -1,6 +1,6 @@
 # src/data/encounters/encounter_data.gd
 # A custom Resource that defines a complete encounter or stage.
-# It links a level layout to the entities that should be spawned in it.
+# REFACTORED: Now uses @export_group for a clean Inspector UI.
 class_name EncounterData
 extends Resource
 

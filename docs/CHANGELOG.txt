@@ -24,6 +24,18 @@
 
 
 
+   █  Code Quality & Tooling
+      ░ ■ Improved clarity by renaming variables in core systems (`GameManager`,
+      ░   `ArenaBuilder`, etc.) to accurately reflect the new data-driven
+      ░   architecture (e.g., `encounter_script_path` -> `encounter_path`).
+      ░ ■ Enhanced the designer workflow by adding `@export_group` annotations
+      ░   to the `EncounterData` resource, organizing its properties into
+      ░   clean, collapsible sections in the Godot Inspector.
+      ░ ■ Added a configuration warning system to the `LevelLayout` resource.
+      ░   This `@tool` script now automatically checks if all rows in the
+      ░   terrain data have the same length and will notify the editor if an
+      ░   invalid layout is detected.
+
 --------------------
 
    █  Architectural Changes
