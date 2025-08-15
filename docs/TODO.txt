@@ -30,23 +30,16 @@
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║
 ║                                                                              ║
-║   □  Pogo-Fall Prevention                                                    ║
-║      ░  WHY: To prevent the frustrating experience of accidentally fast-falling║
-║      ░  immediately after a successful pogo bounce.                          ║
-║      ░  HOW: In the `Player` script, after a successful pogo, start a very   ║
-║      ░  short timer (e.g., 0.1s) during which the "fast-fall" input is ignored.║
-║                                                                              ║
-║   □  UI Overhaul                                                             ║
-║      ░  □ Refactor all procedural menus to use Godot's built-in `Container`  ║
-║      ░    nodes (`VBoxContainer`, etc.) to fix layout bugs like `BUG-UI001`. ║
-║      ░  □ Create the cornerstone `StyledMenuItem` visual component.          ║
-║                                                                              ║
+║   ░  Fast-Fall: Holding 'Down' in the air increases gravity.  (turns of on timer when player does pogo input)                                                                         ║
+║   ░  Cleanup or remove `test_ui` scene and related dev assets.               ║
 ║   ░  Diegetic UI Implementation                                              ║
 ║   ░  Dynamic Music Layering System                                           ║
 ║   ░  Adaptive Boss AI Tactics Layer                                          ║
 ║   ░  Player Loadout System                                                   ║
 ║   ░  Special Game Modes (Boss Rush, Time Attack)                             ║
-║   ░  Cleanup or remove `test_ui` scene and related dev assets.               ║
 ║   ░  Screen Shake (Deferred to avoid visual noise during debugging)          ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+║      ░              ║

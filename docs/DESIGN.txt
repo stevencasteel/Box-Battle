@@ -37,7 +37,6 @@
 ║      ░ ■ Coyote Time & Jump Buffering for forgiving platforming.             ║
 ║      ░ ■ 4-directional Dash with a cooldown.                                 ║
 ║      ░ ■ Wall-Sliding and Wall-Jumping for verticality.                      ║
-║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity.             ║
 ║                                                                              ║
 ║   ▓  Combat System                                                           ║
 ║      ░ ■ Primary Melee: A fast, close-range attack.                          ║
