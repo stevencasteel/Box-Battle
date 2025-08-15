@@ -36,7 +36,8 @@ func _ready():
 	start_button.grab_focus()
 
 func _on_start_button_pressed():
-	SceneManager.start_game(AssetPaths.SCRIPT_ARENA_00_ENCOUNTER)
+	# THE FIX: Point to the new EncounterData .tres file constant.
+	SceneManager.start_game(AssetPaths.ENCOUNTER_00)
 
 func _on_options_button_pressed():
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)

@@ -11,9 +11,8 @@ const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn"
 const SCRIPT_MENU_MANAGER = "res://src/ui/menu_manager/menu_manager.gd"
 const SCRIPT_CUSTOM_SLIDER = "res://src/ui/components/custom_slider/custom_slider.gd"
 
-# --- ARENAS ---
-const SCRIPT_ARENA_00_LAYOUT = "res://src/arenas/arena_00_layout.gd"
-const SCRIPT_ARENA_00_ENCOUNTER = "res://src/arenas/arena_00_encounter.gd"
+# --- DATA ---
+const ENCOUNTER_00 = "res://src/data/encounters/encounter_00.tres"
 
 # --- PLAYER & RELATED ---
 const SCENE_PLAYER = "res://src/entities/player/player.tscn"

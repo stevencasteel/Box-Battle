@@ -1,16 +1,15 @@
 # src/core/builders/level_build_data.gd
-#
-# A custom Resource script that acts as a data container. It now
-# holds a list of minion spawn data.
+# A custom Resource script that acts as a data container.
 class_name LevelBuildData
 extends Resource
 
 # Inner class to hold data for a single minion spawn.
 class MinionSpawnData extends RefCounted:
-	var scene_path: String
+	# THE FIX: Renamed from scene_path to scene to accurately reflect its type.
+	var scene: PackedScene
 	var position: Vector2
-	func _init(p_path: String, p_pos: Vector2):
-		scene_path = p_path
+	func _init(p_scene: PackedScene, p_pos: Vector2):
+		scene = p_scene
 		position = p_pos
 
 var terrain_tiles: Array[Vector2] = []

@@ -1,32 +1,34 @@
 # src/core/building/level_parser.gd
-#
-# The parser is now capable of identifying and storing data for
-# multiple, user-defined minion spawn markers.
+# REFACTORED: The parser now reads directly from our new data-driven
+# EncounterData and LevelLayout .tres resource files.
 class_name LevelParser
 extends RefCounted
 
 const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
 
-func parse_level_data(encounter_script: Script) -> LevelBuildData:
+# The function now accepts our new EncounterData resource as its input.
+func parse_level_data(encounter_data: EncounterData) -> LevelBuildData:
 	var data = LevelBuildData.new()
-	if not is_instance_valid(encounter_script): return data
+	if not is_instance_valid(encounter_data):
+		push_error("LevelParser: Invalid EncounterData provided.")
+		return data
 
-	data.encounter_script_object = encounter_script
-
-	var constants = encounter_script.get_script_constant_map()
-	if not constants.has("LAYOUT_SCRIPT_PATH"): return data
-
-	var layout_script: Script = load(constants["LAYOUT_SCRIPT_PATH"])
-	if not is_instance_valid(layout_script): return data
+	# Directly access the properties of the encounter resource.
+	var layout: LevelLayout = encounter_data.level_layout
+	if not is_instance_valid(layout):
+		push_error("LevelParser: EncounterData is missing a valid LevelLayout.")
+		return data
 	
-	var terrain_data_array: Array = layout_script.TERRAIN_DATA
+	var terrain_data_array: PackedStringArray = layout.terrain_data
 	var grid_height = terrain_data_array.size()
 	var grid_width = 0
 	if grid_height > 0: grid_width = terrain_data_array[0].length()
 	data.dimensions_tiles = Vector2i(grid_width, grid_height)
 	
-	# Get the minion spawn dictionary from the encounter script.
-	var minion_spawn_dict = constants.get("MINION_SPAWNS", {})
+	# Get all spawn data directly from the resource.
+	var player_marker = encounter_data.player_spawn_marker
+	var boss_marker = encounter_data.boss_spawn_marker
+	var minion_spawn_dict = encounter_data.minion_spawns
 
 	for y in range(grid_height):
 		var row_string: String = terrain_data_array[y]
@@ -42,14 +44,13 @@ func parse_level_data(encounter_script: Script) -> LevelBuildData:
 				'.': data.background_tiles.append(tile_grid_pos)
 				_:
 					data.background_tiles.append(tile_grid_pos)
-					if tile_char == constants["PLAYER_SPAWN_MARKER"]:
+					if tile_char == player_marker:
 						data.player_spawn_pos = tile_world_pos
-					elif tile_char == constants["BOSS_SPAWN_MARKER"]:
+					elif tile_char == boss_marker:
 						data.boss_spawn_pos = tile_world_pos
-					# NEW: Check if the character is a defined minion marker.
 					elif minion_spawn_dict.has(tile_char):
-						var scene_path = minion_spawn_dict[tile_char]
-						var spawn_data = LevelBuildData.MinionSpawnData.new(scene_path, tile_world_pos)
+						var scene_to_spawn = minion_spawn_dict[tile_char]
+						var spawn_data = LevelBuildData.MinionSpawnData.new(scene_to_spawn, tile_world_pos)
 						data.minion_spawns.append(spawn_data)
 	
 	return data

@@ -24,10 +24,30 @@
 
 
 
+--------------------
 
+   █  Architectural Changes
+      ░ ■ Completed a major refactor of the encounter and level definition
+      ░   system. All arena data has been moved from hardcoded `.gd` scripts
+      ░   into new, data-driven custom resources (`EncounterData.tres`,
+      ░   `LevelLayout.tres`).
+      ░ ■ The `ArenaBuilder` and `LevelParser` have been updated to be fully
+      ░   data-driven, loading and parsing these new `.tres` files at runtime.
+      ░   This decouples level design from game logic and makes creating new
+      ░   encounters a code-free, designer-friendly process.
 
+   █  Removed
+      ░ ■ Deleted the obsolete `arena_00_encounter.gd` and `arena_00_layout.gd`
+      ░   scripts, as their data is now stored in `.tres` resources.
 
-
+   █  Editor & Tooling
+      ░ ■ **[Deferred]** An attempt was made to create a universal `@tool` scene
+      ░   (`ArenaStage`) that would visually render `LevelLayout` data directly
+      ░   in the 2D editor. Both custom drawing (`_draw`) and programmatic
+      ░   `TileMap` generation were explored. The feature has been deferred
+      ░   due to unresolved, deep-seated engine errors related to parsing
+      ░   programmatically-generated `TileSet` resources in a pure code-first,
+      ░   non-editor workflow. The runtime implementation remains stable and unaffected.
 
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                 [0.8.0] - NO TITLE YET - 2025-08-14                  ██  ║

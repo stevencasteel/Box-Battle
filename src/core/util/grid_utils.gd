@@ -3,13 +3,12 @@
 # between the logical tile grid and world-space pixel coordinates.
 extends Node
 
-# Converts a grid coordinate (e.g., Vector2i(3, 4)) to the center
-# of that tile in world pixels.
-static func grid_to_world(tile_pos: Vector2i) -> Vector2:
-	var half_tile = Constants.TILE_SIZE / 2.0
-	return Vector2(tile_pos.x * Constants.TILE_SIZE + half_tile, tile_pos.y * Constants.TILE_SIZE + half_tile)
+# THE FIX: The function now accepts tile_size as a parameter, removing
+# its dependency on the Constants autoload. This makes it safe to use
+# from any @tool script.
+static func grid_to_world(tile_pos: Vector2i, tile_size: int = Constants.TILE_SIZE) -> Vector2:
+	var half_tile = tile_size / 2.0
+	return Vector2(tile_pos.x * tile_size + half_tile, tile_pos.y * tile_size + half_tile)
 
-# Converts a world-space pixel position (e.g., from a mouse click)
-# to the grid coordinate of the tile it is inside.
-static func world_to_grid(world_pos: Vector2) -> Vector2i:
-	return Vector2i(floor(world_pos.x / Constants.TILE_SIZE), floor(world_pos.y / Constants.TILE_SIZE))
+static func world_to_grid(world_pos: Vector2, tile_size: int = Constants.TILE_SIZE) -> Vector2i:
+	return Vector2i(floor(world_pos.x / tile_size), floor(world_pos.y / tile_size))

@@ -1,7 +1,6 @@
 # src/core/building/arena_builder.gd
-#
-# The ArenaBuilder now correctly awaits the completion of the intro
-# sequence handle, ensuring the boss is spawned before the level is returned.
+# REFACTORED: Now loads EncounterData.tres resources instead of scripts.
+# The core spawning logic remains the same.
 extends Node
 
 var _current_build_data: LevelBuildData
@@ -17,11 +16,14 @@ func build_level_async() -> Node:
 	var encounter_path: String = GameManager.state.current_encounter_script_path
 	if encounter_path.is_empty(): return _current_level_container
 		
-	var encounter_script: Script = load(encounter_path)
-	if not is_instance_valid(encounter_script): return _current_level_container
+	var encounter_data: EncounterData = load(encounter_path)
+	if not is_instance_valid(encounter_data):
+		push_error("ArenaBuilder: Failed to load EncounterData at path: %s" % encounter_path)
+		return _current_level_container
 		
 	var parser = LevelParser.new()
-	_current_build_data = parser.parse_level_data(encounter_script)
+	_current_build_data = parser.parse_level_data(encounter_data)
+	_current_build_data.encounter_script_object = encounter_data
 	_current_level_container.set_meta("build_data", _current_build_data)
 	
 	await get_tree().process_frame
@@ -33,9 +35,7 @@ func build_level_async() -> Node:
 	await _spawn_hud_async()
 	await _spawn_minions_async()
 	
-	# THE FIX: Store the handle returned by the sequencer.
 	_intro_sequence_handle = _run_intro_sequence()
-	# Now, wait for the intro sequence to fully complete before proceeding.
 	if is_instance_valid(_intro_sequence_handle):
 		await _intro_sequence_handle.finished
 
@@ -50,7 +50,7 @@ func _spawn_player_async() -> void:
 	await get_tree().process_frame
 
 func _spawn_boss_async() -> Node:
-	var boss_scene: PackedScene = _current_build_data.encounter_script_object.BOSS_SCENE
+	var boss_scene: PackedScene = _current_build_data.encounter_script_object.boss_scene
 	if not boss_scene: return null
 	var instance = boss_scene.instantiate()
 	instance.global_position = _current_build_data.boss_spawn_pos
@@ -65,7 +65,8 @@ func _spawn_hud_async() -> void:
 
 func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
-		var instance = load(spawn_data.scene_path).instantiate()
+		# THE FIX: Use the .scene property directly and remove the incorrect load() call.
+		var instance = spawn_data.scene.instantiate()
 		instance.global_position = spawn_data.position
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame
