@@ -12,16 +12,15 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                       PHASE 1: GAME FEEL & FEEDBACK                    ██  ║
+║  ██                       PHASE 2: JUICE & FEEDBACK                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   Now that the architecture is stable, the focus shifts to player experience. ║
+║   The focus is now on tangible "game feel" to make interactions satisfying.  ║
 ║                                                                              ║
-║   □  Implement Screen Shake via the new `FXManager`.                         ║
-║   □  Implement Hit-Stop via the new `FXManager` for close-range melee hits.  ║
-║   □  Create and pool a basic "hit spark" particle effect via `VFXManager`.   ║
-║   □  Create a basic dialogue box UI and `DialogueManager` system.            ║
-║   □  Expand the Debug Overlay with more real-time player data.               ║
+║   □  Implement Screen Shake via `FXManager` for player damage and boss attacks.
+║   □  Implement Hit-Stop via `FXManager` for close-range melee hits on the boss.
+║   □  Create and pool a basic "hit spark" particle effect via a new `VFXManager`.
+║   □  Implement the basic functionality for the `DialogueManager` and `DialogueBox`.
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                     INDEFINITELY DEFERRED TASKS                      ██  ║
@@ -31,9 +30,8 @@
 ║                                                                              ║
 ║   ░  Fast-Fall: Holding 'Down' in the air increases gravity.                 ║
 ║   ░  Diegetic UI Implementation (UI integrated into the game world).         ║
-║   ░  Dynamic Music Layering System.                                          ║
-║   ░  Adaptive Boss AI Tactics Layer.                                         ║
-║   ░  Player Loadout System.                                                  ║
+║   ░  Advanced Boss AI (Adaptive tactics, environmental interaction).         ║
+║   ░  Player Loadout System (Alternative weapons or abilities).               ║
 ║   ░  Special Game Modes (Boss Rush, Time Attack).                            ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

@@ -1,9 +1,10 @@
-# src/scenes/game/game.gd
+# src/scenes/game/encounter_scene.gd
 ## The main game scene controller.
 ##
 ## Responsible for asynchronously building the level, spawning the player and
 ## boss, managing the game camera, and handling the victory/defeat sequences.
 ## It also manages the developer debug overlay.
+class_name EncounterScene
 extends Node
 
 # --- Node References ---

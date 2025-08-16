@@ -160,4 +160,61 @@
 ║      ░ ■ Vertex Displacement Parallax: A very cheap shader that slightly     ║
 ║      ░   offsets vertices based on mouse position for a subtle 3D effect.    ║
 ║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                          FUTURE GAME SYSTEMS                         ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   High-level ideas for new architectural components and features.            ║
+║                                                                              ║
+║   ▒  Advanced SFX Management                                                 ║
+║      ░ Expand `AudioManager` to manage audio buses dynamically, limit voice  ║
+║      ░ counts for specific sounds (e.g., footsteps), and handle positional   ║
+║      ░ audio via `AudioStreamPlayer2D` nodes for world-space sound effects.  ║
+║                                                                              ║
+║   ▒  Dynamic Music System                                                    ║
+║      ░ A system to dynamically layer or transition music based on combat     ║
+║      ░ intensity, boss health phases, or location in the arena.              ║
+║                                                                              ║
+║   ▒  Object Pool Expansion                                                   ║
+║      ░ Pool VFX particle effects (`GPUParticles2D` scenes).                  ║
+║      ░ Pool common, weak minion types to optimize performance in encounters  ║
+║      ░ with many enemies.                                                    ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                        GAMEPLAY ENHANCEMENTS                         ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Ideas for mechanics and feedback to improve the player experience.         ║
+║                                                                              ║
+║   ▒  Combat Feel                                                             ║
+║      ░ Attack-Interrupting Windows: Specific boss animations could have a    ║
+║      ░ "vulnerable" window where a player hit interrupts the attack.         ║
+║      ░ Cinematic Phase Transitions: When a boss changes phase, trigger a     ║
+║      ░ brief, scripted sequence with unique animations or effects.           ║
+║                                                                              ║
+║   ▒  New Interfaces & Mechanics                                              ║
+║      ░ `IInteractable`: For world objects the player can interact with.      ║
+║      ░ Damage Type Enum: If combat complexity increases, create an enum for  ║
+║      ░ `DamageType { MELEE, PROJECTILE, HAZARD }` to allow for resistances.  ║
+║                                                                              ║
+║   ▒  Boss Concepts                                                           ║
+║      ░ Beat Box: Rhythm-based boss where platforms and attacks sync to music.║
+║      ░ Gravity Box: Arena gravity flips periodically between floor and ceiling.
+║      ░ Garden Box: Segmented, Centipede-style boss weaves through obstacles. ║
+║      ░ Circuit Box: Tempest-style boss in the center of a circular arena.    ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                     DEVELOPER EXPERIENCE & TOOLING                   ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Ideas for internal systems to improve the development workflow.            ║
+║                                                                              ║
+║   ▒  In-Game Debug Console                                                   ║
+║      ░ A Quake-style dropdown console to run debug commands like `kill_boss`,║
+║      ░ `give_heal`, `noclip`, or `set_player_speed`.                         ║
+║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+
+

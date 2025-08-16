@@ -22,6 +22,19 @@ func _ready() -> void:
 
 # --- Public Methods ---
 
+## Returns a dictionary containing the active/total counts for each pool.
+func get_pool_stats() -> Dictionary:
+	var stats: Dictionary = {}
+	for pool_name in _pools:
+		var pool = _pools[pool_name]
+		var total_count = pool.container.get_child_count()
+		var inactive_count = pool.inactive.size()
+		stats[pool_name] = {
+			"active": total_count - inactive_count,
+			"total": total_count
+		}
+	return stats
+
 ## Returns all active instances in all pools to their inactive state.
 func reset() -> void:
 	for pool_name in _pools:

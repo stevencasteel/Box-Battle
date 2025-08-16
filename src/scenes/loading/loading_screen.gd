@@ -41,7 +41,7 @@ func _load_level() -> void:
 
 	await get_tree().process_frame # Wait one more frame for safety.
 
-	SceneManager.go_to_scene(AssetPaths.SCENE_GAME)
+	SceneManager.go_to_scene(AssetPaths.SCENE_ENCOUNTER) # UPDATED
 
 ## Instantiates scenes off-screen to compile their shaders.
 func _prewarm_shaders() -> void:

@@ -1,5 +1,5 @@
 # src/projectiles/boss_shot.gd
-## A projectile fired by the boss.
+## A projectile fired by the boss. Implements the [IPoolable] interface.
 class_name BossShot
 extends Area2D
 
@@ -19,7 +19,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	global_position += direction * speed * delta
 
-# --- Public Methods ---
+# --- Public Methods (IPoolable Contract) ---
 
 ## Activates the projectile, making it visible and interactive.
 func activate() -> void:

@@ -1,5 +1,5 @@
 # src/projectiles/turret_shot.gd
-## A projectile fired by the Turret minion.
+## A projectile fired by the Turret minion. Implements the [IPoolable] interface.
 class_name TurretShot
 extends Area2D
 
@@ -23,7 +23,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	global_position += direction * speed * delta
 
-# --- Public Methods ---
+# --- Public Methods (IPoolable Contract) ---
 
 ## Activates the projectile, making it visible and interactive.
 func activate() -> void:

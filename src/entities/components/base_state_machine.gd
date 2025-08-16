@@ -3,9 +3,12 @@
 ## A reusable, node-based state machine that conforms to the IComponent interface.
 ##
 ## Manages a dictionary of [BaseState] objects, handles transitions between
-## them, and forwards engine callbacks to the active state.
+## them, and forwards engine callbacks to the active state. Now includes state history tracking.
 class_name BaseStateMachine
 extends IComponent
+
+# --- Constants ---
+const MAX_HISTORY_SIZE = 5
 
 # --- Member Variables ---
 ## A dictionary of all states available to this machine, keyed by an enum.
@@ -14,6 +17,8 @@ var states: Dictionary = {}
 var current_state: BaseState
 ## A reference to the node that owns this state machine.
 var owner_node: Node
+## A list of the most recent state keys entered.
+var state_history: Array[String] = []
 
 # --- Godot Lifecycle Methods ---
 
@@ -51,6 +56,7 @@ func teardown() -> void:
 		if state.has_method("teardown"):
 			state.teardown()
 	states.clear()
+	state_history.clear()
 	current_state = null
 
 ## Transitions the machine from the current state to a new one.
@@ -67,3 +73,14 @@ func change_state(new_state_key, msg := {}) -> void:
 
 	current_state = states[new_state_key]
 	current_state.enter(msg)
+
+	# --- Add to History ---
+	var state_name = ""
+	# Find the string name of the enum value (e.g., "MOVE" from State.MOVE)
+	for key_name in owner_node.State:
+		if owner_node.State[key_name] == new_state_key:
+			state_name = key_name
+			break
+	state_history.push_front(state_name)
+	if state_history.size() > MAX_HISTORY_SIZE:
+		state_history.pop_back()

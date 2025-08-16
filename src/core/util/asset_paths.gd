@@ -9,7 +9,7 @@ extends Node
 # --- CORE SYSTEMS ---
 const SCRIPT_COMBAT_UTILS = "res://src/core/util/combat_utils.gd"
 const SCENE_MAIN = "res://src/scenes/main/main.tscn"
-const SCENE_GAME = "res://src/scenes/game/game.tscn"
+const SCENE_ENCOUNTER = "res://src/scenes/game/encounter_scene.tscn" # RENAMED
 const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn"
 const SCRIPT_MENU_MANAGER = "res://src/ui/menu_manager/menu_manager.gd"
 const SCRIPT_CUSTOM_SLIDER = "res://src/ui/components/custom_slider/custom_slider.gd"
