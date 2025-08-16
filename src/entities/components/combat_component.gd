@@ -2,7 +2,7 @@
 @tool
 ## Centralizes all player combat logic, such as firing projectiles and pogo attacks.
 class_name CombatComponent
-extends ComponentInterface
+extends IComponent
 
 # --- Signals ---
 ## Emitted when this component successfully deals damage.

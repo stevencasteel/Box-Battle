@@ -1,11 +1,11 @@
 # src/entities/components/base_state_machine.gd
 @tool
-## A reusable, node-based state machine that conforms to the ComponentInterface.
+## A reusable, node-based state machine that conforms to the IComponent interface.
 ##
 ## Manages a dictionary of [BaseState] objects, handles transitions between
 ## them, and forwards engine callbacks to the active state.
 class_name BaseStateMachine
-extends ComponentInterface
+extends IComponent
 
 # --- Member Variables ---
 ## A dictionary of all states available to this machine, keyed by an enum.

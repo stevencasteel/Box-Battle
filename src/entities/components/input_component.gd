@@ -6,7 +6,7 @@
 ## dictionary. Other components and states read from this buffer, decoupling
 ## them from the global Input singleton.
 class_name InputComponent
-extends ComponentInterface
+extends IComponent
 
 # --- Member Variables ---
 var owner_node: CharacterBody2D

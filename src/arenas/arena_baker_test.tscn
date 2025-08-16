@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://bcfkawmvba0ai"]
-
-[ext_resource type="Script" uid="uid://jydv7nulf0pu" path="res://src/arenas/arena_baker_test.gd" id="1_baker_script"]
-
-[node name="ArenaBakerTest" type="Node2D"]
-script = ExtResource("1_baker_script")

@@ -50,6 +50,14 @@ func _prewarm_shaders() -> void:
 		if not FileAccess.file_exists(scene_path): continue
 		var instance = load(scene_path).instantiate()
 		prewarm_viewport.add_child(instance)
+		
+		# --- Trigger Actions to Compile More Shaders ---
+		if instance is Player:
+			instance.velocity.x = 100
+			instance.state_machine.change_state(instance.State.ATTACK)
+		elif instance is BaseBoss:
+			instance.velocity.x = 100
+
 		await get_tree().process_frame
 		instance.queue_free()
 	print("Shader pre-warming complete.")

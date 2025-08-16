@@ -12,34 +12,28 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                       PHASE 1: PUT TITLE HERE                        ██  ║
+║  ██                       PHASE 1: GAME FEEL & FEEDBACK                    ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
+║   Now that the architecture is stable, the focus shifts to player experience. ║
 ║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
+║   □  Implement Screen Shake via the new `FXManager`.                         ║
+║   □  Implement Hit-Stop via the new `FXManager` for close-range melee hits.  ║
+║   □  Create and pool a basic "hit spark" particle effect via `VFXManager`.   ║
+║   □  Create a basic dialogue box UI and `DialogueManager` system.            ║
+║   □  Expand the Debug Overlay with more real-time player data.               ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                     INDEFINITELY DEFERRED TASKS                      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   A list of lower-priority goals to be addressed after the core loop is solid.║
+║   A list of lower-priority goals for future consideration.                   ║
 ║                                                                              ║
-║   ░  Fast-Fall: Holding 'Down' in the air increases gravity.  (turns of on timer when player does pogo input)                                                                         ║
-║   ░  Cleanup or remove `test_ui` scene and related dev assets.               ║
-║   ░  Diegetic UI Implementation                                              ║
-║   ░  Dynamic Music Layering System                                           ║
-║   ░  Adaptive Boss AI Tactics Layer                                          ║
-║   ░  Player Loadout System                                                   ║
-║   ░  Special Game Modes (Boss Rush, Time Attack)                             ║
-║   ░  Screen Shake (Deferred to avoid visual noise during debugging)          ║
+║   ░  Fast-Fall: Holding 'Down' in the air increases gravity.                 ║
+║   ░  Diegetic UI Implementation (UI integrated into the game world).         ║
+║   ░  Dynamic Music Layering System.                                          ║
+║   ░  Adaptive Boss AI Tactics Layer.                                         ║
+║   ░  Player Loadout System.                                                  ║
+║   ░  Special Game Modes (Boss Rush, Time Attack).                            ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
-
-
-║      ░              ║

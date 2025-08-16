@@ -5,7 +5,7 @@
 ## When active, other components can query its [member is_armored] property to
 ## determine if damage should be ignored.
 class_name ArmorComponent
-extends ComponentInterface
+extends IComponent
 
 ## If true, the entity is invulnerable to damage.
 var is_armored: bool = false

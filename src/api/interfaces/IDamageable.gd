@@ -1,4 +1,4 @@
-# src/api/interfaces/i_damageable.gd
+# src/api/interfaces/IDamageable.gd
 ## The conceptual "interface" for any object that can take damage.
 ##
 ## This script is not meant to be extended directly. It serves as project

@@ -19,6 +19,41 @@
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
 
 
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `player.gd` script by abstracting its     ║
+║      ░   core responsibilities into three new, single-purpose components:    ║
+║      ░   - `PlayerPhysicsComponent`: Now exclusively handles `move_and_slide`, gravity, and contact damage.
+║      ░   - `PlayerAbilityComponent`: Manages the activation logic for all player actions (dash, heal, attack).
+║      ░   - `PlayerResourceComponent`: Manages the economy of determination and healing charges.
+║      ░ ■ Simplified the `Player` script to act as a pure "Orchestrator,"     ║
+║      ░   responsible only for initializing components and handling signals.  ║
+║      ░   The main `_physics_process` loop has been removed from `player.gd`. ║
+║      ░ ■ Formalized the `IComponent` and `IDamageable` interface contracts   ║
+║      ░   and applied them consistently across all relevant components.       ║
+║                                                                              ║
+║   █  Code Quality & Tooling                                                  ║
+║      ░ ■ Established and applied a formal, project-wide cosmetic standard to ║
+║      ░   every script file, standardizing layout, naming, and formatting.    ║
+║      ░ ■ Implemented Godot-style docstrings (`##`) for all classes, methods, ║
+║      ░   and variables, providing proper in-editor tooltips and integrated help.║
+║      ░ ■ Enforced full type hinting for all function arguments and return    ║
+║      ░   values across the entire codebase to improve static safety.         ║
+║      ░ ■ Enhanced shader pre-warming to include entity actions, significantly║
+║      ░   reducing first-action stutter at the start of a match.              ║
+║                                                                              ║
+║   █  Removed                                                                 ║
+║      ░ ■ Deleted all obsolete arena baking and layout scripts (`ArenaBakerTest`,
+║      ░   `ArenaStage`, `arena_00_layout.gd`, `arena_00_encounter.gd`).       ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved all parse errors and static analysis warnings, including   ║
+║      ░   autoload name collisions, incorrect static calls, and missing `@tool`
+║      ░   annotations, for a completely clean build.                          ║
+║                                                                              ║
+
+
+
+
 
 
 ║                                                                              ║

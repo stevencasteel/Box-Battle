@@ -6,7 +6,7 @@
 ## hit flashes, knockback calculation, invincibility frames, and communicates
 ## health changes and death events via signals.
 class_name HealthComponent
-extends ComponentInterface
+extends IComponent
 
 # --- Signals ---
 ## Emitted whenever health changes.
@@ -84,7 +84,6 @@ func teardown() -> void:
 ## The primary public method for dealing damage to this entity.
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	var result = DamageResult.new()
-	# THE FIX: This line now correctly checks if the property exists before accessing it.
 	var is_dash_invincible = entity_data.is_dash_invincible if "is_dash_invincible" in entity_data else false
 
 	if (is_instance_valid(armor_component) and armor_component.is_armored) or \

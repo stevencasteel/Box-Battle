@@ -6,7 +6,7 @@
 ## move_and_slide(). It serves as the single point of contact with the
 ## Godot physics engine for the player.
 class_name PlayerPhysicsComponent
-extends ComponentInterface
+extends IComponent
 
 # --- Member Variables ---
 var owner_node: Player

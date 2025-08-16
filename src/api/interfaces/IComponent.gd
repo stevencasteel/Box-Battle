@@ -1,9 +1,9 @@
-# src/api/interfaces/component_interface.gd
+# src/api/interfaces/IComponent.gd
 ## The conceptual "interface" for all entity components.
 ##
 ## This script defines the formal contract that components like [HealthComponent]
 ## and [CombatComponent] adhere to. It is not meant to be instanced directly.
-class_name ComponentInterface
+class_name IComponent
 extends Node
 
 # --- Virtual Methods ---

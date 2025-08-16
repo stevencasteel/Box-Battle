@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=3 format=3 uid="uid://dialogue_test_tres"]
+
+[ext_resource type="Script" path="res://src/data/dialogue/dialogue_data.gd" id="1_dialogue_data"]
+
+[sub_resource type="Resource" id="DialogueLine_1" script_class="DialogueLine"]
+script = ExtResource("1_dialogue_data")
+character_name = "Narrator"
+text = "This is the first line of a test conversation."
+
+[resource]
+script = ExtResource("1_dialogue_data")
+conversation = Array[ExtResource("1_dialogue_data")]([SubResource("DialogueLine_1")])

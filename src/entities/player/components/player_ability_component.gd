@@ -5,7 +5,7 @@
 ## Reads the input buffer and game state to determine if an action (like
 ## dashing or healing) can be performed, then instructs the StateMachine.
 class_name PlayerAbilityComponent
-extends ComponentInterface
+extends IComponent
 
 # --- Member Variables ---
 var owner_node: Player

@@ -2,7 +2,7 @@
 @tool
 ## Manages the player's resource economy (Determination and Healing).
 class_name PlayerResourceComponent
-extends ComponentInterface
+extends IComponent
 
 # --- Member Variables ---
 var owner_node: Player
