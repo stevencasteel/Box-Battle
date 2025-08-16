@@ -1,6 +1,9 @@
 # src/core/util/asset_paths.gd
-# REFACTORED: All paths and constants updated to the new, consistent naming convention.
-# Obsolete legacy assets and dev scenes have been removed.
+## An autoloaded singleton containing verified, static paths to all critical assets.
+##
+## Using these constants prevents runtime errors from typos in string paths and
+## provides a central place to manage asset locations. Includes a validation
+## system to check for missing files at startup in debug builds.
 extends Node
 
 # --- CORE SYSTEMS ---
@@ -44,7 +47,6 @@ const SCENE_MUTE_BUTTON = "res://src/ui/components/mute_button/mute_button.tscn"
 const SCENE_DEBUG_OVERLAY = "res://src/ui/dev/debug_overlay.tscn"
 
 # --- SPRITES & ICONS ---
-const SPRITE_TITLE_MAIN = "res://assets/sprites/ui/title/sprite_title_main.png"
 const SPRITE_CURSOR_DEFAULT = "res://assets/sprites/ui/cursors/sprite_cursor_default.png"
 const SPRITE_CURSOR_POINTER = "res://assets/sprites/ui/cursors/sprite_cursor_pointer.png"
 const SPRITE_SLIDER_TRACK = "res://assets/sprites/ui/slider/slider-track.png"
@@ -53,9 +55,6 @@ const SPRITE_CHECKBOX_CHECKED = "res://assets/sprites/ui/checkbox/checkbox-check
 const SPRITE_CHECKBOX_UNCHECKED = "res://assets/sprites/ui/checkbox/checkbox-unchecked.png"
 const ICON_UI_SOUND_ON = "res://assets/sprites/ui/icons/icon_ui_sound_on.png"
 const ICON_UI_SOUND_OFF = "res://assets/sprites/ui/icons/icon_ui_sound_off.png"
-const SPRITE_LOGO_GODOT = "res://assets/sprites/ui/logos/godot_logo.png"
-const SPRITE_LOGO_NEWGROUNDS = "res://assets/sprites/ui/logos/newgrounds_logo.png"
-const SPRITE_LOGO_ITCH = "res://assets/sprites/ui/logos/itch_logo.png"
 
 # --- FONTS ---
 const FONT_MAIN_BLACK = "res://assets/fonts/font_main_black.ttf"
@@ -71,12 +70,13 @@ const SFX_UI_SELECT = "res://assets/audio/sfx/sfx_ui_select.mp3"
 const SFX_GAME_START = "res://assets/audio/sfx/sfx_game_start.mp3"
 
 
-# --- VALIDATION SYSTEM ---
+# --- Validation System ---
+## Checks all defined paths to ensure the files exist on disk.
 func validate_all_paths() -> void:
 	print("AssetPaths: Validating all asset paths...")
 	var constants = get_script().get_script_constant_map()
 	var missing_assets = false
-	
+
 	for key in constants:
 		var value = constants[key]
 		if value is String and value.begins_with("res://"):

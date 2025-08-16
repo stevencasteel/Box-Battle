@@ -1,33 +1,46 @@
 # src/entities/components/base_state.gd
-#
-# The single, unified base class for all state machine states in the project.
-# It defines the "contract" that every state must adhere to.
+## The abstract base class for all entity states.
+##
+## Defines the lifecycle methods that every state must implement. States are
+## responsible for handling logic for a specific entity behavior (e.g., moving,
+## attacking, dashing).
 class_name BaseState
 extends Object
 
+# --- Member Variables ---
 var owner: Node
 var state_machine: Node
 var state_data: Resource
 
-func _init(p_owner: Node, p_state_machine: Node, p_state_data: Resource):
+# --- Constructor ---
+
+func _init(p_owner: Node, p_state_machine: Node, p_state_data: Resource) -> void:
 	self.owner = p_owner
 	self.state_machine = p_state_machine
 	self.state_data = p_state_data
 
-# NEW: Teardown function to break cyclic references and prevent memory leaks.
-func teardown():
+# --- Public Methods ---
+
+## Called by the state machine upon exiting to break cyclic references.
+func teardown() -> void:
 	owner = null
 	state_machine = null
 	state_data = null
 
-func enter(_msg := {}):
+# --- Virtual Lifecycle Methods ---
+
+## Called once when the state machine enters this state.
+func enter(_msg := {}) -> void:
 	pass
 
-func exit():
+## Called once when the state machine exits this state.
+func exit() -> void:
 	pass
 
-func process_physics(_delta: float):
+## Called every physics frame. Used for movement and physics-based logic.
+func process_physics(_delta: float) -> void:
 	pass
 
-func process_input(_event: InputEvent):
+## Called during the `_unhandled_input` cycle. Used for immediate input reactions.
+func process_input(_event: InputEvent) -> void:
 	pass

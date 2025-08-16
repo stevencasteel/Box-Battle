@@ -1,7 +1,9 @@
 # src/entities/player/data/player_state_data.gd
-#
-# A Resource that holds all shared state data for the Player. It now includes
-# validation logic in its setters and a dictionary to track melee hits.
+@tool
+## A Resource that holds all shared runtime state data for the Player.
+##
+## This object acts as a central "brain" passed between states, allowing them
+## to read and write to a single source of truth without direct coupling.
 class_name PlayerStateData
 extends Resource
 
@@ -11,15 +13,12 @@ var config: CombatConfig
 # --- Health & Combat ---
 var max_health: int = 5
 var max_healing_charges: int = 1
-
 var health: int = 5:
 	set(value):
 		health = clamp(value, 0, max_health)
-
 var healing_charges: int = 0:
 	set(value):
 		healing_charges = clamp(value, 0, max_healing_charges)
-
 var determination_counter: int = 0
 var is_invincible: bool = false
 var is_dash_invincible: bool = false

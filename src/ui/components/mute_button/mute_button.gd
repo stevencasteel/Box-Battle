@@ -1,13 +1,19 @@
 # src/ui/components/mute_button/mute_button.gd
 @tool
+## A reusable UI component for toggling the game's music mute state.
+##
+## It automatically syncs its icon with the global [Settings] resource.
+class_name MuteButton
 extends TextureButton
 
+# --- Constants ---
 const ICON_SOUND_ON = preload(AssetPaths.ICON_UI_SOUND_ON)
 const ICON_SOUND_OFF = preload(AssetPaths.ICON_UI_SOUND_OFF)
 
-func _ready():
+# --- Godot Lifecycle Methods ---
+
+func _ready() -> void:
 	focus_mode = FOCUS_NONE
-	
 	_update_icon()
 
 	if not Engine.is_editor_hint():
@@ -16,17 +22,21 @@ func _ready():
 		mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 		mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 
-func _exit_tree():
+func _exit_tree() -> void:
 	if not Engine.is_editor_hint():
 		if Settings.audio_settings_changed.is_connected(_update_icon):
 			Settings.audio_settings_changed.disconnect(_update_icon)
 
-func _on_pressed():
-	Settings.music_muted = not Settings.music_muted
-	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
+# --- Private Methods ---
 
-func _update_icon():
+func _update_icon() -> void:
 	if Settings.music_muted:
 		self.texture_normal = ICON_SOUND_OFF
 	else:
 		self.texture_normal = ICON_SOUND_ON
+
+# --- Signal Handlers ---
+
+func _on_pressed() -> void:
+	Settings.music_muted = not Settings.music_muted
+	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)

@@ -1,23 +1,21 @@
 # src/entities/components/armor_component.gd
-#
-# A simple component that manages an "armored" state. When active, it can
-# be queried by other components (like HealthComponent) to determine if
-# damage should be ignored.
+@tool
+## A simple component that manages an "armored" or invulnerable state.
+##
+## When active, other components can query its [member is_armored] property to
+## determine if damage should be ignored.
 class_name ArmorComponent
 extends ComponentInterface
 
+## If true, the entity is invulnerable to damage.
 var is_armored: bool = false
 
-func setup(_p_owner: Node, _p_dependencies: Dictionary = {}) -> void:
-	# This component currently requires no setup.
-	pass
+# --- Public Methods ---
 
-func teardown() -> void:
-	# This component holds no references, so no teardown is needed.
-	pass
-
-func activate():
+## Activates the armored state.
+func activate() -> void:
 	is_armored = true
 
-func deactivate():
+## Deactivates the armored state.
+func deactivate() -> void:
 	is_armored = false

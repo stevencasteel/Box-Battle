@@ -1,30 +1,32 @@
 # src/entities/boss/states/state_boss_lunge.gd
-# This state executes a high-speed, armored lunge attack.
+## Executes a high-speed, invulnerable dash attack across the arena.
 extends BaseState
 class_name BossStateLunge
 
-var boss: BaseBoss
-var lunge_duration: float
+# --- Constants ---
 const LUNGE_SPEED = 1200.0
 
-func enter(msg := {}):
-	self.boss = owner as BaseBoss
-	if not boss: return
+# --- Private Member Variables ---
+var _boss: BaseBoss
+var _lunge_duration: float
 
-	# Get the duration from the AttackPattern resource.
-	var pattern = msg.get("pattern")
+# --- State Lifecycle ---
+
+func enter(msg := {}) -> void:
+	self._boss = owner as BaseBoss
+	if not _boss: return
+
+	var pattern: AttackPattern = msg.get("pattern")
 	if pattern:
-		lunge_duration = pattern.attack_duration
+		_lunge_duration = pattern.attack_duration
 	else:
-		lunge_duration = 0.5 # Default fallback
-	
-	# Activate armor and set velocity for the lunge.
-	boss.armor_component.activate()
-	boss.velocity = Vector2(state_data.facing_direction * LUNGE_SPEED, 0)
+		_lunge_duration = 0.5 # Default fallback
 
-func process_physics(delta: float):
-	lunge_duration -= delta
-	if lunge_duration <= 0:
-		# Lunge is over. Deactivate armor and transition to cooldown.
-		boss.armor_component.deactivate()
-		state_machine.change_state(boss.State.COOLDOWN)
+	_boss.armor_component.activate()
+	_boss.velocity = Vector2(state_data.facing_direction * LUNGE_SPEED, 0)
+
+func process_physics(delta: float) -> void:
+	_lunge_duration -= delta
+	if _lunge_duration <= 0:
+		_boss.armor_component.deactivate()
+		state_machine.change_state(_boss.State.COOLDOWN)

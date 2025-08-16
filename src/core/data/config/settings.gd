@@ -1,20 +1,18 @@
-# src/core/settings.gd
-#
-# This script is a "Singleton" (also known as an "Autoload" in Godot).
-# It now emits a signal whenever an audio setting is changed, allowing other
-# systems like the AudioManager to react efficiently without polling.
+# src/core/data/config/settings.gd
+## An autoloaded singleton that manages persistent game settings.
+##
+## This script uses property setters to automatically emit the
+## [signal audio_settings_changed] signal whenever a value is modified,
+## allowing other systems to react dynamically.
 extends Node
 
-# NEW: A signal that is emitted whenever any audio setting is changed.
+# --- Signals ---
+## Emitted whenever any audio-related setting is changed.
 signal audio_settings_changed
 
 # --- Audio Settings ---
-# The variables have been converted to properties with setters. This allows us
-# to run code (emitting the signal) whenever their values are changed.
-
 @export var master_volume: float = 1.0:
 	set(value):
-		# MODIFIED: Added validation to clamp the value between 0.0 and 1.0
 		var clamped_value = clampf(value, 0.0, 1.0)
 		if not is_equal_approx(master_volume, clamped_value):
 			master_volume = clamped_value
@@ -22,7 +20,6 @@ signal audio_settings_changed
 
 @export var music_volume: float = 1.0:
 	set(value):
-		# MODIFIED: Added validation to clamp the value between 0.0 and 1.0
 		var clamped_value = clampf(value, 0.0, 1.0)
 		if not is_equal_approx(music_volume, clamped_value):
 			music_volume = clamped_value
@@ -30,7 +27,6 @@ signal audio_settings_changed
 
 @export var sfx_volume: float = 1.0:
 	set(value):
-		# MODIFIED: Added validation to clamp the value between 0.0 and 1.0
 		var clamped_value = clampf(value, 0.0, 1.0)
 		if not is_equal_approx(sfx_volume, clamped_value):
 			sfx_volume = clamped_value

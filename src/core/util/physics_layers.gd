@@ -1,9 +1,11 @@
 # src/core/util/physics_layers.gd
-#
-# An autoloaded singleton that provides named constants for the 2D physics
-# layers defined in the project settings.
+## An autoloaded singleton that provides named constants for the 2D physics
+## layers defined in the project settings.
+##
+## This prevents the use of "magic numbers" for collision layers and masks.
 extends Node
 
+# --- Layer Constants ---
 const PLAYER = 1           # Layer 1
 const WORLD = 2            # Layer 2
 const ENEMY = 4            # Layer 3

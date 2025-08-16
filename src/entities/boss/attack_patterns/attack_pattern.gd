@@ -1,21 +1,18 @@
 # src/entities/boss/attack_patterns/attack_pattern.gd
-#
-# A data resource that defines the properties of a single boss attack.
-# This allows for designing and tuning attacks directly in the editor.
+@tool
+## A data resource that defines the properties of a single boss attack.
+##
+## This allows for designing and tuning attacks directly in the editor instead
+## of hard-coding values in scripts.
 class_name AttackPattern
 extends Resource
 
-# The unique identifier for this attack, used by the state machine to
-# determine which logic to execute.
+# --- Editor Properties ---
+## A unique identifier used by the StateMachine to select attack logic.
 @export var attack_id: StringName = &""
-
-# The duration in seconds that the attack's warning visual is displayed.
+## The duration in seconds that the attack's warning visual is displayed.
 @export var telegraph_duration: float = 0.5
-
-# The duration in seconds that the attack is active.
-# (More useful for continuous attacks like beams, but good to have).
+## The duration in seconds that the attack itself is active.
 @export var attack_duration: float = 0.1
-
-# The time in seconds after this attack completes before the boss can
-# start the telegraph for a new attack.
+## The time in seconds after this attack before the boss can start another.
 @export var cooldown: float = 1.5

@@ -21,17 +21,57 @@
 
 
 
-
-
-
-
+║                                                                              ║
+║      This version completes a full-scale refactor of the entire codebase to  ║
+║      enhance modularity and establish a strict, project-wide code style for  ║
+║      readability, consistency, and in-editor documentation.                  ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `player.gd` script by abstracting its     ║
+║      ░   core responsibilities into three new, single-purpose components:    ║
+║      ░   - `PlayerPhysicsComponent`: Now exclusively handles `move_and_slide`, gravity, and contact damage.
+║      ░   - `PlayerAbilityComponent`: Manages the activation logic for all player actions (dash, heal, attack).
+║      ░   - `PlayerResourceComponent`: Manages the economy of determination and healing charges.
+║      ░ ■ Simplified the `Player` script to act as a pure "Orchestrator,"     ║
+║      ░   responsible only for initializing components and handling signals.  ║
+║      ░   The main `_physics_process` loop has been removed from `player.gd`. ║
+║                                                                              ║
+║   █  Code Quality & Tooling                                                  ║
+║      ░ ■ Established and applied a formal, project-wide cosmetic standard to ║
+║      ░   every script file. All scripts now follow a consistent layout:      ║
+║      ░   file path header, docstring, signals, enums, constants, exports,    ║
+║      ░   variables, lifecycle methods, public methods, and signal handlers.  ║
+║      ░ ■ Implemented Godot-style docstrings (`##`) for all classes, methods, ║
+║      ░   and variables, providing proper in-editor tooltips and integrated help.║
+║      ░ ■ Enforced full type hinting for all function arguments and return    ║
+║      ░   values across the entire codebase to improve static safety.         ║
+║                                                                              ║
+║   █  Removed                                                                 ║
+║      ░ ■ Deleted the obsolete `arena_00_encounter.gd` and `arena_00_layout.gd`║
+║      ░   scripts, which were fully replaced by the `.tres` resource system.  ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a fundamental architectural conflict by removing `class_name`║
+║      ░   declarations from all autoloaded singletons, fixing a cascade of    ║
+║      ░   "hides an autoload singleton" parse errors.                          ║
+║      ░ ■ Resolved all `MISSING_TOOL` warnings by removing the erroneous      ║
+║      ░   `@tool` annotation from the abstract `BaseState` class.             ║
+║      ░ ■ Corrected an invalid `static` function call in `base_boss.gd` by    ║
+║      ░   adding the missing `static` keyword to `SceneValidator.gd`.         ║
+║      ░ ■ Corrected all remaining `STATIC_CALLED_ON_INSTANCE` warnings by     ║
+║      ░   using the correct script-class syntax for static method calls.      ║
+║      ░ ■ Fixed a parse error in `HealthComponent` caused by an invalid       ║
+║      ░   `get()` call with a default parameter on a Resource.                ║
+║      ░ ■ Resolved a variable scoping error in `base_boss.gd` after renaming  ║
+║      ░   the `player` reference to `_player`.                                ║
+║                                                                              ║
 
 
 
 -------
 
 
-║      This version completes a major refactor of the Player entity to enhance ║
+║      This  completes a major refactor of the Player entity to enhance ║
 ║      modularity and establishes a strict, project-wide code style standard   ║
 ║      to improve readability, consistency, and in-editor documentation.       ║
 ║                                                                              ║

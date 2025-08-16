@@ -1,21 +1,15 @@
 # src/entities/boss/states/state_boss_idle.gd
-# This state now safely handles cases where no attack patterns are configured.
-extends BaseState
+## A transient state that immediately selects the next attack pattern.
 class_name BossStateIdle
+extends BaseState
 
-func enter(_msg := {}):
+func enter(_msg := {}) -> void:
 	owner.velocity.x = 0
-	
-	# THE FIX: Add a guard clause to prevent a crash if the patterns array is empty.
+
 	if owner.current_attack_patterns.is_empty():
-		push_warning("BossStateIdle: No attack patterns defined for the current phase. Defaulting to Cooldown.")
-		# Transition to cooldown to prevent getting stuck in an idle->attack loop.
+		push_warning("BossStateIdle: No attack patterns defined for current phase. Defaulting to Cooldown.")
 		state_machine.change_state(owner.State.COOLDOWN)
 		return
-	
-	var chosen_pattern = owner.current_attack_patterns[randi() % owner.current_attack_patterns.size()]
-	
-	state_machine.change_state(owner.State.ATTACK, {"pattern": chosen_pattern})
 
-func process_physics(_delta: float):
-	pass
+	var chosen_pattern: AttackPattern = owner.current_attack_patterns.pick_random()
+	state_machine.change_state(owner.State.ATTACK, {"pattern": chosen_pattern})

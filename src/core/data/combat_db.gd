@@ -1,10 +1,16 @@
 # src/core/data/combat_db.gd
-# This autoload provides global access to the combat config resource.
-# It loads the config at runtime in _ready() to be robust against parse-order issues.
+## An autoloaded singleton that provides global, read-only access to the
+## main combat configuration resource file.
 extends Node
 
+# --- Constants ---
 const CONFIG_PATH: String = "res://data/combat_config.tres"
+
+# --- Public Member Variables ---
+## A reference to the loaded [CombatConfig] resource.
 var config: CombatConfig = null
+
+# --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
 	config = load(CONFIG_PATH) as CombatConfig

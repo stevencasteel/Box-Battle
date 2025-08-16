@@ -1,79 +1,111 @@
 # src/entities/minions/turret.gd
-# CORRECTED: Uses Identifiers constants for group checks.
+@tool
+## A stationary enemy that detects and fires projectiles at the player.
+##
+## This minion uses the standard entity architecture, including a HealthComponent
+## and a simple two-state StateMachine (Idle, Attack).
 class_name Turret
 extends CharacterBody2D
 
+# --- Enums ---
 enum State { IDLE, ATTACK }
 
+# --- Editor Configuration ---
+@export var fire_rate: float = 2.0
+@export var detection_radius: float = 400.0
+
+# --- Node References ---
 @onready var visual: Polygon2D = $Visual
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var state_machine: BaseStateMachine = $StateMachine
 @onready var attack_timer: Timer = $AttackTimer
 @onready var range_detector_shape: CollisionShape2D = $RangeDetector/CollisionShape2D
 
-var t_data: TurretStateData
-var player: CharacterBody2D
+# --- Private Member Variables ---
+var _t_data: TurretStateData
+var _player: CharacterBody2D
 
-var fire_rate: float = 2.0
-var detection_radius: float = 400.0
+# --- Godot Lifecycle Methods ---
 
-func _ready():
-	add_to_group(Identifiers.Groups.ENEMY)
-	t_data = TurretStateData.new()
-	t_data.config = CombatDB.config
-	
-	var circle_shape = CircleShape2D.new()
-	circle_shape.radius = detection_radius
-	range_detector_shape.shape = circle_shape
-	
-	health_component.setup(self, {
-		"data_resource": t_data,
-		"config": t_data.config
-	})
-	
-	var states = {
-		State.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(self, state_machine, t_data),
-		State.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(self, state_machine, t_data)
-	}
-	state_machine.setup(self, { "states": states, "initial_state_key": State.IDLE })
-	
-	health_component.died.connect(die)
-	
-	player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
-	
-	visual.color = Palette.COLOR_TERRAIN_SECONDARY
+func _ready() -> void:
+	if Engine.is_editor_hint(): return
 
-func _notification(what):
+	_initialize_data()
+	_initialize_components()
+	_initialize_state_machine()
+	_connect_signals()
+
+	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+
+func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(state_machine): state_machine.teardown()
 		if is_instance_valid(health_component): health_component.teardown()
-		t_data = null
+		_t_data = null
 
-func die():
-	queue_free()
+# --- Public Methods ---
 
-func fire_at_player():
-	if not is_instance_valid(player): return
+## Fires a single projectile towards the player.
+func fire_at_player() -> void:
+	if not is_instance_valid(_player): return
+
 	var shot = ObjectPool.get_instance(Identifiers.Pools.TURRET_SHOTS)
-	if not shot: return
-	shot.direction = (player.global_position - global_position).normalized()
-	shot.global_position = global_position
+	if not is_instance_valid(shot): return
+
+	shot.direction = (self._player.global_position - self.global_position).normalized()
+	shot.global_position = self.global_position
 	shot.activate()
 
-func deactivate():
+## Deactivates the turret, stopping its AI and attacks. Called by GameManager.
+func deactivate() -> void:
 	if is_instance_valid(state_machine):
 		state_machine.teardown()
 	if is_instance_valid(attack_timer):
 		attack_timer.stop()
+
 	set_physics_process(false)
 	$RangeDetector.monitoring = false
 
-func _on_range_detector_body_entered(body):
-	if not t_data: return
-	if body.is_in_group(Identifiers.Groups.PLAYER):
-		t_data.is_player_in_range = true
+## Handles the turret's death.
+func die() -> void:
+	queue_free()
 
-func _on_range_detector_body_exited(body):
-	if not t_data: return
+# --- Private Methods ---
+
+func _initialize_data() -> void:
+	add_to_group(Identifiers.Groups.ENEMY)
+	visual.color = Palette.COLOR_TERRAIN_SECONDARY
+	_t_data = TurretStateData.new()
+	_t_data.config = CombatDB.config
+
+func _initialize_components() -> void:
+	var circle_shape = CircleShape2D.new()
+	circle_shape.radius = detection_radius
+	range_detector_shape.shape = circle_shape
+
+	health_component.setup(self, {
+		"data_resource": _t_data,
+		"config": _t_data.config
+	})
+
+func _initialize_state_machine() -> void:
+	var states = {
+		State.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(self, state_machine, _t_data),
+		State.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(self, state_machine, _t_data)
+	}
+	state_machine.setup(self, { "states": states, "initial_state_key": State.IDLE })
+
+func _connect_signals() -> void:
+	health_component.died.connect(die)
+
+# --- Signal Handlers ---
+
+func _on_range_detector_body_entered(body: Node) -> void:
+	if not _t_data: return
 	if body.is_in_group(Identifiers.Groups.PLAYER):
-		t_data.is_player_in_range = false
+		_t_data.is_player_in_range = true
+
+func _on_range_detector_body_exited(body: Node) -> void:
+	if not _t_data: return
+	if body.is_in_group(Identifiers.Groups.PLAYER):
+		_t_data.is_player_in_range = false

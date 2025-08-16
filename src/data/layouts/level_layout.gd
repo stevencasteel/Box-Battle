@@ -1,19 +1,23 @@
 # src/data/layouts/level_layout.gd
-# REVISED: Uses the correct notify_property_list_changed() method for Resources.
 @tool
+## A custom Resource that holds the terrain data for a level.
+##
+## Includes a custom configuration warning to ensure that all rows in the
+## terrain data array have the same length for valid parsing.
 class_name LevelLayout
 extends Resource
 
+# --- Editor Properties ---
 @export var terrain_data: PackedStringArray = []:
 	set(value):
 		terrain_data = value
-		# THE FIX: This is the correct method for a Resource. It tells the
-		# editor's Inspector to refresh, which will then re-run the warning check.
+		# Tell the editor to refresh its property list, which re-runs the warning check.
 		notify_property_list_changed()
+
+# --- Godot Lifecycle Methods ---
 
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
-	
 	if terrain_data.is_empty():
 		warnings.append("Terrain Data is empty. The level will be blank.")
 		return warnings
@@ -21,16 +25,14 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var first_row_length = -1
 	if not terrain_data[0].is_empty():
 		first_row_length = terrain_data[0].length()
-	else:
-		for i in range(1, terrain_data.size()):
-			if not terrain_data[i].is_empty():
-				warnings.append("Row 1 is empty, but Row %d is not. All rows must be the same length." % (i + 1))
-				return warnings
+	else: # Handle case where the first row is empty
+		warnings.append("The first row of terrain data cannot be empty.")
 		return warnings
 
 	for i in range(1, terrain_data.size()):
 		if terrain_data[i].length() != first_row_length:
-			warnings.append("Row %d (length %d) has a different length than the first row (length %d). All rows must be the same length." % [i + 1, terrain_data[i].length(), first_row_length])
-			break
-			
+			var msg = "Row %d (length %d) has a different length than the first row (length %d)."
+			warnings.append(msg % [i + 1, terrain_data[i].length(), first_row_length])
+			break # Only show the first error found
+
 	return warnings

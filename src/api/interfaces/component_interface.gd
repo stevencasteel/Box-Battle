@@ -1,16 +1,20 @@
 # src/api/interfaces/component_interface.gd
-#
-# This script defines the formal "contract" or "interface" for all components
-# in the project (HealthComponent, CombatComponent, etc.).
+## The conceptual "interface" for all entity components.
+##
+## This script defines the formal contract that components like [HealthComponent]
+## and [CombatComponent] adhere to. It is not meant to be instanced directly.
 class_name ComponentInterface
 extends Node
 
-# The setup function is now more flexible.
-# It takes the owner and an optional dictionary for any other dependencies.
-# MODIFIED: Prefixed parameters with an underscore to silence UNUSED_PARAMETER
-# warnings, as this base implementation is intentionally empty.
+# --- Virtual Methods ---
+
+## Initializes the component and injects its dependencies.
+##
+## [param p_owner]: A reference to the node that owns this component.
+## [param p_dependencies]: A dictionary of any other required nodes or resources.
 func setup(_p_owner: Node, _p_dependencies: Dictionary = {}) -> void:
 	pass
 
+## Called when the owner is being destroyed to clean up connections and references.
 func teardown() -> void:
 	pass

@@ -1,6 +1,9 @@
 # src/core/data/config/combat_config.gd
-# A single, flat Resource that exposes all combat tuning values.
-# It now uses @export_group and @export_range for a clean Inspector UI.
+@tool
+## A single, flat Resource that exposes all gameplay tuning values.
+##
+## This allows designers to balance the game directly in the Godot Inspector
+## using organized, range-limited sliders.
 class_name CombatConfig
 extends Resource
 

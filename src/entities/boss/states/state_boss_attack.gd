@@ -1,73 +1,71 @@
 # src/entities/boss/states/state_boss_attack.gd
-# This state now displays a different telegraph shape for the lunge attack
-# to clearly communicate the boss's intent to the player.
-extends BaseState
+## Handles the telegraph and execution of the boss's attacks.
 class_name BossStateAttack
+extends BaseState
 
+# --- Constants ---
 const TelegraphScene = preload(AssetPaths.SCENE_TELEGRAPH_COMPONENT)
 
-var current_pattern: AttackPattern
-var boss: BaseBoss
+# --- Private Member Variables ---
+var _current_pattern: AttackPattern
+var _boss: BaseBoss
 
-func enter(msg := {}):
-	self.boss = owner as BaseBoss
-	if not boss:
+# --- State Lifecycle ---
+
+func enter(msg := {}) -> void:
+	self._boss = owner as BaseBoss
+	if not _boss:
 		push_error("BossStateAttack: Owner is not a BaseBoss. Aborting.")
-		state_machine.change_state(owner.State.COOLDOWN)
+		state_machine.change_state(_boss.State.COOLDOWN)
 		return
 
 	if not msg.has("pattern"):
 		push_error("BossStateAttack: No 'pattern' provided. Aborting.")
-		state_machine.change_state(boss.State.COOLDOWN)
+		state_machine.change_state(_boss.State.COOLDOWN)
 		return
-	
-	current_pattern = msg.get("pattern")
-	
+
+	_current_pattern = msg.get("pattern")
 	_start_telegraph()
+
+# --- Private Methods ---
 
 func _start_telegraph() -> void:
 	var telegraph = TelegraphScene.instantiate()
-	boss.add_child(telegraph)
-	
-	var telegraph_duration = current_pattern.telegraph_duration
+	_boss.add_child(telegraph)
+
+	var telegraph_duration: float = _current_pattern.telegraph_duration
 	var telegraph_position: Vector2
 	var telegraph_size: Vector2
-	var telegraph_color = Palette.COLOR_HAZARD_PRIMARY
+	var telegraph_color: Color = Palette.COLOR_HAZARD_PRIMARY
 
-	# MODIFIED: Choose telegraph shape based on the attack ID.
-	match current_pattern.attack_id:
+	match _current_pattern.attack_id:
 		&"lunge":
-			# For a lunge, show a long, thin rectangle covering the lunge path.
 			var lunge_width = 800
 			telegraph_size = Vector2(lunge_width, 60) # A thin rectangle
-			# Position it in front of the boss, centered vertically.
-			var x_offset = (lunge_width / 2.0) + (boss.get_node("CollisionShape2D").shape.size.x / 2.0)
-			telegraph_position = boss.global_position + Vector2(state_data.facing_direction * x_offset, 0)
+			var x_offset = (lunge_width / 2.0) + (_boss.get_node("CollisionShape2D").shape.size.x / 2.0)
+			telegraph_position = _boss.global_position + Vector2(state_data.facing_direction * x_offset, 0)
 		_: # Default case for projectile attacks
-			# For projectiles, show a square where the attack will originate.
 			telegraph_size = Vector2(150, 150)
-			telegraph_position = boss.global_position + Vector2(state_data.facing_direction * 100, 0)
+			telegraph_position = _boss.global_position + Vector2(state_data.facing_direction * 100, 0)
 
 	telegraph.start_telegraph(telegraph_duration, telegraph_size, telegraph_position, telegraph_color)
 	await telegraph.telegraph_finished
-	
+
 	_execute_attack()
 
-func _execute_attack():
-	# If the attack was a lunge, the state change is handled here.
-	if current_pattern.attack_id == &"lunge":
-		state_machine.change_state(boss.State.LUNGE, {"pattern": current_pattern})
+func _execute_attack() -> void:
+	if _current_pattern.attack_id == &"lunge":
+		state_machine.change_state(_boss.State.LUNGE, {"pattern": _current_pattern})
 		return
 
-	# Otherwise, execute the projectile attack.
-	match current_pattern.attack_id:
+	match _current_pattern.attack_id:
 		&"single_shot":
-			boss.fire_shot_at_player()
+			_boss.fire_shot_at_player()
 		&"volley_shot":
-			match boss.phases_remaining:
-				3: boss.fire_volley(1)
-				2: boss.fire_volley(3)
-				1: boss.fire_volley(5)
+			match _boss.phases_remaining:
+				3: _boss.fire_volley(1)
+				2: _boss.fire_volley(3)
+				1: _boss.fire_volley(5)
 
-	boss.cooldown_timer.wait_time = current_pattern.cooldown
-	state_machine.change_state(boss.State.COOLDOWN)
+	_boss.cooldown_timer.wait_time = _current_pattern.cooldown
+	state_machine.change_state(_boss.State.COOLDOWN)

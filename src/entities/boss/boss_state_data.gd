@@ -1,6 +1,5 @@
-# src/entities/boss/data/boss_state_data.gd
-#
-# A Resource that holds all shared state data for the Boss.
+# src/entities/boss/boss_state_data.gd
+## A Resource that holds all shared runtime state data for the Boss.
 class_name BossStateData
 extends Resource
 
@@ -14,7 +13,6 @@ var health: int = 30:
 		health = clamp(value, 0, max_health)
 
 var is_invincible: bool = false
-var current_attack: int # Using the enum from base_boss.gd
 
 # --- Physics & Movement ---
 var facing_direction: float = -1.0

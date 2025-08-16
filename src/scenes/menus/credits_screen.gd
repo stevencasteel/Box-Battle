@@ -1,12 +1,10 @@
 # src/scenes/menus/credits_screen.gd
+## The controller for the credits screen.
 @tool
 extends Control
 
+# --- Constants ---
 const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
-
-@onready var credits_label_container: Control = %CreditsLabelContainer
-@onready var back_button: StyledMenuItem = %BackButton
-
 const CREDITS_BBCODE = """
 [center]A Game By Steven Casteel[/center]
 [center][url=https://www.stevencasteel.com/]www.stevencasteel.com[/url][/center]
@@ -17,10 +15,15 @@ const CREDITS_BBCODE = """
 [center]Find me on [url=https://www.youtube.com/@stevencasteel]YouTube[/url] and [url=http://github.com/stevencasteel]GitHub[/url][/center]
 """
 
-func _ready():
-	for c in credits_label_container.get_children():
-		c.queue_free()
-	
+# --- Node References ---
+@onready var credits_label_container: Control = %CreditsLabelContainer
+@onready var back_button: StyledMenuItem = %BackButton
+
+# --- Godot Lifecycle Methods ---
+
+func _ready() -> void:
+	for c in credits_label_container.get_children(): c.queue_free()
+
 	var credits_label = RichTextLabel.new()
 	credits_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	credits_label.bbcode_enabled = true
@@ -30,26 +33,26 @@ func _ready():
 	credits_label.add_theme_color_override("default_color", Color.WHITE)
 	credits_label.text = CREDITS_BBCODE
 	credits_label_container.add_child(credits_label)
-	
+
+	back_button.text = "BACK"
+
 	if not Engine.is_editor_hint():
-		back_button.text = "BACK"
 		back_button.pressed.connect(_on_back_button_pressed)
-		
 		credits_label.meta_clicked.connect(_on_meta_clicked)
 		credits_label.meta_hover_started.connect(func(_meta): CursorManager.set_pointer_state(true))
 		credits_label.meta_hover_ended.connect(func(_meta): CursorManager.set_pointer_state(false))
-		
+
 		var menu_manager = MenuManagerScript.new()
 		add_child(menu_manager)
 		menu_manager.setup_menu([back_button])
-		
+
 		await get_tree().process_frame
 		back_button.grab_focus()
-	else:
-		back_button.text = "BACK"
 
-func _on_meta_clicked(meta):
+# --- Signal Handlers ---
+
+func _on_meta_clicked(meta) -> void:
 	OS.shell_open(str(meta))
 
-func _on_back_button_pressed():
+func _on_back_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)

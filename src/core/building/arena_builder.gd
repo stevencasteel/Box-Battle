@@ -1,32 +1,37 @@
 # src/core/building/arena_builder.gd
-# REFACTORED: Now uses correctly named variables for clarity.
+## An autoload that procedurally constructs the entire level scene.
+##
+## It parses data from [EncounterData] and [LevelLayout] resources, then uses
+## builder sub-systems to spawn the terrain, entities, and UI.
 extends Node
 
+# --- Private Member Variables ---
 var _current_build_data: LevelBuildData
 var _current_level_container: Node
 var _intro_sequence_handle: SequenceHandle
 
+# --- Public Methods ---
+
+## Asynchronously builds the entire level and returns the root node.
 func build_level_async() -> Node:
 	if is_instance_valid(_intro_sequence_handle): _intro_sequence_handle.cancel()
 	_intro_sequence_handle = null
-	
+
 	_current_level_container = Node.new(); _current_level_container.name = "LevelContainer"
 
-	# THE FIX: Read from the correctly named variable.
 	var encounter_path: String = GameManager.state.current_encounter_path
 	if encounter_path.is_empty(): return _current_level_container
-		
+
 	var encounter_data: EncounterData = load(encounter_path)
 	if not is_instance_valid(encounter_data):
 		push_error("ArenaBuilder: Failed to load EncounterData at path: %s" % encounter_path)
 		return _current_level_container
-		
+
 	var parser = LevelParser.new()
 	_current_build_data = parser.parse_level_data(encounter_data)
-	# THE FIX: Assign to the correctly named variable.
 	_current_build_data.encounter_data_resource = encounter_data
 	_current_level_container.set_meta("build_data", _current_build_data)
-	
+
 	await get_tree().process_frame
 
 	var terrain_builder = TerrainBuilder.new()
@@ -35,14 +40,16 @@ func build_level_async() -> Node:
 	await _spawn_player_async()
 	await _spawn_hud_async()
 	await _spawn_minions_async()
-	
+
 	_intro_sequence_handle = _run_intro_sequence()
 	if is_instance_valid(_intro_sequence_handle):
 		await _intro_sequence_handle.finished
 
 	await get_tree().process_frame
-	
+
 	return _current_level_container
+
+# --- Private Methods ---
 
 func _spawn_player_async() -> void:
 	var instance = load(AssetPaths.SCENE_PLAYER).instantiate()
@@ -51,7 +58,6 @@ func _spawn_player_async() -> void:
 	await get_tree().process_frame
 
 func _spawn_boss_async() -> Node:
-	# THE FIX: Read from the correctly named variable.
 	var boss_scene: PackedScene = _current_build_data.encounter_data_resource.boss_scene
 	if not boss_scene: return null
 	var instance = boss_scene.instantiate()

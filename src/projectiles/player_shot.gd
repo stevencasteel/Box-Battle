@@ -1,44 +1,56 @@
 # src/projectiles/player_shot.gd
-# CORRECTED: Uses the correct static function call syntax.
+## A projectile fired by the player.
+class_name PlayerShot
 extends Area2D
 
+# --- Constants ---
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
+# --- Node References ---
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 
-var direction = Vector2.RIGHT
-var speed = 1000.0
-var damage = 2
+# --- Member Variables ---
+var direction: Vector2 = Vector2.RIGHT
+var speed: float = 1000.0
+var damage: int = 2
 
-func _ready():
+# --- Godot Lifecycle Methods ---
+
+func _ready() -> void:
 	$ColorRect.color = Palette.COLOR_PLAYER_PROJECTILE
 
-func activate():
+func _physics_process(delta: float) -> void:
+	global_position += direction * speed * delta
+
+# --- Public Methods ---
+
+## Activates the projectile, making it visible and interactive.
+func activate() -> void:
 	process_mode = PROCESS_MODE_INHERIT
 	collision_shape.disabled = false
 
-func deactivate():
+## Deactivates the projectile, preparing it to be returned to the ObjectPool.
+func deactivate() -> void:
 	process_mode = PROCESS_MODE_DISABLED
 	collision_shape.disabled = true
-	global_position = Vector2(-1000, -1000)
+	global_position = Vector2(-1000, -1000) # Move to the graveyard
 
-func _physics_process(delta):
-	global_position += direction * speed * delta
+# --- Signal Handlers ---
 
 func _on_body_entered(body: Node) -> void:
-	var damageable = CombatUtilsScript.find_damageable(body) # CORRECTED CALL
+	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = damage
 		damage_info.source_node = self
 		damageable.apply_damage(damage_info)
-	
+
 	ObjectPool.return_instance(self)
 
 func _on_area_entered(area: Area2D) -> void:
-	if area.is_in_group("enemy_projectile"):
+	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		ObjectPool.return_instance(area)
 	ObjectPool.return_instance(self)
 
-func _on_screen_exited():
+func _on_screen_exited() -> void:
 	ObjectPool.return_instance(self)

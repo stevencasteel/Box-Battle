@@ -1,13 +1,11 @@
-# src/core/palette.gd
-#
-# An autoloaded singleton that holds the project's master color palette.
-# It establishes a single source of truth for all visual elements, ensuring a
-# cohesive aesthetic. It is designed around a 32-step grayscale value scale.
+# src/core/util/palette.gd
+## An autoloaded singleton that holds the project's master color palette.
+##
+## It establishes a single source of truth for all visual elements, ensuring a
+## cohesive aesthetic based on a 32-step grayscale value scale.
 extends Node
 
-# FIX: The Color("#hex") constructor is a valid constant expression, unlike
-# Color.from_string(). This allows the entire palette and its semantic
-# constants to be correctly defined at compile-time.
+# --- Private Member Variables ---
 const _palette: Array[Color] = [
 	Color("#000000"), Color("#080808"), Color("#101010"), Color("#191919"),
 	Color("#212121"), Color("#292929"), Color("#313131"), Color("#3a3a3a"),
@@ -19,12 +17,9 @@ const _palette: Array[Color] = [
 	Color("#e6e6e6"), Color("#efefef"), Color("#f7f7f7"), Color("#ffffff")
 ]
 
-# --- SEMANTIC CONSTANTS ---
-# This is the most important part of the script. We refer to these constants
-# in our code, not the raw index numbers. This makes the code readable and
-
-# easy to update. If we want to make all hazards darker, we just change one
-# line here.
+# --- Semantic Constants ---
+# Use these constants in code, not raw palette indices.
+# This makes the code readable and easy to theme.
 
 # Gameplay
 const COLOR_PLAYER: Color = _palette[31]
@@ -43,12 +38,11 @@ const COLOR_TEXT_HEADER: Color = _palette[30]
 const COLOR_UI_ACCENT_PRIMARY: Color = _palette[28]
 const COLOR_TEXT_PRIMARY: Color = _palette[26]
 const COLOR_TEXT_DISABLED: Color = _palette[16]
-# THE FIX: Changed from _palette[12] to _palette[20] for a much brighter glow.
 const COLOR_UI_GLOW: Color = _palette[20]
 const COLOR_UI_PANEL_BG: Color = _palette[8]
 
-# --- Helper Function ---
-# Provides a safe way to get a color by its index if needed.
+# --- Public Methods ---
+## Provides a safe way to get a color by its raw index if needed.
 func get_color(index: int) -> Color:
 	if index >= 0 and index < _palette.size():
 		return _palette[index]
