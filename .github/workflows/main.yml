@@ -1,0 +1,50 @@
+# The name of your workflow. This will appear in the "Actions" tab of your GitHub repository.
+name: Godot CI
+
+# This section defines the trigger for the workflow.
+# It will run on every 'push' to the 'main' branch.
+on:
+  push:
+    branches: [ "main" ]
+
+# This section defines the jobs to be run. We have one job called "build-and-test".
+jobs:
+  build-and-test:
+    # The type of virtual machine to run the job on. 'ubuntu-latest' is the standard.
+    runs-on: ubuntu-latest
+
+    # The sequence of tasks that make up the job.
+    steps:
+      # Step 1: Check out your repository's code
+      # This downloads your project code into the virtual machine.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Godot
+      # This uses a community-made Action to download a specific version of Godot.
+      # IMPORTANT: Change '4.4.stable' to match your exact Godot version if it's different.
+      - name: Set up Godot
+        uses: abarichello/godot-ci@v1
+        with:
+          godot_version: '4.4.stable'
+          
+      # Step 3: Run Lint / Static Analysis
+      # This is your automated code quality check. It will fail if there are any script parse errors.
+      - name: Run Lint / Static Analysis
+        run: godot --headless --check-only
+
+      # Step 4: Run Unit Tests (GUT)
+      # This is a placeholder for when you add unit tests. It will likely fail for now
+      # but establishes the correct structure. If it causes issues, you can comment it out.
+      - name: Run Unit Tests (GUT)
+        run: godot --headless --gtest_execute --gtest-dir="res://src/testing/"
+        # The 'continue-on-error' flag means a test failure won't stop the whole workflow.
+        continue-on-error: true
+
+      # Step 5: Export Project
+      # This is your automated build check. It ensures the game can be successfully exported.
+      # The name "macOS" MUST match the export preset you created in the Godot editor.
+      - name: Export Project for macOS
+        run: |
+          mkdir -p build/macos
+          godot --headless --export-release "macOS" "build/macos/BoxBattle.zip"
