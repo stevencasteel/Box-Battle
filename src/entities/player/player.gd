@@ -1,115 +1,94 @@
 # src/entities/player/player.gd
-# MODIFIED: The call to FXManager for hit-stop has been commented out.
+@tool
+## The main player character node.
+##
+## Orchestrates all player-related components, connecting their signals and
+## managing the overall lifecycle of the player entity.
+class_name Player
 extends CharacterBody2D
 
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
-
 # --- Signals ---
+## Emitted when the player's health changes.
 signal health_changed(current_health, max_health)
-signal healing_charges_changed(current_charges)
+## Emitted when the player's health reaches zero.
 signal died
 
-# --- State Enum ---
+# --- Enums ---
 enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
+
+# --- Constants ---
+const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
+const CLOSE_RANGE_THRESHOLD = 75.0
+const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
 @onready var hurtbox: Area2D = $Hurtbox
 @onready var healing_timer: Timer = $HealingTimer
-@onready var health_component: HealthComponent = $HealthComponent
-@onready var combat_component: CombatComponent = $CombatComponent
-@onready var input_component: InputComponent = $InputComponent
-@onready var state_machine: BaseStateMachine = $StateMachine
-
 @onready var melee_hitbox: Area2D = $MeleeHitbox
 @onready var pogo_hitbox: Area2D = $PogoHitbox
 @onready var melee_hitbox_shape: CollisionShape2D = $MeleeHitbox/CollisionShape2D
 @onready var pogo_hitbox_shape: CollisionShape2D = $PogoHitbox/CollisionShape2D
 
-# --- Constants ---
-const CLOSE_RANGE_THRESHOLD = 75.0
+# --- Component References ---
+@onready var health_component: HealthComponent = $HealthComponent
+@onready var combat_component: CombatComponent = $CombatComponent
+@onready var input_component: InputComponent = $InputComponent
+@onready var state_machine: BaseStateMachine = $StateMachine
+@onready var physics_component: PlayerPhysicsComponent = $PlayerPhysicsComponent
+@onready var ability_component: PlayerAbilityComponent = $PlayerAbilityComponent
+@onready var resource_component: PlayerResourceComponent = $PlayerResourceComponent
 
 # --- Data ---
+## The resource containing all mutable state for the player.
 var p_data: PlayerStateData
-const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 
-# --- Engine Functions ---
+# --- Godot Lifecycle Methods ---
 
-func _ready():
+func _ready() -> void:
 	add_to_group(Identifiers.Groups.PLAYER)
-	
+
 	_initialize_data()
 	_initialize_components()
 	_initialize_state_machine()
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
-	_emit_healing_charges_changed_event()
+	# Emit initial charge state for the HUD
+	resource_component.on_damage_dealt()
+	p_data.determination_counter = 0
 
-func _notification(what):
+func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
+		# Teardown components to prevent memory leaks from cyclic references.
 		if is_instance_valid(state_machine): state_machine.teardown()
 		if is_instance_valid(health_component): health_component.teardown()
 		if is_instance_valid(combat_component): combat_component.teardown()
 		if is_instance_valid(input_component): input_component.teardown()
+		# Clear our reference to the data resource.
 		p_data = null
 
-func _physics_process(delta):
+func _physics_process(delta: float) -> void:
 	_update_timers(delta)
-	move_and_slide()
-	_check_for_contact_damage()
-	if is_on_wall() and not is_on_floor():
-		p_data.wall_coyote_timer = p_data.config.player_wall_coyote_time
-		p_data.last_wall_normal = get_wall_normal()
-	
-	_process_global_actions()
 
+# --- Private Methods ---
 
-# --- Public API for States ---
-func apply_horizontal_movement():
-	var move_axis = input_component.buffer.get("move_axis", 0.0)
-	velocity.x = move_axis * p_data.config.player_speed
-	if not is_zero_approx(move_axis):
-		p_data.facing_direction = sign(move_axis)
-
-func apply_gravity(delta: float, multiplier: float = 1.0):
-	velocity.y += p_data.config.gravity * multiplier * delta
-
-
-# --- Private Helper Functions ---
-func _process_global_actions():
-	var current_state_key = state_machine.states.find_key(state_machine.current_state)
-	if not current_state_key in ACTION_ALLOWED_STATES:
-		return
-		
-	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
-		p_data.is_charging = true
-		p_data.charge_timer = 0.0
-	
-	if input_component.buffer.get("attack_released"):
-		if p_data.is_charging:
-			if p_data.charge_timer >= p_data.config.player_charge_time:
-				combat_component.fire_shot()
-			else:
-				state_machine.change_state(State.ATTACK)
-			p_data.is_charging = false
-	
-	if input_component.buffer.get("dash_pressed") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
-		state_machine.change_state(State.DASH)
-	
-	if is_on_floor() and input_component.buffer.get("down") and input_component.buffer.get("jump_pressed") and p_data.healing_charges > 0 and is_zero_approx(velocity.x):
-		state_machine.change_state(State.HEAL)
-
-func _initialize_data():
+## Instantiates and configures the player's state data resource.
+func _initialize_data() -> void:
 	p_data = PlayerStateData.new()
 	p_data.config = CombatDB.config
 
-func _initialize_components():
+## Wires up all child components by injecting their dependencies.
+func _initialize_components() -> void:
 	health_component.setup(self, { "data_resource": p_data, "config": p_data.config })
 	combat_component.setup(self, { "data_resource": p_data })
-	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "combat_component": combat_component, "config": p_data.config })
+	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "config": p_data.config })
+	physics_component.setup(self, { "data_resource": p_data })
+	ability_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "input_component": input_component })
+	resource_component.setup(self, { "data_resource": p_data })
 
-func _initialize_state_machine():
+## Creates and initializes all player states for the state machine.
+func _initialize_state_machine() -> void:
 	var states = {
 		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, p_data),
 		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, p_data),
@@ -122,22 +101,22 @@ func _initialize_state_machine():
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
 
-func _connect_signals():
+## Connects all internal and component signals to their handlers.
+func _connect_signals() -> void:
 	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
 	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
 	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
 	pogo_hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
+
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
-	combat_component.damage_dealt.connect(_on_damage_dealt)
+
+	combat_component.damage_dealt.connect(resource_component.on_damage_dealt)
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
-func _cancel_heal():
-	if healing_timer.is_stopped(): return
-	healing_timer.stop()
-
-func _update_timers(delta):
+## Updates all frame-dependent timers stored in the PlayerStateData resource.
+func _update_timers(delta: float) -> void:
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
 	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
 	p_data.dash_cooldown_timer = max(0.0, p_data.dash_cooldown_timer - delta)
@@ -146,47 +125,17 @@ func _update_timers(delta):
 	p_data.attack_cooldown_timer = max(0.0, p_data.attack_cooldown_timer - delta)
 	p_data.knockback_timer = max(0.0, p_data.knockback_timer - delta)
 	p_data.pogo_fall_prevention_timer = max(0.0, p_data.pogo_fall_prevention_timer - delta)
+
 	if p_data.is_charging and input_component.buffer.get("attack_pressed"):
 		p_data.charge_timer += delta
 
-func _emit_healing_charges_changed_event():
-	var ev = PlayerHealingChargesChangedEvent.new()
-	ev.current_charges = p_data.healing_charges
-	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
-	healing_charges_changed.emit(p_data.healing_charges)
-
-func _check_for_contact_damage():
-	if p_data.is_invincible: return
-	for i in range(get_slide_collision_count()):
-		var col = get_slide_collision(i)
-		if not col: continue
-		
-		var collider = col.get_collider()
-		if not (is_instance_valid(collider) and (collider.is_in_group(Identifiers.Groups.ENEMY) or collider.is_in_group(Identifiers.Groups.HAZARD))): continue
-		
-		var damage_info = DamageInfo.new()
-		damage_info.amount = 1
-		damage_info.source_node = collider
-		var damage_result = health_component.apply_damage(damage_info)
-		
-		if damage_result.was_damaged:
-			self.velocity = damage_result.knockback_velocity
-			state_machine.change_state(State.HURT)
-		break
-
-func _on_damage_dealt():
-	if p_data.healing_charges >= p_data.config.player_max_healing_charges: return
-	p_data.determination_counter += 1
-	if p_data.determination_counter >= p_data.config.player_determination_per_charge:
-		p_data.determination_counter = 0; p_data.healing_charges += 1
-		_emit_healing_charges_changed_event()
-
 # --- Signal Handlers ---
+
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
 	if p_data.hit_targets_this_swing.has(target_id): return
 	p_data.hit_targets_this_swing[target_id] = true
-	
+
 	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
@@ -194,13 +143,10 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		var distance = self.global_position.distance_to(body.global_position)
 		var is_close_range = distance <= CLOSE_RANGE_THRESHOLD
 		damage_info.amount = 5 if is_close_range else 1
-			
+
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
-			if is_close_range:
-				# FXManager.request_hit_stop(0.05)
-				pass
-			_on_damage_dealt()
+			resource_component.on_damage_dealt()
 
 func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
@@ -216,24 +162,24 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 	if p_data.is_invincible or p_data.is_dash_invincible:
 		if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE): ObjectPool.return_instance(area)
 		return
-	
+
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
 		damage_info.source_node = area
 		var damage_result = health_component.apply_damage(damage_info)
-		
+
 		if damage_result.was_damaged:
 			self.velocity = damage_result.knockback_velocity
 			state_machine.change_state(State.HURT)
-		
+
 		ObjectPool.return_instance(area)
 
-func _on_healing_timer_timeout():
+func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
 		p_data.health += 1; p_data.healing_charges -= 1
 		_on_health_component_health_changed(p_data.health, p_data.max_health)
-		_emit_healing_charges_changed_event()
+		resource_component.on_damage_dealt() # This also handles the event emission
 		state_machine.change_state(State.MOVE)
 
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
@@ -243,12 +189,16 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 
-func _on_health_component_died():
+func _on_health_component_died() -> void:
 	died.emit()
 
-func _on_pogo_bounce_requested():
+func _on_pogo_bounce_requested() -> void:
 	velocity.y = -p_data.config.player_pogo_force
 	position.y -= 1
 	p_data.can_dash = true
 	p_data.air_jumps_left = p_data.config.player_max_air_jumps
 	state_machine.change_state(State.FALL)
+
+func _cancel_heal() -> void:
+	if healing_timer.is_stopped(): return
+	healing_timer.stop()

@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Fri Aug 15 11:01:48 CDT 2025
+Generated on: Sat Aug 16 09:54:52 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -63,6 +63,8 @@ PROJECT DIRECTORY STRUCTURE:
     ├── arenas
     │   ├── arena_00_encounter.gd
     │   ├── arena_00_layout.gd
+    │   ├── arena_baker_test.gd
+    │   ├── arena_baker_test.tscn
     │   ├── arena_stage.gd
     │   └── arena_stage.tscn
     ├── core
@@ -98,6 +100,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── audio_manager.gd
     │   │   ├── camera_manager.gd
     │   │   ├── cursor_manager.gd
+    │   │   ├── fx_manager.gd
     │   │   ├── game_manager.gd
     │   │   ├── object_pool.gd
     │   │   └── scene_manager.gd
@@ -213,6 +216,9 @@ PROJECT DIRECTORY STRUCTURE:
         │   └── styled_menu_item
         │       ├── styled_menu_item.gd
         │       └── styled_menu_item.tscn
+        ├── dev
+        │   ├── debug_overlay.gd
+        │   └── debug_overlay.tscn
         ├── game_hud
         │   ├── game_hud.gd
         │   └── game_hud.tscn
@@ -220,7 +226,7 @@ PROJECT DIRECTORY STRUCTURE:
         │   └── menu_manager.gd
         └── pause_menu
 
-50 directories, 162 files
+51 directories, 167 files
 
 
 =====================================
@@ -258,26 +264,20 @@ FILE: ./docs/TODO.txt
 ║                                                                              ║
 ║   A list of lower-priority goals to be addressed after the core loop is solid.║
 ║                                                                              ║
-║   □  Pogo-Fall Prevention                                                    ║
-║      ░  WHY: To prevent the frustrating experience of accidentally fast-falling║
-║      ░  immediately after a successful pogo bounce.                          ║
-║      ░  HOW: In the `Player` script, after a successful pogo, start a very   ║
-║      ░  short timer (e.g., 0.1s) during which the "fast-fall" input is ignored.║
-║                                                                              ║
-║   □  UI Overhaul                                                             ║
-║      ░  □ Refactor all procedural menus to use Godot's built-in `Container`  ║
-║      ░    nodes (`VBoxContainer`, etc.) to fix layout bugs like `BUG-UI001`. ║
-║      ░  □ Create the cornerstone `StyledMenuItem` visual component.          ║
-║                                                                              ║
+║   ░  Fast-Fall: Holding 'Down' in the air increases gravity.  (turns of on timer when player does pogo input)                                                                         ║
+║   ░  Cleanup or remove `test_ui` scene and related dev assets.               ║
 ║   ░  Diegetic UI Implementation                                              ║
 ║   ░  Dynamic Music Layering System                                           ║
 ║   ░  Adaptive Boss AI Tactics Layer                                          ║
 ║   ░  Player Loadout System                                                   ║
 ║   ░  Special Game Modes (Boss Rush, Time Attack)                             ║
-║   ░  Cleanup or remove `test_ui` scene and related dev assets.               ║
 ║   ░  Screen Shake (Deferred to avoid visual noise during debugging)          ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+║      ░              ║
+
 
 =====================================
 FILE: ./docs/CHANGELOG_archive_pre-0.7.0.txt
@@ -827,7 +827,6 @@ FILE: ./docs/DESIGN.txt
 ║      ░ ■ Coyote Time & Jump Buffering for forgiving platforming.             ║
 ║      ░ ■ 4-directional Dash with a cooldown.                                 ║
 ║      ░ ■ Wall-Sliding and Wall-Jumping for verticality.                      ║
-║      ░ ■ Fast-Fall: Holding 'Down' in the air increases gravity.             ║
 ║                                                                              ║
 ║   ▓  Combat System                                                           ║
 ║      ░ ■ Primary Melee: A fast, close-range attack.                          ║
@@ -2202,11 +2201,81 @@ FILE: ./docs/CHANGELOG.txt
 
 
 
+-------
+
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Abstracted the input system by refactoring `InputComponent` to use a║
+║      ░   command buffer. All player states now read from this buffer         ║
+║      ░   instead of polling the global `Input` singleton, fully decoupling   ║
+║      ░   game logic from hardware input.                                     ║
+║      ░ ■ Centralized core physics logic by creating an `apply_gravity`       ║
+║      ░   helper function on the Player node. Duplicated gravity calculations ║
+║      ░   were removed from all relevant states, adhering to the DRY principle.║
+║      ░ ■ Established a new `FXManager` singleton to serve as a dedicated     ║
+║      ░   subsystem for "game feel" effects. This separates purely aesthetic  ║
+║      ░   feedback (like hit-stop) from core gameplay components, improving   ║
+║      ░   modularity and adhering to SRP.                                     ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented a toggleable Developer Debug Overlay (F1) that displays ║
+║      ░   the player's real-time state and velocity, significantly speeding up║
+║      ░   the debugging and tuning process.                                   ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a crash in `game.gd` caused by calling an `Input` singleton║
+║      ░   method on an `InputEvent` object in the `_unhandled_input` function.║
+║                                                                              ║
+
+-------
 
 
+   █  Editor & Tooling
+      ░ ■ Successfully created a proof-of-concept "baking" tool that can
+      ░   procedurally generate a permanent tree of `ColorRect` nodes from a
+      ░   `LevelLayout` resource. This achieved the goal of a WYSIWYG editor
+      ░   preview for our data-driven levels and validated the workflow of
+      ░   generating scene content from `@tool` scripts. This success paves
+      ░   the way for a final migration to a more robust, native `TileMap` workflow.
+
+-------
 
 
+   █  Code Quality & Tooling
+      ░ ■ Improved clarity by renaming variables in core systems (`GameManager`,
+      ░   `ArenaBuilder`, etc.) to accurately reflect the new data-driven
+      ░   architecture (e.g., `encounter_script_path` -> `encounter_path`).
+      ░ ■ Enhanced the designer workflow by adding `@export_group` annotations
+      ░   to the `EncounterData` resource, organizing its properties into
+      ░   clean, collapsible sections in the Godot Inspector.
+      ░ ■ Added a configuration warning system to the `LevelLayout` resource.
+      ░   This `@tool` script now automatically checks if all rows in the
+      ░   terrain data have the same length and will notify the editor if an
+      ░   invalid layout is detected.
 
+--------------------
+
+   █  Architectural Changes
+      ░ ■ Completed a major refactor of the encounter and level definition
+      ░   system. All arena data has been moved from hardcoded `.gd` scripts
+      ░   into new, data-driven custom resources (`EncounterData.tres`,
+      ░   `LevelLayout.tres`).
+      ░ ■ The `ArenaBuilder` and `LevelParser` have been updated to be fully
+      ░   data-driven, loading and parsing these new `.tres` files at runtime.
+      ░   This decouples level design from game logic and makes creating new
+      ░   encounters a code-free, designer-friendly process.
+
+   █  Removed
+      ░ ■ Deleted the obsolete `arena_00_encounter.gd` and `arena_00_layout.gd`
+      ░   scripts, as their data is now stored in `.tres` resources.
+
+   █  Editor & Tooling
+      ░ ■ **[Deferred]** An attempt was made to create a universal `@tool` scene
+      ░   (`ArenaStage`) that would visually render `LevelLayout` data directly
+      ░   in the 2D editor. Both custom drawing (`_draw`) and programmatic
+      ░   `TileMap` generation were explored. The feature has been deferred
+      ░   due to unresolved, deep-seated engine errors related to parsing
+      ░   programmatically-generated `TileSet` resources in a pure code-first,
+      ░   non-editor workflow. The runtime implementation remains stable and unaffected.
 
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                 [0.8.0] - NO TITLE YET - 2025-08-14                  ██  ║
@@ -2845,6 +2914,7 @@ CombatUtils="*res://src/core/util/combat_utils.gd"
 GridUtils="*res://src/core/util/grid_utils.gd"
 CameraManager="*res://src/core/systems/camera_manager.gd"
 Identifiers="*res://src/core/util/identifiers.gd"
+FXManager="*res://src/core/systems/fx_manager.gd"
 
 [display]
 
@@ -2876,6 +2946,11 @@ ui_down={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194322,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 , Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
+]
+}
+debug_toggle={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194332,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
 ui_jump={
@@ -3624,6 +3699,62 @@ func _animate_hover(p_is_hovered: bool):
 	_active_tween.tween_property(self, "glow_alpha", target_glow_alpha, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 =====================================
+FILE: ./src/ui/dev/debug_overlay.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://debug_overlay_scene_id"]
+
+[ext_resource type="Script" path="res://src/ui/dev/debug_overlay.gd" id="1_debug_script"]
+
+[node name="DebugOverlay" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_debug_script")
+
+[node name="Label" type="Label" parent="."]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 420.0
+offset_bottom = 120.0
+theme_override_font_sizes/font_size = 24
+text = "LOADING DEBUG INFO..."
+
+
+=====================================
+FILE: ./src/ui/dev/debug_overlay.gd
+=====================================
+# src/ui/dev/debug_overlay.gd
+# A simple, toggleable overlay for displaying real-time debug information.
+extends CanvasLayer
+
+@onready var label: Label = $Label
+
+var player_node: Node = null
+
+func _ready():
+	# Attempt to find the player node once the scene is ready.
+	player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+
+func _process(_delta):
+	# If the player node doesn't exist (e.g., in the main menu), do nothing.
+	if not is_instance_valid(player_node):
+		label.text = "PLAYER NOT FOUND"
+		return
+
+	# If the player exists, build the debug string.
+	var state_machine = player_node.get_node_or_null("StateMachine")
+	var current_state_name = "N/A"
+	if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
+		# Get the name of the state script file for a clear, readable name.
+		current_state_name = state_machine.current_state.get_script().resource_path.get_file()
+
+	var debug_text = """
+	State: %s
+	Velocity: %s
+	""" % [current_state_name, player_node.velocity.round()]
+
+	label.text = debug_text
+
+
+=====================================
 FILE: ./src/scenes/loading/loading_screen.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://loading_screen_scene_id"]
@@ -3684,7 +3815,6 @@ render_target_update_mode = 4
 FILE: ./src/scenes/loading/loading_screen.gd
 =====================================
 # src/scenes/loading/loading_screen.gd
-#
 # This script handles the pre-building of the level AND pre-warming shaders
 # to prevent stuttering.
 extends Control
@@ -3695,14 +3825,15 @@ const SHADER_PREWARM_SCENES = [
 	AssetPaths.SCENE_PLAYER,
 	AssetPaths.SCENE_BASE_BOSS,
 	AssetPaths.SCENE_PLAYER_SHOT,
-	AssetPaths.SCENE_BOSS_SHOT
+	AssetPaths.SCENE_BOSS_SHOT,
+	AssetPaths.SCENE_TURRET_SHOT
 ]
 
 func _ready():
-	if GameManager.state.current_encounter_script_path.is_empty():
+	# THE FIX: Use the new, correct variable name 'current_encounter_path'.
+	if GameManager.state.current_encounter_path.is_empty():
 		print("ERROR: No encounter script specified in GameManager. Returning to title.")
-		# CORRECTED: Use SceneManager for consistency.
-		SceneManager.go_to_title_screen()
+		SceneManager.go_to_scene(AssetPaths.SCENE_TITLE_SCREEN)
 		return
 
 	_load_level()
@@ -3712,7 +3843,6 @@ func _load_level():
 	
 	await _prewarm_shaders()
 	
-	# CORRECTED: The call now matches the updated signature and works correctly.
 	GameManager.state.prebuilt_level = await ArenaBuilder.build_level_async()
 	
 	await get_tree().process_frame
@@ -3722,6 +3852,7 @@ func _load_level():
 func _prewarm_shaders() -> void:
 	print("Starting shader pre-warming...")
 	for scene_path in SHADER_PREWARM_SCENES:
+		if not FileAccess.file_exists(scene_path): continue
 		var instance = load(scene_path).instantiate()
 		prewarm_viewport.add_child(instance)
 		await get_tree().process_frame
@@ -3746,11 +3877,12 @@ script = ExtResource("1_game_script")
 FILE: ./src/scenes/game/game.gd
 =====================================
 # src/scenes/game/game.gd
-# CORRECTED: Uses Identifiers constants for group checks.
+# MODIFIED: Instances and manages the developer debug overlay.
 extends Node
 
 var player_node: Node = null
 var level_container: Node = null
+var debug_overlay: CanvasLayer = null # Reference to the overlay
 @onready var camera: Camera2D = $Camera2D
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
@@ -3776,6 +3908,17 @@ func _ready():
 	player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
+		
+	# Instance and add the debug overlay, then hide it by default.
+	debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
+	add_child(debug_overlay)
+	debug_overlay.visible = false
+
+func _unhandled_input(_event: InputEvent):
+	# CORRECTED: The check is now performed on the global Input singleton.
+	if Input.is_action_just_pressed("debug_toggle"):
+		if is_instance_valid(debug_overlay):
+			debug_overlay.visible = not debug_overlay.visible
 
 func _exit_tree():
 	EventBus.off(_boss_died_token)
@@ -3809,6 +3952,7 @@ func _deactivate_all_minions():
 	for minion in minions:
 		if minion.has_method("deactivate"):
 			minion.deactivate()
+
 
 =====================================
 FILE: ./src/scenes/menus/options_screen.tscn
@@ -5086,17 +5230,15 @@ FILE: ./src/core/util/grid_utils.gd
 # between the logical tile grid and world-space pixel coordinates.
 extends Node
 
-# Converts a grid coordinate (e.g., Vector2i(3, 4)) to the center
-# of that tile in world pixels.
-static func grid_to_world(tile_pos: Vector2i) -> Vector2:
-	var half_tile = Constants.TILE_SIZE / 2.0
-	return Vector2(tile_pos.x * Constants.TILE_SIZE + half_tile, tile_pos.y * Constants.TILE_SIZE + half_tile)
+# THE FIX: The function now accepts tile_size as a parameter, removing
+# its dependency on the Constants autoload. This makes it safe to use
+# from any @tool script.
+static func grid_to_world(tile_pos: Vector2i, tile_size: int = Constants.TILE_SIZE) -> Vector2:
+	var half_tile = tile_size / 2.0
+	return Vector2(tile_pos.x * tile_size + half_tile, tile_pos.y * tile_size + half_tile)
 
-# Converts a world-space pixel position (e.g., from a mouse click)
-# to the grid coordinate of the tile it is inside.
-static func world_to_grid(world_pos: Vector2) -> Vector2i:
-	return Vector2i(floor(world_pos.x / Constants.TILE_SIZE), floor(world_pos.y / Constants.TILE_SIZE))
-
+static func world_to_grid(world_pos: Vector2, tile_size: int = Constants.TILE_SIZE) -> Vector2i:
+	return Vector2i(floor(world_pos.x / tile_size), floor(world_pos.y / tile_size))
 
 =====================================
 FILE: ./src/core/util/physics_layers.gd
@@ -5276,6 +5418,9 @@ const SCENE_CREDITS_SCREEN = "res://src/scenes/menus/credits_screen.tscn"
 const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
 const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
 const SCENE_MUTE_BUTTON = "res://src/ui/components/mute_button/mute_button.tscn"
+
+# --- DEV TOOLS ---
+const SCENE_DEBUG_OVERLAY = "res://src/ui/dev/debug_overlay.tscn"
 
 # --- SPRITES & ICONS ---
 const SPRITE_TITLE_MAIN = "res://assets/sprites/ui/title/sprite_title_main.png"
@@ -5555,37 +5700,32 @@ func _exit_tree():
 FILE: ./src/core/systems/scene_manager.gd
 =====================================
 # src/core/systems/scene_manager.gd
-#
-# A centralized singleton for handling all scene transitions. It now
-# cleans up both the ObjectPool and the Sequencer for a clean slate.
+# A centralized singleton for handling all scene transitions.
 extends Node
 
-# The core, private function that handles the actual scene change.
 func _switch_to_scene(path: String) -> void:
-	# THE FIX: Clean up all active projectiles AND cancel all running sequences.
 	ObjectPool.reset()
 	Sequencer.cancel_all()
 	get_tree().call_deferred("change_scene_to_file", path)
 
-
 # --- Public API ---
 
-func go_to_title_screen() -> void:
-	_switch_to_scene(AssetPaths.SCENE_TITLE_SCREEN)
-
-func start_game(encounter_path: String) -> void:
-	GameManager.state.current_encounter_script_path = encounter_path
-	_switch_to_scene(AssetPaths.SCENE_LOADING_SCREEN)
-
-func go_to_game_over() -> void:
-	_switch_to_scene(AssetPaths.SCENE_GAME_OVER_SCREEN)
-
-func go_to_victory() -> void:
-	_switch_to_scene(AssetPaths.SCENE_VICTORY_SCREEN)
-
-# A generic function for simple menu navigation.
 func go_to_scene(path: String) -> void:
 	_switch_to_scene(path)
+
+func go_to_title_screen() -> void:
+	go_to_scene(AssetPaths.SCENE_TITLE_SCREEN)
+
+func start_game(encounter_path: String) -> void:
+	# THE FIX: Assign to the correctly named variable.
+	GameManager.state.current_encounter_path = encounter_path
+	go_to_scene(AssetPaths.SCENE_LOADING_SCREEN)
+
+func go_to_game_over() -> void:
+	go_to_scene(AssetPaths.SCENE_GAME_OVER_SCREEN)
+
+func go_to_victory() -> void:
+	go_to_scene(AssetPaths.SCENE_VICTORY_SCREEN)
 
 =====================================
 FILE: ./src/core/systems/object_pool.gd
@@ -5776,6 +5916,38 @@ func set_pointer_state(is_pointing: bool):
 		cursor_sprite.texture = CURSOR_DEFAULT
 
 =====================================
+FILE: ./src/core/systems/fx_manager.gd
+=====================================
+# src/core/systems/fx_manager.gd
+# A new singleton to handle purely aesthetic "game feel" effects,
+# like hit-stop and screen shake. This keeps the core gameplay logic
+# clean and focused on rules.
+extends Node
+
+var _is_hit_stop_active = false
+
+# --- Public API ---
+
+func request_hit_stop(duration: float):
+	# Prevent multiple hit-stops from overlapping, which can feel strange.
+	if _is_hit_stop_active:
+		return
+	
+	_is_hit_stop_active = true
+	get_tree().paused = true
+	
+	await get_tree().create_timer(duration, true, false, true).timeout
+	
+	# Check if the tree is still paused. It might have been unpaused
+	# by the actual game pause menu, in which case we don't want to
+	# interfere.
+	if get_tree().paused:
+		get_tree().paused = false
+		
+	_is_hit_stop_active = false
+
+
+=====================================
 FILE: ./src/core/data/combat_db.gd
 =====================================
 # src/core/data/combat_db.gd
@@ -5905,15 +6077,12 @@ extends Resource
 FILE: ./src/core/data/game_state_data.gd
 =====================================
 # src/core/data/game_state_data.gd
-#
 # A Resource that holds all shared runtime state for the game session.
-# This standardizes our state management to follow the same pattern as
-# PlayerStateData and BossStateData.
 class_name GameStateData
 extends Resource
 
-# The resource path to the encounter script for the next level to be loaded.
-var current_encounter_script_path: String = ""
+# THE FIX: Renamed to accurately reflect that it holds a path to a .tres resource, not a script.
+var current_encounter_path: String = ""
 
 # A reference to the fully constructed, but currently hidden, level node.
 # This is used by the loading screen to pass the level to the game scene.
@@ -6131,9 +6300,7 @@ FILE: ./src/core/building/level_build_data.gd
 class_name LevelBuildData
 extends Resource
 
-# Inner class to hold data for a single minion spawn.
 class MinionSpawnData extends RefCounted:
-	# THE FIX: Renamed from scene_path to scene to accurately reflect its type.
 	var scene: PackedScene
 	var position: Vector2
 	func _init(p_scene: PackedScene, p_pos: Vector2):
@@ -6146,7 +6313,8 @@ var hazard_tiles: Array[Vector2] = []
 var background_tiles: Array[Vector2i] = []
 var player_spawn_pos: Vector2 = Vector2.ZERO
 var boss_spawn_pos: Vector2 = Vector2.ZERO
-var encounter_script_object: Object = null
+# THE FIX: Renamed to accurately reflect that it holds an EncounterData resource.
+var encounter_data_resource: EncounterData = null
 var dimensions_tiles: Vector2i = Vector2i.ZERO
 var minion_spawns: Array[MinionSpawnData] = []
 
@@ -6154,8 +6322,7 @@ var minion_spawns: Array[MinionSpawnData] = []
 FILE: ./src/core/building/arena_builder.gd
 =====================================
 # src/core/building/arena_builder.gd
-# REFACTORED: Now loads EncounterData.tres resources instead of scripts.
-# The core spawning logic remains the same.
+# REFACTORED: Now uses correctly named variables for clarity.
 extends Node
 
 var _current_build_data: LevelBuildData
@@ -6168,7 +6335,8 @@ func build_level_async() -> Node:
 	
 	_current_level_container = Node.new(); _current_level_container.name = "LevelContainer"
 
-	var encounter_path: String = GameManager.state.current_encounter_script_path
+	# THE FIX: Read from the correctly named variable.
+	var encounter_path: String = GameManager.state.current_encounter_path
 	if encounter_path.is_empty(): return _current_level_container
 		
 	var encounter_data: EncounterData = load(encounter_path)
@@ -6178,7 +6346,8 @@ func build_level_async() -> Node:
 		
 	var parser = LevelParser.new()
 	_current_build_data = parser.parse_level_data(encounter_data)
-	_current_build_data.encounter_script_object = encounter_data
+	# THE FIX: Assign to the correctly named variable.
+	_current_build_data.encounter_data_resource = encounter_data
 	_current_level_container.set_meta("build_data", _current_build_data)
 	
 	await get_tree().process_frame
@@ -6205,7 +6374,8 @@ func _spawn_player_async() -> void:
 	await get_tree().process_frame
 
 func _spawn_boss_async() -> Node:
-	var boss_scene: PackedScene = _current_build_data.encounter_script_object.boss_scene
+	# THE FIX: Read from the correctly named variable.
+	var boss_scene: PackedScene = _current_build_data.encounter_data_resource.boss_scene
 	if not boss_scene: return null
 	var instance = boss_scene.instantiate()
 	instance.global_position = _current_build_data.boss_spawn_pos
@@ -6220,7 +6390,6 @@ func _spawn_hud_async() -> void:
 
 func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
-		# THE FIX: Use the .scene property directly and remove the incorrect load() call.
 		var instance = spawn_data.scene.instantiate()
 		instance.global_position = spawn_data.position
 		_current_level_container.add_child(instance)
@@ -6237,14 +6406,12 @@ func _run_intro_sequence() -> SequenceHandle:
 =====================================
 FILE: ./src/arenas/arena_stage.tscn
 =====================================
-[gd_scene load_steps=3 format=3 uid="uid://b1h2i3j4k5l6m"]
+[gd_scene load_steps=2 format=3 uid="uid://b1h2i3j4k5l6m"]
 
 [ext_resource type="Script" uid="uid://crrffscaw0x3u" path="res://src/arenas/arena_stage.gd" id="1_arena_script"]
-[ext_resource type="Resource" path="res://src/data/layouts/layout_00.tres" id="2_sijff"]
 
 [node name="ArenaStage" type="Node2D"]
 script = ExtResource("1_arena_script")
-level_layout = ExtResource("2_sijff")
 
 
 =====================================
@@ -6320,71 +6487,904 @@ const TERRAIN_DATA = [
 FILE: ./src/arenas/arena_stage.gd
 =====================================
 # src/arenas/arena_stage.gd
-# REVISED: Now uses the _draw() function for more reliable editor rendering.
+# A generic scene for representing an arena.
+# NOTE: Editor-time visualization via @tool script has been deferred
+# due to engine-level complexities with TileSet resources.
+# This scene currently acts as a placeholder for future development.
+extends Node2D
+
+# This scene is not actively used by the runtime game loop.
+# The ArenaBuilder procedurally generates the level from EncounterData.
+pass
+
+
+=====================================
+FILE: ./src/arenas/arena_baker_test.gd
+=====================================
+# src/arenas/arena_baker_test.gd
+# FINAL VERSION: This version adds the baked tiles as direct children of the
+# scene root, which guarantees correct ownership and ensures they are saved.
 @tool
-class_name ArenaStage
+class_name ArenaBakerTest
 extends Node2D
 
 const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
 const PaletteScript = preload("res://src/core/util/palette.gd")
 const ConstantsScript = preload("res://src/core/util/constants.gd")
 
-@export var level_layout: LevelLayout:
+@export var layout: LevelLayout
+
+@export var bake_now: bool = false:
 	set(value):
-		level_layout = value
-		_update_tile_data()
-		# THE FIX: Instead of creating nodes, just tell the scene it needs to be redrawn.
-		queue_redraw()
+		if value:
+			_bake_layout()
 
-# THE FIX: Store tile positions and types, not nodes.
-var _tile_data: Dictionary = {
-	"terrain": [],
-	"oneway": [],
-	"hazard": []
-}
+func _bake_layout():
+	# Clear any previously baked tiles. We iterate backwards to safely remove.
+	for i in range(get_child_count() - 1, -1, -1):
+		var child = get_child(i)
+		# A simple name check is enough to avoid deleting essential nodes if we add them later.
+		if child.name.begins_with("BakedTile_"):
+			child.queue_free()
 
-# THE FIX: The new _draw() function handles all visual rendering.
-func _draw():
-	# This guard ensures drawing only happens in the editor.
-	if not Engine.is_editor_hint():
+	if not is_instance_valid(layout):
+		print("ArenaBakerTest: No LevelLayout assigned. Nothing to bake.")
 		return
-
-	# Draw terrain tiles
-	for pos in _tile_data.terrain:
-		var rect = Rect2(pos - Vector2.ONE * (ConstantsScript.TILE_SIZE / 2.0), Vector2.ONE * ConstantsScript.TILE_SIZE)
-		draw_rect(rect, PaletteScript.COLOR_TERRAIN_PRIMARY)
-
-	# Draw oneway platforms
-	for pos in _tile_data.oneway:
-		var size = Vector2(ConstantsScript.TILE_SIZE, 10)
-		var rect = Rect2(pos - Vector2(ConstantsScript.TILE_SIZE / 2.0, 5), size)
-		draw_rect(rect, PaletteScript.COLOR_TERRAIN_SECONDARY)
-
-	# Draw hazard tiles
-	for pos in _tile_data.hazard:
-		var rect = Rect2(pos - Vector2.ONE * (ConstantsScript.TILE_SIZE / 2.0), Vector2.ONE * ConstantsScript.TILE_SIZE)
-		draw_rect(rect, PaletteScript.COLOR_HAZARD_PRIMARY)
-
-
-# This function now just populates our data dictionary.
-func _update_tile_data():
-	# Clear the old data first.
-	for key in _tile_data:
-		_tile_data[key].clear()
-
-	if not is_instance_valid(level_layout):
-		return
-
-	var terrain_map: PackedStringArray = level_layout.terrain_data
-	for y in range(terrain_map.size()):
-		for x in range(terrain_map[y].length()):
-			var tile_char = terrain_map[y][x]
-			var world_pos = GridUtilsScript.grid_to_world(Vector2i(x, y))
+	
+	print("Baking level layout...")
+	var rows: PackedStringArray = layout.terrain_data
+	for y in range(rows.size()):
+		var row_string: String = rows[y]
+		for x in range(row_string.length()):
+			var char_str: String = row_string.substr(x, 1)
+			var tile_to_create = true
+			var color = Color.WHITE
+			var is_oneway = false
 			
-			match tile_char:
-				'#': _tile_data.terrain.append(world_pos)
-				'-': _tile_data.oneway.append(world_pos)
-				'^': _tile_data.hazard.append(world_pos)
+			match char_str:
+				"#": color = PaletteScript.COLOR_TERRAIN_PRIMARY
+				"-": color = PaletteScript.COLOR_TERRAIN_SECONDARY; is_oneway = true
+				"^": color = PaletteScript.COLOR_HAZARD_PRIMARY
+				_: tile_to_create = false
+
+			if tile_to_create:
+				var rect = ColorRect.new()
+				rect.name = "BakedTile_%d_%d" % [x, y]
+				rect.color = color
+				
+				if is_oneway:
+					rect.size = Vector2(ConstantsScript.TILE_SIZE, 10)
+					rect.position = Vector2(x * ConstantsScript.TILE_SIZE, y * ConstantsScript.TILE_SIZE + 20)
+				else:
+					rect.size = Vector2(ConstantsScript.TILE_SIZE, ConstantsScript.TILE_SIZE)
+					rect.position = Vector2(x * ConstantsScript.TILE_SIZE, y * ConstantsScript.TILE_SIZE)
+				
+				# THE DEFINITIVE FIX: Add the new node as a direct child of the scene root.
+				# The editor will handle ownership automatically and correctly.
+				add_child(rect)
+				
+				# We also explicitly tell the editor that this node should be saved.
+				rect.owner = self
+
+	print("Baking complete.")
+
+
+=====================================
+FILE: ./src/arenas/arena_baker_test.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://bcfkawmvba0ai"]
+
+[ext_resource type="Script" uid="uid://jydv7nulf0pu" path="res://src/arenas/arena_baker_test.gd" id="1_baker_script"]
+
+[node name="ArenaBakerTest" type="Node2D"]
+script = ExtResource("1_baker_script")
+
+[node name="BakedTile_0_0" type="ColorRect" parent="."]
+offset_right = 50.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_1_0" type="ColorRect" parent="."]
+offset_left = 50.0
+offset_right = 100.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_2_0" type="ColorRect" parent="."]
+offset_left = 100.0
+offset_right = 150.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_3_0" type="ColorRect" parent="."]
+offset_left = 150.0
+offset_right = 200.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_4_0" type="ColorRect" parent="."]
+offset_left = 200.0
+offset_right = 250.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_5_0" type="ColorRect" parent="."]
+offset_left = 250.0
+offset_right = 300.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_6_0" type="ColorRect" parent="."]
+offset_left = 300.0
+offset_right = 350.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_7_0" type="ColorRect" parent="."]
+offset_left = 350.0
+offset_right = 400.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_8_0" type="ColorRect" parent="."]
+offset_left = 400.0
+offset_right = 450.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_9_0" type="ColorRect" parent="."]
+offset_left = 450.0
+offset_right = 500.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_0" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_right = 550.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_11_0" type="ColorRect" parent="."]
+offset_left = 550.0
+offset_right = 600.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_12_0" type="ColorRect" parent="."]
+offset_left = 600.0
+offset_right = 650.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_0" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_right = 700.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_14_0" type="ColorRect" parent="."]
+offset_left = 700.0
+offset_right = 750.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_15_0" type="ColorRect" parent="."]
+offset_left = 750.0
+offset_right = 800.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_16_0" type="ColorRect" parent="."]
+offset_left = 800.0
+offset_right = 850.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_17_0" type="ColorRect" parent="."]
+offset_left = 850.0
+offset_right = 900.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_18_0" type="ColorRect" parent="."]
+offset_left = 900.0
+offset_right = 950.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_0" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_right = 1000.0
+offset_bottom = 50.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_1" type="ColorRect" parent="."]
+offset_top = 50.0
+offset_right = 50.0
+offset_bottom = 100.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_1" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 50.0
+offset_right = 1000.0
+offset_bottom = 100.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_2" type="ColorRect" parent="."]
+offset_top = 100.0
+offset_right = 50.0
+offset_bottom = 150.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_2" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 100.0
+offset_right = 1000.0
+offset_bottom = 150.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_3" type="ColorRect" parent="."]
+offset_top = 150.0
+offset_right = 50.0
+offset_bottom = 200.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_3" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 150.0
+offset_right = 1000.0
+offset_bottom = 200.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_4" type="ColorRect" parent="."]
+offset_top = 200.0
+offset_right = 50.0
+offset_bottom = 250.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_4" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 200.0
+offset_right = 550.0
+offset_bottom = 250.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_11_4" type="ColorRect" parent="."]
+offset_left = 550.0
+offset_top = 220.0
+offset_right = 600.0
+offset_bottom = 230.0
+color = Color(0.192157, 0.192157, 0.192157, 1)
+
+[node name="BakedTile_12_4" type="ColorRect" parent="."]
+offset_left = 600.0
+offset_top = 220.0
+offset_right = 650.0
+offset_bottom = 230.0
+color = Color(0.192157, 0.192157, 0.192157, 1)
+
+[node name="BakedTile_13_4" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 200.0
+offset_right = 700.0
+offset_bottom = 250.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_4" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 200.0
+offset_right = 1000.0
+offset_bottom = 250.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_5" type="ColorRect" parent="."]
+offset_top = 250.0
+offset_right = 50.0
+offset_bottom = 300.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_5" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 250.0
+offset_right = 550.0
+offset_bottom = 300.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_5" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 250.0
+offset_right = 700.0
+offset_bottom = 300.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_5" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 250.0
+offset_right = 1000.0
+offset_bottom = 300.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_6" type="ColorRect" parent="."]
+offset_top = 300.0
+offset_right = 50.0
+offset_bottom = 350.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_6" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 300.0
+offset_right = 550.0
+offset_bottom = 350.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_11_6" type="ColorRect" parent="."]
+offset_left = 550.0
+offset_top = 320.0
+offset_right = 600.0
+offset_bottom = 330.0
+color = Color(0.192157, 0.192157, 0.192157, 1)
+
+[node name="BakedTile_12_6" type="ColorRect" parent="."]
+offset_left = 600.0
+offset_top = 320.0
+offset_right = 650.0
+offset_bottom = 330.0
+color = Color(0.192157, 0.192157, 0.192157, 1)
+
+[node name="BakedTile_13_6" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 300.0
+offset_right = 700.0
+offset_bottom = 350.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_6" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 300.0
+offset_right = 1000.0
+offset_bottom = 350.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_7" type="ColorRect" parent="."]
+offset_top = 350.0
+offset_right = 50.0
+offset_bottom = 400.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_7" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 350.0
+offset_right = 550.0
+offset_bottom = 400.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_7" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 350.0
+offset_right = 700.0
+offset_bottom = 400.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_7" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 350.0
+offset_right = 1000.0
+offset_bottom = 400.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_8" type="ColorRect" parent="."]
+offset_top = 400.0
+offset_right = 50.0
+offset_bottom = 450.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_8" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 400.0
+offset_right = 550.0
+offset_bottom = 450.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_8" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 400.0
+offset_right = 700.0
+offset_bottom = 450.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_8" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 400.0
+offset_right = 1000.0
+offset_bottom = 450.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_9" type="ColorRect" parent="."]
+offset_top = 450.0
+offset_right = 50.0
+offset_bottom = 500.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_9" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 450.0
+offset_right = 550.0
+offset_bottom = 500.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_9" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 450.0
+offset_right = 700.0
+offset_bottom = 500.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_9" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 450.0
+offset_right = 1000.0
+offset_bottom = 500.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_10" type="ColorRect" parent="."]
+offset_top = 500.0
+offset_right = 50.0
+offset_bottom = 550.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_10" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 500.0
+offset_right = 1000.0
+offset_bottom = 550.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_11" type="ColorRect" parent="."]
+offset_top = 550.0
+offset_right = 50.0
+offset_bottom = 600.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_11" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 550.0
+offset_right = 1000.0
+offset_bottom = 600.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_12" type="ColorRect" parent="."]
+offset_top = 600.0
+offset_right = 50.0
+offset_bottom = 650.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_12" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 600.0
+offset_right = 550.0
+offset_bottom = 650.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_11_12" type="ColorRect" parent="."]
+offset_left = 550.0
+offset_top = 600.0
+offset_right = 600.0
+offset_bottom = 650.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_12_12" type="ColorRect" parent="."]
+offset_left = 600.0
+offset_top = 600.0
+offset_right = 650.0
+offset_bottom = 650.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_12" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 600.0
+offset_right = 700.0
+offset_bottom = 650.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_12" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 600.0
+offset_right = 1000.0
+offset_bottom = 650.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_13" type="ColorRect" parent="."]
+offset_top = 650.0
+offset_right = 50.0
+offset_bottom = 700.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_13" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 650.0
+offset_right = 550.0
+offset_bottom = 700.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_11_13" type="ColorRect" parent="."]
+offset_left = 550.0
+offset_top = 650.0
+offset_right = 600.0
+offset_bottom = 700.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_12_13" type="ColorRect" parent="."]
+offset_left = 600.0
+offset_top = 650.0
+offset_right = 650.0
+offset_bottom = 700.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_13" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 650.0
+offset_right = 700.0
+offset_bottom = 700.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_13" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 650.0
+offset_right = 1000.0
+offset_bottom = 700.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_14" type="ColorRect" parent="."]
+offset_top = 700.0
+offset_right = 50.0
+offset_bottom = 750.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_14" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 700.0
+offset_right = 550.0
+offset_bottom = 750.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_11_14" type="ColorRect" parent="."]
+offset_left = 550.0
+offset_top = 700.0
+offset_right = 600.0
+offset_bottom = 750.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_12_14" type="ColorRect" parent="."]
+offset_left = 600.0
+offset_top = 700.0
+offset_right = 650.0
+offset_bottom = 750.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_14" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 700.0
+offset_right = 700.0
+offset_bottom = 750.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_14" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 700.0
+offset_right = 1000.0
+offset_bottom = 750.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_15" type="ColorRect" parent="."]
+offset_top = 750.0
+offset_right = 50.0
+offset_bottom = 800.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_1_15" type="ColorRect" parent="."]
+offset_left = 50.0
+offset_top = 750.0
+offset_right = 100.0
+offset_bottom = 800.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_2_15" type="ColorRect" parent="."]
+offset_left = 100.0
+offset_top = 750.0
+offset_right = 150.0
+offset_bottom = 800.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_3_15" type="ColorRect" parent="."]
+offset_left = 150.0
+offset_top = 750.0
+offset_right = 200.0
+offset_bottom = 800.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_15" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 750.0
+offset_right = 550.0
+offset_bottom = 800.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_11_15" type="ColorRect" parent="."]
+offset_left = 550.0
+offset_top = 750.0
+offset_right = 600.0
+offset_bottom = 800.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_12_15" type="ColorRect" parent="."]
+offset_left = 600.0
+offset_top = 750.0
+offset_right = 650.0
+offset_bottom = 800.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_15" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 750.0
+offset_right = 700.0
+offset_bottom = 800.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_15" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 750.0
+offset_right = 1000.0
+offset_bottom = 800.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_16" type="ColorRect" parent="."]
+offset_top = 800.0
+offset_right = 50.0
+offset_bottom = 850.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_1_16" type="ColorRect" parent="."]
+offset_left = 50.0
+offset_top = 800.0
+offset_right = 100.0
+offset_bottom = 850.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_2_16" type="ColorRect" parent="."]
+offset_left = 100.0
+offset_top = 800.0
+offset_right = 150.0
+offset_bottom = 850.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_3_16" type="ColorRect" parent="."]
+offset_left = 150.0
+offset_top = 800.0
+offset_right = 200.0
+offset_bottom = 850.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_16" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 800.0
+offset_right = 550.0
+offset_bottom = 850.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_11_16" type="ColorRect" parent="."]
+offset_left = 550.0
+offset_top = 800.0
+offset_right = 600.0
+offset_bottom = 850.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_12_16" type="ColorRect" parent="."]
+offset_left = 600.0
+offset_top = 800.0
+offset_right = 650.0
+offset_bottom = 850.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_16" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 800.0
+offset_right = 700.0
+offset_bottom = 850.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_16" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 800.0
+offset_right = 1000.0
+offset_bottom = 850.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_17" type="ColorRect" parent="."]
+offset_top = 850.0
+offset_right = 50.0
+offset_bottom = 900.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_1_17" type="ColorRect" parent="."]
+offset_left = 50.0
+offset_top = 850.0
+offset_right = 100.0
+offset_bottom = 900.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_2_17" type="ColorRect" parent="."]
+offset_left = 100.0
+offset_top = 850.0
+offset_right = 150.0
+offset_bottom = 900.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_3_17" type="ColorRect" parent="."]
+offset_left = 150.0
+offset_top = 850.0
+offset_right = 200.0
+offset_bottom = 900.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_17" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 850.0
+offset_right = 1000.0
+offset_bottom = 900.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_18" type="ColorRect" parent="."]
+offset_top = 900.0
+offset_right = 50.0
+offset_bottom = 950.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_18" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 900.0
+offset_right = 1000.0
+offset_bottom = 950.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_0_19" type="ColorRect" parent="."]
+offset_top = 950.0
+offset_right = 50.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_1_19" type="ColorRect" parent="."]
+offset_left = 50.0
+offset_top = 950.0
+offset_right = 100.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_2_19" type="ColorRect" parent="."]
+offset_left = 100.0
+offset_top = 950.0
+offset_right = 150.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_3_19" type="ColorRect" parent="."]
+offset_left = 150.0
+offset_top = 950.0
+offset_right = 200.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_4_19" type="ColorRect" parent="."]
+offset_left = 200.0
+offset_top = 950.0
+offset_right = 250.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_5_19" type="ColorRect" parent="."]
+offset_left = 250.0
+offset_top = 950.0
+offset_right = 300.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_6_19" type="ColorRect" parent="."]
+offset_left = 300.0
+offset_top = 950.0
+offset_right = 350.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_7_19" type="ColorRect" parent="."]
+offset_left = 350.0
+offset_top = 950.0
+offset_right = 400.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_8_19" type="ColorRect" parent="."]
+offset_left = 400.0
+offset_top = 950.0
+offset_right = 450.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_9_19" type="ColorRect" parent="."]
+offset_left = 450.0
+offset_top = 950.0
+offset_right = 500.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_10_19" type="ColorRect" parent="."]
+offset_left = 500.0
+offset_top = 950.0
+offset_right = 550.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_11_19" type="ColorRect" parent="."]
+offset_left = 550.0
+offset_top = 950.0
+offset_right = 600.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_12_19" type="ColorRect" parent="."]
+offset_left = 600.0
+offset_top = 950.0
+offset_right = 650.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_13_19" type="ColorRect" parent="."]
+offset_left = 650.0
+offset_top = 950.0
+offset_right = 700.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_14_19" type="ColorRect" parent="."]
+offset_left = 700.0
+offset_top = 950.0
+offset_right = 750.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_15_19" type="ColorRect" parent="."]
+offset_left = 750.0
+offset_top = 950.0
+offset_right = 800.0
+offset_bottom = 1000.0
+color = Color(0.901961, 0.901961, 0.901961, 1)
+
+[node name="BakedTile_16_19" type="ColorRect" parent="."]
+offset_left = 800.0
+offset_top = 950.0
+offset_right = 850.0
+offset_bottom = 1000.0
+color = Color(0.901961, 0.901961, 0.901961, 1)
+
+[node name="BakedTile_17_19" type="ColorRect" parent="."]
+offset_left = 850.0
+offset_top = 950.0
+offset_right = 900.0
+offset_bottom = 1000.0
+color = Color(0.901961, 0.901961, 0.901961, 1)
+
+[node name="BakedTile_18_19" type="ColorRect" parent="."]
+offset_left = 900.0
+offset_top = 950.0
+offset_right = 950.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
+[node name="BakedTile_19_19" type="ColorRect" parent="."]
+offset_left = 950.0
+offset_top = 950.0
+offset_right = 1000.0
+offset_bottom = 1000.0
+color = Color(0.129412, 0.129412, 0.129412, 1)
 
 
 =====================================
@@ -6699,45 +7699,54 @@ func _on_screen_exited():
 FILE: ./src/data/layouts/level_layout.gd
 =====================================
 # src/data/layouts/level_layout.gd
-# A custom Resource that holds the terrain data for a single arena.
-# This moves level design out of scripts and into data files.
+# REVISED: Uses the correct notify_property_list_changed() method for Resources.
+@tool
 class_name LevelLayout
 extends Resource
 
-@export var terrain_data: PackedStringArray = []
+@export var terrain_data: PackedStringArray = []:
+	set(value):
+		terrain_data = value
+		# THE FIX: This is the correct method for a Resource. It tells the
+		# editor's Inspector to refresh, which will then re-run the warning check.
+		notify_property_list_changed()
+
+func _get_configuration_warnings() -> PackedStringArray:
+	var warnings = PackedStringArray()
+	
+	if terrain_data.is_empty():
+		warnings.append("Terrain Data is empty. The level will be blank.")
+		return warnings
+
+	var first_row_length = -1
+	if not terrain_data[0].is_empty():
+		first_row_length = terrain_data[0].length()
+	else:
+		for i in range(1, terrain_data.size()):
+			if not terrain_data[i].is_empty():
+				warnings.append("Row 1 is empty, but Row %d is not. All rows must be the same length." % (i + 1))
+				return warnings
+		return warnings
+
+	for i in range(1, terrain_data.size()):
+		if terrain_data[i].length() != first_row_length:
+			warnings.append("Row %d (length %d) has a different length than the first row (length %d). All rows must be the same length." % [i + 1, terrain_data[i].length(), first_row_length])
+			break
+			
+	return warnings
 
 
 =====================================
 FILE: ./src/data/layouts/layout_00.tres
 =====================================
-[gd_resource type="Resource" script_class="LevelLayout" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="LevelLayout" load_steps=2 format=3 uid="uid://bst2lw60wetic"]
 
-[ext_resource type="Script" path="res://src/data/layouts/level_layout.gd" id="1_layout"]
+[ext_resource type="Script" uid="uid://c01s26irlgw56" path="res://src/data/layouts/level_layout.gd" id="1_layout"]
 
 [resource]
 script = ExtResource("1_layout")
-terrain_data = [
-"####################",
-"#..................#",
-"#....@.............#",
-"#............&.....#",
-"#.........#--#.....#",
-"#.........#..#.....#",
-"#.........#--#.....#",
-"#.........#..#.....#",
-"#..T......#..#.....#",
-"#.........#..#.....#",
-"#..................#",
-"#..................#",
-"#.........####.....#",
-"#.........####.....#",
-"#.........####.....#",
-"####......####.....#",
-"####......####..T..#",
-"####...............#",
-"#..................#",
-"###############^^^##"
-]
+terrain_data = PackedStringArray("####################", "#..................#", "#....@.............#", "#............&.....#", "#.........#--#.....#", "#.........#..#.....#", "#.........#--#.....#", "#.........#..#.....#", "#..T......#..#.....#", "#.........#..#.....#", "#..................#", "#..................#", "#.........####.....#", "#.........####.....#", "#.........####.....#", "####......####.....#", "####......####..T..#", "####...............#", "#..................#", "###############^^^##")
+
 
 =====================================
 FILE: ./src/data/encounters/encounter_00.tres
@@ -6746,7 +7755,7 @@ FILE: ./src/data/encounters/encounter_00.tres
 
 [ext_resource type="Script" uid="uid://co2urq51qk44e" path="res://src/data/encounters/encounter_data.gd" id="1_encounter"]
 [ext_resource type="PackedScene" uid="uid://dmej4a7ykn2q0" path="res://src/entities/boss/base_boss.tscn" id="2_boss_scene"]
-[ext_resource type="Resource" path="res://src/data/layouts/layout_00.tres" id="2_x64bm"]
+[ext_resource type="Resource" uid="uid://bst2lw60wetic" path="res://src/data/layouts/layout_00.tres" id="2_x64bm"]
 [ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/turret.tscn" id="3_turret_scene"]
 
 [resource]
@@ -6765,7 +7774,7 @@ FILE: ./src/data/encounters/encounter_data.gd
 =====================================
 # src/data/encounters/encounter_data.gd
 # A custom Resource that defines a complete encounter or stage.
-# It links a level layout to the entities that should be spawned in it.
+# REFACTORED: Now uses @export_group for a clean Inspector UI.
 class_name EncounterData
 extends Resource
 
@@ -6781,7 +7790,6 @@ extends Resource
 # The key is the character marker in the layout file (e.g., "T").
 # The value is the PackedScene for that minion.
 @export var minion_spawns: Dictionary = {}
-
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/lunge_attack.tres
@@ -7577,7 +8585,7 @@ color = Color(1, 1, 1, 0.392157)
 FILE: ./src/entities/components/health_component.gd
 =====================================
 # src/entities/components/health_component.gd
-# CORRECTED: Uses Identifiers constants for group checks.
+# MODIFIED: The call to FXManager for hit-stop has been commented out.
 class_name HealthComponent
 extends ComponentInterface
 
@@ -7669,6 +8677,11 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 		died.emit()
 	
 	result.was_damaged = true
+	
+	if result.was_damaged and owner_node.is_in_group(Identifiers.Groups.PLAYER):
+		# FXManager.request_hit_stop(0.5)
+		pass
+	
 	return result
 
 func _check_for_threshold_crossing(health_before: int, health_after: int):
@@ -7725,10 +8738,11 @@ var combat_component: CombatComponent
 var state_machine: BaseStateMachine
 var _config: CombatConfig # Internal reference to the injected config
 
+var buffer: Dictionary = {}
+
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	
-	# THE FIX: Store references to all injected dependencies.
 	self.p_data = p_dependencies.get("data_resource")
 	self.state_machine = p_dependencies.get("state_machine")
 	self.combat_component = p_dependencies.get("combat_component")
@@ -7744,33 +8758,26 @@ func teardown() -> void:
 	combat_component = null
 	state_machine = null
 	_config = null
+	buffer.clear()
 
 func _physics_process(_delta):
-	# THE FIX: Use the internal _config reference instead of the global singleton.
-	if Input.is_action_just_pressed("ui_jump"):
-		p_data.jump_buffer_timer = _config.player_jump_buffer
+	# 1. Clear the buffer at the start of the frame.
+	buffer.clear()
+
+	# 2. Populate the buffer with the current input state.
+	buffer["move_axis"] = Input.get_axis("ui_left", "ui_right")
 	
-	if not state_machine.states.find_key(state_machine.current_state) in owner_node.ACTION_ALLOWED_STATES:
-		return
+	buffer["up"] = Input.is_action_pressed("ui_up")
+	buffer["down"] = Input.is_action_pressed("ui_down")
+
+	buffer["jump_pressed"] = Input.is_action_just_pressed("ui_jump")
+	buffer["jump_released"] = Input.is_action_just_released("ui_jump")
+
+	buffer["attack_pressed"] = Input.is_action_pressed("ui_attack")
+	buffer["attack_just_pressed"] = Input.is_action_just_pressed("ui_attack")
+	buffer["attack_released"] = Input.is_action_just_released("ui_attack")
 	
-	if Input.is_action_just_pressed("ui_attack") and p_data.attack_cooldown_timer <= 0:
-		p_data.is_charging = true
-		p_data.charge_timer = 0.0
-	
-	if Input.is_action_just_released("ui_attack"):
-		if p_data.is_charging:
-			# THE FIX: Use the internal _config reference.
-			if p_data.charge_timer >= _config.player_charge_time:
-				combat_component.fire_shot()
-			else:
-				state_machine.change_state(owner_node.State.ATTACK)
-			p_data.is_charging = false
-	
-	if Input.is_action_just_pressed("ui_dash") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
-		state_machine.change_state(owner_node.State.DASH)
-	
-	if owner_node.is_on_floor() and Input.is_action_pressed("ui_down") and Input.is_action_pressed("ui_jump") and p_data.healing_charges > 0 and is_zero_approx(owner_node.velocity.x):
-		state_machine.change_state(owner_node.State.HEAL)
+	buffer["dash_pressed"] = Input.is_action_just_pressed("ui_dash")
 
 func _unhandled_input(event: InputEvent):
 	if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
@@ -8101,8 +9108,7 @@ script = ExtResource("5_fsm")
 FILE: ./src/entities/player/player.gd
 =====================================
 # src/entities/player/player.gd
-# REFACTORED: The _ready function is now broken into smaller helper methods
-# to improve readability and adhere to the Single Responsibility Principle.
+# MODIFIED: The call to FXManager for hit-stop has been commented out.
 extends CharacterBody2D
 
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
@@ -8164,8 +9170,44 @@ func _physics_process(delta):
 	if is_on_wall() and not is_on_floor():
 		p_data.wall_coyote_timer = p_data.config.player_wall_coyote_time
 		p_data.last_wall_normal = get_wall_normal()
+	
+	_process_global_actions()
+
+
+# --- Public API for States ---
+func apply_horizontal_movement():
+	var move_axis = input_component.buffer.get("move_axis", 0.0)
+	velocity.x = move_axis * p_data.config.player_speed
+	if not is_zero_approx(move_axis):
+		p_data.facing_direction = sign(move_axis)
+
+func apply_gravity(delta: float, multiplier: float = 1.0):
+	velocity.y += p_data.config.gravity * multiplier * delta
+
 
 # --- Private Helper Functions ---
+func _process_global_actions():
+	var current_state_key = state_machine.states.find_key(state_machine.current_state)
+	if not current_state_key in ACTION_ALLOWED_STATES:
+		return
+		
+	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
+		p_data.is_charging = true
+		p_data.charge_timer = 0.0
+	
+	if input_component.buffer.get("attack_released"):
+		if p_data.is_charging:
+			if p_data.charge_timer >= p_data.config.player_charge_time:
+				combat_component.fire_shot()
+			else:
+				state_machine.change_state(State.ATTACK)
+			p_data.is_charging = false
+	
+	if input_component.buffer.get("dash_pressed") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
+		state_machine.change_state(State.DASH)
+	
+	if is_on_floor() and input_component.buffer.get("down") and input_component.buffer.get("jump_pressed") and p_data.healing_charges > 0 and is_zero_approx(velocity.x):
+		state_machine.change_state(State.HEAL)
 
 func _initialize_data():
 	p_data = PlayerStateData.new()
@@ -8200,26 +9242,20 @@ func _connect_signals():
 	combat_component.damage_dealt.connect(_on_damage_dealt)
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
-func apply_horizontal_movement():
-	velocity.x = Input.get_axis("ui_left", "ui_right") * p_data.config.player_speed
-	if not is_zero_approx(velocity.x):
-		p_data.facing_direction = sign(velocity.x)
-
 func _cancel_heal():
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 
 func _update_timers(delta):
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
-	p_data.jump_buffer_timer = max(0.0, p_data.jump_buffer_timer - delta)
+	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
 	p_data.dash_cooldown_timer = max(0.0, p_data.dash_cooldown_timer - delta)
 	p_data.dash_duration_timer = max(0.0, p_data.dash_duration_timer - delta)
 	p_data.attack_duration_timer = max(0.0, p_data.attack_duration_timer - delta)
 	p_data.attack_cooldown_timer = max(0.0, p_data.attack_cooldown_timer - delta)
 	p_data.knockback_timer = max(0.0, p_data.knockback_timer - delta)
-	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
 	p_data.pogo_fall_prevention_timer = max(0.0, p_data.pogo_fall_prevention_timer - delta)
-	if p_data.is_charging and Input.is_action_pressed("ui_attack"):
+	if p_data.is_charging and input_component.buffer.get("attack_pressed"):
 		p_data.charge_timer += delta
 
 func _emit_healing_charges_changed_event():
@@ -8254,7 +9290,7 @@ func _on_damage_dealt():
 		p_data.determination_counter = 0; p_data.healing_charges += 1
 		_emit_healing_charges_changed_event()
 
-# --- Signal Handlers (Connected in Editor or _ready) ---
+# --- Signal Handlers ---
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
 	if p_data.hit_targets_this_swing.has(target_id): return
@@ -8265,10 +9301,14 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		var damage_info = DamageInfo.new()
 		damage_info.source_node = self
 		var distance = self.global_position.distance_to(body.global_position)
-		damage_info.amount = 5 if distance <= CLOSE_RANGE_THRESHOLD else 1
+		var is_close_range = distance <= CLOSE_RANGE_THRESHOLD
+		damage_info.amount = 5 if is_close_range else 1
 			
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
+			if is_close_range:
+				# FXManager.request_hit_stop(0.05)
+				pass
 			_on_damage_dealt()
 
 func _on_pogo_hitbox_body_entered(body: Node) -> void:
@@ -8331,16 +9371,13 @@ FILE: ./src/entities/player/states/state_jump.gd
 extends BaseState
 
 func enter(_msg := {}):
-	# THE FIX: Read directly from the injected config via the state_data resource.
 	owner.velocity.y = -state_data.config.player_jump_force
 	state_data.coyote_timer = 0
-	state_data.jump_buffer_timer = 0
 
 func process_physics(delta: float):
 	owner.apply_horizontal_movement()
 	
-	# THE FIX: Read directly from the injected config.
-	if Input.is_action_just_released("ui_jump") and owner.velocity.y < 0:
+	if owner.input_component.buffer.get("jump_released") and owner.velocity.y < 0:
 		owner.velocity.y *= state_data.config.player_jump_release_dampener
 
 	_apply_gravity(delta)
@@ -8352,13 +9389,13 @@ func process_physics(delta: float):
 	_check_for_wall_slide()
 
 func _apply_gravity(delta):
-	# THE FIX: Read directly from the injected config.
-	owner.velocity.y += state_data.config.gravity * delta
+	owner.apply_gravity(delta)
 	if owner.velocity.y > 0.0:
 		state_machine.change_state(owner.State.FALL)
 
 func _check_for_wall_slide():
-	if state_data.wall_coyote_timer > 0 and not owner.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -state_data.last_wall_normal.x:
+	var move_axis = owner.input_component.buffer.get("move_axis", 0.0)
+	if state_data.wall_coyote_timer > 0 and not owner.is_on_floor() and move_axis != 0 and sign(move_axis) == -state_data.last_wall_normal.x:
 		state_machine.change_state(owner.State.WALL_SLIDE)
 
 =====================================
@@ -8437,11 +9474,12 @@ func process_physics(delta: float):
 	
 	state_data.facing_direction = sign(-state_data.last_wall_normal.x)
 	
-	if state_data.jump_buffer_timer > 0:
+	if owner.input_component.buffer.get("jump_pressed"):
 		_perform_wall_jump()
 		return
 	
-	if Input.get_axis("ui_left", "ui_right") * -state_data.last_wall_normal.x < 0.8:
+	var move_axis = owner.input_component.buffer.get("move_axis", 0.0)
+	if move_axis * -state_data.last_wall_normal.x < 0.8:
 		state_machine.change_state(owner.State.FALL)
 		return
 		
@@ -8456,7 +9494,6 @@ func process_physics(delta: float):
 func _perform_wall_jump():
 	owner.velocity.y = -state_data.config.player_wall_jump_force_y
 	owner.velocity.x = state_data.last_wall_normal.x * state_data.config.player_wall_jump_force_x
-	state_data.jump_buffer_timer = 0
 	state_data.coyote_timer = 0
 	state_data.wall_coyote_timer = 0
 	state_machine.change_state(owner.State.JUMP)
@@ -8474,7 +9511,7 @@ const FORWARD_ATTACK_SHAPE = preload("res://src/entities/player/data/forward_att
 const UPWARD_ATTACK_SHAPE = preload("res://src/entities/player/data/upward_attack_shape.tres")
 
 func enter(_msg := {}):
-	state_data.is_pogo_attack = Input.is_action_pressed("ui_down")
+	state_data.is_pogo_attack = owner.input_component.buffer.get("down")
 	state_data.hit_targets_this_swing.clear()
 
 	if state_data.is_pogo_attack:
@@ -8488,7 +9525,7 @@ func enter(_msg := {}):
 		state_data.attack_duration_timer = state_data.config.player_attack_duration
 		state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
 		
-		if Input.is_action_pressed("ui_up"):
+		if owner.input_component.buffer.get("up"):
 			owner.melee_hitbox_shape.shape = UPWARD_ATTACK_SHAPE
 			owner.melee_hitbox_shape.position = Vector2(0, -40)
 		else:
@@ -8544,7 +9581,7 @@ func enter(_msg := {}):
 	owner._cancel_heal()
 
 func process_physics(delta: float):
-	owner.velocity.y += state_data.config.gravity * delta
+	owner.apply_gravity(delta)
 	owner.velocity.x = move_toward(owner.velocity.x, 0, 800 * delta)
 
 	if state_data.knockback_timer <= 0:
@@ -8567,7 +9604,7 @@ func process_physics(delta: float):
 
 	_check_for_wall_slide()
 
-	if state_data.jump_buffer_timer > 0:
+	if owner.input_component.buffer.get("jump_pressed"):
 		if state_data.wall_coyote_timer > 0:
 			_perform_wall_jump()
 		elif state_data.coyote_timer > 0:
@@ -8577,12 +9614,13 @@ func process_physics(delta: float):
 
 func _apply_gravity(delta):
 	var gravity_multiplier = 1.0
-	if Input.is_action_pressed("ui_down"):
+	if owner.input_component.buffer.get("down"):
 		gravity_multiplier = state_data.config.player_fast_fall_gravity_multiplier
-	owner.velocity.y += state_data.config.gravity * gravity_multiplier * delta
+	owner.apply_gravity(delta, gravity_multiplier)
 
 func _check_for_wall_slide():
-	if state_data.wall_coyote_timer > 0 and not owner.is_on_floor() and Input.get_axis("ui_left", "ui_right") != 0 and sign(Input.get_axis("ui_left", "ui_right")) == -state_data.last_wall_normal.x:
+	var move_axis = owner.input_component.buffer.get("move_axis", 0.0)
+	if state_data.wall_coyote_timer > 0 and not owner.is_on_floor() and move_axis != 0 and sign(move_axis) == -state_data.last_wall_normal.x:
 		state_machine.change_state(owner.State.WALL_SLIDE)
 
 func _perform_air_jump():
@@ -8609,23 +9647,22 @@ func enter(_msg := {}):
 func process_physics(delta: float):
 	state_data.coyote_timer = state_data.config.player_coyote_time
 	
-	owner.velocity.y += state_data.config.gravity * delta
+	owner.apply_gravity(delta)
 	owner.apply_horizontal_movement()
 
 	if not owner.is_on_floor():
 		state_machine.change_state(owner.State.FALL)
 		return
 	
-	if Input.is_action_pressed("ui_down") and Input.is_action_just_pressed("ui_jump"):
+	if owner.input_component.buffer.get("down") and owner.input_component.buffer.get("jump_pressed"):
 		if owner.get_last_slide_collision():
 			var floor_collider = owner.get_last_slide_collision().get_collider()
 			if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
 				owner.position.y += 2
-				state_data.jump_buffer_timer = 0
 				state_machine.change_state(owner.State.FALL)
 				return
 	
-	if state_data.jump_buffer_timer > 0:
+	if owner.input_component.buffer.get("jump_pressed"):
 		state_machine.change_state(owner.State.JUMP)
 		return
 
@@ -8639,8 +9676,8 @@ FILE: ./src/entities/player/data/player_state_data.gd
 class_name PlayerStateData
 extends Resource
 
-# --- NEW: Configuration Reference ---
-var config: CombatConfig # This will hold the reference to the global combat config.
+# --- Configuration Reference ---
+var config: CombatConfig
 
 # --- Health & Combat ---
 var max_health: int = 5
@@ -8668,7 +9705,6 @@ var pogo_fall_prevention_timer: float = 0.0
 
 # --- Timers ---
 var coyote_timer: float = 0.0
-var jump_buffer_timer: float = 0.0
 var wall_coyote_timer: float = 0.0
 var dash_duration_timer: float = 0.0
 var dash_cooldown_timer: float = 0.0

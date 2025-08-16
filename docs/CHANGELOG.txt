@@ -23,6 +23,45 @@
 
 
 
+
+
+
+
+
+-------
+
+
+║      This version completes a major refactor of the Player entity to enhance ║
+║      modularity and establishes a strict, project-wide code style standard   ║
+║      to improve readability, consistency, and in-editor documentation.       ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `player.gd` script by abstracting its     ║
+║      ░   core responsibilities into three new, single-purpose components:    ║
+║      ░   - `PlayerPhysicsComponent`: Now exclusively handles `move_and_slide`, gravity, and contact damage detection.
+║      ░   - `PlayerAbilityComponent`: Manages the activation logic and rules for all player actions (dash, heal, attack).
+║      ░   - `PlayerResourceComponent`: Manages the "economy" of determination and healing charges.
+║      ░ ■ Simplified the `Player` script to act as a pure "Orchestrator,"     ║
+║      ░   responsible only for initializing components and handling signals.  ║
+║      ░   The main `_physics_process` loop has been removed from `player.gd`. ║
+║                                                                              ║
+║   █  Code Quality & Tooling                                                  ║
+║      ░ ■ Established a formal, project-wide cosmetic restructuring standard. ║
+║      ░   All scripts now follow a consistent layout: file path header,       ║
+║      ░   docstring, signals, enums, constants, exports, variables, lifecycle ║
+║      ░   methods, public methods, private methods, and signal handlers.      ║
+║      ░ ■ Implemented Godot-style docstrings (`##`) for all key classes,      ║
+║      ░   functions, and variables, providing proper in-editor tooltips and   ║
+║      ░   integrated help documentation.                                      ║
+║      ░ ■ Enforced full type hinting for all function arguments and return    ║
+║      ░   values across the refactored player scripts to improve static safety.║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved all static analysis warnings introduced by the refactor,   ║
+║      ░   including `UNUSED_PARAMETER`, `UNUSED_SIGNAL`, and                  ║
+║      ░   `STATIC_CALLED_ON_INSTANCE` errors in the player components.        ║
+║                                                                              ║
+
 -------
 
 ║   █  Architectural Changes                                                   ║

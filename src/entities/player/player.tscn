@@ -1,10 +1,13 @@
-[gd_scene load_steps=9 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=12 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_hcomp"]
 [ext_resource type="Script" path="res://src/entities/components/combat_component.gd" id="3_combat_comp"]
 [ext_resource type="Script" path="res://src/entities/components/input_component.gd" id="4_input_comp"]
 [ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="5_fsm"]
+[ext_resource type="Script" path="res://src/entities/player/components/player_physics_component.gd" id="6_p_phys"]
+[ext_resource type="Script" path="res://src/entities/player/components/player_ability_component.gd" id="7_p_abil"]
+[ext_resource type="Script" path="res://src/entities/player/components/player_resource_component.gd" id="8_p_res"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -68,5 +71,14 @@ script = ExtResource("4_input_comp")
 
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("5_fsm")
+
+[node name="PlayerPhysicsComponent" type="Node" parent="."]
+script = ExtResource("6_p_phys")
+
+[node name="PlayerAbilityComponent" type="Node" parent="."]
+script = ExtResource("7_p_abil")
+
+[node name="PlayerResourceComponent" type="Node" parent="."]
+script = ExtResource("8_p_res")
 
 [connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]
