@@ -6,7 +6,6 @@ on:
     tags:
       - 'v*.*.*'
 
-# This new block grants the workflow permission to create a release.
 permissions:
   contents: write
 
@@ -30,6 +29,9 @@ jobs:
         run: mkdir -vp build/windows
       - name: Build and Export for Windows
         run: godot --headless --verbose --export-release "Windows Desktop" "build/windows/BOX BATTLE.exe"
+      - name: Rename Windows PCK
+        # This new step prevents filename conflicts in the release
+        run: mv "build/windows/BOX BATTLE.pck" "build/windows/BOX BATTLE-windows.pck"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -37,6 +39,7 @@ jobs:
           path: build/windows
 
   build-web:
+    # No changes needed here
     name: Build for Web
     runs-on: ubuntu-latest
     container:
@@ -62,6 +65,7 @@ jobs:
           path: build/web
 
   build-mac:
+    # No changes needed here
     name: Build for macOS
     runs-on: ubuntu-latest
     container:
@@ -105,6 +109,9 @@ jobs:
         run: mkdir -vp build/linux
       - name: Build and Export for Linux
         run: godot --headless --verbose --export-release "Linux" "build/linux/BOX BATTLE.x86_64"
+      - name: Rename Linux PCK
+        # This new step prevents filename conflicts in the release
+        run: mv "build/linux/BOX BATTLE.pck" "build/linux/BOX BATTLE-linux.pck"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -112,6 +119,7 @@ jobs:
           path: build/linux
 
   create-release:
+    # No changes needed here, it will automatically pick up the renamed files
     name: Create GitHub Release
     needs: [build-windows, build-web, build-mac, build-linux]
     runs-on: ubuntu-latest
