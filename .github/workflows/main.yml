@@ -9,35 +9,33 @@ on:
 jobs:
   export-game:
     runs-on: ubuntu-latest
-    name: Build and Export All Platforms
+    name: Build and Export for All Platforms
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # This is a good debug step to keep until you are confident it is working.
-      - name: Show export_presets.cfg content
-        run: cat export_presets.cfg || echo "export_presets.cfg not found"
 
       - name: Get Project Version
         id: get_version
         run: |
           VERSION=$(grep "application/config/version" project.godot | cut -d'"' -f2)
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=${VERSION:-1.0}" >> $GITHUB_OUTPUT
 
-      - name: Build and Export
+      - name: Build and Export All Platforms
         id: export
         uses: firebelley/godot-export@v6.0.0
         with:
-          # Ensure these download URLs match the exact version of Godot you are using locally.
-          godot_executable_download_url: "https://sourceforge.net/projects/godot-engine.mirror/files/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip/download"
-          godot_export_templates_download_url: "https://sourceforge.net/projects/godot-engine.mirror/files/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz/download"
+          # --- IMPORTANT ---
+          # Ensure these URLs point to the exact version of Godot you used to create your export presets.
+          godot_executable_download_url: "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip"
+          godot_export_templates_download_url: "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz"
           
-          # This assumes your project.godot file is at the root of the repository.
+          # This should be the path to the directory containing your 'project.godot' file.
           relative_project_path: "./"
           
-          # CORRECTED: The preset names here now exactly match your export_presets.cfg file.
-          presets_to_export: "macOS,Windows Desktop,Linux,Web"
+          # The preset names must exactly match the 'name' field in your export_presets.cfg.
+          presets_to_export: "Windows Desktop,Web,macOS,Linux"
           
+          # This will create a .zip file for each exported platform.
           archive_output: true
 
       - name: Upload Build Artifacts
