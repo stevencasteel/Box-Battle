@@ -14,6 +14,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Debug step: List files to verify location
+      - name: List project root files
+        run: ls -la
+
+      # Debug step: Show export_presets.cfg contents
+      - name: Show export_presets.cfg content
+        run: cat export_presets.cfg || echo "export_presets.cfg not found"
+
       - name: Get Project Version
         id: get_version
         run: |
