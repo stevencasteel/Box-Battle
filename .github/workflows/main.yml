@@ -11,7 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [ 'macOS', 'Windows Desktop', 'Linux/X11' ]
+        # Add 'Web' to the list of platforms to build for.
+        platform: [ 'macOS', 'Windows Desktop', 'Linux/X11', 'Web' ]
 
     steps:
       - name: Checkout code
@@ -21,31 +22,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/godot
-          key: ${{ runner.os }}-godot-cache-${{ hashFiles('**/project.godot') }}
-
-      - name: Get Project Version
-        id: get_version # Give this step an ID
-        # Run our helper script and capture its output
-        run: |
-          VERSION=$(godot --headless --script .github/scripts/get_version.gd)
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          key: ${{ runner.os }}-godot-cache-${{ hashFiles('**/project.vot') }}
 
       - name: Build and Export
-        id: build
         uses: abarichello/godot-ci@4.4.1-stable
         with:
-          # Use the platform from the matrix. The output path will be 'build/macOS/', etc.
           args: --headless --export-release "${{ matrix.platform }}" "build/${{ matrix.platform }}/BoxBattle"
 
-      - name: Zip the Build
-        # This step creates a clean zip file like "BoxBattle-v0.10.0-macOS.zip"
+      - name: Prepare Artifact
         run: |
-          cd build/${{ matrix.platform }}
-          zip -r ../BoxBattle-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip .
+          VERSION=$(godot --headless --script .github/scripts/get_version.gd)
+          echo "Project version is $VERSION"
+          
+          cd build
+          zip -r BoxBattle-v$VERSION-${{ matrix.platform }}.zip ${{ matrix.platform }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          # Use the full versioned name for the artifact
           name: build-${{ matrix.platform }}-${{ steps.get_version.outputs.VERSION }}
-          path: build/BoxBattle-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip
+          path: build/BoxBattle-v*.zip
