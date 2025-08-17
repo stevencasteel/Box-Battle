@@ -29,7 +29,6 @@ jobs:
       - name: Build and Export for Windows
         run: godot --headless --verbose --export-release "Windows Desktop" "build/windows/BOX BATTLE.exe"
       - name: Package Build
-        # This new step zips the build files for a clean release
         run: |
           cd build/windows
           zip -r ../BOX-BATTLE-windows.zip .
@@ -37,7 +36,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          # We now upload the single zip file instead of the whole directory
           path: build/BOX-BATTLE-windows.zip
 
   build-web:
@@ -59,7 +57,6 @@ jobs:
       - name: Build and Export for Web
         run: godot --headless --verbose --export-release "Web" "build/web/index.html"
       - name: Package Build
-        # This new step zips all the web files together
         run: |
           cd build/web
           zip -r ../BOX-BATTLE-web.zip .
@@ -67,11 +64,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-build
-          # Upload the single zip file
           path: build/BOX-BATTLE-web.zip
 
   build-mac:
-    # No changes needed here, as it already exports to a .zip
     name: Build for macOS
     runs-on: ubuntu-latest
     container:
@@ -88,12 +83,14 @@ jobs:
       - name: Setup build directory
         run: mkdir -vp build/macos
       - name: Build and Export for macOS
-        run: godot --headless --verbose --export-release "macOS" "build/macos/BOX BATTLE.zip"
+        # CORRECTED FILENAME HERE
+        run: godot --headless --verbose --export-release "macOS" "build/macos/BOX-BATTLE-mac.zip"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: build/macos/BOX BATTLE.zip
+          # UPDATED PATH HERE
+          path: build/macos/BOX-BATTLE-mac.zip
 
   build-linux:
     name: Build for Linux
@@ -114,7 +111,6 @@ jobs:
       - name: Build and Export for Linux
         run: godot --headless --verbose --export-release "Linux" "build/linux/BOX BATTLE.x86_64"
       - name: Package Build
-        # This new step zips the Linux files
         run: |
           cd build/linux
           zip -r ../BOX-BATTLE-linux.zip .
@@ -122,11 +118,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          # Upload the single zip file
           path: build/BOX-BATTLE-linux.zip
 
   create-release:
-    # No changes are needed here! It will now upload the zip files automatically.
     name: Create GitHub Release
     needs: [build-windows, build-web, build-mac, build-linux]
     runs-on: ubuntu-latest
