@@ -7,9 +7,6 @@ on:
       - 'v*.*.*'
 
 jobs:
-  # JOB ORDER: Matched to export_presets.cfg
-
-  # Preset 0: Windows Desktop
   build-windows:
     name: Build for Windows
     runs-on: ubuntu-latest
@@ -18,8 +15,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup build directories
-        # CORRECTED COMMAND: Using 'mkdir -p' to create parent directories
+      - name: Install Export Templates
+        run: |
+          # Using the direct and reliable GitHub release URL
+          wget -O export_templates.tpz https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.4.1.stable
+          unzip export_templates.tpz -d ~/.local/share/godot/export_templates/4.4.1.stable
+      - name: Setup build directory
         run: mkdir -vp build/windows
       - name: Build and Export for Windows
         run: godot --headless --verbose --export-release "Windows Desktop" "build/windows/BOX BATTLE.exe"
@@ -29,7 +31,6 @@ jobs:
           name: windows-build
           path: build/windows
 
-  # Preset 1: Web
   build-web:
     name: Build for Web
     runs-on: ubuntu-latest
@@ -38,8 +39,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup build directories
-        # CORRECTED COMMAND: Using 'mkdir -p'
+      - name: Install Export Templates
+        run: |
+          # Using the direct and reliable GitHub release URL
+          wget -O export_templates.tpz https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.4.1.stable
+          unzip export_templates.tpz -d ~/.local/share/godot/export_templates/4.4.1.stable
+      - name: Setup build directory
         run: mkdir -vp build/web
       - name: Build and Export for Web
         run: godot --headless --verbose --export-release "Web" "build/web/index.html"
@@ -49,7 +55,6 @@ jobs:
           name: web-build
           path: build/web
 
-  # Preset 2: macOS
   build-mac:
     name: Build for macOS
     runs-on: ubuntu-latest
@@ -58,8 +63,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup build directories
-        # CORRECTED COMMAND: Using 'mkdir -p'
+      - name: Install Export Templates
+        run: |
+          # Using the direct and reliable GitHub release URL
+          wget -O export_templates.tpz https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.4.1.stable
+          unzip export_templates.tpz -d ~/.local/share/godot/export_templates/4.4.1.stable
+      - name: Setup build directory
         run: mkdir -vp build/macos
       - name: Build and Export for macOS
         run: godot --headless --verbose --export-release "macOS" "build/macos/BOX BATTLE.zip"
@@ -69,7 +79,6 @@ jobs:
           name: macos-build
           path: build/macos
 
-  # Preset 3: Linux
   build-linux:
     name: Build for Linux
     runs-on: ubuntu-latest
@@ -78,8 +87,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup build directories
-        # CORRECTED COMMAND: Using 'mkdir -p'
+      - name: Install Export Templates
+        run: |
+          # Using the direct and reliable GitHub release URL
+          wget -O export_templates.tpz https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/export_templates/4.4.1.stable
+          unzip export_templates.tpz -d ~/.local/share/godot/export_templates/4.4.1.stable
+      - name: Setup build directory
         run: mkdir -vp build/linux
       - name: Build and Export for Linux
         run: godot --headless --verbose --export-release "Linux" "build/linux/BOX BATTLE.x86_64"
