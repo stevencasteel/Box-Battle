@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
     tags:
-      - 'v*.*.*' # This will also trigger the workflow for tags like v1.0.0
+      - 'v*.*.*'
 
 jobs:
   # JOB ORDER: Matched to export_presets.cfg
@@ -18,8 +18,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup build directory
-        run: mkdir -v build/windows
+      - name: Setup build directories
+        # CORRECTED COMMAND: Using 'mkdir -p' to create parent directories
+        run: mkdir -vp build/windows
       - name: Build and Export for Windows
         run: godot --headless --verbose --export-release "Windows Desktop" "build/windows/BOX BATTLE.exe"
       - name: Upload Artifact
@@ -37,8 +38,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup build directory
-        run: mkdir -v build/web
+      - name: Setup build directories
+        # CORRECTED COMMAND: Using 'mkdir -p'
+        run: mkdir -vp build/web
       - name: Build and Export for Web
         run: godot --headless --verbose --export-release "Web" "build/web/index.html"
       - name: Upload Artifact
@@ -56,8 +58,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup build directory
-        run: mkdir -v build/macos
+      - name: Setup build directories
+        # CORRECTED COMMAND: Using 'mkdir -p'
+        run: mkdir -vp build/macos
       - name: Build and Export for macOS
         run: godot --headless --verbose --export-release "macOS" "build/macos/BOX BATTLE.zip"
       - name: Upload Artifact
@@ -75,8 +78,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup build directory
-        run: mkdir -v build/linux
+      - name: Setup build directories
+        # CORRECTED COMMAND: Using 'mkdir -p'
+        run: mkdir -vp build/linux
       - name: Build and Export for Linux
         run: godot --headless --verbose --export-release "Linux" "build/linux/BOX BATTLE.x86_64"
       - name: Upload Artifact
@@ -87,13 +91,11 @@ jobs:
 
   create-release:
     name: Create GitHub Release
-    # The order in 'needs' doesn't strictly matter, but we'll keep it consistent.
     needs: [build-windows, build-web, build-mac, build-linux]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v4
-      # Using v4 which is the latest version
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
