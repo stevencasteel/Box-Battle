@@ -1,31 +1,74 @@
-# Fixed Godot CI Workflow using firebelley/godot-export
 name: Godot CI
+
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  export-game:
-    name: Export Game
+  build-mac:
+    name: Build for macOS
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Export game
-        id: export
-        uses: firebelley/godot-export@v6.0.0
+      - name: Build and Export for macOS
+        uses: abarichello/godot-ci@4.4.1-stable
         with:
-          godot_executable_download_url: https://sourceforge.net/projects/godot-engine.mirror/files/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip/download
-          godot_export_templates_download_url: https://sourceforge.net/projects/godot-engine.mirror/files/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz/download
-          relative_project_path: ./
-          archive_output: true
-          verbose: true
-      
-      - name: Upload Build Artifacts
+          export_preset: 'macOS'
+          build_path: 'build/macos'
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: game-builds
-          path: ${{ steps.export.outputs.archive_directory }}/*
+          name: macos-build
+          path: build/macos
+
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build and Export for Linux
+        uses: abarichello/godot-ci@4.4.1-stable
+        with:
+          export_preset: 'Linux'
+          build_path: 'build/linux'
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: build/linux
+
+  build-windows:
+    name: Build for Windows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build and Export for Windows
+        uses: abarichello/godot-ci@4.4.1-stable
+        with:
+          export_preset: 'Windows Desktop'
+          build_path: 'build/windows'
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: build/windows
+
+  build-web:
+    name: Build for Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build and Export for Web
+        uses: abarichello/godot-ci@4.4.1-stable
+        with:
+          export_preset: 'Web'
+          build_path: 'build/web'
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web
