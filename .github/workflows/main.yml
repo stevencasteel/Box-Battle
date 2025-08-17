@@ -1,54 +1,31 @@
-# Alternative: Using abarichello/godot-ci as Docker container
+# Fixed Godot CI Workflow using firebelley/godot-export
 name: Godot CI
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-and-export:
-    name: Build and Export Game
+  export-game:
+    name: Export Game
     runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.4.1-stable
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Setup export templates
-        run: |
-          mkdir -v -p ~/.local/share/godot/export_templates/
-          mv /root/.local/share/godot/export_templates/4.4.1.stable ~/.local/share/godot/export_templates/4.4.1.stable
+      - name: Export game
+        id: export
+        uses: firebelley/godot-export@v6.0.0
+        with:
+          godot_executable_download_url: https://sourceforge.net/projects/godot-engine.mirror/files/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip/download
+          godot_export_templates_download_url: https://sourceforge.net/projects/godot-engine.mirror/files/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz/download
+          relative_project_path: ./
+          archive_output: true
+          verbose: true
       
-      - name: Import assets
-        run: godot --headless --verbose --editor --quit
-      
-      - name: Export for Windows
-        run: |
-          mkdir -v -p build/windows
-          godot --headless --verbose --export-release "Windows Desktop" build/windows/BOX\ BATTLE.exe
-      
-      - name: Export for Linux
-        run: |
-          mkdir -v -p build/linux
-          godot --headless --verbose --export-release "Linux" build/linux/BOX\ BATTLE.x86_64
-      
-      - name: Export for macOS
-        run: |
-          mkdir -v -p build/macos
-          godot --headless --verbose --export-release "macOS" build/macos/BOX\ BATTLE.dmg
-      
-      - name: Export for Web
-        run: |
-          mkdir -v -p build/web
-          godot --headless --verbose --export-release "Web" build/web/BOX\ BATTLE.html
-      
-      - name: Package all builds
-        run: |
-          cd build
-          zip -r ../game-builds.zip .
-      
-      - name: Upload Final Package
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: game-builds
-          path: game-builds.zip
+          path: ${{ steps.export.outputs.archive_directory }}/*
