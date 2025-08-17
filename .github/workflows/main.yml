@@ -11,23 +11,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # Use the more robust Godot CI action
-      - name: Godot Export
-        uses: abarichello/godot-ci@v1.4
+      # This single step now handles setting up Godot, downloading templates,
+      # and running the export build, which validates the entire project.
+      - name: Build and Export for macOS
+        uses: abarichello/godot-ci@4.4.1-stable
         with:
-          # This action automatically downloads the correct Godot version and templates
-          godot-version: '4.4.1'
-          # Tell the action which platform we are targeting
-          target-platform: 'macos'
-          # Tell the action to create a release build
-          export-mode: 'release'
-        
-      # The previous step will have created the build artifact.
-      # If any script had a syntax error, the action would have failed.
-      # This effectively replaces the linting AND the export steps.
-      
-      # Note: We are temporarily disabling the GUT step as it faces the same
-      # headless environment issues. The build success is our primary validation for now.
-      # - name: Run Unit Tests (GUT)
-      #   run: $GODOT4 --headless --gtest_execute --gtest-dir="res://src/testing/"
-      #   continue-on-error: true
+          # The name of the export preset in your export_presets.cfg file.
+          export_preset: 'macOS'
+          # The directory where the build artifact will be placed.
+          build_path: 'build/macos'
