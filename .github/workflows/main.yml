@@ -1,40 +1,60 @@
-name: Godot CI
+name: Build and Export Godot 4.4.1 Project
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  export-game:
-    # This single job will build all platforms
+  build:
     runs-on: ubuntu-latest
-    name: Build and Export Game
+    strategy:
+      matrix:
+        preset: [Linux/X11, Windows Desktop, macOS, Web]
+        include:
+          - preset: Linux/X11
+            runner: ubuntu-latest
+            suffix: linux
+          - preset: Windows Desktop
+            runner: ubuntu-latest
+            suffix: windows
+          - preset: macOS
+            runner: ubuntu-latest
+            suffix: macOS
+          - preset: Web
+            runner: ubuntu-latest
+            suffix: web
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build and Export All Platforms
-        id: export # Give this step an ID to reference its output
-        uses: firebelley/godot-export@v6.0.0 # Use the latest correct version
+      - name: Extract version from project.godot
+        id: get_version
+        run: |
+          version=$(grep -E '^config/version=' project.godot | head -n1 | cut -d'=' -f2 | tr -d '"')
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+      - name: Export Game
+        id: export
+        uses: firebelley/godot-export@v6.0.0
         with:
-          # --- Required Inputs from the Documentation ---
-          godot_executable_download_url: "https://downloads.tuxfamily.org/godotengine/4.4.1/Godot_v4.4.1-stable_linux.x86_64.zip"
-          godot_export_templates_download_url: "https://downloads.tuxfamily.org/godotengine/4.4.1/Godot_v4.4.1-stable_export_templates.tpz"
-          relative_project_path: "./"
-          
-          # --- Our Configuration ---
-          # A comma-separated list of the exact names from your export_presets.cfg
-          presets_to_export: "macOS,Windows Desktop,Linux/X11,Web"
-          # Tell the action to create .zip files for us
+          godot_executable_download_url: https://downloads.tuxfamily.org/godotengine/4.4.1/Godot_v4.4.1-stable_linux.x86_64.zip
+          godot_export_templates_download_url: https://downloads.tuxfamily.org/godotengine/4.4.1/Godot_v4.4.1-stable_export_templates.tpz
+          relative_project_path: ./
+          preset: ${{ matrix.preset }}
           archive_output: true
-      
-      - name: Upload Artifacts
+          cache: true
+
+      - name: Rename Export Zip
+        run: |
+          mv build/${{ matrix.preset }}.zip BoxBattle-v${{ env.VERSION }}-${{ matrix.suffix }}.zip
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          # The name for the collection of build artifacts
-          name: game-builds
-          # The path to the directory containing the zip files the action just created
-          path: ${{ steps.export.outputs.archive_directory }}
+          name: BoxBattle-v${{ env.VERSION }}-${{ matrix.suffix }}.zip
+          path: BoxBattle-v${{ env.VERSION }}-${{ matrix.suffix }}.zip
