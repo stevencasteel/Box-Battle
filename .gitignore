@@ -1,7 +1,8 @@
+You were right it was in there. Anything else I should remove from .gitignore again?
+
 # Godot-specific ignores
 .import/
 export.cfg
-export_presets.cfg
 .mono/
 data_*/
 mono_crash.*.json
