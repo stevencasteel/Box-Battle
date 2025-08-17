@@ -1,45 +1,22 @@
-name: Build and Export Godot Project
+name: Godot CI
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
-  export-game:
+  build-and-test:
     runs-on: ubuntu-latest
-    name: Build and Export for All Platforms
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Get Project Version
-        id: get_version
-        run: |
-          VERSION=$(grep "application/config/version" project.godot | cut -d'"' -f2)
-          echo "VERSION=${VERSION:-1.0}" >> $GITHUB_OUTPUT
-
-      - name: Build and Export All Platforms
-        id: export
-        uses: firebelley/godot-export@v6.0.0
+      
+      # This single step now handles setting up Godot, downloading templates,
+      # and running the export build, which validates the entire project.
+      - name: Build and Export for macOS
+        uses: abarichello/godot-ci@4.4.1-stable
         with:
-          # --- IMPORTANT ---
-          # Ensure these URLs point to the exact version of Godot you used to create your export presets.
-          godot_executable_download_url: "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip"
-          godot_export_templates_download_url: "https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz"
-          
-          # This should be the path to the directory containing your 'project.godot' file.
-          relative_project_path: "./"
-          
-          # The preset names must exactly match the 'name' field in your export_presets.cfg.
-          presets_to_export: "Windows Desktop,Web,macOS,Linux"
-          
-          # This will create a .zip file for each exported platform.
-          archive_output: true
-
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: game-builds-v${{ steps.get_version.outputs.VERSION }}
-          path: ${{ steps.export.outputs.archive_directory }}
+          # The name of the export preset in your export_presets.cfg file.
+          export_preset: 'macOS'
+          # The directory where the build artifact will be placed.
+          build_path: 'build/macos'
