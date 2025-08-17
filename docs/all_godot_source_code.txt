@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 17 15:35:11 CDT 2025
+Generated on: Sun Aug 17 17:32:10 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -251,34 +251,109 @@ FILE: ./docs/TODO.txt
 ║      ██║   ╚██████╔╝██████╔╝╚██████╔╝                                        ║
 ║      ╚═╝    ╚═════╝ ╚═════╝  ╚═════╝                                         ║
 ║                                                                              ║
-║                  Immediate Work Items & Actionable Tasks                     ║
+║                    Strategic Development Plan & Actionable Tasks             ║
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                       PHASE 2: JUICE & FEEDBACK                      ██  ║
+║  ██              PHASE 1: FORTIFICATION & PRODUCTION PIPELINES           ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   The focus is now on tangible "game feel" to make interactions satisfying.  ║
+║   Goal: Build the safety net. Harden the project against regressions and     ║
+║   streamline core workflows to enable rapid, confident development.          ║
 ║                                                                              ║
-║   □  Implement Screen Shake via `FXManager` for player damage and boss attacks.
-║   □  Implement Hit-Stop via `FXManager` for close-range melee hits on the boss.
-║   □  Create and pool a basic "hit spark" particle effect via a new `VFXManager`.
-║   □  Implement the basic functionality for the `DialogueManager` and `DialogueBox`.
+║   █ Architecture & Testing                                                   ║
+║   ░ Implement the Automated Testing Framework (GUT) to safeguard all         ║
+║   ░ future work. This is the highest priority architectural task.            ║
+║   ░                                                                          ║
+║   ░ □ Integrate the Godot Unit Test (GUT) framework into src/tests/.         ║
+║   ░ □ Write initial unit tests for critical, non-visual components:          ║
+║   ░   - HealthComponent: Damage application, invincibility, death signal.    ║
+║   ░   - PlayerResourceComponent: Determination-to-charge conversion.         ║
+║   ░   - ObjectPool: get_instance/return_instance lifecycle.                  ║
+║   ░ □ Create a headless integration test to run an encounter for 600         ║
+║   ░   frames and assert that no errors are thrown.                           ║
+║   ░ □ Update the GitHub Actions CI workflow to run all tests on push.        ║
+║                                                                              ║
+║   █ Production & Tooling                                                     ║
+║   ░ Establish professional-grade tooling for debugging and UI management.    ║
+║   ░                                                                          ║
+║   ░ □ Implement a Centralized Logging System (LogManager.gd autoload)        ║
+║   ░   to replace all print() calls with structured, leveled logging.         ║
+║   ░ □ Create a central main_theme.tres resource to unify all UI fonts,       ║
+║   ░   colors, and styles, pulling values from Palette.gd.                    ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                     INDEFINITELY DEFERRED TASKS                      ██  ║
+║  ██            PHASE 2: CONTENT EXPANSION & VISUAL IDENTITY              ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Goal: Build out the core game experience and implement the signature       ║
+║   "Aesthetic Maximalism" visual identity through shaders and feedback.       ║
+║                                                                              ║
+║   █ Gameplay & Design                                                        ║
+║   ░ Transform the single encounter into a playable game loop.                ║
+║   ░                                                                          ║
+║   ░ □ Implement the Core Game Loop:                                          ║
+║   ░   - Create WorldState.tres to track defeated bosses.                     ║
+║   ░   - Create a SaveManager using ConfigFile to save/load progress.         ║
+║   ░   - Build a functional "Stage Select" screen.                            ║
+║   ░ □ Generalize the Boss Attack System to empower design:                   ║
+║   ░   - Expand AttackPattern.gd with an AttackType enum and more data.       ║
+║   ░   - Refactor StateBossAttack into a generic executor.                    ║
+║                                                                              ║
+║   █ Juice & Feedback (Game Feel) - CURRENT FOCUS                             ║
+║   ░ The focus is now on tangible "game feel" to make interactions satisfying.║
+║   ░                                                                          ║
+║   ░ □ Implement Screen Shake via FXManager for player damage and boss attacks║
+║   ░ □ Implement Hit-Stop via FXManager for close-range melee hits on boss.   ║
+║   ░ □ Create and pool a basic "hit spark" particle effect via VFXManager.    ║
+║   ░ □ Implement the Full Shader Strategy:                                    ║
+║   ░   - Develop an "FX Cookbook" registry in FXManager.                      ║
+║   ░   - Implement entity shaders (Hit-Flash, Dissolve).                      ║
+║   ░   - Implement UI shaders (SDF Panels for menus).                         ║
+║   ░   - Implement fullscreen shaders (Shockwave).                            ║
+║                                                                              ║
+║   █ Systems & Narrative                                                      ║
+║   ░ Flesh out supporting systems required for a complete experience.         ║
+║   ░                                                                          ║
+║   ░ □ Implement the basic functionality for the DialogueManager and          ║
+║   ░   DialogueBox to enable storytelling.                                    ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██              PHASE 3: POLISHING & PROFESSIONALIZATION                ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Goal: Add the features that elevate the project from a great prototype to  ║
+║   a shippable, high-quality product, focusing on accessibility and depth.    ║
+║                                                                              ║
+║   █ Accessibility & Internationalization                                     ║
+║   ░ Ensure the game is playable by the widest possible audience.             ║
+║   ░                                                                          ║
+║   ░ □ Abstract all user-facing text for localization using tr("KEY").        ║
+║   ░ □ Implement Control Remapping in the Controls Screen.                    ║
+║   ░ □ Implement Colorblind Modes via Palette texture swapping.               ║
+║                                                                              ║
+║   █ Advanced Mechanics & Game Feel                                           ║
+║   ░ Add mechanical depth and a final layer of authored polish.               ║
+║   ░                                                                          ║
+║   ░ □ Develop a Stun/Poise System for the boss to reward aggression.         ║
+║   ░ □ Refactor key moments (player attack, boss intros) to be driven by      ║
+║   ░   AnimationPlayer for more authored, cinematic sequences.                ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                    FUTURE CONSIDERATIONS & DEFERRED TASKS            ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   A list of lower-priority goals for future consideration.                   ║
 ║                                                                              ║
-║   ░  Fast-Fall: Holding 'Down' in the air increases gravity.                 ║
-║   ░  Diegetic UI Implementation (UI integrated into the game world).         ║
-║   ░  Advanced Boss AI (Adaptive tactics, environmental interaction).         ║
-║   ░  Player Loadout System (Alternative weapons or abilities).               ║
-║   ░  Special Game Modes (Boss Rush, Time Attack).                            ║
+║   ░ Fast-Fall: Holding 'Down' in the air increases gravity.                  ║
+║   ░ Diegetic UI Implementation (UI integrated into the game world).          ║
+║   ░ Advanced Boss AI (Adaptive tactics, environmental interaction).          ║
+║   ░ Player Loadout System (Alternative weapons or abilities).                ║
+║   ░ Special Game Modes (Boss Rush, Time Attack).                             ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
+
 
 =====================================
 FILE: ./docs/CHANGELOG_archive_pre-0.7.0.txt
@@ -298,477 +373,7 @@ FILE: ./docs/CHANGELOG_archive_pre-0.7.0.txt
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██           [0.7.0] - DATA-DRIVEN ARCHITECTURE - 2025-08-13            ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
-║                                                                              ║
-║      This version completes the transformation to a fully data-driven        ║
-║      architecture, implements robust memory management patterns, and         ║ 
-║      enhances the combat system with distance-based mechanics and            ║
-║      comprehensive scene validation tools.                                   ║                                                                 ║
-║                                                                              ║
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Unified the project's configuration system to be exclusively driven ║
-║      ░   by the `CombatDB` singleton and its `CombatConfig.tres` Resource.   ║
-║      ░   All legacy `Config.gd` calls have been removed for consistency.     ║
-║      ░ ■ Converted all gameplay tuning data into editor-friendly Resources   ║
-║      ░   with `@export_group` and `@export_range` hints for designer-friendly║
-║      ░   UI in the Godot Inspector.                                          ║
-║      ░ ■ Refactored the `BaseBoss` to be fully data-driven, with attack      ║
-║      ░   patterns for each phase assigned via exported arrays in Inspector,  ║
-║      ░   decoupling boss design from hard-coded script paths.                ║
-║      ░ ■ Unified the state machine architecture to be purely object-based,   ║
-║      ░   removing inconsistent lifecycle logic and implementing formal       ║
-║      ░   `teardown` patterns to prevent memory leaks and cyclic references.  ║
-║      ░ ■ Created a central, static `SceneValidator` utility to house all     ║
-║      ░   in-editor validation logic, adhering to the DRY principle.          ║
-║      ░ ■ Hardened the `Sequencer` by adding a `cancel_all()` method called   ║
-║      ░   by `SceneManager` during scene transitions, preventing sequences    ║
-║      ░   from running across scenes.                                         ║
-║      ░ ■ Hardened the `ObjectPool` against race conditions by deferring the  ║
-║      ░   deactivation of returned instances to prevent same-frame access.    ║
-║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Implemented a two-tier melee hitbox system using distance-based     ║
-║      ░   damage calculation, rewarding close-range attacks with higher damage║
-║      ░   while maintaining a single, wide hitbox for better usability.       ║
-║      ░ ■ The melee hitbox now dynamically changes shape and position for     ║
-║      ░   upward attacks, ensuring precise square coverage above the player.  ║
-║      ░ ■ Implemented in-editor scene validation for `BaseBoss` with warning  ║
-║      ░   icons in the Scene Tree when required component nodes are missing.  ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Reverted experimental attack and dash input buffering after         ║
-║      ░   playtesting revealed it negatively impacted the precise, deliberate ║
-║      ░   combat feel. Retained the existing responsive input model.          ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Hardened the player's pogo attack physics query to correctly iterate║
-║      ░   through all potential targets to find valid `IDamageable` objects,  ║
-║      ░   making the mechanic more reliable against complex colliders.        ║
-║      ░ ■ Resolved a critical race condition where the `ArenaBuilder` could   ║
-║      ░   finish building before the boss intro sequence spawned the boss by  ║
-║      ░   correctly awaiting a `SequenceHandle`.                              ║
-║      ░ ■ Correctly configured all projectile scenes with necessary metadata  ║
-║      ░   to ensure proper return to `ObjectPool` instead of deletion,        ║
-║      ░   preventing performance degradation.                                 ║
-║      ░ ■ Resolved a visual regression where boss phase indicators on the Game║
-║      ░   HUD were not initialized correctly with more performant styling.    ║
-║      ░ ■ Resolved a "modulo by zero" crash in the boss's idle state by adding║
-║      ░   guard clauses for cases where no attack patterns are assigned.      ║
-║      ░ ■ Resolved a critical race condition that caused crashes when Turret  ║
-║      ░   minions were destroyed.                                             ║
-║      ░ ■ Corrected resource loading errors caused by duplicated UIDs in      ║
-║      ░   `base_boss.tscn` and `combat_config.tres` files.                    ║
-║      ░ ■ Fixed asset database corruption by manually removing corrupted UID  ║
-║      ░   references, allowing Godot's importer to re-establish correct links.║
-║                                                                              ║
-║   █  Documentation                                                           ║
-║      ░ ■ Formalized the project's official Dependency Injection pattern in   ║
-║      ░   `ARCHITECTURE.txt` as "Owner-Driven Injection" within entity        ║
-║      ░   `_ready()` functions, leveraging Godot's lifecycle guarantees.      ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██            [0.6.0] - DYNAMIC ENCOUNTERS - 2025-08-11                 ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
-║                                                                              ║
-║      This version introduces dynamic multi-phase boss encounters, minion     ║
-║      support, widescreen compatibility, and comprehensive visual and         ║
-║      performance improvements to create engaging, scalable combat scenarios. ║                                                                 ║
-║                                                                              ║
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Hardened the `Sequencer` to return a `SequenceHandle`, allowing     ║
-║      ░   cinematic sequences to be safely cancelled to prevent state bugs.   ║
-║      ░ ■ Hardened the `ObjectPool` by replacing fragile, name-based node     ║
-║      ░   lookups with direct references, making the system more robust.      ║
-║      ░ ■ Decoupled game logic from screen resolution by creating `GridUtils` ║
-║      ░   singleton to handle conversions between tile and world coordinates. ║
-║      ░ ■ Implemented `CameraManager` to dynamically fit camera to arena's    ║
-║      ░   logical size, enabling support for non-square aspect ratios.        ║
-║      ░ ■ Enhanced `TerrainBuilder` to procedurally fill the entire camera    ║
-║      ░   viewport with background tiles, creating seamless play areas.       ║
-║      ░ ■ Created data-driven `AttackPattern` resources, allowing boss attack ║
-║      ░   properties to be designed and tuned in the editor instead of        ║
-║      ░   being hard-coded in scripts.                                        ║
-║      ░ ■ Implemented reusable `TelegraphComponent` scene to provide consistent║
-║      ░   visual warnings for all enemy attacks with context-aware displays.  ║
-║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Implemented dynamic, three-phase boss fight system where bosses     ║
-║      ░   become more aggressive as health decreases, using faster cooldowns  ║
-║      ░   and complex attack patterns in later phases.                        ║
-║      ░ ■ Added real-time phase indicator icons to Game HUD that visually     ║
-║      ░   represent the boss's current phase and deplete right-to-left.       ║
-║      ░ ■ Created templated boss death sequence using `Sequencer` for         ║
-║      ░   cinematic pause before victory screen appears.                      ║
-║      ░ ■ Implemented `ArmorComponent` to allow phases of boss invulnerability,║
-║      ░   supporting "armored lunge" attacks where boss becomes invulnerable  ║
-║      ░   and performs high-speed dashes across the arena.                    ║
-║      ░ ■ Implemented "Turret" minion enemy system with stationary enemies    ║
-║      ░   that detect players and fire projectiles, proving reusability of    ║
-║      ░   unified state machine and component architecture.                   ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Project display settings updated to widescreen 16:9 (1920x1080)    ║
-║      ░   from previous 1000x1000 square format for modern display support.   ║
-║      ░ ■ Refactored `BaseBoss` and state machine to be fully data-driven,    ║
-║      ░   with `AttackState` reading `AttackPattern` resources and `IdleState`║
-║      ░   responsible for pattern selection.                                  ║
-║      ░ ■ Enhanced Player's dash mechanic with momentum cancellation at end   ║
-║      ░   for precise "hard stop" feel and controlled aerial maneuvers.       ║
-║      ░ ■ `HealthComponent` now detects health threshold crossings and emits  ║
-║      ░   signals for phase transitions, and is "armor-aware" to check for    ║
-║      ░   active `ArmorComponent` before applying damage.                     ║
-║      ░ ■ Encounter system upgraded to support spawning lists of minions from ║
-║      ░   level layout files in addition to main bosses.                      ║
-║      ░ ■ Refactored procedural UI menus to use container nodes for better    ║
-║      ░   resizing behavior across different aspect ratios.                   ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Resolved potential memory leak in `EventBus` by implementing        ║
-║      ░   self-cleaning mechanism that automatically prunes dead subscriptions║
-║      ░   during emit cycles.                                                 ║
-║      ░ ■ Corrected several `async`/`await` errors in `Sequencer` and         ║
-║      ░   `CallableStep` to ensure reliable execution of async functions.     ║
-║      ░ ■ Resolved long-standing visual bug where debug collision shapes were ║
-║      ░   incorrectly culled at viewport edges by correcting engine's update  ║
-║      ░   order in `game.gd` scene.                                           ║
-║      ░ ■ Replaced all `ColorRect` nodes used for in-world visuals with       ║
-║      ░   `Polygon2D` nodes to prevent potential rendering conflicts.         ║
-║      ░ ■ Fixed critical race condition where killing boss would not trigger  ║
-║      ░   victory screen by moving logic to global `EventBus`.                ║
-║      ░ ■ Resolved "zombie attack" bug where boss could still fire projectiles║
-║      ░   after dying by adding `_is_dead` state flag.                        ║
-║      ░ ■ Fixed bug where active projectiles persisted across scene           ║
-║      ░   transitions by adding global reset function to `ObjectPool`.        ║
-║      ░ ■ Resolved bug where turrets stopped firing after few shots by        ║
-║      ░   refactoring state machine logic to be continuous rather than        ║
-║      ░   reliant on one-shot `await` calls in enter functions.               ║
-║      ░ ■ Fixed critical bug where projectiles were permanently deleted       ║
-║      ░   instead of returned to `ObjectPool` by creating dedicated           ║
-║      ░   `TurretShot` scene with correct pooling metadata.                   ║
-║      ░ ■ Addressed several minor UI layout bugs for better consistency       ║
-║      ░   across different screen resolutions.                                ║
-║                                                                              ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██          [0.5.0] - ARCHITECTURAL UNIFICATION - 2025-08-10            ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
-║                                                                              ║
-║      This version completes a foundational architectural refactor,           ║
-║      unifying the player and boss state machines, introducing a robust       ║
-║      interface-based damage system, and fully decoupling all entity          ║ 
-║      components to create a highly scalable and maintainable codebase.       ║                                                                 ║
-║                                                                              ║
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Introduced a robust, interface-based damage system (`IDamageable`)  ║
-║      ░   to formalize how entities receive damage, replacing fragile,        ║
-║      ░   string-based lookups with a type-safe contract.                     ║
-║      ░ ■ Created a new `CombatUtils` singleton to provide a robust,          ║
-║      ░   tree-traversing utility for finding `HealthComponent` nodes from any║
-║      ░   physics collider, eliminating brittle `get_node` lookups.           ║
-║      ░ ■ Decoupled `CombatComponent` from the `Player` by replacing direct   ║
-║      ░   state and velocity mutation with a `pogo_bounce_requested` signal,  ║
-║      ░   adhering to the Dependency Inversion Principle.                     ║
-║      ░ ■ Created a new `SceneManager` autoload to centralize all scene       ║
-║      ░   transition logic, providing a single, robust API for navigation.    ║
-║      ░ ■ Implemented state validation in `PlayerStateData` and `BossStateData`║
-║      ░   using property setters. This makes the data resources self-validating
-║      ░   and prevents invalid states (e.g., health > max_health).            ║
-║      ░ ■ Created a formal `ComponentInterface` to act as a standardized      ║
-║      ░   blueprint for all entity components, enforcing a consistent API.    ║
-║      ░ ■ Refactored `GameManager` to use a `GameStateData` resource,         ║
-║      ░   eliminating the "dual architecture" of stateful singletons. All     ║
-║      ░   runtime state is now consistently managed through `Resource` objects.║
-║      ░ ■ Replaced the JSON-based `Config.gd` system with a type-safe,        ║
-║      ░   `Resource`-based system (`CombatConfig.tres` and `CombatDB.gd`).    ║
-║      ░   This provides compile-time safety against typos and enables direct  ║
-║      ░   gameplay value tuning in the Godot editor's Inspector.              ║
-║      ░ ■ Refactored the Player's state machine to load its state scripts at  ║
-║      ░   runtime in `_ready()` instead of using `preload()`. This breaks a   ║
-║      ░   brittle parse-time dependency cycle, making the game's startup      ║
-║      ░   sequence significantly more robust.                                 ║
-║      ░ ■ Further refined the `src/core` directory structure, creating new    ║
-║      ░   subdirectories for typed configs and events (`data/config`, `events/typed_events`).║
-║      ░ ■ Standardized script filenames to snake_case (e.g., `Config.gd` ->   ║
-║      ░   `config.gd`) for project-wide consistency.                          ║
-║      ░ ■ Reorganized the monolithic `src` directory into purpose-driven      ║
-║      ░   subdirectories (`building`, `data`, `systems`, `util`, etc.) to     ║
-║      ░   improve project modularity and scalability.                         ║
-║      ░ ■ Simplified the global `EventBus` by removing unused features like   ║
-║      ░   the priority system and `emit_async`, resulting in a leaner         ║
-║      ░   implementation.                                                     ║
-║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState`   ║
-║      ░   to unify all entity state management, removing duplicated code.     ║
-║      ░ ■ Refactored the Player to use the new `BaseStateMachine`, simplifying║
-║      ░   the main `player.gd` script and delegating all state logic.         ║
-║      ░ ■ Refactored the `BaseBoss` to use the new `BaseStateMachine`,        ║
-║      ░   unifying the state management architecture across all entities and  ║
-║      ░   removing the final piece of duplicated state logic.                 ║
-║      ░ ■ Decoupled all Components from their owners by passing dependencies  ║
-║      ░   (data resources, other components) explicitly through a dictionary  ║
-║      ░   in the `setup()` method, adhering to Dependency Inversion.          ║
-║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState`   ║
-║      ░   to unify all entity state management, removing duplicated code.     ║
-║      ░ ■ Refactored the `BaseBoss` to use the new `BaseStateMachine`,        ║
-║      ░   unifying the state management architecture across all entities.     ║
-║      ░ ■ Simplified the `EventBus` API by removing the unused `_source`      ║
-║      ░   parameter from the `emit` function.                                 ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Renamed `HealthComponent.take_damage` to `apply_damage` to          ║
-║      ░   conform to the new interface contract.                              ║
-║      ░ ■ Refactored `CombatUtils` to find any `IDamageable` node, not just   ║
-║      ░   a `HealthComponent`.                                                ║
-║      ░ ■ Updated all damage sources (projectiles, melee, pogo, contact)      ║
-║      ░   to use the new `CombatUtils.find_damageable` method.                ║
-║      ░ ■ Refactored all UI screens and core game scripts to use the new      ║
-║      ░   `SceneManager`, removing scattered `get_tree().change_scene` calls. ║
-║      ░ ■ Refactored `HealthComponent` to initialize the new self-validating  ║
-║      ░   data resources, simplifying its internal logic.                     ║
-║      ░ ■ Refactored `CombatComponent` and `InputComponent` to extend the new ║
-║      ░   `ComponentInterface`, standardizing the entire component architecture.║
-║      ░ ■ Updated `player.gd` to use the standardized `setup` and `teardown`  ║
-║      ░   methods for all its components.                                     ║
-║      ░ ■ Refactored `HealthComponent` to extend the new `ComponentInterface` ║
-║      ░   and use a more robust `is_in_group` check for its setup logic.      ║
-║      ░ ■ Reorganized `AssetPaths.gd` by feature/system for improved clarity. ║
-║      ░ ■ Added a validation system to `AssetPaths.gd` that checks for missing║
-║      ░   files at startup, preventing runtime "file not found" errors.       ║
-║      ░ ■ Added validation to `Settings.gd` property setters to clamp audio   ║
-║      ░   volume values, making the system more robust against invalid data.  ║
-║      ░ ■ Cleaned up all remaining GDScript static analysis warnings          ║
-║      ░   (`UNUSED_PARAMETER`, `SHADOWED_VARIABLE`) for a clean build.        ║
-║      ░ ■ Removed dead/broken event definitions from `EventCatalog` and       ║
-║      ░   removed the corresponding broken logic from `EncounterDirector`.    ║
-║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Added placeholder `README.md` and `DEPRECATION.md` files to `core`, ║
-║      ░   `entities`, and `docs` to establish a documentation framework.      ║
-║                                                                              ║
-║   █  Documentation                                                           ║
-║      ░ ■ Improved header comments in `Constants.gd` and `PhysicsLayers.gd`   ║
-║      ░   to clarify their intended purpose and prevent architectural drift.  ║
-║      ░ ■ Completed Sprint 0 architectural audit.                             ║
-║      ░ ■ Added `docs/sprint_0_audit` directory to house analysis files.      ║
-║      ░ ■ Generated audit reports for singletons, event usage, and config usage.║
-║      ░ ■ Added `ADR-001` to formally document the existing Service Locator pattern.║
-║      ░ ■ Added `FSM-001` to diagram the Player and Boss state machines.      ║
-║      ░ ■ Created placeholder documents for testing (`TEST-*`) and refactoring║
-║      ░   principles (`ARCH-*`) to guide future sprints.                      ║
-║      ░ ■ Added `ADR-002_Communication_Patterns.md` to formally document the  ║
-║      ░   project's standard for using Godot Signals (local communication)   ║
-║      ░   vs. the EventBus (global communication).                            ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Resolved a complex series of bugs causing the pogo mechanic to be   ║
-║      ░   unreliable. The attack now consistently damages the boss, bounces off║
-║      ░   projectiles, and can be executed repeatedly on the ground without   ║
-║      ░   "misfiring".                                                        ║
-║      ░ ■ Unified the ground and air pogo logic into a single, physics-driven ║
-║      ░   system that correctly handles all valid bounce surfaces (enemies,   ║
-║      ░   projectiles, and world geometry).                                   ║
-║      ░ ■ Separated the pogo mechanic from the melee attack cooldown, allowing║
-║      ░   the player to seamlessly transition between bouncing and landing.   ║
-║      ░ ■ Corrected the pogo's physics query to include `Area2D` nodes,       ║
-║      ░   restoring its ability to detect and destroy projectiles.            ║
-║      ░ ■ Resolved a memory leak by ensuring the `GameManager` frees its      ║
-║      ░   `GameStateData` resource in `_exit_tree`.                           ║
-║      ░ ■ Fixed a critical parse error by removing a conflicting `class_name` ║
-║      ░   from the `SceneManager` autoload script.                            ║
-║      ░ ■ Added missing `max_health` property to `BossStateData` to resolve a ║
-║      ░   crash when the boss took damage.                                    ║
-║      ░ ■ Resolved a crash caused by using the non-existent `has()` method in ║
-║      ░   `HealthComponent`; replaced with a more robust `is_in_group()` check.║
-║      ░ ■ Corrected invalid GDScript 4 dictionary access syntax in `player.gd`.║
-║      ░ ■ Removed the invalid `override` keyword from `HealthComponent`, which ║
-║      ░   was causing a critical parse error.                                 ║
-║      ░ ■ Corrected the argument order in `HealthComponent.setup` calls to    ║
-║      ░   match the newly defined `ComponentInterface` contract.              ║
-║      ░ ■ Resolved a parse-time dependency error by ensuring `GameStateData`  ║
-║      ░   is loaded at runtime in `GameManager`, preventing a startup crash.  ║
-║      ░ ■ Resolved a cascade of parse errors by correcting the implementation ║
-║      ░   of the new `CombatConfig` resource and refactoring dependent scripts.║
-║      ░ ■ Corrected multiple typos and syntax errors in player state scripts  ║
-║      ░   (`state_attack.gd`, `state_hurt.gd`, `state_wall_slide.gd`) that    ║
-║      ░   were causing crashes during gameplay.                               ║
-║      ░ ■ Updated all autoload paths in `project.godot` to reflect the new    ║
-║      ░   `core` directory structure, resolving all 'File not found' errors.  ║
-║      ░ ■ Fixed a critical race condition where player contact damage could   ║
-║      ░   interrupt a pogo attack, preventing the pogo from dealing damage.   ║
-║      ░ ■ Resolved a critical bug where the Player and Boss would receive the ║
-║      ░   wrong invincibility durations. Moved `add_to_group()` to the top of ║
-║      ░   `_ready()` to ensure entities are correctly identified before their ║
-║      ░   components are configured.                                          ║
-║      ░ ■ Restored player knockback and invincibility, which were failing due ║
-║      ░   to the incorrect invincibility timer.                               ║
-║      ░ ■ The `Hurt` state now correctly uses its own short `knockback_timer` ║
-║      ░   for stun duration, decoupled from the longer invincibility timer.   ║
-║      ░ ■ Implemented robust `teardown` methods in the state machine and all  ║
-║      ░   components to prevent potential memory leaks from cyclic references.║
-║      ░ ■ Corrected all calls to `EventBus.emit` to match the new, simpler    ║
-║      ░   2-argument signature, resolving a crash.                            ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██            [0.4.0] - THE COMPONENT REFACTOR - 2025-08-09             ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This version completes the migration to a fully component-based entity     ║
-║   architecture, enhances performance, and resolves all known bugs for a      ║
-║   stable, production-ready foundation.                                       ║
-║                                                                              ║
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Refactored the monolithic `player.gd` script into a component-based ║
-║      ░   architecture, adhering to the Single Responsibility Principle.      ║
-║      ░ ■ Created a `HealthComponent` to manage all health, damage, and       ║
-║      ░   invincibility logic, making it reusable for other entities.         ║
-║      ░ ■ Created a `CombatComponent` to centralize player attack logic.      ║
-║      ░ ■ Created an `InputComponent` to decouple input polling from the player.║
-║      ░ ■ Created a `PlayerStateData` resource to act as a central data       ║
-║      ░   container, decoupling state from the Player node itself.            ║
-║      ░ ■ Refactored `ArenaBuilder` to be data-driven, reading the layout file║
-║      ░   path from a constant in the encounter script, removing brittle      ║
-║      ░   string manipulation logic.                                          ║
-║      ░ ■ Decoupled `GlobalHUD` from specific menu scenes by making its       ║
-║      ░   visibility fully event-driven (`MENU_OPENED`, `MENU_CLOSED`),       ║
-║      ░   resolving an Open/Closed Principle violation.                       ║
-║      ░ ■ Refactored the monolithic `base_boss.gd` script into a component-   ║
-║      ░   based architecture, adhering to SRP and mirroring the Player's design.║
-║      ░ ■ Created `BossStateData.gd` resource to act as a central data        ║
-║      ░   container, decoupling the boss's state from the node itself.        ║
-║                                                                              ║
-║   █  Performance                                                             ║
-║      ░ ■ Implemented a robust, generic `ObjectPool` singleton to manage      ║
-║      ░   reusable nodes like projectiles.                                    ║
-║      ░ ■ Refactored Player and Boss to get/return projectiles from the pool, ║
-║      ░   eliminating runtime instantiation to prevent GC spikes and stutter. ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Refactored `Sequencer.gd` to use type-safe `SequenceStep` resources ║
-║      ░   instead of ad-hoc dictionaries, preventing runtime errors and       ║
-║      ░   improving editor autocompletion.                                    ║
-║      ░ ■ Refactored `AudioManager.gd` and `GlobalHUD` to be event-driven,    ║
-║      ░   subscribing to a new `audio_settings_changed` signal instead of     ║
-║      ░   polling for changes every frame.                                    ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Resolved a complex circular dependency parse error between the Player║
-║      ░   and its new components by fully decoupling them with signals.       ║
-║      ░ ■ Fixed a bug where the boss was immune to rapid attacks by giving it ║
-║      ░   a unique, shorter invincibility duration in the project config.     ║
-║      ░ ■ Fixed a bug where player's body dealt rapid contact damage to the boss.║
-║      ░ ■ Unified all damage-dealing logic (melee, pogo, projectile, contact) ║
-║      ░   to consistently and correctly interact with the target's HealthComponent.║
-║      ░ ■ Fixed a visual bug where the Boss's hit-flash color would not reset ║
-║      ░   correctly by ensuring the correct initialization order in `base_boss.gd`.║
-║      ░ ■ Resolved an audio stream memory leak on exit by implementing a      ║
-║      ░   robust cleanup handler for `NOTIFICATION_WM_CLOSE_REQUEST`.         ║
-║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
-║      ░   unnecessary `preload` calls for scripts with a `class_name`.        ║
-║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║
-║      ░   use a signal-based, non-re-parenting architecture that is immune to ║
-║      ░   race conditions.                                                    ║
-║      ░ ■ Resolved all memory leaks by implementing proper cleanup in         ║
-║      ░   `_exit_tree` for all state machines, components, and singletons.    ║
-║      ░ ■ Resolved a leak caused by creating orphaned nodes in `ArenaBuilder`.║
-║      ░ ■ Corrected `Config.gd` to ensure deterministic config loading.       ║
-║      ░ ■ Fixed a critical crash in the `EventBus` related to polymorphism.   ║
-║      ░ ■ Resolved all remaining static analysis warnings for a clean build.  ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██             [0.3.0] - THE VISUAL FOUNDATION - 2025-08-08             ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This version completes the core architectural refactor and establishes the ║
-║   foundational visual and data-driven systems for the entire project.        ║
-║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Implemented the `Palette.gd` autoload singleton, which defines a    ║
-║      ░   project-wide 32-step grayscale value scale.                         ║
-║      ░ ■ Added semantic color constants (e.g., `COLOR_PLAYER`) to establish a║
-║      ░   clear visual hierarchy for all game elements.                       ║
-║      ░ ■ Implemented the `Config.gd` autoload for loading all `.json` files. ║
-║      ░ ■ Created `combat_config.json` to house all gameplay-related tuning.  ║
-║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event.   ║
-║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog`.║
-║      ░ ■ Implemented a professional-grade, singleton-based Event Bus.        ║
-║      ░ ■ Added an `EventCatalog` and typed `Resource`-based event payloads.  ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Refactored Player, Boss, Projectiles, and TerrainBuilder to source  ║
-║      ░   all their colors from the new `Palette` singleton.                  ║
-║      ░ ■ The game world is now visually rendered with a consistent value scale.║
-║      ░ ■ Refactored the entire codebase to be data-driven via `Config.gd`.   ║
-║      ░ ■ The `Constants.gd` singleton has been streamlined.                  ║
-║      ░ ■ The `EncounterDirector` now uses the `Sequencer` for boss intros.   ║
-║      ░ ■ The main `game.gd` scene now handles the global pause state.        ║
-║      ░ ■ Refactored the `GameHUD` to be fully driven by the Event Bus.       ║
-║      ░ ■ Refactored the ArenaBuilder to strictly adhere to SRP.              ║
-║      ░ ■ Refactored the BaseBoss and Player nodes to use the State Pattern.  ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Resolved a cascade of parse errors in `Palette.gd` by using the     ║
-║      ░   `Color("#hex")` constructor, which is a valid constant expression.  ║
-║      ░ ■ Corrected `Palette.gd` to extend `Node` so it can be autoloaded.    ║
-║      ░ ■ Renamed `Config.get()` to `Config.get_value()` to resolve a conflict.║
-║      ░ ■ Resolved `SHADOWED_GLOBAL_IDENTIFIER` warnings in `base_boss.gd`.   ║
-║      ░ ■ Resolved `Identifier not declared` errors in `player.gd`.           ║
-║      ░ ■ Resolved bug where Player hit flash timer would not reset.          ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██        [0.2.0] - THE ARCHITECTURAL REFACTOR - 2025-08-07             ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This version represents a foundational overhaul of the project's technical ║
-║   architecture. The focus was on implementing professional design patterns   ║
-║   (SOLID, State Pattern) and eliminating performance issues to prepare for   ║
-║   future content and feature development.                                    ║
-║                                                                              ║
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system ║
-║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
-║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
-║      ░   prevent any "first-appearance" hitches for entities.                ║
-║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
-║      ░   the official documentation.                                         ║
-║                                                                              ║
-║   █  Bug Fixes                                                               ║
-║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
-║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
-║      ░ ■ Resolved a physics crash on entity death by using `call_deferred`   ║
-║      ░   for scene transitions.                                              ║
-║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
-║                                                                              ║
-║   █  Documentation                                                           ║
-║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
-║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
-║      ░   design philosophies, patterns, and planned features.                ║
-║                                                                              ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                       [0.1.0] - 2025-08-05                           ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║                                                                              ║
-║   This version marks the initial architectural overhaul, transforming the    ║
-║   project from a functional prototype into a robust and scalable foundation. ║
-║                                                                              ║
-║   █  Added                                                                   ║
-║      ░ ■ Player Character with rich moveset (dash, wall-jump, etc.).         ║
-║      ░ ■ Combat System with melee, charged shot, and pogo mechanics.         ║
-║      ░ ■ "Determination" healing system & Data-Driven Arena system.          ║
-║      ░ ■ Basic Boss entity framework & Reusable Menu System.                 ║
-║      ░ ■ Full suite of initial project documentation (.txt files).           ║
-║                                                                              ║
-║   █  Changed                                                                 ║
-║      ░ ■ Complete Architectural Refactor to use professional design patterns.║
-║      ░ ■ Player Logic: Migrated from boolean flags to a formal FSM.          ║
-║      ░ ■ Global Singletons: Centralized constants and asset paths.           ║
-║      ░ ■ File Organization: Restructured project directories.                ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Restored player contact damage from enemies and hazards.            ║
-║      ░ ■ Fully restored the pogo mechanic.                                   ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+
 
 
 
@@ -2087,91 +1692,10 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
-
-║      This version introduces a complete, professional-grade Continuous       ║
-║      Integration and Deployment (CI/CD) pipeline. The build, packaging,      ║
-║      and release process for all target platforms is now fully automated,    ║
-║      ensuring consistent, repeatable, and error-free distributions.          ║
 ║                                                                              ║
-║   █  CI & Tooling                                                            ║
-║      ░ ■ Implemented a new, multi-job GitHub Actions workflow defined in     ║
-║      ░   `.github/workflows/main.yml`. This pipeline automates two key       ║
-║      ░   development cycles:                                                 ║
-║      ░   - **Development Builds:** On every push to the `main` branch, the   ║
-║      ░     workflow automatically compiles the game for all target platforms ║
-║      ░     and saves the results as downloadable `Artifacts` for internal    ║
-║      ░     testing and validation.                                           ║
-║      ░   - **Public Releases:** When a new version tag (e.g., `v0.10.4`) is  ║
-║      ░     pushed, the workflow performs all builds and then automatically   ║
-║      ░     creates a new, public GitHub Release, attaching the final,        ║
-║      ░     polished game packages for the community.                         ║
-║      ░ ■ Configured four parallel build jobs to compile and export the game  ║
-║      ░   for **Windows**, **macOS**, **Linux**, and **Web**, ensuring that    ║
-║      ░   cross-platform compatibility is tested continuously.                ║
-║      ░ ■ Solved a critical build dependency by integrating dynamic           ║
-║      ░   installation of Godot's export templates. The workflow now downloads ║
-║      ░   the official `.tpz` archive, unpacks it, and correctly places the   ║
-║      ░   template files in the expected directory, making the CI environment ║
-║      ░   fully self-contained and resolving all "template not found" errors. ║
-║      ░ ■ Implemented a robust post-build packaging and polishing strategy:   ║
-║      ░   - **Asset Packaging:** All build outputs are now automatically      ║
-║      ░     packaged into clean, platform-specific `.zip` archives. This      ║
-║      ░     resolves the issue of a cluttered release page and provides users 
-║      ░     with a simple, single download per platform.                      
-║      ░   - **Filename Standardization:** Release assets are now consistently 
-║      ░     named to clearly identify their target platform (e.g.,           
-║      ░     `BOX-BATTLE-windows.zip`, `BOX-BATTLE-mac.zip`).                   
-║      ░ ■ Resolved a critical asset upload conflict caused by filename        ║
-║      ░   collisions between the Windows and Linux `.pck` files. This was     ║
-║      ░   fixed with a pre-packaging rename step in the workflow.             ║
-║      ░ ■ Correctly configured workflow permissions by adding                 ║
-║      ░   `permissions: contents: write` to grant the `GITHUB_TOKEN` the      ║
-║      ░   necessary scope to publish releases, fixing a `403 Forbidden` error.║
-║                                                                              ║
-
-
-
-
-
-
-
-
-
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                 [0.9.0] - NO TITLE YET - 2025-XX-XX                  ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
-
-
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Refactored the monolithic `player.gd` script by abstracting its     ║
-║      ░   core responsibilities into three new, single-purpose components:    ║
-║      ░   - `PlayerPhysicsComponent`: Now exclusively handles `move_and_slide`, gravity, and contact damage.
-║      ░   - `PlayerAbilityComponent`: Manages the activation logic for all player actions (dash, heal, attack).
-║      ░   - `PlayerResourceComponent`: Manages the economy of determination and healing charges.
-║      ░ ■ Simplified the `Player` script to act as a pure "Orchestrator,"     ║
-║      ░   responsible only for initializing components and handling signals.  ║
-║      ░   The main `_physics_process` loop has been removed from `player.gd`. ║
-║      ░ ■ Formalized the `IComponent` and `IDamageable` interface contracts   ║
-║      ░   and applied them consistently across all relevant components.       ║
-║                                                                              ║
-║   █  Code Quality & Tooling                                                  ║
-║      ░ ■ Established and applied a formal, project-wide cosmetic standard to ║
-║      ░   every script file, standardizing layout, naming, and formatting.    ║
-║      ░ ■ Implemented Godot-style docstrings (`##`) for all classes, methods, ║
-║      ░   and variables, providing proper in-editor tooltips and integrated help.║
-║      ░ ■ Enforced full type hinting for all function arguments and return    ║
-║      ░   values across the entire codebase to improve static safety.         ║
-║      ░ ■ Enhanced shader pre-warming to include entity actions, significantly║
-║      ░   reducing first-action stutter at the start of a match.              ║
-║                                                                              ║
-║   █  Removed                                                                 ║
-║      ░ ■ Deleted all obsolete arena baking and layout scripts (`ArenaBakerTest`,
-║      ░   `ArenaStage`, `arena_00_layout.gd`, `arena_00_encounter.gd`).       ║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Resolved all parse errors and static analysis warnings, including   ║
-║      ░   autoload name collisions, incorrect static calls, and missing `@tool`
-║      ░   annotations, for a completely clean build.                          ║
+║  ██         [0.10.0] - CI & DEPLOYMENT AUTOMATION - XX/XX/XXXX           ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 
 
@@ -2179,327 +1703,577 @@ FILE: ./docs/CHANGELOG.txt
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+║                                                                              ║
+║   AUTOMATED BUILD & RELEASE WORKFLOW                                         ║
+║   Implemented a multi-job GitHub Actions workflow to automate the entire     ║
+║   build, test, and release cycle for both development and public releases.   ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  CI & Tooling                                                            ║
+║      ░ ■ Implemented a new GitHub Actions workflow (`main.yml`) that automatically║
+║      ░   builds and packages the game for all target platforms.              ║
+║      ░ ■ The pipeline automates two key cycles:                              ║
+║      ░   - On push to `main`: Compiles builds and saves them as downloadable ║
+║      ░     `Artifacts` for internal testing.                                 ║
+║      ░   - On version tag (`v*`): Performs all builds and creates a new, public
+║      ░     GitHub Release with the final game packages attached.             ║
+║                                                                              ║
+║   CROSS-PLATFORM EXPORT & DEPENDENCY MANAGEMENT                              ║
+║   Configured the pipeline for full cross-platform compatibility and solved   ║
+║   critical dependencies to make the CI environment fully self-contained.     ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  CI & Tooling                                                            ║
+║      ░ ■ Configured four parallel build jobs to compile and export for       ║
+║      ░   Windows, macOS, Linux, and Web, ensuring continuous compatibility.  ║
+║      ░ ■ Solved a critical build dependency by automating the download and   ║
+║      ░   installation of Godot's export templates within the CI environment. ║
+║                                                                              ║
+║   ASSET PACKAGING & PUBLISHING                                               ║
+║   Implemented a robust post-build strategy for packaging and publishing      ║
+║   release assets, resolving several critical deployment errors.              ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  CI & Tooling                                                            ║
+║      ░ ■ Standardized release assets by packaging all builds into clean,     ║
+║      ░   platform-specific `.zip` archives with consistent filenames.        ║
+║      ░ ■ Fixed GitHub Release publishing by resolving asset filename         ║
+║      ░   collisions and correcting workflow permissions (`403 Forbidden` error).║
+║                                                                              ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██         [0.9.0] - CODEBASE STANDARDIZATION - 08/15/2025              ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║      This version completes a full-scale refactor of the entire codebase to  ║
 ║      enhance modularity and establish a strict, project-wide code style for  ║
 ║      readability, consistency, and in-editor documentation.                  ║
 ║                                                                              ║
+║   PLAYER COMPONENT REFACTOR                                                  ║
+║   Deconstructed the monolithic Player script into a collection of single-    ║
+║   responsibility components, transforming the Player into a pure orchestrator.║
+║   ────────────────────────────────────────────────────────────────────────   ║
 ║   █  Architectural Changes                                                   ║
-║      ░ ■ Refactored the monolithic `player.gd` script by abstracting its     ║
-║      ░   core responsibilities into three new, single-purpose components:    ║
-║      ░   - `PlayerPhysicsComponent`: Now exclusively handles `move_and_slide`, gravity, and contact damage.
-║      ░   - `PlayerAbilityComponent`: Manages the activation logic for all player actions (dash, heal, attack).
-║      ░   - `PlayerResourceComponent`: Manages the economy of determination and healing charges.
-║      ░ ■ Simplified the `Player` script to act as a pure "Orchestrator,"     ║
-║      ░   responsible only for initializing components and handling signals.  ║
-║      ░   The main `_physics_process` loop has been removed from `player.gd`. ║
+║      ░ ■ Refactored `player.gd` by abstracting its core duties into three new,║
+║      ░   single-purpose components:                                          ║
+║      ░   - `PlayerPhysicsComponent`: Handles `move_and_slide` and contact damage.║
+║      ░   - `PlayerAbilityComponent`: Manages activation logic for actions.   ║
+║      ░   - `PlayerResourceComponent`: Manages determination and healing charges.║
+║      ░ ■ The main `_physics_process` loop has been removed from `player.gd`. ║
+║      ░ ■ Formalized the `IComponent` and `IDamageable` interface contracts   ║
+║      ░   and applied them consistently across all relevant components.       ║
 ║                                                                              ║
+║   PROJECT-WIDE CODE QUALITY & STYLE STANDARDIZATION                          ║
+║   Established and applied a formal cosmetic and documentation standard to    ║
+║   every script file, enforcing type safety and in-editor documentation.      ║
+║   ────────────────────────────────────────────────────────────────────────   ║
 ║   █  Code Quality & Tooling                                                  ║
-║      ░ ■ Established and applied a formal, project-wide cosmetic standard to ║
-║      ░   every script file. All scripts now follow a consistent layout:      ║
-║      ░   file path header, docstring, signals, enums, constants, exports,    ║
-║      ░   variables, lifecycle methods, public methods, and signal handlers.  ║
-║      ░ ■ Implemented Godot-style docstrings (`##`) for all classes, methods, ║
-║      ░   and variables, providing proper in-editor tooltips and integrated help.║
+║      ░ ■ Established a formal, project-wide script structure standard (header,║
+║      ░   docstring, signals, enums, exports, methods, etc.).                 ║
+║      ░ ■ Implemented Godot-style docstrings (`##`) for all classes and methods,║
+║      ░   providing in-editor tooltips and integrated help.                   ║
 ║      ░ ■ Enforced full type hinting for all function arguments and return    ║
 ║      ░   values across the entire codebase to improve static safety.         ║
 ║                                                                              ║
+║   DATA-DRIVEN ENCOUNTER REFACTOR                                             ║
+║   Completed the migration of level and encounter definitions from scripts to ║
+║   data-driven, designer-friendly Resource files.                             ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Moved all arena data from hardcoded `.gd` scripts into new          ║
+║      ░   `EncounterData.tres` and `LevelLayout.tres` custom resources.       ║
+║      ░ ■ Updated `ArenaBuilder` and `LevelParser` to be fully data-driven by ║
+║      ░   loading and parsing these new `.tres` files at runtime.             ║
 ║   █  Removed                                                                 ║
-║      ░ ■ Deleted the obsolete `arena_00_encounter.gd` and `arena_00_layout.gd`║
-║      ░   scripts, which were fully replaced by the `.tres` resource system.  ║
+║      ░ ■ Deleted all obsolete encounter and layout `.gd` scripts.            ║
 ║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Resolved a fundamental architectural conflict by removing `class_name`║
-║      ░   declarations from all autoloaded singletons, fixing a cascade of    ║
-║      ░   "hides an autoload singleton" parse errors.                          ║
-║      ░ ■ Resolved all `MISSING_TOOL` warnings by removing the erroneous      ║
-║      ░   `@tool` annotation from the abstract `BaseState` class.             ║
-║      ░ ■ Corrected an invalid `static` function call in `base_boss.gd` by    ║
-║      ░   adding the missing `static` keyword to `SceneValidator.gd`.         ║
-║      ░ ■ Corrected all remaining `STATIC_CALLED_ON_INSTANCE` warnings by     ║
-║      ░   using the correct script-class syntax for static method calls.      ║
-║      ░ ■ Fixed a parse error in `HealthComponent` caused by an invalid       ║
-║      ░   `get()` call with a default parameter on a Resource.                ║
-║      ░ ■ Resolved a variable scoping error in `base_boss.gd` after renaming  ║
-║      ░   the `player` reference to `_player`.                                ║
-║                                                                              ║
-
-
-
--------
-
-
-║      This  completes a major refactor of the Player entity to enhance ║
-║      modularity and establishes a strict, project-wide code style standard   ║
-║      to improve readability, consistency, and in-editor documentation.       ║
-║                                                                              ║
+║   SYSTEM ABSTRACTION & DEV TOOLING                                           ║
+║   Decoupled core systems, improved designer workflows, and added a robust    ║
+║   real-time debugging tool.                                                  ║
+║   ────────────────────────────────────────────────────────────────────────   ║
 ║   █  Architectural Changes                                                   ║
-║      ░ ■ Refactored the monolithic `player.gd` script by abstracting its     ║
-║      ░   core responsibilities into three new, single-purpose components:    ║
-║      ░   - `PlayerPhysicsComponent`: Now exclusively handles `move_and_slide`, gravity, and contact damage detection.
-║      ░   - `PlayerAbilityComponent`: Manages the activation logic and rules for all player actions (dash, heal, attack).
-║      ░   - `PlayerResourceComponent`: Manages the "economy" of determination and healing charges.
-║      ░ ■ Simplified the `Player` script to act as a pure "Orchestrator,"     ║
-║      ░   responsible only for initializing components and handling signals.  ║
-║      ░   The main `_physics_process` loop has been removed from `player.gd`. ║
-║                                                                              ║
-║   █  Code Quality & Tooling                                                  ║
-║      ░ ■ Established a formal, project-wide cosmetic restructuring standard. ║
-║      ░   All scripts now follow a consistent layout: file path header,       ║
-║      ░   docstring, signals, enums, constants, exports, variables, lifecycle ║
-║      ░   methods, public methods, private methods, and signal handlers.      ║
-║      ░ ■ Implemented Godot-style docstrings (`##`) for all key classes,      ║
-║      ░   functions, and variables, providing proper in-editor tooltips and   ║
-║      ░   integrated help documentation.                                      ║
-║      ░ ■ Enforced full type hinting for all function arguments and return    ║
-║      ░   values across the refactored player scripts to improve static safety.║
-║                                                                              ║
-║   █  Fixed                                                                   ║
-║      ░ ■ Resolved all static analysis warnings introduced by the refactor,   ║
-║      ░   including `UNUSED_PARAMETER`, `UNUSED_SIGNAL`, and                  ║
-║      ░   `STATIC_CALLED_ON_INSTANCE` errors in the player components.        ║
-║                                                                              ║
-
--------
-
-║   █  Architectural Changes                                                   ║
-║      ░ ■ Abstracted the input system by refactoring `InputComponent` to use a║
-║      ░   command buffer. All player states now read from this buffer         ║
-║      ░   instead of polling the global `Input` singleton, fully decoupling   ║
-║      ░   game logic from hardware input.                                     ║
-║      ░ ■ Centralized core physics logic by creating an `apply_gravity`       ║
-║      ░   helper function on the Player node. Duplicated gravity calculations ║
-║      ░   were removed from all relevant states, adhering to the DRY principle.║
+║      ░ ■ Abstracted the input system to use a command buffer, fully          ║
+║      ░   decoupling game logic from the global `Input` singleton.            ║
 ║      ░ ■ Established a new `FXManager` singleton to serve as a dedicated     ║
-║      ░   subsystem for "game feel" effects. This separates purely aesthetic  ║
-║      ░   feedback (like hit-stop) from core gameplay components, improving   ║
-║      ░   modularity and adhering to SRP.                                     ║
-║                                                                              ║
+║      ░   subsystem for "game feel" effects like hit-stop and screen shake.   ║
 ║   █  Added                                                                   ║
 ║      ░ ■ Implemented a toggleable Developer Debug Overlay (F1) that displays ║
-║      ░   the player's real-time state and velocity, significantly speeding up║
-║      ░   the debugging and tuning process.                                   ║
+║      ░   the player's real-time state, velocity, and input buffer.           ║
+║   █  Editor & Tooling                                                        ║
+║      ░ ■ Added a configuration warning system to the `LevelLayout` resource  ║
+║      ░   that notifies designers in-editor if a layout is invalid.           ║
+║                                                                              ║
+║   STABILIZATION & CLEAN BUILD                                                ║
+║   Resolved all remaining parse errors and static analysis warnings for a     ║
+║   completely clean build, including fundamental architectural conflicts.     ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a fundamental conflict by removing `class_name` from all   ║
+║      ░   autoload singletons, fixing a cascade of parse errors.              ║
+║      ░ ■ Resolved all `MISSING_TOOL`, `STATIC_CALLED_ON_INSTANCE`, and other ║
+║      ░   static analysis warnings for a completely clean build.              ║
+║      ░ ■ Enhanced the shader pre-warming system to include entity actions,   ║
+║      ░   significantly reducing first-action stutter at the start of a match.║
+║                                                                              ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██           [0.8.0] - UI & ARCHITECTURE OVERHAUL - 08/14/2025          ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║      This version completes two major initiatives: a full-scale refactor of  ║
+║      the entire UI system to a modern, scene-based architecture, and a deep  ║
+║      enforcement of the project's core architectural patterns to enhance     ║
+║      modularity and type safety.                                             ║
+║                                                                              ║
+║   UI SYSTEM OVERHAUL                                                         ║
+║   Migrated the entire legacy UI from a procedural system to a new, scene-based║
+║   architecture built on reusable, editor-friendly components.                ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Completed a full UI refactor, moving all menus to self-contained    ║
+║      ░   scenes in `src/scenes/menus` that use `Container` nodes for robust layout.║
+║      ░ ■ Deprecated and removed the `GlobalHud` autoload, replacing its      ║
+║      ░   functionality with a reusable `MuteButton` component.               ║
+║   █  Added                                                                   ║
+║      ░ ■ Created new reusable, procedurally-drawn UI components, including   ║
+║      ░   `StyledMenuItem` and `LogoDisplay`.                                 ║
+║      ░ ■ Rebuilt all menu screens (Title, Options, Sound, etc.) as scenes    ║
+║      ░   with `@tool` scripts for full in-editor visibility and editing.     ║
+║   █  Removed                                                                 ║
+║      ░ ■ Deleted the entire legacy `src/ui/screens` directory and all of its ║
+║      ░   obsolete, procedurally-generated menu files and assets.             ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a critical state bug in `MenuManager` that caused          ║
+║      ░   unpredictable keyboard navigation after mouse use.                  ║
+║      ░ ■ Resolved persistent `invalid UID` warnings by re-saving all scenes. ║
+║                                                                              ║
+║   ARCHITECTURAL PATTERN ENFORCEMENT                                          ║
+║   Enforced core architectural patterns across all entities to fully decouple ║
+║   state logic from global singletons and formalize data contracts.           ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Enforced the "Owner-Driven Injection" pattern for both Player and   ║
+║      ░   Boss state machines, fully decoupling all states from `CombatDB`.   ║
+║      ░ ■ Formalized the damage system with typed `DamageInfo` and `DamageResult`║
+║      ░   resources, replacing untyped Dictionaries for type-safe combat.     ║
+║      ░ ■ Standardized all entity components to formally implement the `IComponent`║
+║      ░   contract, unifying their lifecycle and setup methods.               ║
+║      ░ ■ Created the `Identifiers` singleton to hold all string-based group  ║
+║      ░   names and pool keys, eliminating the risk of runtime errors from typos.║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a "zombie minion" bug where Turrets would continue to fire ║
+║      ░   after the boss was defeated.                                        ║
+║      ░ ■ Fixed a visual bug where the entity hit-flash color would not reset ║
+║      ░   correctly by using a more robust metadata-based system.             ║
+║      ░ ■ Eliminated all `STATIC_CALLED_ON_INSTANCE` warnings project-wide.   ║
+║                                                                              ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██           [0.7.0] - DATA-DRIVEN ARCHITECTURE - 08/13/2025            ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║      This version completes the transformation to a fully data-driven        ║
+║      architecture, implements robust memory management patterns, and         ║
+║      enhances the combat system with distance-based mechanics and            ║
+║      comprehensive scene validation tools.                                   ║
+║                                                                              ║
+║   DATA-DRIVEN ARCHITECTURE COMPLETION                                        ║
+║   Unified the project's configuration system to be exclusively driven by     ║
+║   editor-friendly Resource files, fully decoupling game design from code.    ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Unified the configuration system to be exclusively driven by the    ║
+║      ░   `CombatDB` singleton and its `CombatConfig.tres` resource.          ║
+║      ░ ■ Refactore`BaseBoss` to be fully data-driven, with attack patterns for║
+║      ░   each phase assigned via exported arrays in the Godot Inspector.     ║
+║      ░ ■ Converted all gameplay tuning data into editor-friendly Resources   ║
+║      ░   with `@export_group` and `@export_range` hints for designers.       ║
+║                                                                              ║
+║   ENHANCED COMBAT MECHANICS                                                  ║
+║   Implemented a more nuanced melee system that rewards player positioning    ║
+║   and improves hitbox accuracy for different attack angles.                  ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented a two-tier melee hitbox system with distance-based      ║
+║      ░   damage calculation, rewarding close-range attacks with higher damage.║
+║      ░ ■ The melee hitbox now dynamically changes shape and position for     ║
+║      ░   upward attacks, ensuring precise coverage above the player.         ║
+║                                                                              ║
+║   SYSTEM HARDENING & MEMORY MANAGEMENT                                       ║
+║   Improved memory safety and stability by implementing formal teardown       ║
+║   patterns and hardening core systems against race conditions.               ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Unified the state machine architecture with formal `teardown` patterns║
+║      ░   to prevent memory leaks and cyclic references.                      ║
+║      ░ ■ Hardened the `Sequencer` by adding `cancel_all()` to prevent sequences║
+║      ░   from running across scene transitions.                              ║
+║      ░ ■ Hardened the `ObjectPool` by deferring the deactivation of returned ║
+║      ░   instances, preventing same-frame access race conditions.            ║
+║                                                                              ║
+║   CRITICAL BUG FIXES & STABILIZATION                                         ║
+║   Resolved several high-priority bugs related to combat reliability, scene   ║
+║   loading, and asset database corruption.                                    ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Hardened the player's pogo attack physics query to be more reliable ║
+║      ░   against complex colliders.                                          ║
+║      ░ ■ Resolved a critical race condition where the `ArenaBuilder` could   ║
+║      ░   finish before the boss was spawned by correctly awaiting a `SequenceHandle`.║
+║      ░ ■ Corrected resource loading errors and asset database corruption     ║
+║      ░   caused by duplicated UIDs in scene and resource files.              ║
+║      ░ ■ Resolved a "modulo by zero" crash in the boss's idle state by       ║
+║      ░   adding guard clauses for when no attack patterns are assigned.      ║
+║      ░ ■ Resolved a visual regression with the Game HUD's phase indicators.  ║
+║                                                                              ║
+║   EDITOR TOOLING & DOCUMENTATION                                             ║
+║   Improved the development workflow with in-editor validation and formalized ║
+║   the project's dependency injection pattern in documentation.               ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Created a central, static `SceneValidator` utility to provide       ║
+║      ░   in-editor warnings for misconfigured scenes like `BaseBoss`.        ║
+║   █  Documentation                                                           ║
+║      ░ ■ Formalized the "Owner-Driven Injection" pattern in `ARCHITECTURE.txt`.║
+║                                                                              ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██            [0.6.0] - DYNAMIC ENCOUNTERS - 08/11/2025                 ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║      This version introduces dynamic multi-phase boss encounters, minion     ║
+║      support, widescreen compatibility, and comprehensive visual and         ║
+║      performance improvements to create engaging, scalable combat scenarios. ║
+║                                                                              ║
+║   MULTI-PHASE BOSS ENCOUNTERS & MINION SUPPORT                               ║
+║   Implemented a dynamic, data-driven combat system allowing for multi-phase  ║
+║   boss fights, new minion types, and reusable attack components.             ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented a dynamic, three-phase boss fight where bosses become   ║
+║      ░   more aggressive by using different `AttackPattern` resources as     ║
+║      ░   health decreases.                                                   ║
+║      ░ ■ Introduced an `ArmorComponent` to support invulnerable attack states║
+║      ░   such as a new high-speed "armored lunge" attack.                    ║
+║      ░ ■ Implemented a "Turret" minion enemy system, proving the reusability ║
+║      ░   of the unified component and state machine architecture.            ║
+║      ░ ■ Added real-time phase indicator icons to the Game HUD.              ║
+║   █  Changed                                                                 ║
+║      ░ ■ The `HealthComponent` was upgraded to detect health threshold       ║
+║      ░   crossings, emitting signals to drive the new phase transitions.     ║
+║      ░ ■ The encounter system now supports spawning lists of minions from    ║
+║      ░   level layout files in addition to the main boss.                    ║
+║                                                                              ║
+║   WIDESCREEN SUPPORT & DYNAMIC ARENA SCALABILITY                             ║
+║   Overhauled the rendering and level generation systems to support modern    ║
+║   widescreen aspect ratios and dynamically sized arenas.                     ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Created a `CameraManager` and `GridUtils` singleton to decouple all ║
+║      ░   game logic from screen resolution, allowing the camera to fit any   ║
+║      ░   arena size.                                                         ║
+║      ░ ■ Enhanced `TerrainBuilder` to procedurally fill the entire camera    ║
+║      ░   viewport with background tiles for seamless, scalable play areas.   ║
+║   █  Changed                                                                 ║
+║      ░ ■ Project display settings were updated to widescreen 16:9 (1920x1080)║
+║      ░ ■ Procedural UI menus were refactored to use `Container` nodes for    ║
+║      ░   robust resizing behavior across different aspect ratios.            ║
+║                                                                              ║
+║   CORE SYSTEMS HARDENING                                                     ║
+║   Improved the stability and reliability of the `Sequencer`, `ObjectPool`,   ║
+║   and `EventBus` to prevent state bugs, memory leaks, and race conditions.   ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Hardened the `Sequencer` by returning a `SequenceHandle`, allowing  ║
+║      ░   cinematic sequences to be safely cancelled during scene transitions.║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a potential memory leak in the `EventBus` by implementing a║
+║      ░   self-cleaning mechanism that prunes dead subscriptions.             ║
+║      ░ ■ Corrected `async`/`await` errors in the `Sequencer` to ensure reliable║
+║      ░   execution of cinematic events.                                      ║
+║      ░ ■ Fixed a bug where projectiles persisted across scenes by adding a   ║
+║      ░   global reset function to the `ObjectPool`.                          ║
+║                                                                              ║
+║   CRITICAL BUG FIXES & STABILIZATION                                         ║
+║   Resolved a series of high-impact bugs related to combat logic, entity      ║
+║   state, and object pooling to create a more stable gameplay experience.     ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a "zombie attack" bug by adding an `_is_dead` flag to      ║
+║      ░   prevent the boss from firing projectiles after dying.               ║
+║      ░ ■ Fixed a critical bug where turrets stopped firing by refactoring    ║
+║      ░   their state machine logic to be continuous rather than one-shot.    ║
+║      ░ ■ Ensured minion projectiles are correctly returned to the `ObjectPool`║
+║      ░   instead of being deleted, preventing performance degradation.       ║
+║      ░ ■ Fixed a race condition that could prevent the victory screen from   ║
+║      ░   triggering by moving the win logic to the global `EventBus`.        ║
+║      ░ ■ Replaced in-world `ColorRect` visuals with `Polygon2D` nodes to     ║
+║      ░   prevent rendering conflicts with debug collision shapes.            ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██          [0.5.0] - ARCHITECTURAL UNIFICATION - 08/10/2025            ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║      This version completes a foundational architectural refactor, unifying  ║
+║      the player and boss state machines, introducing a robust interface-based║
+║      damage system, and fully decoupling all entity components to create a   ║
+║      highly scalable and maintainable codebase.                              ║
+║                                                                              ║
+║   ENTITY ARCHITECTURE UNIFICATION                                            ║
+║   Unified the Player and Boss architectures under a single, reusable State   ║
+║   Machine and Component pattern, adhering to Dependency Inversion.           ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Created a reusable, node-based `BaseStateMachine` and `BaseState` to║
+║      ░   unify all entity logic, removing duplicated code.                   ║
+║      ░ ■ Refactored both the Player and BaseBoss to use the new `BaseStateMachine`,║
+║      ░   simplifying their core scripts into pure orchestrators.             ║
+║      ░ ■ Established a formal `IComponent` interface contract (`setup`/`teardown`)║
+║      ░   and decoupled all components by injecting dependencies from the owner.
+║      ░ ■ Refactored the Player's state machine to load state scripts at runtime
+║      ░   instead of using `preload()`, breaking a brittle dependency cycle.  ║
+║                                                                              ║
+║   DATA-DRIVEN SYSTEMS & API STANDARDIZATION                                  ║
+║   Overhauled core systems to be data-driven and established formal, type-safe
+║   APIs for damage, configuration, and scene navigation.                      ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Replaced the JSON-based `Config.gd` with a type-safe, `Resource`-based║
+║      ░   system (`CombatConfig.tres`, `CombatDB.gd`), improving type safety  ║
+║      ░   and enabling direct editor tuning.                                  ║
+║      ░ ■ Introduced a robust `IDamageable` interface and a `CombatUtils`     ║
+║      ░   singleton to standardize how all damage is applied and received.    ║
+║      ░ ■ Created a new `SceneManager` autoload to centralize all scene       ║
+║      ░   transition logic, removing scattered `get_tree().change_scene` calls.
+║      ░ ■ Refactored `GameManager` to use a `GameStateData` resource, eliminating
+║      ░   the "dual architecture" of stateful singletons for runtime data.    ║
+║      ░ ■ Implemented self-validating property setters in data resources      ║
+║      ░   (`PlayerStateData`) to prevent invalid states (e.g., health > max). ║
+║                                                                              ║
+║   POGO MECHANIC OVERHAUL & BUG FIX                                           ║
+║   Resolved a series of critical bugs with the pogo mechanic, unifying its    ║
+║   physics and decoupling it from other combat timers.                        ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved complex bugs that made the pogo mechanic unreliable. It now║
+║      ░   consistently damages the boss and bounces off projectiles.          ║
+║      ░ ■ Unified ground and air pogo logic into a single, physics-driven     ║
+║      ░   system that correctly handles all valid bounce surfaces.            ║
+║      ░ ■ Separated the pogo mechanic from the melee attack cooldown, allowing║
+║      ░   for seamless transitions between bouncing and attacking.            ║
+║      ░ ■ Corrected the pogo's physics query to include `Area2D` nodes,       ║
+║      ░   restoring its ability to destroy projectiles.                       ║
+║                                                                              ║
+║   CODEBASE HARDENING & STABILIZATION                                         ║
+║   Performed a full-codebase sweep to resolve all remaining parse errors,     ║
+║   static analysis warnings, and critical race conditions.                    ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Changed                                                                 ║
+║      ░ ■ Standardized project structure, renaming scripts to `snake_case` and║
+║      ░   reorganizing `src/core` into purpose-driven subdirectories.         ║
+║      ░ ■ Added validation to `AssetPaths.gd` and `Settings.gd` to prevent    ║
+║      ░   runtime errors from missing files or invalid data.                  ║
+║      ░ ■ Cleaned all remaining GDScript static analysis warnings for a clean build.
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a cascade of parse errors related to the new `CombatConfig`║
+║      ░   resource, invalid `class_name` usage, and updated autoload paths.   ║
+║      ░ ■ Fixed a critical race condition where invincibility timers for the  ║
+║      ░   Player and Boss were being incorrectly assigned.                    ║
+║      ░ ■ Implemented robust `teardown` methods in all components and state   ║
+║      ░   machines to prevent memory leaks from cyclic references.            ║
+║                                                                              ║
+║   SPRINT 0 AUDIT & DOCUMENTATION                                             ║
+║   Completed and formalized the "Sprint 0" architectural audit, documenting   ║
+║   all key design patterns and decisions for future development.              ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Documentation                                                           ║
+║      ░ ■ Generated audit reports for singletons, event usage, and config usage.
+║      ░ ■ Authored `ADR-001` (Service Locator) and `ADR-002` (Communication Patterns)
+║      ░   to formally document architectural decisions.                       ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██            [0.4.0] - THE COMPONENT REFACTOR - 2025-08-09             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version completes the migration to a fully component-based entity     ║
+║   architecture, enhances performance, and resolves all known bugs for a      ║
+║   stable, production-ready foundation.                                       ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the monolithic `player.gd` script into a component-based ║
+║      ░   architecture, adhering to the Single Responsibility Principle.      ║
+║      ░ ■ Created a `HealthComponent` to manage all health, damage, and       ║
+║      ░   invincibility logic, making it reusable for other entities.         ║
+║      ░ ■ Created a `CombatComponent` to centralize player attack logic.      ║
+║      ░ ■ Created an `InputComponent` to decouple input polling from the player.║
+║      ░ ■ Created a `PlayerStateData` resource to act as a central data       ║
+║      ░   container, decoupling state from the Player node itself.            ║
+║      ░ ■ Refactored `ArenaBuilder` to be data-driven, reading the layout file║
+║      ░   path from a constant in the encounter script, removing brittle      ║
+║      ░   string manipulation logic.                                          ║
+║      ░ ■ Decoupled `GlobalHUD` from specific menu scenes by making its       ║
+║      ░   visibility fully event-driven (`MENU_OPENED`, `MENU_CLOSED`),       ║
+║      ░   resolving an Open/Closed Principle violation.                       ║
+║      ░ ■ Refactored the monolithic `base_boss.gd` script into a component-   ║
+║      ░   based architecture, adhering to SRP and mirroring the Player's design.║
+║      ░ ■ Created `BossStateData.gd` resource to act as a central data        ║
+║      ░   container, decoupling the boss's state from the node itself.        ║
+║                                                                              ║
+║   █  Performance                                                             ║
+║      ░ ■ Implemented a robust, generic `ObjectPool` singleton to manage      ║
+║      ░   reusable nodes like projectiles.                                    ║
+║      ░ ■ Refactored Player and Boss to get/return projectiles from the pool, ║
+║      ░   eliminating runtime instantiation to prevent GC spikes and stutter. ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored `Sequencer.gd` to use type-safe `SequenceStep` resources ║
+║      ░   instead of ad-hoc dictionaries, preventing runtime errors and       ║
+║      ░   improving editor autocompletion.                                    ║
+║      ░ ■ Refactored `AudioManager.gd` and `GlobalHUD` to be event-driven,    ║
+║      ░   subscribing to a new `audio_settings_changed` signal instead of     ║
+║      ░   polling for changes every frame.                                    ║
 ║                                                                              ║
 ║   █  Fixed                                                                   ║
-║      ░ ■ Resolved a crash in `game.gd` caused by calling an `Input` singleton║
-║      ░   method on an `InputEvent` object in the `_unhandled_input` function.║
+║      ░ ■ Resolved a complex circular dependency parse error between the Player║
+║      ░   and its new components by fully decoupling them with signals.       ║
+║      ░ ■ Fixed a bug where the boss was immune to rapid attacks by giving it ║
+║      ░   a unique, shorter invincibility duration in the project config.     ║
+║      ░ ■ Fixed a bug where player's body dealt rapid contact damage to the boss.║
+║      ░ ■ Unified all damage-dealing logic (melee, pogo, projectile, contact) ║
+║      ░   to consistently and correctly interact with the target's HealthComponent.║
+║      ░ ■ Fixed a visual bug where the Boss's hit-flash color would not reset ║
+║      ░   correctly by ensuring the correct initialization order in `base_boss.gd`.║
+║      ░ ■ Resolved an audio stream memory leak on exit by implementing a      ║
+║      ░   robust cleanup handler for `NOTIFICATION_WM_CLOSE_REQUEST`.         ║
+║      ░ ■ Resolved all `SHADOWED_GLOBAL_IDENTIFIER` warnings by removing      ║
+║      ░   unnecessary `preload` calls for scripts with a `class_name`.        ║
+║      ░ ■ Resolved a critical physics crash by redesigning the `ObjectPool` to║
+║      ░   use a signal-based, non-re-parenting architecture that is immune to ║
+║      ░   race conditions.                                                    ║
+║      ░ ■ Resolved all memory leaks by implementing proper cleanup in         ║
+║      ░   `_exit_tree` for all state machines, components, and singletons.    ║
+║      ░ ■ Resolved a leak caused by creating orphaned nodes in `ArenaBuilder`.║
+║      ░ ■ Corrected `Config.gd` to ensure deterministic config loading.       ║
+║      ░ ■ Fixed a critical crash in the `EventBus` related to polymorphism.   ║
+║      ░ ■ Resolved all remaining static analysis warnings for a clean build.  ║
 ║                                                                              ║
-
--------
-
-
-   █  Editor & Tooling
-      ░ ■ Successfully created a proof-of-concept "baking" tool that can
-      ░   procedurally generate a permanent tree of `ColorRect` nodes from a
-      ░   `LevelLayout` resource. This achieved the goal of a WYSIWYG editor
-      ░   preview for our data-driven levels and validated the workflow of
-      ░   generating scene content from `@tool` scripts. This success paves
-      ░   the way for a final migration to a more robust, native `TileMap` workflow.
-
--------
-
-
-   █  Code Quality & Tooling
-      ░ ■ Improved clarity by renaming variables in core systems (`GameManager`,
-      ░   `ArenaBuilder`, etc.) to accurately reflect the new data-driven
-      ░   architecture (e.g., `encounter_script_path` -> `encounter_path`).
-      ░ ■ Enhanced the designer workflow by adding `@export_group` annotations
-      ░   to the `EncounterData` resource, organizing its properties into
-      ░   clean, collapsible sections in the Godot Inspector.
-      ░ ■ Added a configuration warning system to the `LevelLayout` resource.
-      ░   This `@tool` script now automatically checks if all rows in the
-      ░   terrain data have the same length and will notify the editor if an
-      ░   invalid layout is detected.
-
---------------------
-
-   █  Architectural Changes
-      ░ ■ Completed a major refactor of the encounter and level definition
-      ░   system. All arena data has been moved from hardcoded `.gd` scripts
-      ░   into new, data-driven custom resources (`EncounterData.tres`,
-      ░   `LevelLayout.tres`).
-      ░ ■ The `ArenaBuilder` and `LevelParser` have been updated to be fully
-      ░   data-driven, loading and parsing these new `.tres` files at runtime.
-      ░   This decouples level design from game logic and makes creating new
-      ░   encounters a code-free, designer-friendly process.
-
-   █  Removed
-      ░ ■ Deleted the obsolete `arena_00_encounter.gd` and `arena_00_layout.gd`
-      ░   scripts, as their data is now stored in `.tres` resources.
-
-   █  Editor & Tooling
-      ░ ■ **[Deferred]** An attempt was made to create a universal `@tool` scene
-      ░   (`ArenaStage`) that would visually render `LevelLayout` data directly
-      ░   in the 2D editor. Both custom drawing (`_draw`) and programmatic
-      ░   `TileMap` generation were explored. The feature has been deferred
-      ░   due to unresolved, deep-seated engine errors related to parsing
-      ░   programmatically-generated `TileSet` resources in a pure code-first,
-      ░   non-editor workflow. The runtime implementation remains stable and unaffected.
-
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                 [0.8.0] - NO TITLE YET - 2025-08-14                  ██  ║
-║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
+║  ██              [0.3.0] - THE VISUAL FOUNDATION - 2025-08-08            ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-
-
- - - - start separating via the time it was submitted - - -
-
-   █  Architectural Changes
-      ░ ■ Completed a full-scale UI refactor, migrating the entire menu
-      ░   system to a new, scene-based architecture. All menus now exist as
-      ░   self-contained scenes in a new `src/scenes/menus` directory,
-      ░   built with robust Container nodes for consistent, editor-friendly layout.
-      ░ ■ Deprecated and removed the `GlobalHud` autoload. Its functionality
-      ░   was replaced by a new, reusable `MuteButton` component, which is
-      ░   now instanced directly in each menu scene, improving encapsulation.
-      ░ ■ Formalized the project's directory structure by creating dedicated
-      ░   top-level scene folders (`menus`, `game_over`, `victory`), clarifying
-      ░   the distinction between primary game states and reusable UI components.
-
-   █  Added
-      ░ ■ Created new, rebuilt versions of all menu screens (Title, Options,
-      ░   Sound, Controls, Credits) using the new component-based architecture.
-      ░ ■ Implemented `@tool` scripts across all new UI scenes, making them
-      ░   fully visible and editable within the Godot editor.
-
-   █  Changed
-      ░ ■ Overhauled the `game_over` and `victory` screens, upgrading them to
-      ░   the new `StyledMenuItem` component and modern scene structure.
-      ░ ■ Standardized the naming convention for all UI-related assets (audio,
-      ░   fonts, sprites) to a consistent `[type]_[context]_[descriptor]`
-      ░   pattern (e.g., `music_menu_loop.mp3`).
-
-   █  Removed
-      ░ ■ Deleted the entire legacy `src/ui/screens` directory and all of its
-      ░   obsolete, procedurally-generated menu files.
-      ░ ■ Deleted the now-empty `src/scenes/dev` directory.
-      ░ ■ Removed the obsolete `GlobalHud` scene and script files.
-      ░ ■ Deleted all legacy `menu-item-*.png` sprite assets, which are no
-      ░   longer used by the new procedurally drawn buttons.
-
-   █  Fixed
-      ░ ■ Permanently resolved all persistent `invalid UID` warnings by
-      ░   manually re-saving all refactored scenes, forcing Godot to update
-      ░   its asset database and cache. The project now runs with a clean log.
-      ░ ■ Corrected all remaining script errors caused by the asset rename by
-      ░   updating font and audio path constants in all components.
-
- - - - start separating via the time it was submitted - - -
-
-   █  Architectural Changes
-      ░ ■ Deprecated the `GlobalHud` autoload in favor of a new, reusable
-      ░   `GuiMuteButton` component placed directly in scenes. This completes
-      ░   the shift to a fully component-based, scene-driven UI architecture,
-      ░   eliminating a piece of legacy global state.
-
-   █  Added
-      ░ ■ Rebuilt and connected the entire menu flow (Title, Options, Sound,
-      ░   Controls, Credits) using the new scene-based architecture.
-      ░ ■ Implemented `@tool` scripts for all new menus, allowing them to be
-      ░   visually rendered and laid out directly in the Godot editor.
-      ░ ■ Added the new `GuiMuteButton` component to all menu screens for a
-      ░   consistent user experience.
-
-   █  Fixed
-      ░ ■ Resolved a critical state synchronization bug in `MenuManager` that
-      ░   caused unpredictable keyboard navigation after using the mouse. The
-      ░   manager now correctly syncs its state with Godot's focus system.
-      ░ ■ Hardened menu navigation by preventing non-button UI elements (sliders,
-      ░   checkboxes, mute icon) from being part of the keyboard focus chain.
-      ░ ■ Corrected the application's entry point to start the menu music
-      ░   globally, ensuring it plays seamlessly across all menu scenes.
-      ░ ■ Resolved a scene-loading crash caused by an incorrect `@onready`
-      ░   variable in the new options menu script.
-
- - - - start separating via the time it was submitted - - -
-
-   █  Architectural Changes
-      ░ ■ Began the official "UI Overhaul" by creating a new prototype title
-      ░   screen (`gui_title_screen.tscn`) that is fully scene-based and
-      ░   leverages Godot's Container nodes for a robust, designer-friendly
-      ░   layout, establishing the pattern for all future menu development.
-
-   █  Added
-      ░ ■ Created `StyledMenuItem`, a new reusable, component-based menu item
-      ░   that is procedurally drawn and highly configurable (size, text, font size).
-      ░ ■ Created `LogoDisplay`, a new reusable component for interactive
-      ░   footer logos with hover and press feedback.
-
-   █  Fixed
-      ░ ■ Resolved a critical input bug where only the first of several UI
-      ░   components would correctly process mouse clicks. Components now use
-      ░   the correct `mouse_filter` property for reliable, engine-idiomatic
-      ░   input handling.
-
-
- - - - start separating via the time it was submitted - - -
-
-   █  Architectural Changes
-      ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
-      ░   state machine, fully decoupling all states from the global `CombatDB`
-      ░   singleton. States now receive their configuration through the
-      ░   `PlayerStateData` resource, which is populated by the `Player` owner
-      ░   node. This completes a critical step in adhering to the Dependency
-      ░   Inversion Principle, making states more modular and testable.
-      ░ ■ Hardened system contracts by creating a new `Identifiers` singleton
-      ░   to hold all string-based group names and pool keys. All scripts
-      ░   were refactored to use these constants, eliminating the risk of
-      ░   runtime errors from string typos and improving code safety.
-      ░ ■ Refactored the `_ready` functions in `Player` and `BaseBoss` to
-      ░   adhere to the Single Responsibility Principle. All initialization
-      ░   logic is now delegated to smaller, clearly named helper methods,
-      ░   improving code readability and maintainability.
-
-   █  Architectural Changes
-      ░ ■ Enforced the "Owner-Driven Injection" pattern for the entire Player
-      ░   and BaseBoss state machines. All states are now fully decoupled from
-      ░   global singletons and receive their configuration through their
-      ░   respective data resources (`PlayerStateData`, `BossStateData`).
-      ░ ■ Formalized the project's damage system by creating typed `Resource`
-      ░   contracts (`DamageInfo`, `DamageResult`), replacing the previous
-      ░   use of primitive integers and untyped Dictionaries for robust,
-      ░   self-documenting, and type-safe combat interactions.
-      ░ ■ Standardized all entity components, including `BaseStateMachine` and
-      ░   `ArmorComponent`, to formally implement the `ComponentInterface`
-      ░   contract. This unifies the lifecycle and setup for all entity
-      ░   behaviors across the entire project.
-      ░ ■ Refined `CombatUtils` to adhere to SRP; its sole responsibility is
-      ░   now finding a valid `IDamageable` target.
-
-   █  Fixed
-      ░ ■ Resolved a visual bug where entity hit-flash colors would not reset
-      ░   correctly. The `HealthComponent` now uses a more robust metadata-
-      ░   based system to store and restore original entity colors.
-      ░ ■ Fixed a "zombie minion" bug where Turrets would continue to fire
-      ░   after the boss was defeated. The game director now deactivates all
-      ░   minions upon boss death.
-      ░ ■ Corrected a parse error in `Turret.gd` caused by an incorrect setup
-      ░   call signature after the `BaseStateMachine` was refactored.
-      ░ ■ Eliminated `STATIC_CALLED_ON_INSTANCE` warnings by refactoring all
-      ░   calls to `CombatUtils.find_damageable` to use the correct static
-      ░   script-based syntax.
-
-
- - - - start separating via the time it was submitted - - -
-
-   █  Fixed
-      ░ ■ Resolved a visual bug where the boss's hit-flash color would not
-      ░   reset correctly. The `HealthComponent` now uses a more robust
-      ░   metadata-based system to store and restore original entity colors.
-      ░ ■ Fixed a bug where Turret minions would continue to fire after the
-      ░   boss was defeated. The central `game.gd` script now finds and calls a
-      ░   new `deactivate()` method on all remaining minions upon boss death.
-      ░ ■ Resolved a critical autoload naming conflict caused by `class_name`
-      ░   hiding the `Identifiers` singleton, which previously caused a cascade
-      ░   of parse errors across the entire project.
-
- - - - start separating via the time it was submitted - - -
-
-
-      ░ ■ Extended the "Owner-Driven Injection" pattern to the `BaseBoss`
-      ░   and its state machine. All boss states are now fully decoupled
-      ░   from global singletons, mirroring the clean architecture of the
-      ░   Player and unifying the entity design across the project.
+║   This version completes the core architectural refactor and establishes the ║
+║   foundational visual and data-driven systems for the entire project.        ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Implemented the `Palette.gd` autoload singleton, which defines a    ║
+║      ░   project-wide 32-step grayscale value scale.                         ║
+║      ░ ■ Added semantic color constants (e.g., `COLOR_PLAYER`) to establish a║
+║      ░   clear visual hierarchy for all game elements.                       ║
+║      ░ ■ Implemented the `Config.gd` autoload for loading all `.json` files. ║
+║      ░ ■ Created `combat_config.json` to house all gameplay-related tuning.  ║
+║      ░ ■ Implemented the `Sequencer.gd` autoload for managing timed event.   ║
+║      ░ ■ Added `GAME_PAUSED` and `GAME_RESUMED` events to the `EventCatalog`.║
+║      ░ ■ Implemented a professional-grade, singleton-based Event Bus.        ║
+║      ░ ■ Added an `EventCatalog` and typed `Resource`-based event payloads.  ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Refactored Player, Boss, Projectiles, and TerrainBuilder to source  ║
+║      ░   all their colors from the new `Palette` singleton.                  ║
+║      ░ ■ The game world is now visually rendered with a consistent value scale.║
+║      ░ ■ Refactored the entire codebase to be data-driven via `Config.gd`.   ║
+║      ░ ■ The `Constants.gd` singleton has been streamlined.                  ║
+║      ░ ■ The `EncounterDirector` now uses the `Sequencer` for boss intros.   ║
+║      ░ ■ The main `game.gd` scene now handles the global pause state.        ║
+║      ░ ■ Refactored the `GameHUD` to be fully driven by the Event Bus.       ║
+║      ░ ■ Refactored the ArenaBuilder to strictly adhere to SRP.              ║
+║      ░ ■ Refactored the BaseBoss and Player nodes to use the State Pattern.  ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a cascade of parse errors in `Palette.gd` by using the     ║
+║      ░   `Color("#hex")` constructor, which is a valid constant expression.  ║
+║      ░ ■ Corrected `Palette.gd` to extend `Node` so it can be autoloaded.    ║
+║      ░ ■ Renamed `Config.get()` to `Config.get_value()` to resolve a conflict.║
+║      ░ ■ Resolved `SHADOWED_GLOBAL_IDENTIFIER` warnings in `base_boss.gd`.   ║
+║      ░ ■ Resolved `Identifier not declared` errors in `player.gd`.           ║
+║      ░ ■ Resolved bug where Player hit flash timer would not reset.          ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██           [0.2.0] - THE ARCHITECTURAL REFACTOR - 08-07-2025          ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version represents a foundational overhaul of the project's technical ║
+║   architecture. The focus was on implementing professional design patterns   ║
+║   (SOLID, State Pattern) and eliminating performance issues to prepare for   ║
+║   future content and feature development.                                    ║
+║                                                                              ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Overhauled level loading to use an asynchronous, batch-based system ║
+║      ░   in `ArenaBuilder`, eliminating stuttering when entering the arena.  ║
+║      ░ ■ Implemented a shader pre-warming system in a new `LoadingScreen` to ║
+║      ░   prevent any "first-appearance" hitches for entities.                ║
+║      ░ ■ Formalized the project's guiding principles (SOLID, DRY, KISS) in   ║
+║      ░   the official documentation.                                         ║
+║                                                                              ║
+║   █  Bug Fixes                                                               ║
+║      ░ ■ Resolved a critical stutter/hitch on arena load via async generation.║
+║      ░ ■ Eliminated intermittent stutter on first run via shader pre-warming.║
+║      ░ ■ Resolved a physics crash on entity death by using `call_deferred`   ║
+║      ░   for scene transitions.                                              ║
+║      ░ ■ Corrected implementation of hazard tiles to ensure contact damage.  ║
+║                                                                              ║
+║   █  Documentation                                                           ║
+║      ░ ■ Overhauled `TODO.txt` with a new, multi-phase development roadmap.  ║
+║      ░ ■ Updated `DESIGN.txt` and `ARCHITECTURE.txt` to reflect the new      ║
+║      ░   design philosophies, patterns, and planned features.                ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██        [0.1.0] - MIGRATION FROM KAPLAY TO GODOT - 08-05-2025         ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   This version marks the initial architectural overhaul, transforming the    ║
+║   project from a functional prototype into a robust and scalable foundation. ║
+║                                                                              ║
+║   █  Added                                                                   ║
+║      ░ ■ Player Character with rich moveset (dash, wall-jump, etc.).         ║
+║      ░ ■ Combat System with melee, charged shot, and pogo mechanics.         ║
+║      ░ ■ "Determination" healing system & Data-Driven Arena system.          ║
+║      ░ ■ Basic Boss entity framework & Reusable Menu System.                 ║
+║      ░ ■ Full suite of initial project documentation (.txt files).           ║
+║                                                                              ║
+║   █  Changed                                                                 ║
+║      ░ ■ Complete Architectural Refactor to use professional design patterns.║
+║      ░ ■ Player Logic: Migrated from boolean flags to a formal FSM.          ║
+║      ░ ■ Global Singletons: Centralized constants and asset paths.           ║
+║      ░ ■ File Organization: Restructured project directories.                ║
+║                                                                              ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Restored player contact damage from enemies and hazards.            ║
+║      ░ ■ Fully restored the pogo mechanic.                                   ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
 
 =====================================

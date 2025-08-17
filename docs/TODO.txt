@@ -7,31 +7,105 @@
 ║      ██║   ╚██████╔╝██████╔╝╚██████╔╝                                        ║
 ║      ╚═╝    ╚═════╝ ╚═════╝  ╚═════╝                                         ║
 ║                                                                              ║
-║                  Immediate Work Items & Actionable Tasks                     ║
+║                    Strategic Development Plan & Actionable Tasks             ║
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                       PHASE 2: JUICE & FEEDBACK                      ██  ║
+║  ██              PHASE 1: FORTIFICATION & PRODUCTION PIPELINES           ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   The focus is now on tangible "game feel" to make interactions satisfying.  ║
+║   Goal: Build the safety net. Harden the project against regressions and     ║
+║   streamline core workflows to enable rapid, confident development.          ║
 ║                                                                              ║
-║   □  Implement Screen Shake via `FXManager` for player damage and boss attacks.
-║   □  Implement Hit-Stop via `FXManager` for close-range melee hits on the boss.
-║   □  Create and pool a basic "hit spark" particle effect via a new `VFXManager`.
-║   □  Implement the basic functionality for the `DialogueManager` and `DialogueBox`.
+║   █ Architecture & Testing                                                   ║
+║   ░ Implement the Automated Testing Framework (GUT) to safeguard all         ║
+║   ░ future work. This is the highest priority architectural task.            ║
+║   ░                                                                          ║
+║   ░ □ Integrate the Godot Unit Test (GUT) framework into src/tests/.         ║
+║   ░ □ Write initial unit tests for critical, non-visual components:          ║
+║   ░   - HealthComponent: Damage application, invincibility, death signal.    ║
+║   ░   - PlayerResourceComponent: Determination-to-charge conversion.         ║
+║   ░   - ObjectPool: get_instance/return_instance lifecycle.                  ║
+║   ░ □ Create a headless integration test to run an encounter for 600         ║
+║   ░   frames and assert that no errors are thrown.                           ║
+║   ░ □ Update the GitHub Actions CI workflow to run all tests on push.        ║
+║                                                                              ║
+║   █ Production & Tooling                                                     ║
+║   ░ Establish professional-grade tooling for debugging and UI management.    ║
+║   ░                                                                          ║
+║   ░ □ Implement a Centralized Logging System (LogManager.gd autoload)        ║
+║   ░   to replace all print() calls with structured, leveled logging.         ║
+║   ░ □ Create a central main_theme.tres resource to unify all UI fonts,       ║
+║   ░   colors, and styles, pulling values from Palette.gd.                    ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                     INDEFINITELY DEFERRED TASKS                      ██  ║
+║  ██            PHASE 2: CONTENT EXPANSION & VISUAL IDENTITY              ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Goal: Build out the core game experience and implement the signature       ║
+║   "Aesthetic Maximalism" visual identity through shaders and feedback.       ║
+║                                                                              ║
+║   █ Gameplay & Design                                                        ║
+║   ░ Transform the single encounter into a playable game loop.                ║
+║   ░                                                                          ║
+║   ░ □ Implement the Core Game Loop:                                          ║
+║   ░   - Create WorldState.tres to track defeated bosses.                     ║
+║   ░   - Create a SaveManager using ConfigFile to save/load progress.         ║
+║   ░   - Build a functional "Stage Select" screen.                            ║
+║   ░ □ Generalize the Boss Attack System to empower design:                   ║
+║   ░   - Expand AttackPattern.gd with an AttackType enum and more data.       ║
+║   ░   - Refactor StateBossAttack into a generic executor.                    ║
+║                                                                              ║
+║   █ Juice & Feedback (Game Feel) - CURRENT FOCUS                             ║
+║   ░ The focus is now on tangible "game feel" to make interactions satisfying.║
+║   ░                                                                          ║
+║   ░ □ Implement Screen Shake via FXManager for player damage and boss attacks║
+║   ░ □ Implement Hit-Stop via FXManager for close-range melee hits on boss.   ║
+║   ░ □ Create and pool a basic "hit spark" particle effect via VFXManager.    ║
+║   ░ □ Implement the Full Shader Strategy:                                    ║
+║   ░   - Develop an "FX Cookbook" registry in FXManager.                      ║
+║   ░   - Implement entity shaders (Hit-Flash, Dissolve).                      ║
+║   ░   - Implement UI shaders (SDF Panels for menus).                         ║
+║   ░   - Implement fullscreen shaders (Shockwave).                            ║
+║                                                                              ║
+║   █ Systems & Narrative                                                      ║
+║   ░ Flesh out supporting systems required for a complete experience.         ║
+║   ░                                                                          ║
+║   ░ □ Implement the basic functionality for the DialogueManager and          ║
+║   ░   DialogueBox to enable storytelling.                                    ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██              PHASE 3: POLISHING & PROFESSIONALIZATION                ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   Goal: Add the features that elevate the project from a great prototype to  ║
+║   a shippable, high-quality product, focusing on accessibility and depth.    ║
+║                                                                              ║
+║   █ Accessibility & Internationalization                                     ║
+║   ░ Ensure the game is playable by the widest possible audience.             ║
+║   ░                                                                          ║
+║   ░ □ Abstract all user-facing text for localization using tr("KEY").        ║
+║   ░ □ Implement Control Remapping in the Controls Screen.                    ║
+║   ░ □ Implement Colorblind Modes via Palette texture swapping.               ║
+║                                                                              ║
+║   █ Advanced Mechanics & Game Feel                                           ║
+║   ░ Add mechanical depth and a final layer of authored polish.               ║
+║   ░                                                                          ║
+║   ░ □ Develop a Stun/Poise System for the boss to reward aggression.         ║
+║   ░ □ Refactor key moments (player attack, boss intros) to be driven by      ║
+║   ░   AnimationPlayer for more authored, cinematic sequences.                ║
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                    FUTURE CONSIDERATIONS & DEFERRED TASKS            ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║   A list of lower-priority goals for future consideration.                   ║
 ║                                                                              ║
-║   ░  Fast-Fall: Holding 'Down' in the air increases gravity.                 ║
-║   ░  Diegetic UI Implementation (UI integrated into the game world).         ║
-║   ░  Advanced Boss AI (Adaptive tactics, environmental interaction).         ║
-║   ░  Player Loadout System (Alternative weapons or abilities).               ║
-║   ░  Special Game Modes (Boss Rush, Time Attack).                            ║
+║   ░ Fast-Fall: Holding 'Down' in the air increases gravity.                  ║
+║   ░ Diegetic UI Implementation (UI integrated into the game world).          ║
+║   ░ Advanced Boss AI (Adaptive tactics, environmental interaction).          ║
+║   ░ Player Loadout System (Alternative weapons or abilities).                ║
+║   ░ Special Game Modes (Boss Rush, Time Attack).                             ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
