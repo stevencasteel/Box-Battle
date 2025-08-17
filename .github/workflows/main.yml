@@ -15,6 +15,8 @@ jobs:
         uses: appsinacup/setup-godot-action@main
         with:
           version: '4.4.1-stable'
+          # ADD THIS LINE: This installs the export templates.
+          export-templates-version: '4.4.1-stable' 
 
       - name: Debug File Listing & Verification
         run: |
@@ -23,9 +25,11 @@ jobs:
           ls -R src/api
           ls -R assets/sprites/ui
 
+      # This step should now succeed as the importers are available.
       - name: Scan Project & Register Classes
         run: $GODOT4 --headless --doctool .
 
+      # This step should now succeed and provide a clean linting result.
       - name: Run Lint / Static Analysis
         run: $GODOT4 --headless --check-only --verbose
 

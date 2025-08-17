@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 16 16:27:13 CDT 2025
+Generated on: Sat Aug 16 19:51:04 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -48,6 +48,7 @@ PROJECT DIRECTORY STRUCTURE:
 │       ├── event_usage.txt
 │       ├── singleton_map.txt
 │       └── state_machine_flow.md
+├── export_presets.cfg
 ├── icon.svg
 ├── pico.save
 ├── progess
@@ -76,7 +77,8 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── config
     │   │   │   ├── combat_config.gd
     │   │   │   └── settings.gd
-    │   │   └── game_state_data.gd
+    │   │   ├── game_state_data.gd
+    │   │   └── level_build_data.gd
     │   ├── events
     │   │   ├── event_bus.gd
     │   │   ├── event_catalog.gd
@@ -234,7 +236,7 @@ PROJECT DIRECTORY STRUCTURE:
         │   └── menu_manager.gd
         └── pause_menu
 
-54 directories, 172 files
+55 directories, 173 files
 
 
 =====================================
@@ -3033,6 +3035,13 @@ ui_dash={
 renderer/rendering_method="mobile"
 environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 
+
+=====================================
+FILE: ./.vscode/settings.json
+=====================================
+{
+    "godotTools.editorPath.godot4": "/Applications/Godot.app"
+}
 
 =====================================
 FILE: ./data/combat_config.tres
