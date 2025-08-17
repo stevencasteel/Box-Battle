@@ -3,20 +3,49 @@ name: Godot CI
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  build-and-test:
+  export-game:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [ 'macOS', 'Windows Desktop', 'Linux/X11' ]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      # This single step now handles setting up Godot, downloading templates,
-      # and running the export build, which validates the entire project.
-      - name: Build and Export for macOS
+
+      - name: Cache Godot Project Data
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/godot
+          key: ${{ runner.os }}-godot-cache-${{ hashFiles('**/project.godot') }}
+
+      - name: Get Project Version
+        id: get_version # Give this step an ID
+        # Run our helper script and capture its output
+        run: |
+          VERSION=$(godot --headless --script .github/scripts/get_version.gd)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build and Export
+        id: build
         uses: abarichello/godot-ci@4.4.1-stable
         with:
-          # The name of the export preset in your export_presets.cfg file.
-          export_preset: 'macOS'
-          # The directory where the build artifact will be placed.
-          build_path: 'build/macos'
+          # Use the platform from the matrix. The output path will be 'build/macOS/', etc.
+          args: --headless --export-release "${{ matrix.platform }}" "build/${{ matrix.platform }}/BoxBattle"
+
+      - name: Zip the Build
+        # This step creates a clean zip file like "BoxBattle-v0.10.0-macOS.zip"
+        run: |
+          cd build/${{ matrix.platform }}
+          zip -r ../BoxBattle-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # Use the full versioned name for the artifact
+          name: build-${{ matrix.platform }}-${{ steps.get_version.outputs.VERSION }}
+          path: build/BoxBattle-v${{ steps.get_version.outputs.VERSION }}-${{ matrix.platform }}.zip
