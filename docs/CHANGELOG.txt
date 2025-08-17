@@ -14,6 +14,55 @@
 ║                                                                              ║
 ║                                                                              ║
 
+║      This version introduces a complete, professional-grade Continuous       ║
+║      Integration and Deployment (CI/CD) pipeline. The build, packaging,      ║
+║      and release process for all target platforms is now fully automated,    ║
+║      ensuring consistent, repeatable, and error-free distributions.          ║
+║                                                                              ║
+║   █  CI & Tooling                                                            ║
+║      ░ ■ Implemented a new, multi-job GitHub Actions workflow defined in     ║
+║      ░   `.github/workflows/main.yml`. This pipeline automates two key       ║
+║      ░   development cycles:                                                 ║
+║      ░   - **Development Builds:** On every push to the `main` branch, the   ║
+║      ░     workflow automatically compiles the game for all target platforms ║
+║      ░     and saves the results as downloadable `Artifacts` for internal    ║
+║      ░     testing and validation.                                           ║
+║      ░   - **Public Releases:** When a new version tag (e.g., `v0.10.4`) is  ║
+║      ░     pushed, the workflow performs all builds and then automatically   ║
+║      ░     creates a new, public GitHub Release, attaching the final,        ║
+║      ░     polished game packages for the community.                         ║
+║      ░ ■ Configured four parallel build jobs to compile and export the game  ║
+║      ░   for **Windows**, **macOS**, **Linux**, and **Web**, ensuring that    ║
+║      ░   cross-platform compatibility is tested continuously.                ║
+║      ░ ■ Solved a critical build dependency by integrating dynamic           ║
+║      ░   installation of Godot's export templates. The workflow now downloads ║
+║      ░   the official `.tpz` archive, unpacks it, and correctly places the   ║
+║      ░   template files in the expected directory, making the CI environment ║
+║      ░   fully self-contained and resolving all "template not found" errors. ║
+║      ░ ■ Implemented a robust post-build packaging and polishing strategy:   ║
+║      ░   - **Asset Packaging:** All build outputs are now automatically      ║
+║      ░     packaged into clean, platform-specific `.zip` archives. This      ║
+║      ░     resolves the issue of a cluttered release page and provides users 
+║      ░     with a simple, single download per platform.                      
+║      ░   - **Filename Standardization:** Release assets are now consistently 
+║      ░     named to clearly identify their target platform (e.g.,           
+║      ░     `BOX-BATTLE-windows.zip`, `BOX-BATTLE-mac.zip`).                   
+║      ░ ■ Resolved a critical asset upload conflict caused by filename        ║
+║      ░   collisions between the Windows and Linux `.pck` files. This was     ║
+║      ░   fixed with a pre-packaging rename step in the workflow.             ║
+║      ░ ■ Correctly configured workflow permissions by adding                 ║
+║      ░   `permissions: contents: write` to grant the `GITHUB_TOKEN` the      ║
+║      ░   necessary scope to publish releases, fixing a `403 Forbidden` error.║
+║                                                                              ║
+
+
+
+
+
+
+
+
+
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                 [0.9.0] - NO TITLE YET - 2025-XX-XX                  ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║ 
