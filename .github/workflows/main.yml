@@ -8,7 +8,6 @@ on:
 
 jobs:
   export-game:
-    # We no longer need a matrix. This single job will build all platforms.
     runs-on: ubuntu-latest
     name: Build and Export All Platforms
 
@@ -23,25 +22,17 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Build and Export
-        id: export # Give this step an ID to reference its output
+        id: export
         uses: firebelley/godot-export@v6.0.0
         with:
-          # --- Required Inputs ---
-          godot_executable_download_url: "https://downloads.tuxfamily.org/godotengine/4.4.1/Godot_v4.4.1-stable_linux.x86_64.zip"
-          godot_export_templates_download_url: "https://downloads.tuxfamily.org/godotengine/4.4.1/Godot_v4.4.1-stable_export_templates.tpz"
+          godot_executable_download_url: "https://godotengine.org/download/archive/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip"
+          godot_export_templates_download_url: "https://godotengine.org/download/archive/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz"
           relative_project_path: "./"
-          
-          # --- THE CRITICAL FIX ---
-          # Provide all presets as a single, comma-separated string.
           presets_to_export: "macOS,Windows Desktop,Linux/X11,Web"
-          
-          # Tell the action to create .zip files for us.
           archive_output: true
-      
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          # Name the artifact collection with the project version.
           name: game-builds-v${{ steps.get_version.outputs.VERSION }}
-          # Upload all files from the directory where the action placed the zips.
           path: ${{ steps.export.outputs.archive_directory }}
