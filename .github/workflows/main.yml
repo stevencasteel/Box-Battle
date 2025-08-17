@@ -5,17 +5,46 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-mac:
-    name: Build for macOS
+  build-windows:
+    name: Build for Windows
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1-stable
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Build and Export for macOS
-        uses: abarichello/godot-ci@4.4.1-stable
+      - name: Setup build directory
+        run: mkdir -v build/windows
+      - name: Setup export templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/4.4.1.stable ~/.local/share/godot/export_templates/4.4.1.stable
+      - name: Build and Export for Windows
+        run: godot --headless --verbose --export-release "Windows Desktop" "build/windows/BOX BATTLE.exe"
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          export_preset: 'macOS'
-          build_path: 'build/macos'
+          name: windows-build
+          path: build/windows
+
+  build-mac:
+    name: Build for macOS
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1-stable
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup build directory
+        run: mkdir -v build/macos
+      - name: Setup export templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/4.4.1.stable ~/.local/share/godot/export_templates/4.4.1.stable
+      - name: Build and Export for macOS
+        # Note: The output from the container will be a .zip, not a .dmg. This is a limitation of building on Linux.
+        # To create a proper .dmg, the build job would need to run on a macOS runner.
+        run: godot --headless --verbose --export-release "macOS" "build/macos/BOX BATTLE.zip"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -25,48 +54,41 @@ jobs:
   build-linux:
     name: Build for Linux
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1-stable
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Setup build directory
+        run: mkdir -v build/linux
+      - name: Setup export templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/4.4.1.stable ~/.local/share/godot/export_templates/4.4.1.stable
       - name: Build and Export for Linux
-        uses: abarichello/godot-ci@4.4.1-stable
-        with:
-          export_preset: 'Linux'
-          build_path: 'build/linux'
+        run: godot --headless --verbose --export-release "Linux" "build/linux/BOX BATTLE.x86_64"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
           path: build/linux
 
-  build-windows:
-    name: Build for Windows
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Build and Export for Windows
-        uses: abarichello/godot-ci@4.4.1-stable
-        with:
-          export_preset: 'Windows Desktop'
-          build_path: 'build/windows'
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: build/windows
-
   build-web:
     name: Build for Web
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1-stable
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Setup build directory
+        run: mkdir -v build/web
+      - name: Setup export templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/4.4.1.stable ~/.local/share/godot/export_templates/4.4.1.stable
       - name: Build and Export for Web
-        uses: abarichello/godot-ci@4.4.1-stable
-        with:
-          export_preset: 'Web'
-          build_path: 'build/web'
+        run: godot --headless --verbose --export-release "Web" "build/web/index.html"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
