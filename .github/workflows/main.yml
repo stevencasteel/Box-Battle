@@ -8,43 +8,33 @@ on:
 
 jobs:
   export-game:
+    # This single job will build all platforms
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [ 'macOS', 'Windows Desktop', 'Linux/X11', 'Web' ]
+    name: Build and Export Game
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache Godot Project Data
-        uses: actions/cache@v4
+      - name: Build and Export All Platforms
+        id: export # Give this step an ID to reference its output
+        uses: firebelley/godot-export@v6.0.0 # Use the latest correct version
         with:
-          path: ~/.cache/godot
-          key: ${{ runner.os }}-godot-cache-${{ hashFiles('**/project.godot') }}
-
-      - name: Build and Export
-        uses: abarichello/godot-ci@4.4.1-stable
-        with:
-          # Explicitly tell the action which program to run.
-          entryPoint: 'godot'
-          # Pass all arguments as a single string. Quotes are critical.
-          args: --headless --export-release "${{ matrix.platform }}" "build/${{ matrix.platform }}/BoxBattle"
-
-      - name: Prepare Artifact
-        run: |
-          # Get version from project.godot (this part was working correctly)
-          VERSION=$(grep "application/config/version" project.godot | cut -d'"' -f2)
-          echo "Project version is $VERSION"
+          # --- Required Inputs from the Documentation ---
+          godot_executable_download_url: "https://downloads.tuxfamily.org/godotengine/4.4.1/Godot_v4.4.1-stable_linux.x86_64.zip"
+          godot_export_templates_download_url: "https://downloads.tuxfamily.org/godotengine/4.4.1/Godot_v4.4.1-stable_export_templates.tpz"
+          relative_project_path: "./"
           
-          # Zip the output directory into a versioned archive
-          cd build
-          # CRITICAL FIX: Add quotes around the platform names to handle spaces
-          zip -r "BoxBattle-v$VERSION-${{ matrix.platform }}.zip" "${{ matrix.platform }}"
-
-      - name: Upload Artifact
+          # --- Our Configuration ---
+          # A comma-separated list of the exact names from your export_presets.cfg
+          presets_to_export: "macOS,Windows Desktop,Linux/X11,Web"
+          # Tell the action to create .zip files for us
+          archive_output: true
+      
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.platform }}-${{ steps.get_version.outputs.VERSION }}
-          # Use a wildcard that correctly handles the space in the filename
-          path: build/BoxBattle-v*.zip
+          # The name for the collection of build artifacts
+          name: game-builds
+          # The path to the directory containing the zip files the action just created
+          path: ${{ steps.export.outputs.archive_directory }}
