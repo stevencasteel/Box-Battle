@@ -1,20 +1,15 @@
 #!/bin/bash
-
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-
 # Change to the parent directory (BOX BATTLE root)
 cd "$SCRIPT_DIR/.."
-
 # Define the output file path
 OUTPUT_FILE="docs/all_godot_source_code.txt"
-
 echo "🎮 BOX BATTLE Source Code Generator"
 echo "=================================="
 echo "Working directory: $(pwd)"
 echo "Output file: $OUTPUT_FILE"
 echo ""
-
 # Step 1: Create the file and write the header
 echo "+---------------------------------+" > "$OUTPUT_FILE"
 echo "|       B O X  B A T T L E        |" >> "$OUTPUT_FILE"
@@ -22,7 +17,6 @@ echo "|  Godot Project Source Context   |" >> "$OUTPUT_FILE"
 echo "+---------------------------------+" >> "$OUTPUT_FILE"
 echo "Generated on: $(date)" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
-
 # Step 2: Add directory tree structure
 echo "=====================================" >> "$OUTPUT_FILE"
 echo "PROJECT DIRECTORY STRUCTURE:" >> "$OUTPUT_FILE"
@@ -43,9 +37,7 @@ else
 fi
 echo "" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
-
 echo "📁 Collecting project files..."
-
 # Step 3: Find all the project files and append them to the file
 find . -type f \( \
   -name "*.gd" -o \
@@ -64,6 +56,9 @@ find . -type f \( \
 -not -path "./$OUTPUT_FILE" \
 -not -name "*.uid" \
 -not -name "*.import" \
+-not -name "LICENSE.txt" \
+-not -name "export_presets.cfg" \
+-not -path "./assets/fonts/OFL.txt" \
 -exec sh -c '
   echo "====================================="
   echo "FILE: $1"
@@ -72,7 +67,6 @@ find . -type f \( \
   echo ""
   echo ""
 ' _ {} \; >> "$OUTPUT_FILE"
-
 echo "✅ Success! File created: $OUTPUT_FILE"
 echo ""
 echo "📄 You can now find your combined source code at:"
