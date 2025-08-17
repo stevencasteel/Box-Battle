@@ -21,25 +21,26 @@ jobs:
       - name: Install Export Templates
         run: |
           wget -O export_templates.tpz https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
-          mkdir -p /tmp/templates-unzipped
-          mkdir -p ~/.local/share/godot/export_templates/4.4.1.stable
+          mkdir -p /tmp/templates-unzipped ~/.local/share/godot/export_templates/4.4.1.stable
           unzip export_templates.tpz -d /tmp/templates-unzipped
           mv /tmp/templates-unzipped/templates/* ~/.local/share/godot/export_templates/4.4.1.stable
       - name: Setup build directory
         run: mkdir -vp build/windows
       - name: Build and Export for Windows
         run: godot --headless --verbose --export-release "Windows Desktop" "build/windows/BOX BATTLE.exe"
-      - name: Rename Windows PCK
-        # This new step prevents filename conflicts in the release
-        run: mv "build/windows/BOX BATTLE.pck" "build/windows/BOX BATTLE-windows.pck"
+      - name: Package Build
+        # This new step zips the build files for a clean release
+        run: |
+          cd build/windows
+          zip -r ../BOX-BATTLE-windows.zip .
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: build/windows
+          # We now upload the single zip file instead of the whole directory
+          path: build/BOX-BATTLE-windows.zip
 
   build-web:
-    # No changes needed here
     name: Build for Web
     runs-on: ubuntu-latest
     container:
@@ -50,22 +51,27 @@ jobs:
       - name: Install Export Templates
         run: |
           wget -O export_templates.tpz https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
-          mkdir -p /tmp/templates-unzipped
-          mkdir -p ~/.local/share/godot/export_templates/4.4.1.stable
+          mkdir -p /tmp/templates-unzipped ~/.local/share/godot/export_templates/4.4.1.stable
           unzip export_templates.tpz -d /tmp/templates-unzipped
           mv /tmp/templates-unzipped/templates/* ~/.local/share/godot/export_templates/4.4.1.stable
       - name: Setup build directory
         run: mkdir -vp build/web
       - name: Build and Export for Web
         run: godot --headless --verbose --export-release "Web" "build/web/index.html"
+      - name: Package Build
+        # This new step zips all the web files together
+        run: |
+          cd build/web
+          zip -r ../BOX-BATTLE-web.zip .
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-build
-          path: build/web
+          # Upload the single zip file
+          path: build/BOX-BATTLE-web.zip
 
   build-mac:
-    # No changes needed here
+    # No changes needed here, as it already exports to a .zip
     name: Build for macOS
     runs-on: ubuntu-latest
     container:
@@ -76,8 +82,7 @@ jobs:
       - name: Install Export Templates
         run: |
           wget -O export_templates.tpz https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
-          mkdir -p /tmp/templates-unzipped
-          mkdir -p ~/.local/share/godot/export_templates/4.4.1.stable
+          mkdir -p /tmp/templates-unzipped ~/.local/share/godot/export_templates/4.4.1.stable
           unzip export_templates.tpz -d /tmp/templates-unzipped
           mv /tmp/templates-unzipped/templates/* ~/.local/share/godot/export_templates/4.4.1.stable
       - name: Setup build directory
@@ -88,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: build/macos
+          path: build/macos/BOX BATTLE.zip
 
   build-linux:
     name: Build for Linux
@@ -101,25 +106,27 @@ jobs:
       - name: Install Export Templates
         run: |
           wget -O export_templates.tpz https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
-          mkdir -p /tmp/templates-unzipped
-          mkdir -p ~/.local/share/godot/export_templates/4.4.1.stable
+          mkdir -p /tmp/templates-unzipped ~/.local/share/godot/export_templates/4.4.1.stable
           unzip export_templates.tpz -d /tmp/templates-unzipped
           mv /tmp/templates-unzipped/templates/* ~/.local/share/godot/export_templates/4.4.1.stable
       - name: Setup build directory
         run: mkdir -vp build/linux
       - name: Build and Export for Linux
         run: godot --headless --verbose --export-release "Linux" "build/linux/BOX BATTLE.x86_64"
-      - name: Rename Linux PCK
-        # This new step prevents filename conflicts in the release
-        run: mv "build/linux/BOX BATTLE.pck" "build/linux/BOX BATTLE-linux.pck"
+      - name: Package Build
+        # This new step zips the Linux files
+        run: |
+          cd build/linux
+          zip -r ../BOX-BATTLE-linux.zip .
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: build/linux
+          # Upload the single zip file
+          path: build/BOX-BATTLE-linux.zip
 
   create-release:
-    # No changes needed here, it will automatically pick up the renamed files
+    # No changes are needed here! It will now upload the zip files automatically.
     name: Create GitHub Release
     needs: [build-windows, build-web, build-mac, build-linux]
     runs-on: ubuntu-latest
