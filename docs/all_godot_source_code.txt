@@ -2,12 +2,13 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 16 19:51:04 CDT 2025
+Generated on: Sun Aug 17 09:48:11 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
 =====================================
 .
+├── Godot_v4.4.1-stable_export_templates.tpz
 ├── README.md
 ├── data
 │   └── combat_config.tres
@@ -236,7 +237,7 @@ PROJECT DIRECTORY STRUCTURE:
         │   └── menu_manager.gd
         └── pause_menu
 
-55 directories, 173 files
+55 directories, 174 files
 
 
 =====================================
@@ -2918,6 +2919,19 @@ bus/2/volume_db = 0.0
 bus/2/send = &"Master"
 
 =====================================
+FILE: ./.github/scripts/get_version.gd
+=====================================
+# .github/scripts/get_version.gd
+# This script runs in the CI environment to get the version
+# from project.godot and print it to the command line.
+extends SceneTree
+
+func _init():
+    var version = ProjectSettings.get_setting("application/config/version")
+    print(version)
+    quit()
+
+=====================================
 FILE: ./project.godot
 =====================================
 ; Engine configuration file.
@@ -2933,6 +2947,7 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
+config/version="0.10.0"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
@@ -3033,6 +3048,7 @@ ui_dash={
 [rendering]
 
 renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0, 0, 0, 1)
 
 

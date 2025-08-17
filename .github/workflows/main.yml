@@ -14,11 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Debug step: List files to verify location
-      - name: List project root files
-        run: ls -la
-
-      # Debug step: Show export_presets.cfg contents
+      # This is a good debug step to keep until you are confident it is working.
       - name: Show export_presets.cfg content
         run: cat export_presets.cfg || echo "export_presets.cfg not found"
 
@@ -32,10 +28,16 @@ jobs:
         id: export
         uses: firebelley/godot-export@v6.0.0
         with:
+          # Ensure these download URLs match the exact version of Godot you are using locally.
           godot_executable_download_url: "https://sourceforge.net/projects/godot-engine.mirror/files/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip/download"
           godot_export_templates_download_url: "https://sourceforge.net/projects/godot-engine.mirror/files/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz/download"
+          
+          # This assumes your project.godot file is at the root of the repository.
           relative_project_path: "./"
-          presets_to_export: "macOS,Windows Desktop,Linux/X11,Web"
+          
+          # CORRECTED: The preset names here now exactly match your export_presets.cfg file.
+          presets_to_export: "macOS,Windows Desktop,Linux,Web"
+          
           archive_output: true
 
       - name: Upload Build Artifacts
