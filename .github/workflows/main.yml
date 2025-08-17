@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Add 'Web' to the list of platforms to build for.
         platform: [ 'macOS', 'Windows Desktop', 'Linux/X11', 'Web' ]
 
     steps:
@@ -22,16 +21,22 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/godot
-          key: ${{ runner.os }}-godot-cache-${{ hashFiles('**/project.vot') }}
+          key: ${{ runner.os }}-godot-cache-${{ hashFiles('**/project.godot') }}
 
+      # This is the corrected build step using the action's proper inputs
       - name: Build and Export
         uses: abarichello/godot-ci@4.4.1-stable
         with:
-          args: --headless --export-release "${{ matrix.platform }}" "build/${{ matrix.platform }}/BoxBattle"
+          # Tell the action which export preset to use (from your export_presets.cfg)
+          export_preset: "${{ matrix.platform }}"
+          # Tell the action where to put the exported files
+          export_path: "build/${{ matrix.platform }}/BoxBattle"
 
       - name: Prepare Artifact
         run: |
-          VERSION=$(godot --headless --script .github/scripts/get_version.gd)
+          # This step no longer needs to call 'godot' because the build is already done.
+          # We just need the version number for naming the zip file.
+          VERSION=$(grep "application/config/version" project.godot | cut -d'"' -f2)
           echo "Project version is $VERSION"
           
           cd build
@@ -40,5 +45,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.platform }}-${{ steps.get_version.outputs.VERSION }}
-          path: build/BoxBattle-v*.zip
+          name: build-${{ matrix.platform }}
+          path: build/BoxBattle-v*.zip # Wildcard still works great here
