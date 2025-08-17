@@ -6,57 +6,31 @@ on:
   push:
     branches: [ "main" ]
 
+env:
+  GODOT_VERSION: 4.4.1
+  EXPORT_NAME: "BOX BATTLE"
+
 jobs:
-  build-macos:
-    name: Build for macOS
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build and Export for macOS
-        uses: abarichello/godot-ci@4.4.1-stable
-        with:
-          export_preset: 'macOS'
-          build_path: 'build/macos'
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos-build
-          path: build/macos
-
-  build-linux:
-    name: Build for Linux
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build and Export for Linux
-        uses: abarichello/godot-ci@4.4.1-stable
-        with:
-          export_preset: 'Linux'
-          build_path: 'build/linux'
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-build
-          path: build/linux
-
   build-windows:
     name: Build for Windows
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Build and Export for Windows
-        uses: abarichello/godot-ci@4.4.1-stable
         with:
-          export_preset: 'Windows Desktop'
-          build_path: 'build/windows'
+          lfs: true
+
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+
+      - name: Windows Build
+        run: |
+          mkdir -v -p build/windows
+          godot -v --export-release "Windows Desktop" build/windows/$EXPORT_NAME.exe
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -64,18 +38,80 @@ jobs:
           name: windows-build
           path: build/windows
 
-  build-web:
-    name: Build for Web
+  build-linux:
+    name: Build for Linux
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Build and Export for Web
-        uses: abarichello/godot-ci@4.4.1-stable
         with:
-          export_preset: 'Web'
-          build_path: 'build/web'
+          lfs: true
+
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+
+      - name: Linux Build
+        run: |
+          mkdir -v -p build/linux
+          godot -v --export-release "Linux" build/linux/$EXPORT_NAME.x86_64
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: build/linux
+
+  build-macos:
+    name: Build for macOS
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+
+      - name: macOS Build
+        run: |
+          mkdir -v -p build/macos
+          godot -v --export-release "macOS" build/macos/$EXPORT_NAME.zip
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: build/macos
+
+  build-web:
+    name: Build for Web
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+
+      - name: Web Build
+        run: |
+          mkdir -v -p build/web
+          godot -v --export-release "Web" build/web/index.html
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -86,22 +122,19 @@ jobs:
   package-builds:
     name: Package All Builds
     runs-on: ubuntu-latest
-    needs: [build-macos, build-linux, build-windows, build-web]
+    needs: [build-windows, build-linux, build-macos, build-web]
     steps:
-      - name: Create package directory
-        run: mkdir -p package
-
       - name: Download all builds
         uses: actions/download-artifact@v4
         with:
-          path: package/
+          path: builds/
 
       - name: List downloaded files (for debugging)
-        run: ls -R package
+        run: ls -R builds/
 
-      - name: Zip the package
+      - name: Create final package
         run: |
-          cd package
+          cd builds
           zip -r ../game-builds.zip .
 
       - name: Upload Final Package
