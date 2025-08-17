@@ -88,7 +88,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-macos, build-linux, build-windows, build-web]
     steps:
-      # --- THIS IS THE FIX ---
       - name: Create package directory
         run: mkdir -p package
 
@@ -96,13 +95,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: package/
-          
+
       - name: List downloaded files (for debugging)
         run: ls -R package
 
       - name: Zip the package
-        # The 'cd' command ensures the zip file doesn't contain the 'package' directory itself,
-        # but rather its contents (the platform-named build folders).
         run: |
           cd package
           zip -r ../game-builds.zip .
