@@ -18,55 +18,45 @@
 ║  ██         [0.10.0] - CI & DEPLOYMENT AUTOMATION - XX/XX/XXXX           ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+║                                                                              ║
 ║   AUTOMATED TESTING & CORE SYSTEM HARDENING                                  ║
 ║   Integrated the Godot Unit Test (GUT) framework to establish an automated   ║
-║   testing pipeline and used it to find and fix critical bugs.                ║
+║   testing pipeline and used it to identify and resolve critical system bugs. ║
 ║   ────────────────────────────────────────────────────────────────────────   ║
 ║   █  CI & Tooling                                                            ║
 ║      ░ ■ Integrated the Godot Unit Test (GUT) framework, establishing the    ║
-║      ░   foundation for automated testing.                                   ║
-║      ░ ■ Created the first suite of unit tests for the `ObjectPool` singleton,║
-║      ░   defining and verifying its core functionality.                      ║
+║      ░   foundation for headless, command-line-driven testing.               ║
+║      ░ ■ Created comprehensive unit test suites for critical components:     ║
+║      ░   - `ObjectPool`: Verifies instance lifecycle, reuse, and reset logic.║
+║      ░   - `HealthComponent`: Verifies damage, invincibility, and death logic║
+║      ░   - `PlayerResourceComponent`: Verifies determination/healing economy.║
+║      ░   - `CombatComponent`: Verifies projectile and pogo attack logic.     ║
 ║   █  Fixed                                                                   ║
-║      ░ ■ Used the new unit tests to discover and resolve two critical bugs in║
-║      ░   `ObjectPool` related to instance reuse logic and state management.  ║
-║      ░ ■ Resolved physics callback errors by restoring the deferred deactivation║
-║      ░   of pooled objects, preventing crashes when objects are returned.    ║
-║      ░ ■ Hardened the unit tests to correctly handle asynchronous behavior,  ║
-║      ░   ensuring they accurately reflect in-game conditions.                ║
+║      ░ ■ Used unit tests to discover and fix a critical logic bug in         ║
+║      ░   `ObjectPool` that prevented the correct reuse of returned instances.║
+║      ░ ■ Resolved physics callback errors by restoring the deferred          ║
+║      ░   deactivation of pooled objects and hardening the tests to handle    ║
+║      ░   asynchronicity.                                                     ║
+║      ░ ■ Fixed a flaw in `CombatUtils`'s dependency on node names by making  ║
+║      ░   the corresponding test more explicit, hardening the test itself.    ║
+║   █  Known Issues                                                            ║
+║      ░ ■ A memory leak related to the `Player.tscn` lifecycle has been       ║
+║      ░   identified and is now tracked as `BUG-MEM001`. This has been        ║
+║      ░   strategically deferred to allow for the completion of the wider     ║
+║      ░   test suite.                                                         ║
 ║                                                                              ║
 ║   AUTOMATED BUILD & RELEASE WORKFLOW                                         ║
-║   Implemented a multi-job GitHub Actions workflow to automate the entire     ║
+║   Implemented a comprehensive GitHub Actions workflow to automate the entire ║
 ║   build, test, and release cycle for both development and public releases.   ║
 ║   ────────────────────────────────────────────────────────────────────────   ║
 ║   █  CI & Tooling                                                            ║
-║      ░ ■ Implemented a new GitHub Actions workflow (`main.yml`) that automatically║
-║      ░   builds and packages the game for all target platforms.              ║
+║      ░ ■ Implemented a new GitHub Actions workflow (`main.yml`) that         ║
+║      ░   automatically builds and packages the game for all target platforms ║
 ║      ░ ■ The pipeline automates two key cycles:                              ║
 ║      ░   - On push to `main`: Compiles builds and saves them as downloadable ║
 ║      ░     `Artifacts` for internal testing.                                 ║
-║      ░   - On version tag (`v*`): Performs all builds and creates a new, public║
-║      ░     GitHub Release with the final game packages attached.             ║
+║      ░   - On version tag (`v*`): Performs all builds and creates a new,     ║
+║      ░     public GitHub Release with the final game packages attached.      ║
 ║                                                                              ║
 ║   CROSS-PLATFORM EXPORT & DEPENDENCY MANAGEMENT                              ║
 ║   Configured the pipeline for full cross-platform compatibility and solved   ║
@@ -86,8 +76,8 @@
 ║      ░ ■ Standardized release assets by packaging all builds into clean,     ║
 ║      ░   platform-specific `.zip` archives with consistent filenames.        ║
 ║      ░ ■ Fixed GitHub Release publishing by resolving asset filename         ║
-║      ░   collisions and correcting workflow permissions (`403 Forbidden` error).║
-║                                                                              ║
+║      ░   collisions and correcting workflow permissions (`403 Forbidden`     ║
+║      ░   error).                                                             ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██         [0.9.0] - CODEBASE STANDARDIZATION - 08/15/2025              ██  ║

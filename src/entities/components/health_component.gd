@@ -29,6 +29,8 @@ var _max_health: int
 var _invincibility_duration: float
 var _knockback_speed: float
 var _hazard_knockback_speed: float
+# Store the lambda callable to disconnect it later
+var _invincibility_callable: Callable
 
 # --- Godot Lifecycle Methods ---
 
@@ -38,8 +40,14 @@ func _ready() -> void:
 	invincibility_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
 
-	invincibility_timer.timeout.connect(func(): entity_data.is_invincible = false)
+	# THE FIX: Store the lambda in a variable so we can disconnect it later.
+	_invincibility_callable = func(): entity_data.is_invincible = false
+	invincibility_timer.timeout.connect(_invincibility_callable)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		teardown()
 
 # --- Public Methods ---
 
@@ -55,7 +63,6 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		push_error("HealthComponent.setup: Missing required dependencies ('data_resource', 'config').")
 		return
 
-	# --- Configure based on owner type ---
 	_max_health = entity_data.max_health
 	if owner_node.is_in_group(Identifiers.Groups.PLAYER):
 		_invincibility_duration = cfg.player_invincibility_duration
@@ -68,15 +75,20 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 
 	entity_data.health = _max_health
 
-	# --- Store original color for hit-flash ---
 	var sprite = _get_visual_sprite()
 	if is_instance_valid(sprite) and not sprite.has_meta("original_color"):
 		sprite.set_meta("original_color", sprite.color)
 
 	health_changed.emit(entity_data.health, _max_health)
 
-## Safely cleans up references.
+## Safely cleans up references and disconnects signals.
 func teardown() -> void:
+	# THE FIX: Explicitly disconnect all signals to break reference cycles.
+	if is_instance_valid(invincibility_timer) and invincibility_timer.timeout.is_connected(_invincibility_callable):
+		invincibility_timer.timeout.disconnect(_invincibility_callable)
+	if is_instance_valid(hit_flash_timer) and hit_flash_timer.timeout.is_connected(_on_hit_flash_timer_timeout):
+		hit_flash_timer.timeout.disconnect(_on_hit_flash_timer_timeout)
+
 	entity_data = null
 	owner_node = null
 	armor_component = null
@@ -110,7 +122,6 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 
 # --- Private Methods ---
 
-## Compares old and new health against thresholds to emit a signal.
 func _check_for_threshold_crossing(health_before: int, health_after: int) -> void:
 	if not owner_node.has_method("get_health_thresholds"): return
 
@@ -122,7 +133,6 @@ func _check_for_threshold_crossing(health_before: int, health_after: int) -> voi
 		if old_percent > threshold and new_percent <= threshold:
 			health_threshold_reached.emit(threshold)
 
-## Calculates the knockback vector based on the damage source.
 func _calculate_knockback(source: Node) -> Vector2:
 	if _knockback_speed == 0 or not is_instance_valid(source): return Vector2.ZERO
 
@@ -133,7 +143,6 @@ func _calculate_knockback(source: Node) -> Vector2:
 
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
 
-## Initiates the visual hit-flash effect.
 func _trigger_hit_flash() -> void:
 	var sprite = _get_visual_sprite()
 	if is_instance_valid(sprite):
@@ -143,7 +152,6 @@ func _trigger_hit_flash() -> void:
 		sprite.color = Palette.COLOR_UI_ACCENT_PRIMARY
 		hit_flash_timer.start()
 
-## Safely gets the primary visual node of the owner.
 func _get_visual_sprite() -> ColorRect:
 	if is_instance_valid(owner_node):
 		return owner_node.get_node_or_null("ColorRect")

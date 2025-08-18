@@ -14,6 +14,10 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
 
+func teardown() -> void:
+	owner_node = null
+	p_data = null
+
 func on_damage_dealt() -> void:
 	if p_data.healing_charges >= p_data.config.player_max_healing_charges: return
 

@@ -18,14 +18,17 @@ var _died_signal_was_emitted: bool = false
 
 func before_each():
 	_died_signal_was_emitted = false
+	# We use a partial_double to prevent the Player's own _ready function from running.
 	_player = partial_double(Player).instantiate()
 	_player.name = "TestPlayer"
 	_player.add_to_group(Identifiers.Groups.PLAYER)
 	add_child(_player)
 
+	# We must manually ready the component since the Player's _ready is stubbed.
 	_health_component = _player.get_node("HealthComponent")
 	_health_component._ready()
 
+	# Manually call setup with our test dependencies.
 	var dependencies = {
 		"data_resource": _player.p_data,
 		"config": CombatConfig
@@ -39,10 +42,11 @@ func after_each():
 	if is_instance_valid(_health_component) and _health_component.died.is_connected(_on_health_component_died):
 		_health_component.died.disconnect(_on_health_component_died)
 
+	# THE FIX: Use free() instead of queue_free() for immediate cleanup in a test context.
 	if is_instance_valid(_player):
-		_player.queue_free()
+		_player.free()
 	if is_instance_valid(_damage_source):
-		_damage_source.queue_free()
+		_damage_source.free()
 
 # --- The Tests ---
 
@@ -77,16 +81,10 @@ func test_died_signal_emitted_when_health_is_zero():
 	damage_info.amount = _player.p_data.max_health
 	damage_info.source_node = _damage_source
 
-	# Connect the signal to our local handler function
 	_health_component.died.connect(_on_health_component_died)
-	
-	# Perform the action
 	_health_component.apply_damage(damage_info)
-
-	# Wait for one physics frame to allow the signal to be processed
 	await get_tree().physics_frame
 
-	# Assert that our handler function was called
 	assert_true(_died_signal_was_emitted, "The 'died' signal should have been emitted.")
 	assert_eq(_player.p_data.health, 0, "Health should be 0 after lethal damage.")
 

@@ -15,106 +15,50 @@
 ║  ██                             OPEN ISSUES                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   (All known bugs have been resolved.)                                       ║
+║   □  [BUG-MEM001] ObjectDB instances leaked on exit after running tests.     ║
+║      ░  STATUS: OPEN, DEFERRED                                               ║
+║      ░  DESCRIPTION: Running GUT tests that instantiate `Player.tscn` results║
+║      ░  in a `WARNING: ObjectDB instances leaked at exit` message. Diagnostic║
+║      ░  tests have confirmed a memory leak is consistently triggered by the  ║
+║      ░  Player scene's lifecycle.                                            ║
+║      ░  DECISION: This is a known issue with the Player scene's cleanup logic.║
+║      ░  It has been deferred to allow for the completion of the broader unit ║
+║      ░  test suite. The risk is contained to the test environment and does not║
+║      ░  block the verification of gameplay logic. We will return to this with║
+║      ░  a dedicated leak-hunting sprint.                                     ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                             FIXED ISSUES                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   □  [BUG-F007] Intermittent major hitch on first run or debug mode toggle.  ║
+║   ■  [BUG-F007] Intermittent major hitch on first run or debug mode toggle.  ║
 ║      ░  FIXED: 2025-08-07                                                    ║
 ║      ░  SOLUTION: Implemented a shader pre-warming system in `LoadingScreen`.║
-║      ░  An off-screen `SubViewport` is used to instantiate key entities      ║
-║      ░  (Player, Boss, Projectiles) for a single frame, which forces the     ║
-║      ░  engine to compile their shaders before they are needed in the main   ║
-║      ░  game scene. This eliminates the first-appearance stutter.            ║
 ║                                                                              ║
-║   □  [BUG-F006] Significant stutter/hitch occurred on arena load.            ║
+║   ■  [BUG-F006] Significant stutter/hitch occurred on arena load.            ║
 ║      ░  FIXED: 2025-08-07                                                    ║
-║      ░  SOLUTION: Replaced the synchronous, blocking level generation with a ║
-║      ░  new asynchronous system in `ArenaBuilder.gd`. The `build_level_async`║
-║      ░  function now creates the level in batches, using `await` to yield    ║
-║      ░  control back to the engine between batches. This prevents the main   ║
-║      ░  thread from freezing, resulting in a smooth loading sequence managed ║
-║      ░  by a new `LoadingScreen`.                                            ║
+║      ░  SOLUTION: Replaced synchronous level generation with a new asynchronous║
+║      ░  system in `ArenaBuilder.gd`.                                         ║
 ║                                                                              ║
-║   □  [BUG-F005] Player death caused a physics crash.                         ║
+║   ■  [BUG-F005] Player death caused a physics crash.                         ║
 ║      ░  FIXED: 2025-08-07                                                    ║
-║      ░  SOLUTION: Scene changes in `game.gd`'s `_on_player_died` and         ║
-║      ░  `_on_boss_died` functions were changed to `get_tree().call_deferred()`.║
-║      ░  This prevents the engine from trying to delete a physics body while  ║
-║      ░  it is still processing a physics callback.                           ║
+║      ░  SOLUTION: Scene changes now use `call_deferred()` to prevent deleting║
+║      ░  a physics body during a physics callback.                            ║
 ║                                                                              ║
-║   □  [BUG-F004] Hazard tiles did not deal contact damage.                    ║
+║   ■  [BUG-F004] Hazard tiles did not deal contact damage.                    ║
 ║      ░  FIXED: 2025-08-07                                                    ║
-║      ░  SOLUTION: Corrected the implementation in `ArenaBuilder.gd`. The     ║
-║      ░  `_create_hazard_tile` function now creates a single `StaticBody2D`   ║
-║      ░  that exists on both the "world" and "hazard" collision layers and is ║
-║      ░  part of both corresponding groups, ensuring it's both solid and damaging.║
+║      ░  SOLUTION: Corrected collision layer and group setup in `ArenaBuilder`.║
 ║                                                                              ║
-║   □  [BUG-F003] Drop-through platforms ("-") were not functioning.           ║
+║   ■  [BUG-F003] Drop-through platforms ("-") were not functioning.           ║
 ║      ░  FIXED: 2025-08-06                                                    ║
-║      ░  SOLUTION: Re-implemented the Down+Jump logic in the player's         ║
-║      ░  `state_move` function. Corrected the platform's collision shape      ║
-║      ░  position and group assignment in `game.gd`.                          ║
+║      ░  SOLUTION: Re-implemented Down+Jump logic in `state_move`.            ║
 ║                                                                              ║
-║   □  [BUG-F002] Player pogo attack was not working correctly on all surfaces.║
+║   ■  [BUG-F002] Player pogo attack was not working correctly on all surfaces.║
 ║      ░  FIXED: 2025-08-05                                                    ║
-║      ░  SOLUTION: Re-implemented the `_check_for_immediate_pogo()` physics   ║
-║      ░  query to allow instant bounces on surfaces directly below the        ║
-║      ░  player. Updated the `_trigger_pogo()` function to correctly handle   ║
-║      ░  bouncing on enemy projectiles in addition to standard enemies.       ║
+║      ░  SOLUTION: Re-implemented the physics query to handle all surfaces.   ║
 ║                                                                              ║
-║   □  [BUG-F001] Player was not taking contact damage from boss/hazards.      ║
+║   ■  [BUG-F001] Player was not taking contact damage from boss/hazards.      ║
 ║      ░  FIXED: 2025-08-05                                                    ║
-║      ░  SOLUTION: During the state machine refactor, the player's            ║
-║      ░  `CharacterBody2D` `collision_mask` was changed to ignore the         ║
-║      ░  "enemy" and "hazard" layers. The mask was updated in `player.tscn`   ║
-║      ░  to correctly detect these layers again, allowing the existing        ║
-║      ░  `_check_for_contact_damage()` function to work as intended.          ║
+║      ░  SOLUTION: Corrected the player's `collision_mask` in `player.tscn`.  ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
-
-
-# BUGS.txt — Live Bug Tracker
-# Legend:
-#   ID — Optional local ID or GitHub Issue # if applicable.
-#   [ ] — Open
-#   [-] — In Progress
-#   [x] — Fixed (date)
-
-## Open
-[ ] #— None at present.
-
-## In Progress
-[-] #— None at present.
-
-## Fixed
-[x] #101 — Pogo mechanic sometimes failed to register damage on boss (2025-08-09)
-[x] #99  — Contact damage applied twice under rare conditions (2025-08-05)
-
-# Notes:
-# - This file is intentionally minimal. Add new items to "Open" as:
-#   [ ] # — Short title (owner | date) + one-line reproduction steps
-# - If you create a GitHub Issue for an item, add the issue number after the bracket:
-#   [ ] #14 — Example bug title (alice | 2025-08-11)
-
-
-   □  [BUG-UI001] Inconsistent Back Button Centering in Sub-Menus.
-      ░  STATUS: OPEN
-      ░  DESCRIPTION: The "Back" button in the Sound and Controls menus is not
-      ░  perfectly centered horizontally, unlike the button in the Credits menu.
-      ░  This is likely due to a conflict between manual positioning and the
-      ░  parent container's layout logic.
-      ░  DEFERRED: A full UI overhaul is planned for a future sprint. This
-      ░  minor visual bug will be resolved then.
-
-         □  [BUG-RENDER001] Debug collision shapes are culled at viewport edges.
-      ░  STATUS: OPEN
-      ░  DESCRIPTION: When running with "Visible Collision Shapes", the blue
-      ░  debug lines for physics bodies that fall exactly on the camera's
-      ░  viewport boundary are inconsistently rendered (often missing). This
-      ░  appears to be a minor engine culling artifact.
-      ░  DEFERRED: This is a debug-only visual issue and has no impact on
-      ░  gameplay, final visuals, or actual collision detection. It is a very
-      ░  low priority fix.

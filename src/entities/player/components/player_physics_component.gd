@@ -28,6 +28,10 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
 
+func teardown() -> void:
+	owner_node = null
+	p_data = null
+
 func apply_horizontal_movement() -> void:
 	var move_axis = owner_node.input_component.buffer.get("move_axis", 0.0)
 	owner_node.velocity.x = move_axis * p_data.config.player_speed

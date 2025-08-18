@@ -54,3 +54,9 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.p_data = p_dependencies.get("data_resource")
 	self.state_machine = p_dependencies.get("state_machine")
 	self.input_component = p_dependencies.get("input_component")
+
+func teardown() -> void:
+	owner_node = null
+	p_data = null
+	state_machine = null
+	input_component = null
