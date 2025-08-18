@@ -93,6 +93,7 @@ func die() -> void:
 	if _is_dead: return
 	if is_instance_valid(death_shake_effect):
 		FXManager.request_screen_shake(death_shake_effect)
+	FXManager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
 	_is_dead = true
 	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
 	set_physics_process(false)
@@ -164,6 +165,7 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 			1: current_attack_patterns = phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
 			FXManager.request_screen_shake(phase_change_shake_effect)
+		FXManager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
 		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout() -> void:

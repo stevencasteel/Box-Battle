@@ -47,3 +47,9 @@ extends Resource
 @export_range(10, 500, 5) var boss_health: int = 30
 @export_range(50, 500, 5) var boss_patrol_speed: float = 100.0
 @export_range(0.0, 2.0, 0.01) var boss_invincibility_duration: float = 0.1
+
+@export_group("Juice & Feedback (Hit-Stop)")
+@export_range(0.0, 0.5, 0.01) var player_melee_close_range_hit_stop_duration: float = 0.05
+@export_range(0.0, 0.5, 0.01) var player_damage_taken_hit_stop_duration: float = 0.08
+@export_range(0.0, 1.0, 0.01) var boss_phase_change_hit_stop_duration: float = 0.2
+@export_range(0.0, 1.0, 0.01) var boss_death_hit_stop_duration: float = 0.4

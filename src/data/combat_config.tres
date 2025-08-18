@@ -35,3 +35,7 @@ player_invincibility_duration = 1.5
 boss_health = 30
 boss_patrol_speed = 100.0
 boss_invincibility_duration = 0.1
+player_melee_close_range_hit_stop_duration = 0.025
+player_damage_taken_hit_stop_duration = 0.04
+boss_phase_change_hit_stop_duration = 0.1
+boss_death_hit_stop_duration = 0.2

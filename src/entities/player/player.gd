@@ -148,6 +148,8 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
 			resource_component.on_damage_dealt()
+			if is_close_range:
+				FXManager.request_hit_stop(entity_data.config.player_melee_close_range_hit_stop_duration)
 func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
 func _on_hitbox_area_entered(area: Area2D) -> void:
@@ -184,6 +186,7 @@ func _on_health_component_died() -> void:
 func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(damage_shake_effect):
 		FXManager.request_screen_shake(damage_shake_effect)
+	FXManager.request_hit_stop(entity_data.config.player_damage_taken_hit_stop_duration)
 func _on_pogo_bounce_requested() -> void:
 	velocity.y = -entity_data.config.player_pogo_force
 	position.y -= 1

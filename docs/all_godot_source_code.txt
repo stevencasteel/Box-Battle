@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 18 14:17:12 CDT 2025
+Generated on: Mon Aug 18 15:05:43 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -131,7 +131,6 @@ PROJECT DIRECTORY STRUCTURE:
 │       ├── version_numbers.gd
 │       └── warnings_manager.gd
 ├── data
-│   └── combat_config.tres
 ├── default_bus_layout.tres
 ├── docs
 │   ├── ARCHITECTURE.txt
@@ -240,6 +239,7 @@ PROJECT DIRECTORY STRUCTURE:
     │       ├── physics_layers.gd
     │       └── scene_validator.gd
     ├── data
+    │   ├── combat_config.tres
     │   ├── dialogue
     │   │   ├── dialogue_data.gd
     │   │   └── test_conversation.tres
@@ -19764,42 +19764,56 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+║  GAME FEEL & IMPACT FEEDBACK (JUICE)                                         ║
+║  Implemented a suite of data-driven feedback systems, including screen shake ║
+║  and hit-stop, to add significant weight and satisfaction to core combat actions.║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Created a new `CameraShaker` component that uses Perlin noise to     ║
+║     ░   procedurally generate smooth, non-repeating camera shake effects.    ║
+║     ░ ■ Implemented a `ScreenShakeEffect` Resource to define shake properties║
+║     ░   (amplitude, frequency, duration) as reusable, designer-tunable assets.║
+║     ░ ■ Upgraded `FXManager` to be the central API for all screen effects.   ║
+║     ░ ■ Expanded `CombatConfig.tres` with four new tunable properties to     ║
+║     ░   control the duration of hit-stop for specific gameplay events.       ║
+║  █  Added                                                                    ║
+║     ░ ■ Integrated screen shake effects for key gameplay events: boss intro, ║
+║     ░   player damage, phase transitions, and boss death.                    ║
+║     ░ ■ Implemented a hierarchical hit-stop system to punctuate pivotal moments:║
+║     ░   - A micro-pause rewards the player for landing high-risk, close-range attacks.║
+║     ░   - A brief pause occurs when the player takes damage, emphasizing impact.║
+║     ░   - A significant pause marks boss phase transitions.                  ║
+║     ░   - A dramatic pause emphasizes the final, killing blow on a boss.     ║
+║  █  Changed                                                                  ║
+║     ░ ■ Refactored the location of `combat_config.tres` to align with project║
+║     ░   structure standards.                                                 ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Corrected the camera shake implementation to use the `Camera2D.offset`║
+║     ░   property, ensuring the shake works correctly with the camera system. ║                                                                              ║
 ║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-   SCREEN SHAKE & GAME FEEL FOUNDATION
-   Implemented a robust, data-driven screen shake system to serve as the
-   foundation for the "Juice & Feedback" initiative, adding significant
-   impact to key gameplay moments.
-   ────────────────────────────────────────────────────────────────────────
-   █  Architectural Changes
-      ░ ■ Created a new `CameraShaker` component that uses Perlin noise to
-      ░   procedurally generate smooth, non-repeating camera shake effects.
-      ░ ■ Implemented a new `ScreenShakeEffect` Resource type, allowing for
-      ░   the creation of reusable, designer-tunable shake assets that define
-      ░   amplitude, frequency, and duration.
-      ░ ■ Upgraded `FXManager` to be the central API for requesting all screen
-      ░   effects, decoupling gameplay logic from the camera implementation.
-   █  Added
-      ░ ■ Integrated screen shake effects for several key gameplay events:
-      ░   - A high-impact shake on boss intro.
-      ░   - A jarring shake when the player takes damage.
-      ░   - A substantial shake for boss phase transitions.
-      ░   - A climactic shake when the boss is defeated.
-   █  Fixed
-      ░ ■ Corrected the camera shake implementation to use the `Camera2D.offset`
-      ░   property, ensuring the shake works correctly with the existing
-      ░   camera and level rendering architecture.║                                                                              ║
+║  SCREEN SHAKE & GAME FEEL FOUNDATION                                         ║
+║  Implemented a robust, data-driven screen shake system to serve as the       ║
+║  foundation for the "Juice & Feedback" initiative, adding significant        ║
+║  impact to key gameplay moments.                                             ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Created a new `CameraShaker` component that uses Perlin noise to     ║
+║     ░   procedurally generate smooth, non-repeating camera shake effects.    ║
+║     ░ ■ Implemented a new `ScreenShakeEffect` Resource type, allowing for    ║
+║     ░   the creation of reusable, designer-tunable shake assets that define  ║
+║     ░   amplitude, frequency, and duration.                                  ║
+║     ░ ■ Upgraded `FXManager` to be the central API for requesting all screen ║
+║     ░   effects, decoupling gameplay logic from the camera implementation.   ║
+║  █  Added                                                                    ║
+║     ░ ■ Integrated screen shake effects for several key gameplay events:     ║
+║     ░   - A high-impact shake on boss intro.                                 ║
+║     ░   - A jarring shake when the player takes damage.                      ║
+║     ░   - A substantial shake for boss phase transitions.                    ║
+║     ░   - A climactic shake when the boss is defeated.                       ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Corrected the camera shake implementation to use the `Camera2D.offset`║
+║     ░   property, ensuring the shake works correctly with the existing       ║
+║     ░   camera and level rendering architecture.║                            ║                                                 ║
 ║                                                                              ║
 ║                                                                              ║
 ║   DATA-DRIVEN ATTACK SYSTEM & DEBUGGER OVERHAUL                              ║
@@ -21053,48 +21067,6 @@ FILE: ./.vscode/settings.json
 {
     "godotTools.editorPath.godot4": "/Applications/Godot.app"
 }
-
-=====================================
-FILE: ./data/combat_config.tres
-=====================================
-[gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3 uid="uid://kov03lmcorvh"]
-
-[ext_resource type="Script" path="res://src/core/data/config/combat_config.gd" id="1_config"]
-
-[resource]
-script = ExtResource("1_config")
-gravity = 1200.0
-player_speed = 450.0
-player_jump_force = 680.0
-player_pogo_force = 450.0
-player_coyote_time = 0.1
-player_jump_buffer = 0.1
-player_jump_release_dampener = 0.4
-player_wall_coyote_time = 0.05
-player_fast_fall_gravity_multiplier = 1.4
-player_max_air_jumps = 0
-player_dash_speed = 1400.0
-player_dash_duration = 0.15
-player_dash_cooldown = 0.5
-player_wall_slide_speed = 120.0
-player_wall_jump_force_x = 1650.0
-player_wall_jump_force_y = 680.0
-player_attack_cooldown = 0.12
-player_charge_time = 0.35
-player_attack_duration = 0.1
-player_attack_friction = 2000.0
-player_knockback_speed = 700.0
-player_knockback_duration = 0.1
-player_hazard_knockback_speed = 400.0
-player_determination_per_charge = 10
-player_max_health = 5
-player_heal_duration = 2.0
-player_max_healing_charges = 1
-player_invincibility_duration = 1.5
-boss_health = 30
-boss_patrol_speed = 100.0
-boss_invincibility_duration = 0.1
-
 
 =====================================
 FILE: ./src/ui/game_hud/game_hud.gd
@@ -24633,7 +24605,7 @@ FILE: ./src/core/data/combat_db.gd
 extends Node
 
 # --- Constants ---
-const CONFIG_PATH: String = "res://data/combat_config.tres"
+const CONFIG_PATH: String = "res://src/data/combat_config.tres"
 
 # --- Public Member Variables ---
 ## A reference to the loaded [CombatConfig] resource.
@@ -24753,6 +24725,12 @@ extends Resource
 @export_range(10, 500, 5) var boss_health: int = 30
 @export_range(50, 500, 5) var boss_patrol_speed: float = 100.0
 @export_range(0.0, 2.0, 0.01) var boss_invincibility_duration: float = 0.1
+
+@export_group("Juice & Feedback (Hit-Stop)")
+@export_range(0.0, 0.5, 0.01) var player_melee_close_range_hit_stop_duration: float = 0.05
+@export_range(0.0, 0.5, 0.01) var player_damage_taken_hit_stop_duration: float = 0.08
+@export_range(0.0, 1.0, 0.01) var boss_phase_change_hit_stop_duration: float = 0.2
+@export_range(0.0, 1.0, 0.01) var boss_death_hit_stop_duration: float = 0.4
 
 =====================================
 FILE: ./src/core/data/game_state_data.gd
@@ -26304,6 +26282,51 @@ class DialogueLine extends Resource:
 @export var conversation: Array[DialogueLine] = []
 
 =====================================
+FILE: ./src/data/combat_config.tres
+=====================================
+[gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3 uid="uid://kov03lmcorvh"]
+
+[ext_resource type="Script" path="res://src/core/data/config/combat_config.gd" id="1_config"]
+
+[resource]
+script = ExtResource("1_config")
+gravity = 1200.0
+player_speed = 450.0
+player_jump_force = 680.0
+player_pogo_force = 450.0
+player_coyote_time = 0.1
+player_jump_buffer = 0.1
+player_jump_release_dampener = 0.4
+player_wall_coyote_time = 0.05
+player_fast_fall_gravity_multiplier = 1.4
+player_max_air_jumps = 0
+player_dash_speed = 1400.0
+player_dash_duration = 0.15
+player_dash_cooldown = 0.5
+player_wall_slide_speed = 120.0
+player_wall_jump_force_x = 1650.0
+player_wall_jump_force_y = 680.0
+player_attack_cooldown = 0.12
+player_charge_time = 0.35
+player_attack_duration = 0.1
+player_attack_friction = 2000.0
+player_knockback_speed = 700.0
+player_knockback_duration = 0.1
+player_hazard_knockback_speed = 400.0
+player_determination_per_charge = 10
+player_max_health = 5
+player_heal_duration = 2.0
+player_max_healing_charges = 1
+player_invincibility_duration = 1.5
+boss_health = 30
+boss_patrol_speed = 100.0
+boss_invincibility_duration = 0.1
+player_melee_close_range_hit_stop_duration = 0.025
+player_damage_taken_hit_stop_duration = 0.04
+boss_phase_change_hit_stop_duration = 0.1
+boss_death_hit_stop_duration = 0.2
+
+=====================================
 FILE: ./src/data/layouts/level_layout.gd
 =====================================
 # src/data/layouts/level_layout.gd
@@ -27002,6 +27025,7 @@ func die() -> void:
 	if _is_dead: return
 	if is_instance_valid(death_shake_effect):
 		FXManager.request_screen_shake(death_shake_effect)
+	FXManager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
 	_is_dead = true
 	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
 	set_physics_process(false)
@@ -27073,6 +27097,7 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 			1: current_attack_patterns = phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
 			FXManager.request_screen_shake(phase_change_shake_effect)
+		FXManager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
 		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout() -> void:
@@ -28132,6 +28157,8 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
 			resource_component.on_damage_dealt()
+			if is_close_range:
+				FXManager.request_hit_stop(entity_data.config.player_melee_close_range_hit_stop_duration)
 func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
 func _on_hitbox_area_entered(area: Area2D) -> void:
@@ -28168,6 +28195,7 @@ func _on_health_component_died() -> void:
 func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(damage_shake_effect):
 		FXManager.request_screen_shake(damage_shake_effect)
+	FXManager.request_hit_stop(entity_data.config.player_damage_taken_hit_stop_duration)
 func _on_pogo_bounce_requested() -> void:
 	velocity.y = -entity_data.config.player_pogo_force
 	position.y -= 1

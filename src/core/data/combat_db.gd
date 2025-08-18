@@ -4,7 +4,7 @@
 extends Node
 
 # --- Constants ---
-const CONFIG_PATH: String = "res://data/combat_config.tres"
+const CONFIG_PATH: String = "res://src/data/combat_config.tres"
 
 # --- Public Member Variables ---
 ## A reference to the loaded [CombatConfig] resource.
