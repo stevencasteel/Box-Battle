@@ -1,9 +1,9 @@
 # src/scenes/game/encounter_scene.gd
 ## The main game scene controller.
 ##
-## Responsible for asynchronously building the level, spawning the player and
-## boss, managing the game camera, and handling the victory/defeat sequences.
-## It also manages the developer debug overlay.
+## Responsible for asynchronously building the level, spawning entities,
+## managing the game camera, and handling victory/defeat sequences.
+## It also manages the developer debug overlay and target inspection.
 class_name EncounterScene
 extends Node
 
@@ -11,18 +11,20 @@ extends Node
 @onready var camera: Camera2D = $Camera2D
 
 # --- Private Member Variables ---
-var _player_node: Node = null
 var _level_container: Node = null
-var _debug_overlay: CanvasLayer = null
+var _debug_overlay: DebugOverlay = null
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
+
+# --- Debug Inspector ---
+var _inspectable_entities: Array[Node] = []
+var _current_inspect_index: int = 0
 
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
 
-	# Asynchronously build the level from the data stored in GameManager.
 	if is_instance_valid(GameManager.state.prebuilt_level):
 		_level_container = GameManager.state.prebuilt_level
 		GameManager.state.prebuilt_level = null
@@ -31,44 +33,63 @@ func _ready() -> void:
 
 	if is_instance_valid(_level_container):
 		add_child(_level_container)
-		await get_tree().process_frame # Wait for nodes to be added to tree
+		await get_tree().process_frame
 
 		var build_data: LevelBuildData = _level_container.get_meta("build_data")
 		if build_data:
 			CameraManager.center_camera_on_arena(camera, build_data.dimensions_tiles)
-			await get_tree().process_frame # Wait for camera to position
-
+			await get_tree().process_frame
 			var terrain_builder = TerrainBuilder.new()
 			terrain_builder.fill_viewport(_level_container, build_data, camera)
 
-	_player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
-	if is_instance_valid(_player_node):
-		_player_node.died.connect(_on_player_died)
+	_initialize_debug_inspector()
 
-	# Instance and manage the debug overlay.
-	_debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
-	add_child(_debug_overlay)
-	_debug_overlay.visible = false
+	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	if is_instance_valid(player_node):
+		player_node.died.connect(_on_player_died)
 
 func _unhandled_input(_event: InputEvent) -> void:
-	if Input.is_action_just_pressed("debug_toggle"):
+	if Input.is_action_just_pressed("debug_toggle_overlay"):
 		if is_instance_valid(_debug_overlay):
 			_debug_overlay.visible = not _debug_overlay.visible
 
+	if Input.is_action_just_pressed("debug_cycle_target"):
+		if is_instance_valid(_debug_overlay) and _debug_overlay.visible:
+			_cycle_debug_target()
+
 func _exit_tree() -> void:
 	EventBus.off(_boss_died_token)
-	if is_instance_valid(_death_sequence_handle):
-		_death_sequence_handle.cancel()
-	# Ensure the game is unpaused when leaving the scene.
+	if is_instance_valid(_death_sequence_handle): _death_sequence_handle.cancel()
 	get_tree().paused = false
 
 # --- Private Methods ---
 
-## Deactivates all active minions in the scene.
+func _initialize_debug_inspector() -> void:
+	_debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
+	add_child(_debug_overlay)
+	_debug_overlay.visible = false
+	
+	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.PLAYER))
+	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
+	
+	if not _inspectable_entities.is_empty():
+		_debug_overlay.set_target(_inspectable_entities[0])
+
+func _cycle_debug_target() -> void:
+	# THE FIX: Filter out any freed instances before cycling.
+	_inspectable_entities = _inspectable_entities.filter(func(e): return is_instance_valid(e))
+
+	if _inspectable_entities.is_empty():
+		_debug_overlay.set_target(null)
+		return
+
+	_current_inspect_index = (_current_inspect_index + 1) % _inspectable_entities.size()
+	var new_target = _inspectable_entities[_current_inspect_index]
+	_debug_overlay.set_target(new_target)
+
 func _deactivate_all_minions() -> void:
 	var minions = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
 	for minion in minions:
-		# Check for the deactivate method to safely handle different enemy types.
 		if minion.has_method("deactivate"):
 			minion.deactivate()
 
@@ -78,12 +99,12 @@ func _on_player_died() -> void:
 	SceneManager.go_to_game_over()
 
 func _on_boss_died(payload: Dictionary) -> void:
-	if is_instance_valid(_player_node): _player_node.set_physics_process(false)
+	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	if is_instance_valid(player_node): player_node.set_physics_process(false)
 	var boss_node = payload.get("boss_node")
 
 	_deactivate_all_minions()
-
-	# Create and run a cinematic sequence before the victory screen.
+	
 	var wait_step_1 = WaitStep.new(); wait_step_1.duration = 1.0
 	var wait_step_2 = WaitStep.new(); wait_step_2.duration = 1.5
 	var death_sequence: Array[SequenceStep] = [wait_step_1, wait_step_2]
@@ -92,7 +113,5 @@ func _on_boss_died(payload: Dictionary) -> void:
 	await _death_sequence_handle.finished
 
 	if is_instance_valid(boss_node): boss_node.queue_free()
-
-	# Only transition if the sequence wasn't cancelled by leaving the scene.
 	if is_instance_valid(_death_sequence_handle):
 		SceneManager.go_to_victory()

@@ -1,21 +1,22 @@
 # src/entities/player/states/state_dash.gd
-# EXPERIMENTAL: All momentum is now cancelled at the end of a dash
-# to test the "hard stop" game feel.
 extends BaseState
 
 var _dash_direction: Vector2
+var _invincibility_token: int
 
 func enter(_msg := {}):
-	state_data.is_dash_invincible = true
 	state_data.can_dash = false
 	state_data.dash_duration_timer = state_data.config.player_dash_duration
 	state_data.dash_cooldown_timer = state_data.config.player_dash_cooldown
+	
+	_invincibility_token = owner.health_component.grant_invincibility(self)
 	
 	_dash_direction = _get_dash_direction()
 	owner.velocity = _dash_direction * state_data.config.player_dash_speed
 
 func exit():
-	state_data.is_dash_invincible = false
+	if is_instance_valid(owner) and is_instance_valid(owner.health_component):
+		owner.health_component.release_invincibility(_invincibility_token)
 	
 	if _dash_direction.y != 0:
 		owner.velocity.y = 0.0

@@ -12,7 +12,5 @@ var health: int = 30:
 	set(value):
 		health = clamp(value, 0, max_health)
 
-var is_invincible: bool = false
-
 # --- Physics & Movement ---
 var facing_direction: float = -1.0

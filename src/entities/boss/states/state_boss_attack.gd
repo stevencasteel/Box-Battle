@@ -19,53 +19,43 @@ func enter(msg := {}) -> void:
 		state_machine.change_state(_boss.State.COOLDOWN)
 		return
 
-	if not msg.has("pattern"):
-		push_error("BossStateAttack: No 'pattern' provided. Aborting.")
+	if not msg.has("pattern") or not msg.pattern is AttackPattern:
+		push_error("BossStateAttack: No valid 'pattern' provided. Aborting.")
 		state_machine.change_state(_boss.State.COOLDOWN)
 		return
 
 	_current_pattern = msg.get("pattern")
-	_start_telegraph()
+	_start_telegraph_and_attack()
 
 # --- Private Methods ---
 
-func _start_telegraph() -> void:
-	var telegraph = TelegraphScene.instantiate()
-	_boss.add_child(telegraph)
-
-	var telegraph_duration: float = _current_pattern.telegraph_duration
-	var telegraph_position: Vector2
-	var telegraph_size: Vector2
-	var telegraph_color: Color = Palette.COLOR_HAZARD_PRIMARY
-
-	match _current_pattern.attack_id:
-		&"lunge":
-			var lunge_width = 800
-			telegraph_size = Vector2(lunge_width, 60) # A thin rectangle
-			var x_offset = (lunge_width / 2.0) + (_boss.get_node("CollisionShape2D").shape.size.x / 2.0)
-			telegraph_position = _boss.global_position + Vector2(state_data.facing_direction * x_offset, 0)
-		_: # Default case for projectile attacks
-			telegraph_size = Vector2(150, 150)
-			telegraph_position = _boss.global_position + Vector2(state_data.facing_direction * 100, 0)
-
-	telegraph.start_telegraph(telegraph_duration, telegraph_size, telegraph_position, telegraph_color)
-	await telegraph.telegraph_finished
-
-	_execute_attack()
-
-func _execute_attack() -> void:
-	if _current_pattern.attack_id == &"lunge":
-		state_machine.change_state(_boss.State.LUNGE, {"pattern": _current_pattern})
+func _start_telegraph_and_attack() -> void:
+	if not is_instance_valid(_current_pattern.logic):
+		push_warning("AttackPattern is missing its 'logic' resource.")
+		state_machine.change_state(_boss.State.COOLDOWN)
 		return
 
-	match _current_pattern.attack_id:
-		&"single_shot":
-			_boss.fire_shot_at_player()
-		&"volley_shot":
-			match _boss.phases_remaining:
-				3: _boss.fire_volley(1)
-				2: _boss.fire_volley(3)
-				1: _boss.fire_volley(5)
+	var telegraph = TelegraphScene.instantiate()
+	_boss.add_child(telegraph)
+	
+	var telegraph_info = _current_pattern.logic.get_telegraph_info(_boss, _current_pattern)
+	var telegraph_size = telegraph_info.get("size", Vector2.ONE * 100)
+	var relative_offset = telegraph_info.get("offset", Vector2.ZERO)
+	
+	# THE FIX: Access the new public 'entity_data' property on the boss.
+	var directional_offset = Vector2(relative_offset.x * _boss.entity_data.facing_direction, relative_offset.y)
+	var telegraph_position = _boss.global_position + directional_offset
+	
+	telegraph.start_telegraph(
+		_current_pattern.telegraph_duration,
+		telegraph_size,
+		telegraph_position,
+		Palette.COLOR_HAZARD_PRIMARY
+	)
+	await telegraph.telegraph_finished
 
-	_boss.cooldown_timer.wait_time = _current_pattern.cooldown
-	state_machine.change_state(_boss.State.COOLDOWN)
+	_current_pattern.logic.execute(_boss, _current_pattern)
+	
+	if state_machine.current_state == self:
+		_boss.cooldown_timer.wait_time = _current_pattern.cooldown
+		state_machine.change_state(_boss.State.COOLDOWN)

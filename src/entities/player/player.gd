@@ -1,9 +1,5 @@
 # src/entities/player/player.gd
 @tool
-## The main player character node.
-##
-## Orchestrates all player-related components, connecting their signals and
-## managing the overall lifecycle of the player entity.
 class_name Player
 extends CharacterBody2D
 
@@ -37,22 +33,20 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 @onready var ability_component: PlayerAbilityComponent = $PlayerAbilityComponent
 @onready var resource_component: PlayerResourceComponent = $PlayerResourceComponent
 
-# --- Data ---b
-var p_data: PlayerStateData
+# --- Data ---
+var entity_data: PlayerStateData
 
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
 	add_to_group(Identifiers.Groups.PLAYER)
-
 	_initialize_data()
 	_initialize_components()
 	_initialize_state_machine()
 	_connect_signals()
-
 	visual_sprite.color = Palette.COLOR_PLAYER
 	resource_component.on_damage_dealt()
-	p_data.determination_counter = 0
+	entity_data.determination_counter = 0
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
@@ -63,9 +57,7 @@ func _physics_process(delta: float) -> void:
 
 # --- Public Methods ---
 
-## A dedicated, public teardown method for deterministic cleanup.
 func teardown() -> void:
-	# Disconnect all signals to break reference cycles before teardown.
 	if is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(_on_health_component_health_changed):
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
@@ -76,8 +68,6 @@ func teardown() -> void:
 			combat_component.damage_dealt.disconnect(resource_component.on_damage_dealt)
 		if combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
 			combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
-
-	# Teardown components to prevent memory leaks from cyclic references.
 	if is_instance_valid(state_machine): state_machine.teardown()
 	if is_instance_valid(health_component): health_component.teardown()
 	if is_instance_valid(combat_component): combat_component.teardown()
@@ -85,33 +75,32 @@ func teardown() -> void:
 	if is_instance_valid(physics_component): physics_component.teardown()
 	if is_instance_valid(ability_component): ability_component.teardown()
 	if is_instance_valid(resource_component): resource_component.teardown()
-	
-	p_data = null
+	entity_data = null
 
 # --- Private Methods ---
 
 func _initialize_data() -> void:
-	p_data = PlayerStateData.new()
-	p_data.config = CombatDB.config
+	entity_data = PlayerStateData.new()
+	entity_data.config = CombatDB.config
 
 func _initialize_components() -> void:
-	health_component.setup(self, { "data_resource": p_data, "config": p_data.config })
-	combat_component.setup(self, { "data_resource": p_data })
-	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "config": p_data.config })
-	physics_component.setup(self, { "data_resource": p_data })
-	ability_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "input_component": input_component })
-	resource_component.setup(self, { "data_resource": p_data })
+	health_component.setup(self, { "data_resource": entity_data, "config": entity_data.config })
+	combat_component.setup(self, { "data_resource": entity_data })
+	input_component.setup(self, { "data_resource": entity_data, "state_machine": state_machine, "config": entity_data.config })
+	physics_component.setup(self, { "data_resource": entity_data, "health_component": health_component })
+	ability_component.setup(self, { "data_resource": entity_data, "state_machine": state_machine, "input_component": input_component })
+	resource_component.setup(self, { "data_resource": entity_data })
 
 func _initialize_state_machine() -> void:
 	var states = {
-		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, p_data),
-		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, p_data),
-		State.JUMP: load("res://src/entities/player/states/state_jump.gd").new(self, state_machine, p_data),
-		State.DASH: load("res://src/entities/player/states/state_dash.gd").new(self, state_machine, p_data),
-		State.WALL_SLIDE: load("res://src/entities/player/states/state_wall_slide.gd").new(self, state_machine, p_data),
-		State.ATTACK: load("res://src/entities/player/states/state_attack.gd").new(self, state_machine, p_data),
-		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, p_data),
-		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, p_data),
+		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, entity_data),
+		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, entity_data),
+		State.JUMP: load("res://src/entities/player/states/state_jump.gd").new(self, state_machine, entity_data),
+		State.DASH: load("res://src/entities/player/states/state_dash.gd").new(self, state_machine, entity_data),
+		State.WALL_SLIDE: load("res://src/entities/player/states/state_wall_slide.gd").new(self, state_machine, entity_data),
+		State.ATTACK: load("res://src/entities/player/states/state_attack.gd").new(self, state_machine, entity_data),
+		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, entity_data),
+		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, entity_data),
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
 
@@ -127,22 +116,22 @@ func _connect_signals() -> void:
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 func _update_timers(delta: float) -> void:
-	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
-	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
-	p_data.dash_cooldown_timer = max(0.0, p_data.dash_cooldown_timer - delta)
-	p_data.dash_duration_timer = max(0.0, p_data.dash_duration_timer - delta)
-	p_data.attack_duration_timer = max(0.0, p_data.attack_duration_timer - delta)
-	p_data.attack_cooldown_timer = max(0.0, p_data.attack_cooldown_timer - delta)
-	p_data.knockback_timer = max(0.0, p_data.knockback_timer - delta)
-	p_data.pogo_fall_prevention_timer = max(0.0, p_data.pogo_fall_prevention_timer - delta)
-	if p_data.is_charging and input_component.buffer.get("attack_pressed"):
-		p_data.charge_timer += delta
+	entity_data.coyote_timer = max(0.0, entity_data.coyote_timer - delta)
+	entity_data.wall_coyote_timer = max(0.0, entity_data.wall_coyote_timer - delta)
+	entity_data.dash_cooldown_timer = max(0.0, entity_data.dash_cooldown_timer - delta)
+	entity_data.dash_duration_timer = max(0.0, entity_data.dash_duration_timer - delta)
+	entity_data.attack_duration_timer = max(0.0, entity_data.attack_duration_timer - delta)
+	entity_data.attack_cooldown_timer = max(0.0, entity_data.attack_cooldown_timer - delta)
+	entity_data.knockback_timer = max(0.0, entity_data.knockback_timer - delta)
+	entity_data.pogo_fall_prevention_timer = max(0.0, entity_data.pogo_fall_prevention_timer - delta)
+	if entity_data.is_charging and input_component.buffer.get("attack_pressed"):
+		entity_data.charge_timer += delta
 
 # --- Signal Handlers ---
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
-	if p_data.hit_targets_this_swing.has(target_id): return
-	p_data.hit_targets_this_swing[target_id] = true
+	if entity_data.hit_targets_this_swing.has(target_id): return
+	entity_data.hit_targets_this_swing[target_id] = true
 	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
@@ -157,14 +146,12 @@ func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
 func _on_hitbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
-		if p_data.is_pogo_attack:
+		if entity_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
 		else:
 			ObjectPool.return_instance(area)
 func _on_hurtbox_area_entered(area: Area2D) -> void:
-	if p_data.is_invincible or p_data.is_dash_invincible:
-		if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE): ObjectPool.return_instance(area)
-		return
+	if health_component.is_invincible(): return
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
@@ -176,8 +163,8 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		ObjectPool.return_instance(area)
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
-		p_data.health += 1; p_data.healing_charges -= 1
-		_on_health_component_health_changed(p_data.health, p_data.max_health)
+		entity_data.health += 1; entity_data.healing_charges -= 1
+		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
 		resource_component.on_damage_dealt()
 		state_machine.change_state(State.MOVE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
@@ -189,10 +176,10 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 func _on_health_component_died() -> void:
 	died.emit()
 func _on_pogo_bounce_requested() -> void:
-	velocity.y = -p_data.config.player_pogo_force
+	velocity.y = -entity_data.config.player_pogo_force
 	position.y -= 1
-	p_data.can_dash = true
-	p_data.air_jumps_left = p_data.config.player_max_air_jumps
+	entity_data.can_dash = true
+	entity_data.air_jumps_left = entity_data.config.player_max_air_jumps
 	state_machine.change_state(State.FALL)
 func _cancel_heal() -> void:
 	if healing_timer.is_stopped(): return

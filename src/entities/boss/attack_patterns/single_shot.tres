@@ -1,10 +1,13 @@
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://bve7t5ucr1k"]
 
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-attack_id = &"single_shot"
+logic = ExtResource("2_logic")
 telegraph_duration = 0.5
 attack_duration = 0.1
 cooldown = 1.5
+projectile_count = 1
+volley_delay = 0.2

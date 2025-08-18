@@ -1,9 +1,6 @@
 # src/entities/player/data/player_state_data.gd
 @tool
 ## A Resource that holds all shared runtime state data for the Player.
-##
-## This object acts as a central "brain" passed between states, allowing them
-## to read and write to a single source of truth without direct coupling.
 class_name PlayerStateData
 extends Resource
 
@@ -20,8 +17,6 @@ var healing_charges: int = 0:
 	set(value):
 		healing_charges = clamp(value, 0, max_healing_charges)
 var determination_counter: int = 0
-var is_invincible: bool = false
-var is_dash_invincible: bool = false
 var hit_targets_this_swing: Dictionary = {}
 
 # --- Physics & Movement ---

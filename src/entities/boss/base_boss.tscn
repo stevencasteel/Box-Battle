@@ -4,10 +4,10 @@
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
 [ext_resource type="Script" uid="uid://ctgxiw44ctnwu" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
 [ext_resource type="Script" uid="uid://bbtepurljrp6c" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
-[ext_resource type="Script" uid="uid://uood4w1gjnxv" path="res://src/entities/components/armor_component.gd" id="4_armor"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="5_pattern_single"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot.tres" id="6_pattern_volley"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="7_pattern_lunge"]
+[ext_resource type="Resource" uid="uid://bve7t5ucr1k" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="5_pattern_single"]
+[ext_resource type="Resource" uid="uid://k3dglh3t1b4a" path="res://src/entities/boss/attack_patterns/volley_shot.tres" id="6_pattern_volley"]
+[ext_resource type="Resource" uid="uid://y6g5o6f7h8ja" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="7_pattern_lunge"]
+[ext_resource type="Resource" uid="uid://01x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_shot_p3.tres" id="8_pattern_volley_p3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -16,9 +16,9 @@ size = Vector2(60, 60)
 collision_layer = 12
 collision_mask = 3
 script = ExtResource("1_26qjf")
-phase_1_patterns = Array[ExtResource("2_30ufx")]([ExtResource("5_pattern_single"), ExtResource("6_pattern_volley")])
-phase_2_patterns = Array[ExtResource("2_30ufx")]([ExtResource("5_pattern_single"), ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")])
-phase_3_patterns = Array[ExtResource("2_30ufx")]([ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")])
+phase_1_patterns = Array[ExtResource("2_30ufx")]([ExtResource("5_pattern_single")])
+phase_2_patterns = Array[ExtResource("2_30ufx")]([ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")])
+phase_3_patterns = Array[ExtResource("2_30ufx")]([ExtResource("8_pattern_volley_p3"), ExtResource("7_pattern_lunge")])
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -30.0
@@ -43,9 +43,6 @@ script = ExtResource("2_b0so8")
 
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("3_fsm")
-
-[node name="ArmorComponent" type="Node" parent="."]
-script = ExtResource("4_armor")
 
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]

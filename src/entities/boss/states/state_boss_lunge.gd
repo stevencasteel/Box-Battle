@@ -9,6 +9,7 @@ const LUNGE_SPEED = 1200.0
 # --- Private Member Variables ---
 var _boss: BaseBoss
 var _lunge_duration: float
+var _invincibility_token: int
 
 # --- State Lifecycle ---
 
@@ -17,16 +18,16 @@ func enter(msg := {}) -> void:
 	if not _boss: return
 
 	var pattern: AttackPattern = msg.get("pattern")
-	if pattern:
-		_lunge_duration = pattern.attack_duration
-	else:
-		_lunge_duration = 0.5 # Default fallback
+	_lunge_duration = pattern.attack_duration if pattern else 0.5
 
-	_boss.armor_component.activate()
+	_invincibility_token = _boss.health_component.grant_invincibility(self)
 	_boss.velocity = Vector2(state_data.facing_direction * LUNGE_SPEED, 0)
+
+func exit() -> void:
+	if is_instance_valid(_boss) and is_instance_valid(_boss.health_component):
+		_boss.health_component.release_invincibility(_invincibility_token)
 
 func process_physics(delta: float) -> void:
 	_lunge_duration -= delta
 	if _lunge_duration <= 0:
-		_boss.armor_component.deactivate()
 		state_machine.change_state(_boss.State.COOLDOWN)

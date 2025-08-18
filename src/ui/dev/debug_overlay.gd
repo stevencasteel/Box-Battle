@@ -1,9 +1,9 @@
 # src/ui/dev/debug_overlay.gd
 ## A toggleable overlay for displaying real-time developer debug information.
+class_name DebugOverlay
 extends CanvasLayer
 
 # --- Node References ---
-@onready var fps_label: Label = %FPSLabel
 @onready var state_label: Label = %StateLabel
 @onready var velocity_label: Label = %VelocityLabel
 @onready var flags_label: Label = %FlagsLabel
@@ -13,14 +13,13 @@ extends CanvasLayer
 @onready var panel: Panel = %Panel
 
 # --- Private Member Variables ---
-var _player_node: Player = null
+var _target_entity: Node = null
 
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
-	# --- Apply custom styling to the panel ---
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0, 0, 0, 0.6) # Semi-transparent black
+	panel_style.bg_color = Color(0, 0, 0, 0.6)
 	panel_style.border_width_left = 2
 	panel_style.border_width_top = 2
 	panel_style.border_width_right = 2
@@ -28,44 +27,67 @@ func _ready() -> void:
 	panel_style.border_color = Palette.COLOR_UI_ACCENT_PRIMARY
 	panel.add_theme_stylebox_override("panel", panel_style)
 	
-	# THE FIX: Ensure long text is clipped instead of overflowing the panel.
 	state_history_label.clip_text = true
 	input_buffer_label.clip_text = true
 	object_pool_label.clip_text = true
-	
-	# Attempt to find the player node once the scene is ready.
-	_player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER) as Player
 
 func _process(_delta: float) -> void:
-	# --- General Info ---
-	fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
-
-	# --- Player-Specific Info ---
-	if not is_instance_valid(_player_node):
-		state_label.text = "PLAYER NOT FOUND"
-		velocity_label.text = ""
+	# General Info (now part of the target entity block)
+	var fps_text = "FPS: %d" % Engine.get_frames_per_second()
+	
+	# Entity-Specific Info
+	if not is_instance_valid(_target_entity):
+		state_label.text = "NO TARGET SELECTED"
+		velocity_label.text = fps_text
 		flags_label.text = ""
 		state_history_label.text = ""
 		input_buffer_label.text = ""
 		object_pool_label.text = ""
 		return
 
+	# --- Header ---
+	velocity_label.text = "%s | %s" % [_target_entity.name, fps_text]
+
 	# --- State and Physics ---
-	var state_machine: BaseStateMachine = _player_node.state_machine
+	var state_machine: BaseStateMachine = _target_entity.state_machine
 	var current_state_name = "N/A"
 	if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
 		current_state_name = state_machine.current_state.get_script().resource_path.get_file()
 
 	state_label.text = "State: %s" % current_state_name
-	velocity_label.text = "Velocity: %s" % _player_node.velocity.round()
 
-	var p_data: PlayerStateData = _player_node.p_data
-	flags_label.text = "Flags: OnFloor(%s) CanDash(%s) Invincible(%s)" % [_player_node.is_on_floor(), p_data.can_dash, p_data.is_invincible]
+	# --- Flags ---
+	var entity_data = _target_entity.entity_data
+	var health_comp: HealthComponent = _target_entity.health_component
+	var is_invincible_str = str(health_comp.is_invincible()) if is_instance_valid(health_comp) else "N/A"
+	var on_floor_str = str(_target_entity.is_on_floor())
+	
+	flags_label.text = "Flags: OnFloor(%s) Invincible(%s)" % [on_floor_str, is_invincible_str]
 
-	state_history_label.text = "History: " + ", ".join(state_machine.state_history)
+	# --- History and Input (Player-only for now) ---
+	if _target_entity is Player:
+		state_history_label.text = "History: " + ", ".join(state_machine.state_history)
+		_update_player_input_buffer()
+	else:
+		state_history_label.text = ""
+		input_buffer_label.text = ""
 
-	# --- Input Buffer ---
-	var input_buffer: Dictionary = _player_node.input_component.buffer
+	# --- Object Pool (global) ---
+	var pool_stats: Dictionary = ObjectPool.get_pool_stats()
+	var pool_text_parts: Array[String] = []
+	for pool_name in pool_stats:
+		var stats = pool_stats[pool_name]
+		pool_text_parts.append("%s [%d/%d]" % [pool_name, stats.active, stats.total])
+	object_pool_label.text = "Pools: " + " ".join(pool_text_parts)
+
+# --- Public Methods ---
+## Sets the entity this overlay should inspect.
+func set_target(entity: Node) -> void:
+	_target_entity = entity
+
+# --- Private Methods ---
+func _update_player_input_buffer() -> void:
+	var input_buffer: Dictionary = _target_entity.input_component.buffer
 	var input_text_parts: Array[String] = []
 	for key in input_buffer:
 		var value = input_buffer[key]
@@ -79,11 +101,3 @@ func _process(_delta: float) -> void:
 			input_text_parts.append("%s: %s" % [key, value])
 			
 	input_buffer_label.text = "Input: " + ", ".join(input_text_parts)
-
-	# --- Object Pool ---
-	var pool_stats: Dictionary = ObjectPool.get_pool_stats()
-	var pool_text_parts: Array[String] = []
-	for pool_name in pool_stats:
-		var stats = pool_stats[pool_name]
-		pool_text_parts.append("%s [%d/%d]" % [pool_name, stats.active, stats.total])
-	object_pool_label.text = "Pools: " + " ".join(pool_text_parts)

@@ -21,8 +21,10 @@ enum State { IDLE, ATTACK }
 @onready var attack_timer: Timer = $AttackTimer
 @onready var range_detector_shape: CollisionShape2D = $RangeDetector/CollisionShape2D
 
+# --- Public Member Variables ---
+var entity_data: TurretStateData
+
 # --- Private Member Variables ---
-var _t_data: TurretStateData
 var _player: CharacterBody2D
 
 # --- Godot Lifecycle Methods ---
@@ -41,7 +43,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(state_machine): state_machine.teardown()
 		if is_instance_valid(health_component): health_component.teardown()
-		_t_data = null
+		entity_data = null
 
 # --- Public Methods ---
 
@@ -75,8 +77,8 @@ func die() -> void:
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
-	_t_data = TurretStateData.new()
-	_t_data.config = CombatDB.config
+	entity_data = TurretStateData.new()
+	entity_data.config = CombatDB.config
 
 func _initialize_components() -> void:
 	var circle_shape = CircleShape2D.new()
@@ -84,14 +86,14 @@ func _initialize_components() -> void:
 	range_detector_shape.shape = circle_shape
 
 	health_component.setup(self, {
-		"data_resource": _t_data,
-		"config": _t_data.config
+		"data_resource": entity_data,
+		"config": entity_data.config
 	})
 
 func _initialize_state_machine() -> void:
 	var states = {
-		State.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(self, state_machine, _t_data),
-		State.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(self, state_machine, _t_data)
+		State.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(self, state_machine, entity_data),
+		State.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(self, state_machine, entity_data)
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.IDLE })
 
@@ -101,11 +103,11 @@ func _connect_signals() -> void:
 # --- Signal Handlers ---
 
 func _on_range_detector_body_entered(body: Node) -> void:
-	if not _t_data: return
+	if not entity_data: return
 	if body.is_in_group(Identifiers.Groups.PLAYER):
-		_t_data.is_player_in_range = true
+		entity_data.is_player_in_range = true
 
 func _on_range_detector_body_exited(body: Node) -> void:
-	if not _t_data: return
+	if not entity_data: return
 	if body.is_in_group(Identifiers.Groups.PLAYER):
-		_t_data.is_player_in_range = false
+		entity_data.is_player_in_range = false

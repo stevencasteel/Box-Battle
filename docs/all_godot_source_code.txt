@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 18 10:45:33 CDT 2025
+Generated on: Mon Aug 18 13:20:06 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -246,10 +246,19 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── README.md
     │   ├── boss
     │   │   ├── attack_patterns
+    │   │   │   ├── attack_logic.gd
     │   │   │   ├── attack_pattern.gd
+    │   │   │   ├── homing_omni_burst_logic.gd
+    │   │   │   ├── homing_omni_burst_pattern.tres
     │   │   │   ├── lunge_attack.tres
+    │   │   │   ├── lunge_logic.gd
+    │   │   │   ├── lunge_logic.tres
+    │   │   │   ├── projectile_logic.gd
     │   │   │   ├── single_shot.tres
-    │   │   │   └── volley_shot.tres
+    │   │   │   ├── single_shot_logic.tres
+    │   │   │   ├── volley_shot.tres
+    │   │   │   ├── volley_shot_logic.tres
+    │   │   │   └── volley_shot_p3.tres
     │   │   ├── base_boss.gd
     │   │   ├── base_boss.tscn
     │   │   ├── boss_state_data.gd
@@ -260,7 +269,6 @@ PROJECT DIRECTORY STRUCTURE:
     │   │       ├── state_boss_lunge.gd
     │   │       └── state_boss_patrol.gd
     │   ├── components
-    │   │   ├── armor_component.gd
     │   │   ├── base_state.gd
     │   │   ├── base_state_machine.gd
     │   │   ├── combat_component.gd
@@ -372,7 +380,7 @@ PROJECT DIRECTORY STRUCTURE:
         │   └── menu_manager.gd
         └── pause_menu
 
-67 directories, 297 files
+67 directories, 305 files
 
 
 =====================================
@@ -19761,6 +19769,49 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║   DATA-DRIVEN ATTACK SYSTEM & DEBUGGER OVERHAUL                              ║
+║   Completed a full-scale refactor of the boss combat system to be data-driven║
+║   and extensible, and upgraded the debug overlay into a powerful, multi-     ║
+║   target entity inspector.                                                   ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the entire boss attack system to use the Strategy Pattern.║
+║      ░   Attack execution is now encapsulated in modular `AttackLogic`       ║
+║      ░   resources, fully decoupling states from specific attack types.      ║
+║      ░ ■ `StateBossAttack` is now a generic executor that reads attack data  ║
+║      ░   from `AttackPattern` resources, enabling designers to create new    ║
+║      ░   attacks without modifying state machine code.                       ║
+║      ░ ■ Refactored the invincibility system into a centralized, token-based ║
+║      ░   model within `HealthComponent`, making it reusable for any entity.  ║
+║      ░ ■ Standardized all entities (`Player`, `BaseBoss`, `Turret`) to use a ║
+║      ░   public `entity_data` property for architectural consistency.        ║
+║   █  Added                                                                   ║
+║      ░ ■ Created a skeleton for a new, complex attack (`HomingOmniBurstLogic`)║
+║      ░   to serve as a template and proof-of-concept for the new system.     ║
+║      ░ ■ Upgraded the `DebugOverlay` into a multi-target "Entity Inspector"  ║
+║      ░   that can cycle through all player and enemy nodes in the scene.     ║
+║      ░ ■ Added new input actions (`debug_toggle_overlay`, `debug_cycle_target`)║
+║      ░   mapped to `Y` and `U` for controlling the new inspector.            ║
+║   █  Removed                                                                 ║
+║      ░ ■ The `ArmorComponent` is now obsolete and has been removed, its      ║
+║      ░   functionality absorbed by the new token-based invincibility system. ║
+║      ░ ■ Legacy invincibility flags (`is_invincible`, `is_dash_invincible`)  ║
+║      ░   have been removed from all entity data resources.                   ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a critical bug where the boss lunge attack would fail due  ║
+║      ░   to an incomplete resource refactor. The lunge and its correct       ║
+║      ░   directional telegraph are now fully functional.                     ║
+║      ░ ■ Fixed a "stale reference" crash in the debug overlay that occurred  ║
+║      ░   when cycling targets after an entity had been destroyed.            ║
+║      ░ ■ Ensured all spawned minions (`Turret`) are given unique, sequential ║
+║      ░   names (e.g., `Turret_1`, `Turret_2`) for easier debugging.          ║
+║                                                                              ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██         [0.10.0] - CI & DEPLOYMENT AUTOMATION - 08/18/2025           ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
@@ -20917,11 +20968,6 @@ ui_down={
 , Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
 ]
 }
-debug_toggle={
-"deadzone": 0.5,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194332,"physical_keycode":0,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
-]
-}
 ui_jump={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":32,"physical_keycode":32,"key_label":0,"unicode":32,"location":0,"echo":false,"script":null)
@@ -20943,6 +20989,16 @@ ui_dash={
 , Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":47,"physical_keycode":47,"key_label":0,"unicode":47,"location":0,"echo":false,"script":null)
 , Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":true,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":16777217,"physical_keycode":16777217,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 , Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":0,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":3,"canceled":false,"pressed":false,"double_click":false,"script":null)
+]
+}
+debug_toggle_overlay={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":89,"key_label":0,"unicode":121,"location":0,"echo":false,"script":null)
+]
+}
+debug_cycle_target={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":85,"key_label":0,"unicode":117,"location":0,"echo":false,"script":null)
 ]
 }
 
@@ -21921,10 +21977,10 @@ FILE: ./src/ui/dev/debug_overlay.gd
 =====================================
 # src/ui/dev/debug_overlay.gd
 ## A toggleable overlay for displaying real-time developer debug information.
+class_name DebugOverlay
 extends CanvasLayer
 
 # --- Node References ---
-@onready var fps_label: Label = %FPSLabel
 @onready var state_label: Label = %StateLabel
 @onready var velocity_label: Label = %VelocityLabel
 @onready var flags_label: Label = %FlagsLabel
@@ -21934,14 +21990,13 @@ extends CanvasLayer
 @onready var panel: Panel = %Panel
 
 # --- Private Member Variables ---
-var _player_node: Player = null
+var _target_entity: Node = null
 
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
-	# --- Apply custom styling to the panel ---
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0, 0, 0, 0.6) # Semi-transparent black
+	panel_style.bg_color = Color(0, 0, 0, 0.6)
 	panel_style.border_width_left = 2
 	panel_style.border_width_top = 2
 	panel_style.border_width_right = 2
@@ -21949,44 +22004,67 @@ func _ready() -> void:
 	panel_style.border_color = Palette.COLOR_UI_ACCENT_PRIMARY
 	panel.add_theme_stylebox_override("panel", panel_style)
 	
-	# THE FIX: Ensure long text is clipped instead of overflowing the panel.
 	state_history_label.clip_text = true
 	input_buffer_label.clip_text = true
 	object_pool_label.clip_text = true
-	
-	# Attempt to find the player node once the scene is ready.
-	_player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER) as Player
 
 func _process(_delta: float) -> void:
-	# --- General Info ---
-	fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
-
-	# --- Player-Specific Info ---
-	if not is_instance_valid(_player_node):
-		state_label.text = "PLAYER NOT FOUND"
-		velocity_label.text = ""
+	# General Info (now part of the target entity block)
+	var fps_text = "FPS: %d" % Engine.get_frames_per_second()
+	
+	# Entity-Specific Info
+	if not is_instance_valid(_target_entity):
+		state_label.text = "NO TARGET SELECTED"
+		velocity_label.text = fps_text
 		flags_label.text = ""
 		state_history_label.text = ""
 		input_buffer_label.text = ""
 		object_pool_label.text = ""
 		return
 
+	# --- Header ---
+	velocity_label.text = "%s | %s" % [_target_entity.name, fps_text]
+
 	# --- State and Physics ---
-	var state_machine: BaseStateMachine = _player_node.state_machine
+	var state_machine: BaseStateMachine = _target_entity.state_machine
 	var current_state_name = "N/A"
 	if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
 		current_state_name = state_machine.current_state.get_script().resource_path.get_file()
 
 	state_label.text = "State: %s" % current_state_name
-	velocity_label.text = "Velocity: %s" % _player_node.velocity.round()
 
-	var p_data: PlayerStateData = _player_node.p_data
-	flags_label.text = "Flags: OnFloor(%s) CanDash(%s) Invincible(%s)" % [_player_node.is_on_floor(), p_data.can_dash, p_data.is_invincible]
+	# --- Flags ---
+	var entity_data = _target_entity.entity_data
+	var health_comp: HealthComponent = _target_entity.health_component
+	var is_invincible_str = str(health_comp.is_invincible()) if is_instance_valid(health_comp) else "N/A"
+	var on_floor_str = str(_target_entity.is_on_floor())
+	
+	flags_label.text = "Flags: OnFloor(%s) Invincible(%s)" % [on_floor_str, is_invincible_str]
 
-	state_history_label.text = "History: " + ", ".join(state_machine.state_history)
+	# --- History and Input (Player-only for now) ---
+	if _target_entity is Player:
+		state_history_label.text = "History: " + ", ".join(state_machine.state_history)
+		_update_player_input_buffer()
+	else:
+		state_history_label.text = ""
+		input_buffer_label.text = ""
 
-	# --- Input Buffer ---
-	var input_buffer: Dictionary = _player_node.input_component.buffer
+	# --- Object Pool (global) ---
+	var pool_stats: Dictionary = ObjectPool.get_pool_stats()
+	var pool_text_parts: Array[String] = []
+	for pool_name in pool_stats:
+		var stats = pool_stats[pool_name]
+		pool_text_parts.append("%s [%d/%d]" % [pool_name, stats.active, stats.total])
+	object_pool_label.text = "Pools: " + " ".join(pool_text_parts)
+
+# --- Public Methods ---
+## Sets the entity this overlay should inspect.
+func set_target(entity: Node) -> void:
+	_target_entity = entity
+
+# --- Private Methods ---
+func _update_player_input_buffer() -> void:
+	var input_buffer: Dictionary = _target_entity.input_component.buffer
 	var input_text_parts: Array[String] = []
 	for key in input_buffer:
 		var value = input_buffer[key]
@@ -22000,15 +22078,6 @@ func _process(_delta: float) -> void:
 			input_text_parts.append("%s: %s" % [key, value])
 			
 	input_buffer_label.text = "Input: " + ", ".join(input_text_parts)
-
-	# --- Object Pool ---
-	var pool_stats: Dictionary = ObjectPool.get_pool_stats()
-	var pool_text_parts: Array[String] = []
-	for pool_name in pool_stats:
-		var stats = pool_stats[pool_name]
-		pool_text_parts.append("%s [%d/%d]" % [pool_name, stats.active, stats.total])
-	object_pool_label.text = "Pools: " + " ".join(pool_text_parts)
-
 
 =====================================
 FILE: ./src/scenes/loading/loading_screen.tscn
@@ -22153,9 +22222,9 @@ FILE: ./src/scenes/game/encounter_scene.gd
 # src/scenes/game/encounter_scene.gd
 ## The main game scene controller.
 ##
-## Responsible for asynchronously building the level, spawning the player and
-## boss, managing the game camera, and handling the victory/defeat sequences.
-## It also manages the developer debug overlay.
+## Responsible for asynchronously building the level, spawning entities,
+## managing the game camera, and handling victory/defeat sequences.
+## It also manages the developer debug overlay and target inspection.
 class_name EncounterScene
 extends Node
 
@@ -22163,18 +22232,20 @@ extends Node
 @onready var camera: Camera2D = $Camera2D
 
 # --- Private Member Variables ---
-var _player_node: Node = null
 var _level_container: Node = null
-var _debug_overlay: CanvasLayer = null
+var _debug_overlay: DebugOverlay = null
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
+
+# --- Debug Inspector ---
+var _inspectable_entities: Array[Node] = []
+var _current_inspect_index: int = 0
 
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
 
-	# Asynchronously build the level from the data stored in GameManager.
 	if is_instance_valid(GameManager.state.prebuilt_level):
 		_level_container = GameManager.state.prebuilt_level
 		GameManager.state.prebuilt_level = null
@@ -22183,44 +22254,63 @@ func _ready() -> void:
 
 	if is_instance_valid(_level_container):
 		add_child(_level_container)
-		await get_tree().process_frame # Wait for nodes to be added to tree
+		await get_tree().process_frame
 
 		var build_data: LevelBuildData = _level_container.get_meta("build_data")
 		if build_data:
 			CameraManager.center_camera_on_arena(camera, build_data.dimensions_tiles)
-			await get_tree().process_frame # Wait for camera to position
-
+			await get_tree().process_frame
 			var terrain_builder = TerrainBuilder.new()
 			terrain_builder.fill_viewport(_level_container, build_data, camera)
 
-	_player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
-	if is_instance_valid(_player_node):
-		_player_node.died.connect(_on_player_died)
+	_initialize_debug_inspector()
 
-	# Instance and manage the debug overlay.
-	_debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
-	add_child(_debug_overlay)
-	_debug_overlay.visible = false
+	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	if is_instance_valid(player_node):
+		player_node.died.connect(_on_player_died)
 
 func _unhandled_input(_event: InputEvent) -> void:
-	if Input.is_action_just_pressed("debug_toggle"):
+	if Input.is_action_just_pressed("debug_toggle_overlay"):
 		if is_instance_valid(_debug_overlay):
 			_debug_overlay.visible = not _debug_overlay.visible
 
+	if Input.is_action_just_pressed("debug_cycle_target"):
+		if is_instance_valid(_debug_overlay) and _debug_overlay.visible:
+			_cycle_debug_target()
+
 func _exit_tree() -> void:
 	EventBus.off(_boss_died_token)
-	if is_instance_valid(_death_sequence_handle):
-		_death_sequence_handle.cancel()
-	# Ensure the game is unpaused when leaving the scene.
+	if is_instance_valid(_death_sequence_handle): _death_sequence_handle.cancel()
 	get_tree().paused = false
 
 # --- Private Methods ---
 
-## Deactivates all active minions in the scene.
+func _initialize_debug_inspector() -> void:
+	_debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
+	add_child(_debug_overlay)
+	_debug_overlay.visible = false
+	
+	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.PLAYER))
+	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
+	
+	if not _inspectable_entities.is_empty():
+		_debug_overlay.set_target(_inspectable_entities[0])
+
+func _cycle_debug_target() -> void:
+	# THE FIX: Filter out any freed instances before cycling.
+	_inspectable_entities = _inspectable_entities.filter(func(e): return is_instance_valid(e))
+
+	if _inspectable_entities.is_empty():
+		_debug_overlay.set_target(null)
+		return
+
+	_current_inspect_index = (_current_inspect_index + 1) % _inspectable_entities.size()
+	var new_target = _inspectable_entities[_current_inspect_index]
+	_debug_overlay.set_target(new_target)
+
 func _deactivate_all_minions() -> void:
 	var minions = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
 	for minion in minions:
-		# Check for the deactivate method to safely handle different enemy types.
 		if minion.has_method("deactivate"):
 			minion.deactivate()
 
@@ -22230,12 +22320,12 @@ func _on_player_died() -> void:
 	SceneManager.go_to_game_over()
 
 func _on_boss_died(payload: Dictionary) -> void:
-	if is_instance_valid(_player_node): _player_node.set_physics_process(false)
+	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	if is_instance_valid(player_node): player_node.set_physics_process(false)
 	var boss_node = payload.get("boss_node")
 
 	_deactivate_all_minions()
-
-	# Create and run a cinematic sequence before the victory screen.
+	
 	var wait_step_1 = WaitStep.new(); wait_step_1.duration = 1.0
 	var wait_step_2 = WaitStep.new(); wait_step_2.duration = 1.5
 	var death_sequence: Array[SequenceStep] = [wait_step_1, wait_step_2]
@@ -22244,8 +22334,6 @@ func _on_boss_died(payload: Dictionary) -> void:
 	await _death_sequence_handle.finished
 
 	if is_instance_valid(boss_node): boss_node.queue_free()
-
-	# Only transition if the sequence wasn't cancelled by leaving the scene.
 	if is_instance_valid(_death_sequence_handle):
 		SceneManager.go_to_victory()
 
@@ -24814,6 +24902,7 @@ extends Node
 var _current_build_data: LevelBuildData
 var _current_level_container: Node
 var _intro_sequence_handle: SequenceHandle
+var _minion_spawn_counts: Dictionary = {}
 
 # --- Public Methods ---
 
@@ -24821,6 +24910,7 @@ var _intro_sequence_handle: SequenceHandle
 func build_level_async() -> Node:
 	if is_instance_valid(_intro_sequence_handle): _intro_sequence_handle.cancel()
 	_intro_sequence_handle = null
+	_minion_spawn_counts.clear() # THE FIX: Reset counts for each new build.
 
 	_current_level_container = Node.new(); _current_level_container.name = "LevelContainer"
 
@@ -24879,6 +24969,13 @@ func _spawn_hud_async() -> void:
 func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
 		var instance = spawn_data.scene.instantiate()
+		
+		# THE FIX: Programmatically assign a unique, sequential name.
+		var base_name = instance.name
+		var current_count = _minion_spawn_counts.get(base_name, 0) + 1
+		_minion_spawn_counts[base_name] = current_count
+		instance.name = "%s_%d" % [base_name, current_count]
+		
 		instance.global_position = spawn_data.position
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame
@@ -26122,18 +26219,96 @@ extends Resource
 @export var minion_spawns: Dictionary = {}
 
 =====================================
+FILE: ./src/entities/boss/attack_patterns/lunge_logic.gd
+=====================================
+# src/entities/boss/attack_patterns/lunge_logic.gd
+@tool
+## Concrete AttackLogic for executing a high-speed, invulnerable dash.
+class_name LungeLogic
+extends AttackLogic
+
+func get_telegraph_info(owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
+	var lunge_width = 800.0
+	var owner_width = owner.get_node("CollisionShape2D").shape.size.x
+	# This offset is now just a magnitude, not direction-aware.
+	var x_offset = (lunge_width / 2.0) + (owner_width / 2.0)
+	
+	return {
+		"size": Vector2(lunge_width, 60),
+		"offset": Vector2(x_offset, 0)
+	}
+
+func execute(owner: BaseBoss, pattern: AttackPattern) -> void:
+	owner.state_machine.change_state(owner.State.LUNGE, {"pattern": pattern})
+
+=====================================
 FILE: ./src/entities/boss/attack_patterns/lunge_attack.tres
 =====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://y6g5o6f7h8i9"]
 
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/lunge_logic.tres" id="2_lunge_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-attack_id = &"lunge"
+logic = ExtResource("2_lunge_logic")
 telegraph_duration = 0.8
 attack_duration = 0.5
 cooldown = 2.0
+projectile_count = 0
+volley_delay = 0.0
+
+=====================================
+FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
+=====================================
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://homing_omni_burst_tres"]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd" id="2_logic"]
+
+[resource]
+script = ExtResource("1_attack_pattern")
+logic = ExtResource("2_logic")
+telegraph_duration = 1.2
+attack_duration = 1.0
+cooldown = 3.5
+projectile_count = 12
+volley_delay = 0.0
+
+
+=====================================
+FILE: ./src/entities/boss/attack_patterns/projectile_logic.gd
+=====================================
+# src/entities/boss/attack_patterns/projectile_logic.gd
+@tool
+## Concrete AttackLogic for firing one or more projectiles.
+class_name ProjectileLogic
+extends AttackLogic
+
+func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
+	return {
+		"size": Vector2(150, 150),
+		"offset": Vector2(100, 0)
+	}
+
+func execute(owner: BaseBoss, pattern: AttackPattern) -> void:
+	if pattern.projectile_count <= 1:
+		owner.fire_shot_at_player()
+	else:
+		owner.fire_volley(pattern.projectile_count, pattern.volley_delay)
+
+
+=====================================
+FILE: ./src/entities/boss/attack_patterns/volley_shot_logic.tres
+=====================================
+[gd_resource type="Resource" script_class="ProjectileLogic" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/projectile_logic.gd" id="1_projectile_logic"]
+
+[resource]
+script = ExtResource("1_projectile_logic")
+projectile_count = 3
+volley_delay = 0.2
 
 
 =====================================
@@ -26143,50 +26318,168 @@ FILE: ./src/entities/boss/attack_patterns/attack_pattern.gd
 @tool
 ## A data resource that defines the properties of a single boss attack.
 ##
-## This allows for designing and tuning attacks directly in the editor instead
-## of hard-coding values in scripts.
+## This combines timing data with a swappable "AttackLogic" resource that
+## contains the actual execution code for the attack (Strategy Pattern).
 class_name AttackPattern
 extends Resource
 
 # --- Editor Properties ---
-## A unique identifier used by the StateMachine to select attack logic.
-@export var attack_id: StringName = &""
-## The duration in seconds that the attack's warning visual is displayed.
+@export var logic: AttackLogic ## The script that defines HOW this attack behaves.
 @export var telegraph_duration: float = 0.5
-## The duration in seconds that the attack itself is active.
 @export var attack_duration: float = 0.1
-## The time in seconds after this attack before the boss can start another.
 @export var cooldown: float = 1.5
+
+@export_group("Attack-Specific Data")
+# --- ProjectileLogic Data ---
+@export var projectile_count: int = 1
+@export var volley_delay: float = 0.2
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/volley_shot.tres
 =====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://k3dglh3t1b4a"]
 
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-attack_id = &"volley_shot"
+logic = ExtResource("2_logic")
 telegraph_duration = 0.7
 attack_duration = 0.6
 cooldown = 2.5
+projectile_count = 3
+volley_delay = 0.2
 
+=====================================
+FILE: ./src/entities/boss/attack_patterns/lunge_logic.tres
+=====================================
+[gd_resource type="Resource" script_class="LungeLogic" load_steps=2 format=3 uid="uid://lunge_logic_tres_id"]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/lunge_logic.gd" id="1_lunge_logic"]
+
+[resource]
+script = ExtResource("1_lunge_logic")
+
+
+=====================================
+FILE: ./src/entities/boss/attack_patterns/volley_shot_p3.tres
+=====================================
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://z1x2y3a4b5c6"]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot_logic.tres" id="2_logic"]
+
+[resource]
+script = ExtResource("1_attack_pattern")
+logic = ExtResource("2_logic")
+telegraph_duration = 0.6
+attack_duration = 1.0
+cooldown = 2.5
+projectile_count = 5
+volley_delay = 0.15
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/single_shot.tres
 =====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://bve7t5ucr1k"]
 
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-attack_id = &"single_shot"
+logic = ExtResource("2_logic")
 telegraph_duration = 0.5
 attack_duration = 0.1
 cooldown = 1.5
+projectile_count = 1
+volley_delay = 0.2
 
+=====================================
+FILE: ./src/entities/boss/attack_patterns/single_shot_logic.tres
+=====================================
+[gd_resource type="Resource" script_class="ProjectileLogic" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/projectile_logic.gd" id="1_projectile_logic"]
+
+[resource]
+script = ExtResource("1_projectile_logic")
+projectile_count = 1
+volley_delay = 0.2
+
+
+=====================================
+FILE: ./src/entities/boss/attack_patterns/attack_logic.gd
+=====================================
+# src/entities/boss/attack_patterns/attack_logic.gd
+@tool
+## The abstract base class for all boss attack execution logic.
+## This implements the Strategy Pattern for boss attacks.
+class_name AttackLogic
+extends Resource
+
+## Returns the visual information for this attack's telegraph.
+## The dictionary should contain: { "size": Vector2, "offset": Vector2 }
+## "offset" is the local position relative to the boss.
+func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
+	# Default to a simple square
+	return {
+		"size": Vector2(150, 150),
+		"offset": Vector2(_owner.state_data.facing_direction * 100, 0)
+	}
+
+## Executes the attack. The core of the Strategy Pattern.
+func execute(_owner: BaseBoss, _pattern: AttackPattern) -> void:
+	push_warning("AttackLogic.execute() was called but not overridden.")
+
+
+=====================================
+FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
+=====================================
+# src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
+@tool
+## Concrete AttackLogic for a complex, multi-projectile homing attack.
+##
+## This script serves as a template for future advanced attack patterns.
+## The logic here could be expanded to spawn projectiles that actively seek
+## the player. For now, it fires a simple, non-homing circular burst.
+class_name HomingOmniBurstLogic
+extends AttackLogic
+
+## The number of projectiles to spawn in the burst.
+@export var projectile_count: int = 10
+## The speed of the projectiles.
+@export var projectile_speed: float = 350.0
+
+func get_telegraph_info(owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
+	# A large circular telegraph is appropriate for a burst attack.
+	return {
+		"size": Vector2(600, 600),
+		"offset": Vector2.ZERO # Centered on the boss
+	}
+
+func execute(owner: BaseBoss, _pattern: AttackPattern) -> void:
+	# --- FUTURE IMPLEMENTATION NOTES ---
+	# To make these projectiles "homing", we would need a new projectile scene
+	# (e.g., 'HomingBossShot.tscn') with a script that includes a 'target'
+	# property. In this 'execute' method, we would get the player node, and
+	# for each spawned projectile, set its 'target' to the player. The
+	# projectile's own '_physics_process' would then handle adjusting its
+	# direction towards the target.
+	
+	if not is_instance_valid(owner): return
+	
+	var angle_step = TAU / projectile_count
+	for i in range(projectile_count):
+		var shot = ObjectPool.get_instance(Identifiers.Pools.BOSS_SHOTS)
+		if not is_instance_valid(shot): continue
+		
+		var angle = i * angle_step
+		shot.direction = Vector2.RIGHT.rotated(angle)
+		shot.speed = projectile_speed # Use the speed from this logic resource
+		shot.global_position = owner.global_position
+		shot.activate()
 
 =====================================
 FILE: ./src/entities/boss/boss_state_data.gd
@@ -26205,8 +26498,6 @@ var health: int = 30:
 	set(value):
 		health = clamp(value, 0, max_health)
 
-var is_invincible: bool = false
-
 # --- Physics & Movement ---
 var facing_direction: float = -1.0
 
@@ -26219,10 +26510,10 @@ FILE: ./src/entities/boss/base_boss.tscn
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
 [ext_resource type="Script" uid="uid://ctgxiw44ctnwu" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
 [ext_resource type="Script" uid="uid://bbtepurljrp6c" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
-[ext_resource type="Script" uid="uid://uood4w1gjnxv" path="res://src/entities/components/armor_component.gd" id="4_armor"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="5_pattern_single"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot.tres" id="6_pattern_volley"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="7_pattern_lunge"]
+[ext_resource type="Resource" uid="uid://bve7t5ucr1k" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="5_pattern_single"]
+[ext_resource type="Resource" uid="uid://k3dglh3t1b4a" path="res://src/entities/boss/attack_patterns/volley_shot.tres" id="6_pattern_volley"]
+[ext_resource type="Resource" uid="uid://y6g5o6f7h8ja" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="7_pattern_lunge"]
+[ext_resource type="Resource" uid="uid://01x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_shot_p3.tres" id="8_pattern_volley_p3"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -26231,9 +26522,9 @@ size = Vector2(60, 60)
 collision_layer = 12
 collision_mask = 3
 script = ExtResource("1_26qjf")
-phase_1_patterns = Array[ExtResource("2_30ufx")]([ExtResource("5_pattern_single"), ExtResource("6_pattern_volley")])
-phase_2_patterns = Array[ExtResource("2_30ufx")]([ExtResource("5_pattern_single"), ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")])
-phase_3_patterns = Array[ExtResource("2_30ufx")]([ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")])
+phase_1_patterns = Array[ExtResource("2_30ufx")]([ExtResource("5_pattern_single")])
+phase_2_patterns = Array[ExtResource("2_30ufx")]([ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")])
+phase_3_patterns = Array[ExtResource("2_30ufx")]([ExtResource("8_pattern_volley_p3"), ExtResource("7_pattern_lunge")])
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -30.0
@@ -26258,9 +26549,6 @@ script = ExtResource("2_b0so8")
 
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("3_fsm")
-
-[node name="ArmorComponent" type="Node" parent="."]
-script = ExtResource("4_armor")
 
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]
@@ -26300,6 +26588,7 @@ const LUNGE_SPEED = 1200.0
 # --- Private Member Variables ---
 var _boss: BaseBoss
 var _lunge_duration: float
+var _invincibility_token: int
 
 # --- State Lifecycle ---
 
@@ -26308,20 +26597,19 @@ func enter(msg := {}) -> void:
 	if not _boss: return
 
 	var pattern: AttackPattern = msg.get("pattern")
-	if pattern:
-		_lunge_duration = pattern.attack_duration
-	else:
-		_lunge_duration = 0.5 # Default fallback
+	_lunge_duration = pattern.attack_duration if pattern else 0.5
 
-	_boss.armor_component.activate()
+	_invincibility_token = _boss.health_component.grant_invincibility(self)
 	_boss.velocity = Vector2(state_data.facing_direction * LUNGE_SPEED, 0)
+
+func exit() -> void:
+	if is_instance_valid(_boss) and is_instance_valid(_boss.health_component):
+		_boss.health_component.release_invincibility(_invincibility_token)
 
 func process_physics(delta: float) -> void:
 	_lunge_duration -= delta
 	if _lunge_duration <= 0:
-		_boss.armor_component.deactivate()
 		state_machine.change_state(_boss.State.COOLDOWN)
-
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_cooldown.gd
@@ -26360,56 +26648,46 @@ func enter(msg := {}) -> void:
 		state_machine.change_state(_boss.State.COOLDOWN)
 		return
 
-	if not msg.has("pattern"):
-		push_error("BossStateAttack: No 'pattern' provided. Aborting.")
+	if not msg.has("pattern") or not msg.pattern is AttackPattern:
+		push_error("BossStateAttack: No valid 'pattern' provided. Aborting.")
 		state_machine.change_state(_boss.State.COOLDOWN)
 		return
 
 	_current_pattern = msg.get("pattern")
-	_start_telegraph()
+	_start_telegraph_and_attack()
 
 # --- Private Methods ---
 
-func _start_telegraph() -> void:
-	var telegraph = TelegraphScene.instantiate()
-	_boss.add_child(telegraph)
-
-	var telegraph_duration: float = _current_pattern.telegraph_duration
-	var telegraph_position: Vector2
-	var telegraph_size: Vector2
-	var telegraph_color: Color = Palette.COLOR_HAZARD_PRIMARY
-
-	match _current_pattern.attack_id:
-		&"lunge":
-			var lunge_width = 800
-			telegraph_size = Vector2(lunge_width, 60) # A thin rectangle
-			var x_offset = (lunge_width / 2.0) + (_boss.get_node("CollisionShape2D").shape.size.x / 2.0)
-			telegraph_position = _boss.global_position + Vector2(state_data.facing_direction * x_offset, 0)
-		_: # Default case for projectile attacks
-			telegraph_size = Vector2(150, 150)
-			telegraph_position = _boss.global_position + Vector2(state_data.facing_direction * 100, 0)
-
-	telegraph.start_telegraph(telegraph_duration, telegraph_size, telegraph_position, telegraph_color)
-	await telegraph.telegraph_finished
-
-	_execute_attack()
-
-func _execute_attack() -> void:
-	if _current_pattern.attack_id == &"lunge":
-		state_machine.change_state(_boss.State.LUNGE, {"pattern": _current_pattern})
+func _start_telegraph_and_attack() -> void:
+	if not is_instance_valid(_current_pattern.logic):
+		push_warning("AttackPattern is missing its 'logic' resource.")
+		state_machine.change_state(_boss.State.COOLDOWN)
 		return
 
-	match _current_pattern.attack_id:
-		&"single_shot":
-			_boss.fire_shot_at_player()
-		&"volley_shot":
-			match _boss.phases_remaining:
-				3: _boss.fire_volley(1)
-				2: _boss.fire_volley(3)
-				1: _boss.fire_volley(5)
+	var telegraph = TelegraphScene.instantiate()
+	_boss.add_child(telegraph)
+	
+	var telegraph_info = _current_pattern.logic.get_telegraph_info(_boss, _current_pattern)
+	var telegraph_size = telegraph_info.get("size", Vector2.ONE * 100)
+	var relative_offset = telegraph_info.get("offset", Vector2.ZERO)
+	
+	# THE FIX: Access the new public 'entity_data' property on the boss.
+	var directional_offset = Vector2(relative_offset.x * _boss.entity_data.facing_direction, relative_offset.y)
+	var telegraph_position = _boss.global_position + directional_offset
+	
+	telegraph.start_telegraph(
+		_current_pattern.telegraph_duration,
+		telegraph_size,
+		telegraph_position,
+		Palette.COLOR_HAZARD_PRIMARY
+	)
+	await telegraph.telegraph_finished
 
-	_boss.cooldown_timer.wait_time = _current_pattern.cooldown
-	state_machine.change_state(_boss.State.COOLDOWN)
+	_current_pattern.logic.execute(_boss, _current_pattern)
+	
+	if state_machine.current_state == self:
+		_boss.cooldown_timer.wait_time = _current_pattern.cooldown
+		state_machine.change_state(_boss.State.COOLDOWN)
 
 
 =====================================
@@ -26432,11 +26710,6 @@ FILE: ./src/entities/boss/base_boss.gd
 =====================================
 # src/entities/boss/base_boss.gd
 @tool
-## The base class for all boss enemies.
-##
-## Orchestrates the boss's components (Health, StateMachine, Armor) and manages
-## phase transitions and attack pattern selection. It is designed to be data-driven,
-## with attack patterns configured directly in the Inspector.
 class_name BaseBoss
 extends CharacterBody2D
 
@@ -26462,14 +26735,13 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @onready var patrol_timer: Timer = $PatrolTimer
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var state_machine: BaseStateMachine = $StateMachine
-@onready var armor_component: ArmorComponent = $ArmorComponent
 
 # --- Public Member Variables ---
 var current_attack_patterns: Array[AttackPattern] = []
 var phases_remaining: int = 3
+var entity_data: BossStateData
 
 # --- Private Member Variables ---
-var _b_data: BossStateData
 var _player: CharacterBody2D = null
 var _active_attack_tween: Tween
 var _is_dead: bool = false
@@ -26477,16 +26749,18 @@ var _is_dead: bool = false
 # --- Godot Lifecycle Methods ---
 
 func _get_configuration_warnings() -> PackedStringArray:
-	return Validator.validate_boss_scene(self)
+	var warnings = PackedStringArray()
+	if not has_node("HealthComponent"): warnings.append("A HealthComponent node is required.")
+	if not has_node("StateMachine"): warnings.append("A StateMachine node is required.")
+	if phase_1_patterns.is_empty(): warnings.append("Phase 1 has no attack patterns assigned.")
+	return warnings
 
 func _ready() -> void:
 	if Engine.is_editor_hint(): return
-
 	_initialize_data()
 	_initialize_components()
 	_initialize_state_machine()
 	_connect_signals()
-
 	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
 func _notification(what: int) -> void:
@@ -26495,17 +26769,13 @@ func _notification(what: int) -> void:
 
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
-
-	if not is_on_floor():
-		velocity.y += _b_data.config.gravity * delta
-
+	if not is_on_floor(): velocity.y += entity_data.config.gravity * delta
 	move_and_slide()
 	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
-		_b_data.facing_direction *= -1.0
+		entity_data.facing_direction *= -1.0
 
 # --- Public Methods ---
 
-## A dedicated, public teardown method for deterministic cleanup.
 func teardown():
 	if is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(_on_health_component_health_changed):
@@ -26514,18 +26784,13 @@ func teardown():
 			health_component.died.disconnect(_on_health_component_died)
 		if health_component.health_threshold_reached.is_connected(_on_health_threshold_reached):
 			health_component.health_threshold_reached.disconnect(_on_health_threshold_reached)
-
 	if is_instance_valid(state_machine): state_machine.teardown()
 	if is_instance_valid(health_component): health_component.teardown()
-	if is_instance_valid(armor_component): armor_component.teardown()
-	
-	_b_data = null
+	entity_data = null
 
-## Returns the health percentage thresholds for phase transitions.
 func get_health_thresholds() -> Array[float]:
 	return [phase_2_threshold, phase_3_threshold]
 
-## Initiates the boss death sequence.
 func die() -> void:
 	if _is_dead: return
 	_is_dead = true
@@ -26534,20 +26799,17 @@ func die() -> void:
 	hide()
 	EventBus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
 
-## Fires a volley of multiple shots at the player with a delay.
-func fire_volley(shot_count: int) -> void:
+func fire_volley(shot_count: int, delay: float) -> void:
 	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
 	_active_attack_tween = get_tree().create_tween()
 	for i in range(shot_count):
 		_active_attack_tween.tween_callback(fire_shot_at_player)
-		if i < shot_count - 1: _active_attack_tween.tween_interval(0.2)
+		if i < shot_count - 1: _active_attack_tween.tween_interval(delay)
 
-## Fires a single projectile towards the player's current position.
 func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player): return
 	var shot = ObjectPool.get_instance(Identifiers.Pools.BOSS_SHOTS)
 	if not shot: return
-
 	_update_player_tracking()
 	shot.direction = (_player.global_position - global_position).normalized()
 	shot.global_position = global_position
@@ -26559,20 +26821,19 @@ func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	current_attack_patterns = phase_1_patterns
-	_b_data = BossStateData.new()
-	_b_data.config = CombatDB.config
+	entity_data = BossStateData.new()
+	entity_data.config = CombatDB.config
 
 func _initialize_components() -> void:
-	health_component.setup(self, { "data_resource": _b_data, "config": _b_data.config })
-	armor_component.setup(self)
+	health_component.setup(self, { "data_resource": entity_data, "config": entity_data.config })
 
 func _initialize_state_machine() -> void:
 	var states = {
-		State.IDLE: BossStateIdle.new(self, state_machine, _b_data),
-		State.ATTACK: BossStateAttack.new(self, state_machine, _b_data),
-		State.COOLDOWN: BossStateCooldown.new(self, state_machine, _b_data),
-		State.PATROL: BossStatePatrol.new(self, state_machine, _b_data),
-		State.LUNGE: BossStateLunge.new(self, state_machine, _b_data),
+		State.IDLE: BossStateIdle.new(self, state_machine, entity_data),
+		State.ATTACK: BossStateAttack.new(self, state_machine, entity_data),
+		State.COOLDOWN: BossStateCooldown.new(self, state_machine, entity_data),
+		State.PATROL: BossStatePatrol.new(self, state_machine, entity_data),
+		State.LUNGE: BossStateLunge.new(self, state_machine, entity_data),
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
 
@@ -26581,13 +26842,12 @@ func _connect_signals() -> void:
 	health_component.died.connect(_on_health_component_died)
 	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
 
-## Updates the boss's facing direction based on the player's position.
 func _update_player_tracking() -> void:
 	if is_instance_valid(_player):
 		var dir_to_player = _player.global_position.x - global_position.x
 		if not is_zero_approx(dir_to_player):
-			_b_data.facing_direction = sign(dir_to_player)
-	self.scale.x = _b_data.facing_direction
+			entity_data.facing_direction = sign(dir_to_player)
+	self.scale.x = entity_data.facing_direction
 
 # --- Signal Handlers ---
 
@@ -26597,7 +26857,6 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 		new_phases_remaining = 1
 	elif health_percentage <= phase_2_threshold and phases_remaining > 2:
 		new_phases_remaining = 2
-
 	if new_phases_remaining != phases_remaining:
 		phases_remaining = new_phases_remaining
 		match phases_remaining:
@@ -26608,19 +26867,17 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 func _on_cooldown_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.COOLDOWN]:
 		state_machine.change_state(State.PATROL)
-
 func _on_patrol_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.PATROL]:
 		state_machine.change_state(State.IDLE)
-
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
 	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
-
 func _on_health_component_died() -> void:
 	die()
+
 
 =====================================
 FILE: ./src/entities/README.md
@@ -26897,31 +27154,6 @@ func trigger_pogo(pogo_target: Node) -> bool:
 	return false
 
 =====================================
-FILE: ./src/entities/components/armor_component.gd
-=====================================
-# src/entities/components/armor_component.gd
-@tool
-## A simple component that manages an "armored" or invulnerable state.
-##
-## When active, other components can query its [member is_armored] property to
-## determine if damage should be ignored.
-class_name ArmorComponent
-extends IComponent
-
-## If true, the entity is invulnerable to damage.
-var is_armored: bool = false
-
-# --- Public Methods ---
-
-## Activates the armored state.
-func activate() -> void:
-	is_armored = true
-
-## Deactivates the armored state.
-func deactivate() -> void:
-	is_armored = false
-
-=====================================
 FILE: ./src/entities/components/telegraph_component.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://b1i2c3d4e5f6g"]
@@ -26944,45 +27176,36 @@ FILE: ./src/entities/components/health_component.gd
 @tool
 ## Manages all health, damage, and invincibility logic for an entity.
 ##
-## This component is the single point of contact for applying damage. It handles
-## hit flashes, knockback calculation, invincibility frames, and communicates
-## health changes and death events via signals.
+## This component is the single source of truth for damage and invincibility.
+## It uses a token-based system to manage multiple, overlapping sources of
+## invulnerability (e.g., post-hit i-frames, ability-based armor).
 class_name HealthComponent
 extends IComponent
 
 # --- Signals ---
-## Emitted whenever health changes.
 signal health_changed(current_health: int, max_health: int)
-## Emitted when health drops to or below zero.
 signal died
-## Emitted when health crosses a pre-defined percentage threshold.
 signal health_threshold_reached(health_percentage: float)
 
 # --- Node References ---
-@onready var invincibility_timer: Timer = Timer.new()
 @onready var hit_flash_timer: Timer = Timer.new()
 
 # --- Member Variables ---
 var entity_data: Resource
 var owner_node: CharacterBody2D
-var armor_component: ArmorComponent
 
 var _max_health: int
 var _invincibility_duration: float
 var _knockback_speed: float
 var _hazard_knockback_speed: float
-var _invincibility_callable: Callable
+var _invincibility_tokens: Dictionary = {}
+var _next_token_id: int = 1
 
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
-	add_child(invincibility_timer)
 	add_child(hit_flash_timer)
-	invincibility_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
-
-	_invincibility_callable = func(): entity_data.is_invincible = false
-	invincibility_timer.timeout.connect(_invincibility_callable)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
 
 func _notification(what: int) -> void:
@@ -26991,16 +27214,30 @@ func _notification(what: int) -> void:
 
 # --- Public Methods ---
 
-## Initializes the component with entity-specific data and configuration.
+## Returns true if the entity has any active invincibility tokens.
+func is_invincible() -> bool:
+	return not _invincibility_tokens.is_empty()
+
+## Requests a temporary grant of invincibility. Returns a token ID.
+## The requester is responsible for calling release_invincibility() with this token.
+func grant_invincibility(requester: Object) -> int:
+	var token_id = _next_token_id
+	_next_token_id += 1
+	_invincibility_tokens[token_id] = requester.get_instance_id()
+	return token_id
+
+## Releases an invincibility token, removing one source of invulnerability.
+func release_invincibility(token: int) -> void:
+	if _invincibility_tokens.has(token):
+		_invincibility_tokens.erase(token)
+
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.entity_data = p_dependencies.get("data_resource")
 	var cfg: CombatConfig = p_dependencies.get("config")
 
-	self.armor_component = owner_node.get_node_or_null("ArmorComponent")
-
 	if not entity_data or not cfg:
-		push_error("HealthComponent.setup: Missing required dependencies ('data_resource', 'config').")
+		push_error("HealthComponent.setup: Missing required dependencies.")
 		return
 
 	_max_health = entity_data.max_health
@@ -27014,31 +27251,22 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		_hazard_knockback_speed = 0
 
 	entity_data.health = _max_health
-
 	var sprite = _get_visual_sprite()
 	if is_instance_valid(sprite) and not sprite.has_meta("original_color"):
 		sprite.set_meta("original_color", sprite.color)
 
 	health_changed.emit(entity_data.health, _max_health)
 
-## Safely cleans up references and disconnects signals.
 func teardown() -> void:
-	if is_instance_valid(invincibility_timer) and invincibility_timer.timeout.is_connected(_invincibility_callable):
-		invincibility_timer.timeout.disconnect(_invincibility_callable)
 	if is_instance_valid(hit_flash_timer) and hit_flash_timer.timeout.is_connected(_on_hit_flash_timer_timeout):
 		hit_flash_timer.timeout.disconnect(_on_hit_flash_timer_timeout)
-
 	entity_data = null
 	owner_node = null
-	armor_component = null
 
-## The primary public method for dealing damage to this entity.
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	var result = DamageResult.new()
-	var is_dash_invincible = entity_data.is_dash_invincible if "is_dash_invincible" in entity_data else false
 
-	if (is_instance_valid(armor_component) and armor_component.is_armored) or \
-		((entity_data.is_invincible or is_dash_invincible) and not damage_info.bypass_invincibility):
+	if is_invincible() and not damage_info.bypass_invincibility:
 		return result
 
 	var health_before_damage = entity_data.health
@@ -27047,57 +27275,45 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 
 	_trigger_hit_flash()
 
-	entity_data.is_invincible = true
-	invincibility_timer.start(_invincibility_duration)
+	# Grant a post-hit invincibility token that self-releases.
+	var post_hit_token = grant_invincibility(self)
+	get_tree().create_timer(_invincibility_duration).timeout.connect(release_invincibility.bind(post_hit_token))
 
 	result.knockback_velocity = _calculate_knockback(damage_info.source_node)
 	_check_for_threshold_crossing(health_before_damage, entity_data.health)
 
-	if entity_data.health <= 0:
-		died.emit()
+	if entity_data.health <= 0: died.emit()
 
 	result.was_damaged = true
 	return result
 
-# --- Private Methods ---
-
+# --- Private Methods (remain the same) ---
 func _check_for_threshold_crossing(health_before: int, health_after: int) -> void:
 	if not owner_node.has_method("get_health_thresholds"): return
-
 	var thresholds: Array[float] = owner_node.get_health_thresholds()
 	var old_percent = float(health_before) / _max_health
 	var new_percent = float(health_after) / _max_health
-
 	for threshold in thresholds:
 		if old_percent > threshold and new_percent <= threshold:
 			health_threshold_reached.emit(threshold)
-
 func _calculate_knockback(source: Node) -> Vector2:
 	if _knockback_speed == 0 or not is_instance_valid(source): return Vector2.ZERO
-
 	var knockback_dir = (owner_node.global_position - source.global_position).normalized()
 	var speed = _knockback_speed
 	if source.is_in_group(Identifiers.Groups.HAZARD):
 		speed = _hazard_knockback_speed
-
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
-
 func _trigger_hit_flash() -> void:
 	var sprite = _get_visual_sprite()
 	if is_instance_valid(sprite):
 		if not sprite.has_meta("original_color"):
 			sprite.set_meta("original_color", sprite.color)
-
 		sprite.color = Palette.COLOR_UI_ACCENT_PRIMARY
 		hit_flash_timer.start()
-
 func _get_visual_sprite() -> ColorRect:
 	if is_instance_valid(owner_node):
 		return owner_node.get_node_or_null("ColorRect")
 	return null
-
-# --- Signal Handlers ---
-
 func _on_hit_flash_timer_timeout() -> void:
 	var sprite = _get_visual_sprite()
 	if is_instance_valid(sprite) and sprite.has_meta("original_color"):
@@ -27242,8 +27458,10 @@ enum State { IDLE, ATTACK }
 @onready var attack_timer: Timer = $AttackTimer
 @onready var range_detector_shape: CollisionShape2D = $RangeDetector/CollisionShape2D
 
+# --- Public Member Variables ---
+var entity_data: TurretStateData
+
 # --- Private Member Variables ---
-var _t_data: TurretStateData
 var _player: CharacterBody2D
 
 # --- Godot Lifecycle Methods ---
@@ -27262,7 +27480,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(state_machine): state_machine.teardown()
 		if is_instance_valid(health_component): health_component.teardown()
-		_t_data = null
+		entity_data = null
 
 # --- Public Methods ---
 
@@ -27296,8 +27514,8 @@ func die() -> void:
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
-	_t_data = TurretStateData.new()
-	_t_data.config = CombatDB.config
+	entity_data = TurretStateData.new()
+	entity_data.config = CombatDB.config
 
 func _initialize_components() -> void:
 	var circle_shape = CircleShape2D.new()
@@ -27305,14 +27523,14 @@ func _initialize_components() -> void:
 	range_detector_shape.shape = circle_shape
 
 	health_component.setup(self, {
-		"data_resource": _t_data,
-		"config": _t_data.config
+		"data_resource": entity_data,
+		"config": entity_data.config
 	})
 
 func _initialize_state_machine() -> void:
 	var states = {
-		State.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(self, state_machine, _t_data),
-		State.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(self, state_machine, _t_data)
+		State.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(self, state_machine, entity_data),
+		State.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(self, state_machine, entity_data)
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.IDLE })
 
@@ -27322,14 +27540,14 @@ func _connect_signals() -> void:
 # --- Signal Handlers ---
 
 func _on_range_detector_body_entered(body: Node) -> void:
-	if not _t_data: return
+	if not entity_data: return
 	if body.is_in_group(Identifiers.Groups.PLAYER):
-		_t_data.is_player_in_range = true
+		entity_data.is_player_in_range = true
 
 func _on_range_detector_body_exited(body: Node) -> void:
-	if not _t_data: return
+	if not entity_data: return
 	if body.is_in_group(Identifiers.Groups.PLAYER):
-		_t_data.is_player_in_range = false
+		entity_data.is_player_in_range = false
 
 =====================================
 FILE: ./src/entities/minions/turret_state_data.gd
@@ -27549,10 +27767,6 @@ FILE: ./src/entities/player/player.gd
 =====================================
 # src/entities/player/player.gd
 @tool
-## The main player character node.
-##
-## Orchestrates all player-related components, connecting their signals and
-## managing the overall lifecycle of the player entity.
 class_name Player
 extends CharacterBody2D
 
@@ -27586,22 +27800,20 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 @onready var ability_component: PlayerAbilityComponent = $PlayerAbilityComponent
 @onready var resource_component: PlayerResourceComponent = $PlayerResourceComponent
 
-# --- Data ---b
-var p_data: PlayerStateData
+# --- Data ---
+var entity_data: PlayerStateData
 
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
 	add_to_group(Identifiers.Groups.PLAYER)
-
 	_initialize_data()
 	_initialize_components()
 	_initialize_state_machine()
 	_connect_signals()
-
 	visual_sprite.color = Palette.COLOR_PLAYER
 	resource_component.on_damage_dealt()
-	p_data.determination_counter = 0
+	entity_data.determination_counter = 0
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
@@ -27612,9 +27824,7 @@ func _physics_process(delta: float) -> void:
 
 # --- Public Methods ---
 
-## A dedicated, public teardown method for deterministic cleanup.
 func teardown() -> void:
-	# Disconnect all signals to break reference cycles before teardown.
 	if is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(_on_health_component_health_changed):
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
@@ -27625,8 +27835,6 @@ func teardown() -> void:
 			combat_component.damage_dealt.disconnect(resource_component.on_damage_dealt)
 		if combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
 			combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
-
-	# Teardown components to prevent memory leaks from cyclic references.
 	if is_instance_valid(state_machine): state_machine.teardown()
 	if is_instance_valid(health_component): health_component.teardown()
 	if is_instance_valid(combat_component): combat_component.teardown()
@@ -27634,33 +27842,32 @@ func teardown() -> void:
 	if is_instance_valid(physics_component): physics_component.teardown()
 	if is_instance_valid(ability_component): ability_component.teardown()
 	if is_instance_valid(resource_component): resource_component.teardown()
-	
-	p_data = null
+	entity_data = null
 
 # --- Private Methods ---
 
 func _initialize_data() -> void:
-	p_data = PlayerStateData.new()
-	p_data.config = CombatDB.config
+	entity_data = PlayerStateData.new()
+	entity_data.config = CombatDB.config
 
 func _initialize_components() -> void:
-	health_component.setup(self, { "data_resource": p_data, "config": p_data.config })
-	combat_component.setup(self, { "data_resource": p_data })
-	input_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "config": p_data.config })
-	physics_component.setup(self, { "data_resource": p_data })
-	ability_component.setup(self, { "data_resource": p_data, "state_machine": state_machine, "input_component": input_component })
-	resource_component.setup(self, { "data_resource": p_data })
+	health_component.setup(self, { "data_resource": entity_data, "config": entity_data.config })
+	combat_component.setup(self, { "data_resource": entity_data })
+	input_component.setup(self, { "data_resource": entity_data, "state_machine": state_machine, "config": entity_data.config })
+	physics_component.setup(self, { "data_resource": entity_data, "health_component": health_component })
+	ability_component.setup(self, { "data_resource": entity_data, "state_machine": state_machine, "input_component": input_component })
+	resource_component.setup(self, { "data_resource": entity_data })
 
 func _initialize_state_machine() -> void:
 	var states = {
-		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, p_data),
-		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, p_data),
-		State.JUMP: load("res://src/entities/player/states/state_jump.gd").new(self, state_machine, p_data),
-		State.DASH: load("res://src/entities/player/states/state_dash.gd").new(self, state_machine, p_data),
-		State.WALL_SLIDE: load("res://src/entities/player/states/state_wall_slide.gd").new(self, state_machine, p_data),
-		State.ATTACK: load("res://src/entities/player/states/state_attack.gd").new(self, state_machine, p_data),
-		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, p_data),
-		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, p_data),
+		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, entity_data),
+		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, entity_data),
+		State.JUMP: load("res://src/entities/player/states/state_jump.gd").new(self, state_machine, entity_data),
+		State.DASH: load("res://src/entities/player/states/state_dash.gd").new(self, state_machine, entity_data),
+		State.WALL_SLIDE: load("res://src/entities/player/states/state_wall_slide.gd").new(self, state_machine, entity_data),
+		State.ATTACK: load("res://src/entities/player/states/state_attack.gd").new(self, state_machine, entity_data),
+		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, entity_data),
+		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, entity_data),
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
 
@@ -27676,22 +27883,22 @@ func _connect_signals() -> void:
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 func _update_timers(delta: float) -> void:
-	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
-	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
-	p_data.dash_cooldown_timer = max(0.0, p_data.dash_cooldown_timer - delta)
-	p_data.dash_duration_timer = max(0.0, p_data.dash_duration_timer - delta)
-	p_data.attack_duration_timer = max(0.0, p_data.attack_duration_timer - delta)
-	p_data.attack_cooldown_timer = max(0.0, p_data.attack_cooldown_timer - delta)
-	p_data.knockback_timer = max(0.0, p_data.knockback_timer - delta)
-	p_data.pogo_fall_prevention_timer = max(0.0, p_data.pogo_fall_prevention_timer - delta)
-	if p_data.is_charging and input_component.buffer.get("attack_pressed"):
-		p_data.charge_timer += delta
+	entity_data.coyote_timer = max(0.0, entity_data.coyote_timer - delta)
+	entity_data.wall_coyote_timer = max(0.0, entity_data.wall_coyote_timer - delta)
+	entity_data.dash_cooldown_timer = max(0.0, entity_data.dash_cooldown_timer - delta)
+	entity_data.dash_duration_timer = max(0.0, entity_data.dash_duration_timer - delta)
+	entity_data.attack_duration_timer = max(0.0, entity_data.attack_duration_timer - delta)
+	entity_data.attack_cooldown_timer = max(0.0, entity_data.attack_cooldown_timer - delta)
+	entity_data.knockback_timer = max(0.0, entity_data.knockback_timer - delta)
+	entity_data.pogo_fall_prevention_timer = max(0.0, entity_data.pogo_fall_prevention_timer - delta)
+	if entity_data.is_charging and input_component.buffer.get("attack_pressed"):
+		entity_data.charge_timer += delta
 
 # --- Signal Handlers ---
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
-	if p_data.hit_targets_this_swing.has(target_id): return
-	p_data.hit_targets_this_swing[target_id] = true
+	if entity_data.hit_targets_this_swing.has(target_id): return
+	entity_data.hit_targets_this_swing[target_id] = true
 	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
@@ -27706,14 +27913,12 @@ func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
 func _on_hitbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
-		if p_data.is_pogo_attack:
+		if entity_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
 		else:
 			ObjectPool.return_instance(area)
 func _on_hurtbox_area_entered(area: Area2D) -> void:
-	if p_data.is_invincible or p_data.is_dash_invincible:
-		if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE): ObjectPool.return_instance(area)
-		return
+	if health_component.is_invincible(): return
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
@@ -27725,8 +27930,8 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		ObjectPool.return_instance(area)
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
-		p_data.health += 1; p_data.healing_charges -= 1
-		_on_health_component_health_changed(p_data.health, p_data.max_health)
+		entity_data.health += 1; entity_data.healing_charges -= 1
+		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
 		resource_component.on_damage_dealt()
 		state_machine.change_state(State.MOVE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
@@ -27738,10 +27943,10 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 func _on_health_component_died() -> void:
 	died.emit()
 func _on_pogo_bounce_requested() -> void:
-	velocity.y = -p_data.config.player_pogo_force
+	velocity.y = -entity_data.config.player_pogo_force
 	position.y -= 1
-	p_data.can_dash = true
-	p_data.air_jumps_left = p_data.config.player_max_air_jumps
+	entity_data.can_dash = true
+	entity_data.air_jumps_left = entity_data.config.player_max_air_jumps
 	state_machine.change_state(State.FALL)
 func _cancel_heal() -> void:
 	if healing_timer.is_stopped(): return
@@ -27829,6 +28034,7 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: Player
 var p_data: PlayerStateData
+var health_component: HealthComponent # THE FIX: Add a reference to the health component.
 
 # --- Godot Lifecycle Methods ---
 
@@ -27845,10 +28051,12 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
+	self.health_component = p_dependencies.get("health_component") # THE FIX: Get the dependency.
 
 func teardown() -> void:
 	owner_node = null
 	p_data = null
+	health_component = null # THE FIX: Clean up the reference.
 
 func apply_horizontal_movement() -> void:
 	var move_axis = owner_node.input_component.buffer.get("move_axis", 0.0)
@@ -27862,7 +28070,9 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 # --- Private Methods ---
 
 func _check_for_contact_damage() -> void:
-	if p_data.is_invincible: return
+	# THE FIX: Use the new, unified invincibility check.
+	if health_component.is_invincible(): return
+	
 	for i in range(owner_node.get_slide_collision_count()):
 		var col = owner_node.get_slide_collision(i)
 		if not col: continue
@@ -27966,23 +28176,24 @@ func _check_for_wall_slide() -> void:
 FILE: ./src/entities/player/states/state_dash.gd
 =====================================
 # src/entities/player/states/state_dash.gd
-# EXPERIMENTAL: All momentum is now cancelled at the end of a dash
-# to test the "hard stop" game feel.
 extends BaseState
 
 var _dash_direction: Vector2
+var _invincibility_token: int
 
 func enter(_msg := {}):
-	state_data.is_dash_invincible = true
 	state_data.can_dash = false
 	state_data.dash_duration_timer = state_data.config.player_dash_duration
 	state_data.dash_cooldown_timer = state_data.config.player_dash_cooldown
+	
+	_invincibility_token = owner.health_component.grant_invincibility(self)
 	
 	_dash_direction = _get_dash_direction()
 	owner.velocity = _dash_direction * state_data.config.player_dash_speed
 
 func exit():
-	state_data.is_dash_invincible = false
+	if is_instance_valid(owner) and is_instance_valid(owner.health_component):
+		owner.health_component.release_invincibility(_invincibility_token)
 	
 	if _dash_direction.y != 0:
 		owner.velocity.y = 0.0
@@ -27997,7 +28208,6 @@ func _get_dash_direction():
 	if Input.is_action_pressed("ui_up"): return Vector2.UP
 	if Input.is_action_pressed("ui_down"): return Vector2.DOWN
 	return Vector2(state_data.facing_direction, 0)
-
 
 =====================================
 FILE: ./src/entities/player/states/state_heal.gd
@@ -28253,9 +28463,6 @@ FILE: ./src/entities/player/data/player_state_data.gd
 # src/entities/player/data/player_state_data.gd
 @tool
 ## A Resource that holds all shared runtime state data for the Player.
-##
-## This object acts as a central "brain" passed between states, allowing them
-## to read and write to a single source of truth without direct coupling.
 class_name PlayerStateData
 extends Resource
 
@@ -28272,8 +28479,6 @@ var healing_charges: int = 0:
 	set(value):
 		healing_charges = clamp(value, 0, max_healing_charges)
 var determination_counter: int = 0
-var is_invincible: bool = false
-var is_dash_invincible: bool = false
 var hit_targets_this_swing: Dictionary = {}
 
 # --- Physics & Movement ---

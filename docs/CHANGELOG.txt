@@ -41,6 +41,49 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║   DATA-DRIVEN ATTACK SYSTEM & DEBUGGER OVERHAUL                              ║
+║   Completed a full-scale refactor of the boss combat system to be data-driven║
+║   and extensible, and upgraded the debug overlay into a powerful, multi-     ║
+║   target entity inspector.                                                   ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  Architectural Changes                                                   ║
+║      ░ ■ Refactored the entire boss attack system to use the Strategy Pattern.║
+║      ░   Attack execution is now encapsulated in modular `AttackLogic`       ║
+║      ░   resources, fully decoupling states from specific attack types.      ║
+║      ░ ■ `StateBossAttack` is now a generic executor that reads attack data  ║
+║      ░   from `AttackPattern` resources, enabling designers to create new    ║
+║      ░   attacks without modifying state machine code.                       ║
+║      ░ ■ Refactored the invincibility system into a centralized, token-based ║
+║      ░   model within `HealthComponent`, making it reusable for any entity.  ║
+║      ░ ■ Standardized all entities (`Player`, `BaseBoss`, `Turret`) to use a ║
+║      ░   public `entity_data` property for architectural consistency.        ║
+║   █  Added                                                                   ║
+║      ░ ■ Created a skeleton for a new, complex attack (`HomingOmniBurstLogic`)║
+║      ░   to serve as a template and proof-of-concept for the new system.     ║
+║      ░ ■ Upgraded the `DebugOverlay` into a multi-target "Entity Inspector"  ║
+║      ░   that can cycle through all player and enemy nodes in the scene.     ║
+║      ░ ■ Added new input actions (`debug_toggle_overlay`, `debug_cycle_target`)║
+║      ░   mapped to `Y` and `U` for controlling the new inspector.            ║
+║   █  Removed                                                                 ║
+║      ░ ■ The `ArmorComponent` is now obsolete and has been removed, its      ║
+║      ░   functionality absorbed by the new token-based invincibility system. ║
+║      ░ ■ Legacy invincibility flags (`is_invincible`, `is_dash_invincible`)  ║
+║      ░   have been removed from all entity data resources.                   ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Resolved a critical bug where the boss lunge attack would fail due  ║
+║      ░   to an incomplete resource refactor. The lunge and its correct       ║
+║      ░   directional telegraph are now fully functional.                     ║
+║      ░ ■ Fixed a "stale reference" crash in the debug overlay that occurred  ║
+║      ░   when cycling targets after an entity had been destroyed.            ║
+║      ░ ■ Ensured all spawned minions (`Turret`) are given unique, sequential ║
+║      ░   names (e.g., `Turret_1`, `Turret_2`) for easier debugging.          ║
+║                                                                              ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██         [0.10.0] - CI & DEPLOYMENT AUTOMATION - 08/18/2025           ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║

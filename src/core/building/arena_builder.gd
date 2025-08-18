@@ -9,6 +9,7 @@ extends Node
 var _current_build_data: LevelBuildData
 var _current_level_container: Node
 var _intro_sequence_handle: SequenceHandle
+var _minion_spawn_counts: Dictionary = {}
 
 # --- Public Methods ---
 
@@ -16,6 +17,7 @@ var _intro_sequence_handle: SequenceHandle
 func build_level_async() -> Node:
 	if is_instance_valid(_intro_sequence_handle): _intro_sequence_handle.cancel()
 	_intro_sequence_handle = null
+	_minion_spawn_counts.clear() # THE FIX: Reset counts for each new build.
 
 	_current_level_container = Node.new(); _current_level_container.name = "LevelContainer"
 
@@ -74,6 +76,13 @@ func _spawn_hud_async() -> void:
 func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
 		var instance = spawn_data.scene.instantiate()
+		
+		# THE FIX: Programmatically assign a unique, sequential name.
+		var base_name = instance.name
+		var current_count = _minion_spawn_counts.get(base_name, 0) + 1
+		_minion_spawn_counts[base_name] = current_count
+		instance.name = "%s_%d" % [base_name, current_count]
+		
 		instance.global_position = spawn_data.position
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://homing_omni_burst_tres"]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd" id="2_logic"]
+
+[resource]
+script = ExtResource("1_attack_pattern")
+logic = ExtResource("2_logic")
+telegraph_duration = 1.2
+attack_duration = 1.0
+cooldown = 3.5
+projectile_count = 12
+volley_delay = 0.0

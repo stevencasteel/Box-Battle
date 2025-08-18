@@ -2,17 +2,18 @@
 @tool
 ## A data resource that defines the properties of a single boss attack.
 ##
-## This allows for designing and tuning attacks directly in the editor instead
-## of hard-coding values in scripts.
+## This combines timing data with a swappable "AttackLogic" resource that
+## contains the actual execution code for the attack (Strategy Pattern).
 class_name AttackPattern
 extends Resource
 
 # --- Editor Properties ---
-## A unique identifier used by the StateMachine to select attack logic.
-@export var attack_id: StringName = &""
-## The duration in seconds that the attack's warning visual is displayed.
+@export var logic: AttackLogic ## The script that defines HOW this attack behaves.
 @export var telegraph_duration: float = 0.5
-## The duration in seconds that the attack itself is active.
 @export var attack_duration: float = 0.1
-## The time in seconds after this attack before the boss can start another.
 @export var cooldown: float = 1.5
+
+@export_group("Attack-Specific Data")
+# --- ProjectileLogic Data ---
+@export var projectile_count: int = 1
+@export var volley_delay: float = 0.2

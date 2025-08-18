@@ -11,6 +11,7 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: Player
 var p_data: PlayerStateData
+var health_component: HealthComponent # THE FIX: Add a reference to the health component.
 
 # --- Godot Lifecycle Methods ---
 
@@ -27,10 +28,12 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
+	self.health_component = p_dependencies.get("health_component") # THE FIX: Get the dependency.
 
 func teardown() -> void:
 	owner_node = null
 	p_data = null
+	health_component = null # THE FIX: Clean up the reference.
 
 func apply_horizontal_movement() -> void:
 	var move_axis = owner_node.input_component.buffer.get("move_axis", 0.0)
@@ -44,7 +47,9 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 # --- Private Methods ---
 
 func _check_for_contact_damage() -> void:
-	if p_data.is_invincible: return
+	# THE FIX: Use the new, unified invincibility check.
+	if health_component.is_invincible(): return
+	
 	for i in range(owner_node.get_slide_collision_count()):
 		var col = owner_node.get_slide_collision(i)
 		if not col: continue
