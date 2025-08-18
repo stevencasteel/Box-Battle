@@ -33,6 +33,7 @@ jobs:
           cd build/windows
           zip -r ../BOX-BATTLE-windows.zip .
       - name: Upload Artifact
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
@@ -61,6 +62,7 @@ jobs:
           cd build/web
           zip -r ../BOX-BATTLE-web.zip .
       - name: Upload Artifact
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
           name: web-build
@@ -83,13 +85,12 @@ jobs:
       - name: Setup build directory
         run: mkdir -vp build/macos
       - name: Build and Export for macOS
-        # CORRECTED FILENAME HERE
         run: godot --headless --verbose --export-release "macOS" "build/macos/BOX-BATTLE-mac.zip"
       - name: Upload Artifact
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          # UPDATED PATH HERE
           path: build/macos/BOX-BATTLE-mac.zip
 
   build-linux:
@@ -115,6 +116,7 @@ jobs:
           cd build/linux
           zip -r ../BOX-BATTLE-linux.zip .
       - name: Upload Artifact
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
           name: linux-build
