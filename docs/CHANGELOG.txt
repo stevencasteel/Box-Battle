@@ -38,18 +38,22 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+║   AUTOMATED TESTING & CORE SYSTEM HARDENING                                  ║
+║   Integrated the Godot Unit Test (GUT) framework to establish an automated   ║
+║   testing pipeline and used it to find and fix critical bugs.                ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  CI & Tooling                                                            ║
+║      ░ ■ Integrated the Godot Unit Test (GUT) framework, establishing the    ║
+║      ░   foundation for automated testing.                                   ║
+║      ░ ■ Created the first suite of unit tests for the `ObjectPool` singleton,║
+║      ░   defining and verifying its core functionality.                      ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Used the new unit tests to discover and resolve two critical bugs in║
+║      ░   `ObjectPool` related to instance reuse logic and state management.  ║
+║      ░ ■ Resolved physics callback errors by restoring the deferred deactivation║
+║      ░   of pooled objects, preventing crashes when objects are returned.    ║
+║      ░ ■ Hardened the unit tests to correctly handle asynchronous behavior,  ║
+║      ░   ensuring they accurately reflect in-game conditions.                ║
 ║                                                                              ║
 ║   AUTOMATED BUILD & RELEASE WORKFLOW                                         ║
 ║   Implemented a multi-job GitHub Actions workflow to automate the entire     ║
@@ -61,7 +65,7 @@
 ║      ░ ■ The pipeline automates two key cycles:                              ║
 ║      ░   - On push to `main`: Compiles builds and saves them as downloadable ║
 ║      ░     `Artifacts` for internal testing.                                 ║
-║      ░   - On version tag (`v*`): Performs all builds and creates a new, public
+║      ░   - On version tag (`v*`): Performs all builds and creates a new, public║
 ║      ░     GitHub Release with the final game packages attached.             ║
 ║                                                                              ║
 ║   CROSS-PLATFORM EXPORT & DEPENDENCY MANAGEMENT                              ║
@@ -388,8 +392,8 @@
 ║      ░ ■ Introduced a robust `IDamageable` interface and a `CombatUtils`     ║
 ║      ░   singleton to standardize how all damage is applied and received.    ║
 ║      ░ ■ Created a new `SceneManager` autoload to centralize all scene       ║
-║      ░   transition logic, removing scattered `get_tree().change_scene` calls.
-║      ░ ■ Refactored `GameManager` to use a `GameStateData` resource, eliminating
+║      ░   transition logic, removing scattered `get_tree().change_scene` calls.║
+║      ░ ■ Refactored `GameManager` to use a `GameStateData` resource, eliminating║
 ║      ░   the "dual architecture" of stateful singletons for runtime data.    ║
 ║      ░ ■ Implemented self-validating property setters in data resources      ║
 ║      ░   (`PlayerStateData`) to prevent invalid states (e.g., health > max). ║
@@ -417,7 +421,7 @@
 ║      ░   reorganizing `src/core` into purpose-driven subdirectories.         ║
 ║      ░ ■ Added validation to `AssetPaths.gd` and `Settings.gd` to prevent    ║
 ║      ░   runtime errors from missing files or invalid data.                  ║
-║      ░ ■ Cleaned all remaining GDScript static analysis warnings for a clean build.
+║      ░ ■ Cleaned all remaining GDScript static analysis warnings for a clean build.║
 ║   █  Fixed                                                                   ║
 ║      ░ ■ Resolved a cascade of parse errors related to the new `CombatConfig`║
 ║      ░   resource, invalid `class_name` usage, and updated autoload paths.   ║
@@ -431,8 +435,8 @@
 ║   all key design patterns and decisions for future development.              ║
 ║   ────────────────────────────────────────────────────────────────────────   ║
 ║   █  Documentation                                                           ║
-║      ░ ■ Generated audit reports for singletons, event usage, and config usage.
-║      ░ ■ Authored `ADR-001` (Service Locator) and `ADR-002` (Communication Patterns)
+║      ░ ■ Generated audit reports for singletons, event usage, and config usage.║
+║      ░ ■ Authored `ADR-001` (Service Locator) and `ADR-002` (Communication Patterns)║
 ║      ░   to formally document architectural decisions.                       ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║

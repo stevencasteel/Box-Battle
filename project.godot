@@ -44,6 +44,10 @@ window/size/viewport_width=1800
 window/size/viewport_height=1000
 window/stretch/mode="canvas_items"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+
 [input]
 
 ui_left={

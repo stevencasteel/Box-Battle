@@ -39,9 +39,13 @@ func get_pool_stats() -> Dictionary:
 func reset() -> void:
 	for pool_name in _pools:
 		var pool = _pools[pool_name]
+		var active_nodes_to_return: Array[Node] = []
 		for child in pool.container.get_children():
 			if not pool.inactive.has(child):
-				return_instance(child)
+				active_nodes_to_return.append(child)
+		
+		for node in active_nodes_to_return:
+			return_instance(node)
 
 ## Retrieves an inactive instance from the specified pool.
 func get_instance(p_pool_name: StringName) -> Node:
@@ -58,24 +62,27 @@ func get_instance(p_pool_name: StringName) -> Node:
 		instance = pool.scene.instantiate()
 		pool.container.add_child(instance)
 
+	if instance.has_method("activate"):
+		instance.activate()
+
 	return instance
 
 ## Returns an active instance to its pool.
 func return_instance(p_instance: Node) -> void:
-	# Guard against returning an already-returned or invalid instance
 	if not is_instance_valid(p_instance) or p_instance.process_mode == PROCESS_MODE_DISABLED:
 		return
 
 	var pool_name = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
-		p_instance.queue_free() # Not a pooled object, so just delete it.
+		p_instance.queue_free()
 		return
 
-	# Defer deactivation to avoid race conditions on the same frame.
-	p_instance.call_deferred("deactivate")
+	if p_instance.has_method("deactivate"):
+		p_instance.call_deferred("deactivate")
 
+	# THE FIX: Use the correct variable 'pool_name' instead of 'p_pool_name'.
 	if not _pools[pool_name].inactive.has(p_instance):
-		_pools[pool_name].inactive.append(p_instance)
+		_pools[pool_name].inactive.push_front(p_instance)
 
 # --- Private Methods ---
 
