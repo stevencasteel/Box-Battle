@@ -19,6 +19,11 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @export var phase_2_patterns: Array[AttackPattern] = []
 @export var phase_3_patterns: Array[AttackPattern] = []
 
+@export_group("Juice & Feedback")
+@export var intro_shake_effect: ScreenShakeEffect
+@export var phase_change_shake_effect: ScreenShakeEffect
+@export var death_shake_effect: ScreenShakeEffect
+
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
 @onready var cooldown_timer: Timer = $CooldownTimer
@@ -52,6 +57,9 @@ func _ready() -> void:
 	_initialize_state_machine()
 	_connect_signals()
 	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	
+	if is_instance_valid(intro_shake_effect):
+		FXManager.request_screen_shake(intro_shake_effect)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
@@ -83,6 +91,8 @@ func get_health_thresholds() -> Array[float]:
 
 func die() -> void:
 	if _is_dead: return
+	if is_instance_valid(death_shake_effect):
+		FXManager.request_screen_shake(death_shake_effect)
 	_is_dead = true
 	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
 	set_physics_process(false)
@@ -152,6 +162,8 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 		match phases_remaining:
 			2: current_attack_patterns = phase_2_patterns
 			1: current_attack_patterns = phase_3_patterns
+		if is_instance_valid(phase_change_shake_effect):
+			FXManager.request_screen_shake(phase_change_shake_effect)
 		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout() -> void:

@@ -15,6 +15,9 @@ const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SL
 const CLOSE_RANGE_THRESHOLD = 75.0
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
+# --- Editor Properties ---
+@export var damage_shake_effect: ScreenShakeEffect
+
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
 @onready var hurtbox: Area2D = $Hurtbox
@@ -63,6 +66,8 @@ func teardown() -> void:
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
 		if health_component.died.is_connected(_on_health_component_died):
 			health_component.died.disconnect(_on_health_component_died)
+		if health_component.took_damage.is_connected(_on_health_component_took_damage):
+			health_component.took_damage.disconnect(_on_health_component_took_damage)
 	if is_instance_valid(combat_component):
 		if combat_component.damage_dealt.is_connected(resource_component.on_damage_dealt):
 			combat_component.damage_dealt.disconnect(resource_component.on_damage_dealt)
@@ -112,6 +117,7 @@ func _connect_signals() -> void:
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
+	health_component.took_damage.connect(_on_health_component_took_damage)
 	combat_component.damage_dealt.connect(resource_component.on_damage_dealt)
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
@@ -175,6 +181,9 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	health_changed.emit(current, max_val)
 func _on_health_component_died() -> void:
 	died.emit()
+func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
+	if is_instance_valid(damage_shake_effect):
+		FXManager.request_screen_shake(damage_shake_effect)
 func _on_pogo_bounce_requested() -> void:
 	velocity.y = -entity_data.config.player_pogo_force
 	position.y -= 1

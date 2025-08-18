@@ -32,10 +32,8 @@ func _ready() -> void:
 	object_pool_label.clip_text = true
 
 func _process(_delta: float) -> void:
-	# General Info (now part of the target entity block)
 	var fps_text = "FPS: %d" % Engine.get_frames_per_second()
 	
-	# Entity-Specific Info
 	if not is_instance_valid(_target_entity):
 		state_label.text = "NO TARGET SELECTED"
 		velocity_label.text = fps_text
@@ -45,10 +43,8 @@ func _process(_delta: float) -> void:
 		object_pool_label.text = ""
 		return
 
-	# --- Header ---
 	velocity_label.text = "%s | %s" % [_target_entity.name, fps_text]
 
-	# --- State and Physics ---
 	var state_machine: BaseStateMachine = _target_entity.state_machine
 	var current_state_name = "N/A"
 	if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
@@ -57,20 +53,21 @@ func _process(_delta: float) -> void:
 	state_label.text = "State: %s" % current_state_name
 
 	# --- Flags ---
-	var entity_data = _target_entity.entity_data
 	var health_comp: HealthComponent = _target_entity.health_component
 	var is_invincible_str = str(health_comp.is_invincible()) if is_instance_valid(health_comp) else "N/A"
 	var on_floor_str = str(_target_entity.is_on_floor())
 	
-	flags_label.text = "Flags: OnFloor(%s) Invincible(%s)" % [on_floor_str, is_invincible_str]
-
-	# --- History and Input (Player-only for now) ---
+	var flags_text = "Flags: OnFloor(%s) Invincible(%s)" % [on_floor_str, is_invincible_str]
+	# THE FIX: Add player-specific flags only when inspecting the player.
 	if _target_entity is Player:
+		flags_text += " CanDash(%s)" % _target_entity.entity_data.can_dash
 		state_history_label.text = "History: " + ", ".join(state_machine.state_history)
 		_update_player_input_buffer()
 	else:
 		state_history_label.text = ""
 		input_buffer_label.text = ""
+
+	flags_label.text = flags_text
 
 	# --- Object Pool (global) ---
 	var pool_stats: Dictionary = ObjectPool.get_pool_stats()
@@ -81,7 +78,6 @@ func _process(_delta: float) -> void:
 	object_pool_label.text = "Pools: " + " ".join(pool_text_parts)
 
 # --- Public Methods ---
-## Sets the entity this overlay should inspect.
 func set_target(entity: Node) -> void:
 	_target_entity = entity
 

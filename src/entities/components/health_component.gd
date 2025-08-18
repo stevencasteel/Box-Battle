@@ -12,6 +12,8 @@ extends IComponent
 signal health_changed(current_health: int, max_health: int)
 signal died
 signal health_threshold_reached(health_percentage: float)
+## Emitted after damage has been successfully applied.
+signal took_damage(damage_info: DamageInfo, damage_result: DamageResult)
 
 # --- Node References ---
 @onready var hit_flash_timer: Timer = Timer.new()
@@ -101,16 +103,18 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 
 	_trigger_hit_flash()
 
-	# Grant a post-hit invincibility token that self-releases.
 	var post_hit_token = grant_invincibility(self)
 	get_tree().create_timer(_invincibility_duration).timeout.connect(release_invincibility.bind(post_hit_token))
 
 	result.knockback_velocity = _calculate_knockback(damage_info.source_node)
 	_check_for_threshold_crossing(health_before_damage, entity_data.health)
 
-	if entity_data.health <= 0: died.emit()
-
 	result.was_damaged = true
+	took_damage.emit(damage_info, result)
+
+	if entity_data.health <= 0:
+		died.emit()
+
 	return result
 
 # --- Private Methods (remain the same) ---

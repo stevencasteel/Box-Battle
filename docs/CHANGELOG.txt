@@ -42,8 +42,29 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
-║                                                                              ║
-║                                                                              ║
+   SCREEN SHAKE & GAME FEEL FOUNDATION
+   Implemented a robust, data-driven screen shake system to serve as the
+   foundation for the "Juice & Feedback" initiative, adding significant
+   impact to key gameplay moments.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Created a new `CameraShaker` component that uses Perlin noise to
+      ░   procedurally generate smooth, non-repeating camera shake effects.
+      ░ ■ Implemented a new `ScreenShakeEffect` Resource type, allowing for
+      ░   the creation of reusable, designer-tunable shake assets that define
+      ░   amplitude, frequency, and duration.
+      ░ ■ Upgraded `FXManager` to be the central API for requesting all screen
+      ░   effects, decoupling gameplay logic from the camera implementation.
+   █  Added
+      ░ ■ Integrated screen shake effects for several key gameplay events:
+      ░   - A high-impact shake on boss intro.
+      ░   - A jarring shake when the player takes damage.
+      ░   - A substantial shake for boss phase transitions.
+      ░   - A climactic shake when the boss is defeated.
+   █  Fixed
+      ░ ■ Corrected the camera shake implementation to use the `Camera2D.offset`
+      ░   property, ensuring the shake works correctly with the existing
+      ░   camera and level rendering architecture.║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
 ║   DATA-DRIVEN ATTACK SYSTEM & DEBUGGER OVERHAUL                              ║

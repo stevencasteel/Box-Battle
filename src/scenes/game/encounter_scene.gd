@@ -15,6 +15,7 @@ var _level_container: Node = null
 var _debug_overlay: DebugOverlay = null
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
+var _camera_shaker: CameraShaker = null
 
 # --- Debug Inspector ---
 var _inspectable_entities: Array[Node] = []
@@ -42,6 +43,7 @@ func _ready() -> void:
 			var terrain_builder = TerrainBuilder.new()
 			terrain_builder.fill_viewport(_level_container, build_data, camera)
 
+	_initialize_camera_shaker()
 	_initialize_debug_inspector()
 
 	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
@@ -59,10 +61,22 @@ func _unhandled_input(_event: InputEvent) -> void:
 
 func _exit_tree() -> void:
 	EventBus.off(_boss_died_token)
+	FXManager.unregister_camera_shaker()
 	if is_instance_valid(_death_sequence_handle): _death_sequence_handle.cancel()
+	if is_instance_valid(camera): camera.offset = Vector2.ZERO
 	get_tree().paused = false
 
 # --- Private Methods ---
+
+func _initialize_camera_shaker() -> void:
+	var shaker_scene = load("res://src/core/systems/camera_shaker.tscn")
+	if shaker_scene:
+		_camera_shaker = shaker_scene.instantiate() as CameraShaker
+		# Add as a direct child of this scene, NOT the camera.
+		add_child(_camera_shaker)
+		# Inject the dependency.
+		_camera_shaker.target_camera = camera
+		FXManager.register_camera_shaker(_camera_shaker)
 
 func _initialize_debug_inspector() -> void:
 	_debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
@@ -76,7 +90,6 @@ func _initialize_debug_inspector() -> void:
 		_debug_overlay.set_target(_inspectable_entities[0])
 
 func _cycle_debug_target() -> void:
-	# THE FIX: Filter out any freed instances before cycling.
 	_inspectable_entities = _inspectable_entities.filter(func(e): return is_instance_valid(e))
 
 	if _inspectable_entities.is_empty():
