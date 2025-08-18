@@ -37,7 +37,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 @onready var ability_component: PlayerAbilityComponent = $PlayerAbilityComponent
 @onready var resource_component: PlayerResourceComponent = $PlayerResourceComponent
 
-# --- Data ---
+# --- Data ---b
 var p_data: PlayerStateData
 
 # --- Godot Lifecycle Methods ---
@@ -63,8 +63,20 @@ func _physics_process(delta: float) -> void:
 
 # --- Public Methods ---
 
-## THE FIX: A dedicated, public teardown method for deterministic cleanup.
+## A dedicated, public teardown method for deterministic cleanup.
 func teardown() -> void:
+	# Disconnect all signals to break reference cycles before teardown.
+	if is_instance_valid(health_component):
+		if health_component.health_changed.is_connected(_on_health_component_health_changed):
+			health_component.health_changed.disconnect(_on_health_component_health_changed)
+		if health_component.died.is_connected(_on_health_component_died):
+			health_component.died.disconnect(_on_health_component_died)
+	if is_instance_valid(combat_component):
+		if combat_component.damage_dealt.is_connected(resource_component.on_damage_dealt):
+			combat_component.damage_dealt.disconnect(resource_component.on_damage_dealt)
+		if combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
+			combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
+
 	# Teardown components to prevent memory leaks from cyclic references.
 	if is_instance_valid(state_machine): state_machine.teardown()
 	if is_instance_valid(health_component): health_component.teardown()
@@ -74,7 +86,6 @@ func teardown() -> void:
 	if is_instance_valid(ability_component): ability_component.teardown()
 	if is_instance_valid(resource_component): resource_component.teardown()
 	
-	# Clear our reference to the data resource.
 	p_data = null
 
 # --- Private Methods ---
@@ -105,7 +116,6 @@ func _initialize_state_machine() -> void:
 	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
 
 func _connect_signals() -> void:
-	# Signal connections remain the same...
 	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
 	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
 	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
@@ -117,7 +127,6 @@ func _connect_signals() -> void:
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 func _update_timers(delta: float) -> void:
-	# Timer updates remain the same...
 	p_data.coyote_timer = max(0.0, p_data.coyote_timer - delta)
 	p_data.wall_coyote_timer = max(0.0, p_data.wall_coyote_timer - delta)
 	p_data.dash_cooldown_timer = max(0.0, p_data.dash_cooldown_timer - delta)
@@ -130,7 +139,6 @@ func _update_timers(delta: float) -> void:
 		p_data.charge_timer += delta
 
 # --- Signal Handlers ---
-# All signal handlers remain the same...
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
 	if p_data.hit_targets_this_swing.has(target_id): return

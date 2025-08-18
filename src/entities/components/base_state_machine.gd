@@ -39,8 +39,6 @@ func teardown() -> void:
 	if current_state:
 		current_state.exit()
 	
-	# THE FIX: Since states are now RefCounted, we just call teardown and clear
-	# our reference. We DO NOT call .free() on a RefCounted object.
 	for state in states.values():
 		if is_instance_valid(state):
 			state.teardown()

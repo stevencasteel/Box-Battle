@@ -11,13 +11,63 @@
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██           [0.11.0] - UNRELEASED IN PROGRESS - XX/XX/XXXX             ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██         [0.10.0] - CI & DEPLOYMENT AUTOMATION - XX/XX/XXXX           ██  ║
+║  ██         [0.10.0] - CI & DEPLOYMENT AUTOMATION - 08/18/2025           ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
+║   Established a comprehensive, automated testing pipeline using the Godot    ║
+║   Unit Test (GUT) framework to harden core systems and safeguard against     ║
+║   future regressions, officially completing the "Fortification" phase.       ║
+║   ────────────────────────────────────────────────────────────────────────   ║
+║   █  CI & Tooling                                                            ║
+║      ░ ■ Created a full suite of unit tests for critical, non-visual systems,║
+║      ░   including `HealthComponent`, `CombatComponent`, `ObjectPool`,       ║
+║      ░   `PlayerResourceComponent`, `InputComponent`, and `CombatUtils`.     ║
+║      ░ ■ Implemented a high-fidelity integration test (`test_integration_combat_loop`)║
+║      ░   that validates the entire end-to-end combat sequence, from player   ║
+║      ░   input to boss damage and event emission.                            ║
+║      ░ ■ Created a data-driven unit test for the `LevelParser`, verifying    ║
+║      ░   the correct parsing of `.tres` layout files into build data.        ║
+║   █  Fixed                                                                   ║
+║      ░ ■ Used the new test suite to identify and resolve multiple cyclic     ║
+║      ░   reference bugs in entity and component `teardown` methods,          ║
+║      ░   significantly improving memory management.                          ║
+║      ░ ■ Corrected a subtle but critical bug in the integration test's input ║
+║      ░   simulation, which was simulating a "hold" instead of a "press,"     ║
+║      ░   validating the test's sensitivity to timing issues.                 ║
+║   █  Known Issues                                                            ║
+║      ░ ■ The test suite continues to correctly identify the deferred memory  ║
+║      ░   leak (`BUG-MEM001`) related to the Player scene's lifecycle.        ║
 ║                                                                              ║
 ║   AUTOMATED TESTING & CORE SYSTEM HARDENING                                  ║
 ║   Integrated the Godot Unit Test (GUT) framework to establish an automated   ║

@@ -33,9 +33,7 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @onready var armor_component: ArmorComponent = $ArmorComponent
 
 # --- Public Member Variables ---
-## The array of [AttackPattern] resources for the current combat phase.
 var current_attack_patterns: Array[AttackPattern] = []
-## The number of health phases remaining (e.g., 3, 2, or 1).
 var phases_remaining: int = 3
 
 # --- Private Member Variables ---
@@ -61,9 +59,7 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
-		if is_instance_valid(state_machine): state_machine.teardown()
-		if is_instance_valid(health_component): health_component.teardown()
-		_b_data = null
+		teardown()
 
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
@@ -76,6 +72,22 @@ func _physics_process(delta: float) -> void:
 		_b_data.facing_direction *= -1.0
 
 # --- Public Methods ---
+
+## A dedicated, public teardown method for deterministic cleanup.
+func teardown():
+	if is_instance_valid(health_component):
+		if health_component.health_changed.is_connected(_on_health_component_health_changed):
+			health_component.health_changed.disconnect(_on_health_component_health_changed)
+		if health_component.died.is_connected(_on_health_component_died):
+			health_component.died.disconnect(_on_health_component_died)
+		if health_component.health_threshold_reached.is_connected(_on_health_threshold_reached):
+			health_component.health_threshold_reached.disconnect(_on_health_threshold_reached)
+
+	if is_instance_valid(state_machine): state_machine.teardown()
+	if is_instance_valid(health_component): health_component.teardown()
+	if is_instance_valid(armor_component): armor_component.teardown()
+	
+	_b_data = null
 
 ## Returns the health percentage thresholds for phase transitions.
 func get_health_thresholds() -> Array[float]:

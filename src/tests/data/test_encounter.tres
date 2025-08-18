@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=3 format=3 uid="uid://test_encounter_tres"]
+
+[ext_resource type="Script" path="res://src/data/encounters/encounter_data.gd" id="1_encounter"]
+[ext_resource type="Resource" path="res://src/tests/data/test_layout.tres" id="2_layout"]
+
+[resource]
+script = ExtResource("1_encounter")
+level_layout = ExtResource("2_layout")
+player_spawn_marker = "@"
+boss_spawn_marker = "&"

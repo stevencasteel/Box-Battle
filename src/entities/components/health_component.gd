@@ -29,7 +29,6 @@ var _max_health: int
 var _invincibility_duration: float
 var _knockback_speed: float
 var _hazard_knockback_speed: float
-# Store the lambda callable to disconnect it later
 var _invincibility_callable: Callable
 
 # --- Godot Lifecycle Methods ---
@@ -40,7 +39,6 @@ func _ready() -> void:
 	invincibility_timer.one_shot = true
 	hit_flash_timer.wait_time = 0.4
 
-	# THE FIX: Store the lambda in a variable so we can disconnect it later.
 	_invincibility_callable = func(): entity_data.is_invincible = false
 	invincibility_timer.timeout.connect(_invincibility_callable)
 	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
@@ -83,7 +81,6 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 
 ## Safely cleans up references and disconnects signals.
 func teardown() -> void:
-	# THE FIX: Explicitly disconnect all signals to break reference cycles.
 	if is_instance_valid(invincibility_timer) and invincibility_timer.timeout.is_connected(_invincibility_callable):
 		invincibility_timer.timeout.disconnect(_invincibility_callable)
 	if is_instance_valid(hit_flash_timer) and hit_flash_timer.timeout.is_connected(_on_hit_flash_timer_timeout):
