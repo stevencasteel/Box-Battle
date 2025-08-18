@@ -11,11 +11,13 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: Player
 var p_data: PlayerStateData
-var health_component: HealthComponent # THE FIX: Add a reference to the health component.
+var health_component: HealthComponent
 
 # --- Godot Lifecycle Methods ---
 
 func _physics_process(_delta: float) -> void:
+	if not is_instance_valid(owner_node): return # Guard against post-teardown calls
+
 	owner_node.move_and_slide()
 	_check_for_contact_damage()
 
@@ -28,12 +30,13 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
-	self.health_component = p_dependencies.get("health_component") # THE FIX: Get the dependency.
+	self.health_component = p_dependencies.get("health_component")
 
 func teardown() -> void:
+	set_physics_process(false)
 	owner_node = null
 	p_data = null
-	health_component = null # THE FIX: Clean up the reference.
+	health_component = null
 
 func apply_horizontal_movement() -> void:
 	var move_axis = owner_node.input_component.buffer.get("move_axis", 0.0)
@@ -47,7 +50,6 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 # --- Private Methods ---
 
 func _check_for_contact_damage() -> void:
-	# THE FIX: Use the new, unified invincibility check.
 	if health_component.is_invincible(): return
 	
 	for i in range(owner_node.get_slide_collision_count()):
@@ -63,9 +65,12 @@ func _check_for_contact_damage() -> void:
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
 		damage_info.source_node = collider
+		damage_info.impact_position = col.get_position()
+		damage_info.impact_normal = col.get_normal()
 		var damage_result = owner_node.health_component.apply_damage(damage_info)
 
 		if damage_result.was_damaged:
 			owner_node.velocity = damage_result.knockback_velocity
+			# THE FIX: Use the enum key, not its integer value, to change state.
 			owner_node.state_machine.change_state(owner_node.State.HURT)
 		break

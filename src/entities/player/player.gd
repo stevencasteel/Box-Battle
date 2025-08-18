@@ -17,6 +17,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
 # --- Editor Properties ---
 @export var damage_shake_effect: ScreenShakeEffect
+@export var hit_spark_effect: VFXEffect
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -61,6 +62,7 @@ func _physics_process(delta: float) -> void:
 # --- Public Methods ---
 
 func teardown() -> void:
+	set_physics_process(false)
 	if is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(_on_health_component_health_changed):
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
@@ -145,6 +147,8 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		var distance = self.global_position.distance_to(body.global_position)
 		var is_close_range = distance <= CLOSE_RANGE_THRESHOLD
 		damage_info.amount = 5 if is_close_range else 1
+		damage_info.impact_position = body.global_position
+		damage_info.impact_normal = (body.global_position - global_position).normalized()
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
 			resource_component.on_damage_dealt()
@@ -157,18 +161,21 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 		if entity_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
 		else:
-			ObjectPool.return_instance(area)
+			ObjectPool.return_instance.call_deferred(area)
 func _on_hurtbox_area_entered(area: Area2D) -> void:
 	if health_component.is_invincible(): return
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
 		damage_info.source_node = area
+		damage_info.impact_position = global_position
+		damage_info.impact_normal = (global_position - area.global_position).normalized()
 		var damage_result = health_component.apply_damage(damage_info)
 		if damage_result.was_damaged:
 			self.velocity = damage_result.knockback_velocity
 			state_machine.change_state(State.HURT)
-		ObjectPool.return_instance(area)
+		# THE FIX: Defer the call to prevent physics-step race conditions.
+		ObjectPool.return_instance.call_deferred(area)
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
 		entity_data.health += 1; entity_data.healing_charges -= 1
@@ -183,10 +190,12 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	health_changed.emit(current, max_val)
 func _on_health_component_died() -> void:
 	died.emit()
-func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
+func _on_health_component_took_damage(damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(damage_shake_effect):
 		FXManager.request_screen_shake(damage_shake_effect)
 	FXManager.request_hit_stop(entity_data.config.player_damage_taken_hit_stop_duration)
+	if is_instance_valid(hit_spark_effect):
+		FXManager.play_vfx(hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
 func _on_pogo_bounce_requested() -> void:
 	velocity.y = -entity_data.config.player_pogo_force
 	position.y -= 1

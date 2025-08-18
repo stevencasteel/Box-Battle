@@ -110,6 +110,7 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	_check_for_threshold_crossing(health_before_damage, entity_data.health)
 
 	result.was_damaged = true
+	# THE FIX: Pass the full DamageInfo object with the event payload.
 	took_damage.emit(damage_info, result)
 
 	if entity_data.health <= 0:
@@ -117,7 +118,7 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 
 	return result
 
-# --- Private Methods (remain the same) ---
+# --- Private Methods ---
 func _check_for_threshold_crossing(health_before: int, health_after: int) -> void:
 	if not owner_node.has_method("get_health_thresholds"): return
 	var thresholds: Array[float] = owner_node.get_health_thresholds()

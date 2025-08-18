@@ -27,14 +27,15 @@ func _physics_process(delta: float) -> void:
 
 ## Activates the projectile, making it visible and interactive.
 func activate() -> void:
+	visible = true
 	process_mode = PROCESS_MODE_INHERIT
 	collision_shape.disabled = false
 
 ## Deactivates the projectile, preparing it to be returned to the ObjectPool.
 func deactivate() -> void:
+	visible = false
 	process_mode = PROCESS_MODE_DISABLED
 	collision_shape.disabled = true
-	global_position = Vector2(-1000, -1000) # Move to the graveyard
 
 # --- Signal Handlers ---
 
@@ -44,9 +45,11 @@ func _on_body_entered(body: Node) -> void:
 		var damage_info = DamageInfo.new()
 		damage_info.amount = damage
 		damage_info.source_node = self
+		damage_info.impact_position = global_position
+		damage_info.impact_normal = -direction
 		damageable.apply_damage(damage_info)
 
-	ObjectPool.return_instance(self)
+	ObjectPool.return_instance.call_deferred(self)
 
 func _on_screen_exited() -> void:
-	ObjectPool.return_instance(self)
+	ObjectPool.return_instance.call_deferred(self)

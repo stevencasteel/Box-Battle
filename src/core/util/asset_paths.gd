@@ -9,7 +9,7 @@ extends Node
 # --- CORE SYSTEMS ---
 const SCRIPT_COMBAT_UTILS = "res://src/core/util/combat_utils.gd"
 const SCENE_MAIN = "res://src/scenes/main/main.tscn"
-const SCENE_ENCOUNTER = "res://src/scenes/game/encounter_scene.tscn" # RENAMED
+const SCENE_ENCOUNTER = "res://src/scenes/game/encounter_scene.tscn"
 const SCENE_LOADING_SCREEN = "res://src/scenes/loading/loading_screen.tscn"
 const SCRIPT_MENU_MANAGER = "res://src/ui/menu_manager/menu_manager.gd"
 const SCRIPT_CUSTOM_SLIDER = "res://src/ui/components/custom_slider/custom_slider.gd"
@@ -45,6 +45,9 @@ const SCENE_MUTE_BUTTON = "res://src/ui/components/mute_button/mute_button.tscn"
 
 # --- DEV TOOLS ---
 const SCENE_DEBUG_OVERLAY = "res://src/ui/dev/debug_overlay.tscn"
+
+# --- VFX ---
+const SCENE_HIT_SPARK = "res://src/vfx/hit_spark.tscn"
 
 # --- SPRITES & ICONS ---
 const SPRITE_CURSOR_DEFAULT = "res://assets/sprites/ui/cursors/sprite_cursor_default.png"

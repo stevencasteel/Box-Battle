@@ -9,5 +9,8 @@ extends Resource
 
 # --- Member Variables ---
 ## A reference to the node that was the source of the damage.
-## This is a runtime-only property and should not be set in the editor.
 var source_node: Node = null
+## The global position where the impact occurred.
+var impact_position: Vector2 = Vector2.ZERO
+## The normal vector of the surface that was hit, used for directing VFX.
+var impact_normal: Vector2 = Vector2.ZERO

@@ -13,6 +13,7 @@ enum State { IDLE, ATTACK }
 # --- Editor Configuration ---
 @export var fire_rate: float = 2.0
 @export var detection_radius: float = 400.0
+@export var hit_spark_effect: VFXEffect
 
 # --- Node References ---
 @onready var visual: Polygon2D = $Visual
@@ -99,6 +100,7 @@ func _initialize_state_machine() -> void:
 
 func _connect_signals() -> void:
 	health_component.died.connect(die)
+	health_component.took_damage.connect(_on_health_component_took_damage)
 
 # --- Signal Handlers ---
 
@@ -111,3 +113,7 @@ func _on_range_detector_body_exited(body: Node) -> void:
 	if not entity_data: return
 	if body.is_in_group(Identifiers.Groups.PLAYER):
 		entity_data.is_player_in_range = false
+		
+func _on_health_component_took_damage(damage_info: DamageInfo, _damage_result: DamageResult) -> void:
+	if is_instance_valid(hit_spark_effect):
+		FXManager.play_vfx(hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)

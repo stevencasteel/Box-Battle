@@ -26,21 +26,36 @@ func request_screen_shake(shake_effect: ScreenShakeEffect) -> void:
 	else:
 		push_warning("FXManager: request_screen_shake called, but no CameraShaker is registered.")
 
+## The main public API for spawning a visual effect from the object pool.
+func play_vfx(effect: VFXEffect, global_position: Vector2, direction: Vector2 = Vector2.ZERO) -> void:
+	if not is_instance_valid(effect):
+		push_warning("FXManager: play_vfx called with an invalid VFXEffect resource.")
+		return
+
+	if effect.pool_key == &"":
+		push_warning("FXManager: VFXEffect resource is missing a 'pool_key'.")
+		return
+
+	var vfx_instance = ObjectPool.get_instance(effect.pool_key)
+	if not is_instance_valid(vfx_instance):
+		push_error("FXManager: Failed to get instance for pool key '%s'." % effect.pool_key)
+		return
+	
+	vfx_instance.global_position = global_position
+
+	if vfx_instance.has_method("activate"):
+		vfx_instance.call("activate", direction)
+
 ## Pauses the entire game tree for a short duration to add impact to an event.
 func request_hit_stop(duration: float) -> void:
-	# Prevent multiple hit-stops from overlapping, which can feel jarring.
 	if _is_hit_stop_active:
 		return
 
 	_is_hit_stop_active = true
 	get_tree().paused = true
 
-	# Use a SceneTreeTimer that respects the pause state.
 	var timer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
-	# Check if the tree is still paused by the actual game menu before unpausing.
 	if get_tree().paused and _is_hit_stop_active:
 		get_tree().paused = false
-
-	_is_hit_stop_active = false

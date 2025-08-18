@@ -20,6 +20,8 @@ var buffer: Dictionary = {}
 # --- Godot Lifecycle Methods ---
 
 func _physics_process(_delta: float) -> void:
+	if not is_instance_valid(owner_node): return # Guard against post-teardown calls
+	
 	# 1. Clear the buffer at the start of the frame.
 	buffer.clear()
 
@@ -52,6 +54,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		return
 
 func teardown() -> void:
+	set_physics_process(false) # Immediately stop processing
 	owner_node = null
 	p_data = null
 	state_machine = null

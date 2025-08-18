@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=3 uid="uid://c8g7f6e5d4b3a"]
+
+[ext_resource type="Script" path="res://src/vfx/hit_spark.gd" id="1_hit_spark_script"]
+
+[sub_resource type="Gradient" id="Gradient_1"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_1"]
+gradient = SubResource("Gradient_1")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_1"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 1.0
+direction = Vector3(1, 0, 0)
+spread = 35.0
+initial_velocity_min = 150.0
+initial_velocity_max = 250.0
+gravity = Vector3(0, 0, 0)
+damping_min = 200.0
+damping_max = 300.0
+scale_min = 0.5
+scale_max = 1.0
+color_ramp = SubResource("GradientTexture1D_1")
+
+[node name="HitSpark" type="GPUParticles2D"]
+emitting = false
+amount = 12
+process_material = SubResource("ParticleProcessMaterial_1")
+lifetime = 0.3
+one_shot = true
+explosiveness = 1.0
+local_coords = true
+fixed_fps = 60
+script = ExtResource("1_hit_spark_script")
+metadata/pool_name = &"hit_sparks"

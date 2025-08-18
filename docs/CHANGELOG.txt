@@ -11,8 +11,9 @@
 ║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██           [0.11.0] - UNRELEASED IN PROGRESS - XX/XX/XXXX             ██  ║
+║  ██           [0.12.0] - CURRENT VERSION NEEDS TITLE - 08/XX/2025        ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║                                                                              ║
@@ -36,10 +37,33 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██                 [0.11.0] - NEEDS TITLE - 08/18/2025                  ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║                                                                              ║
-║                                                                              ║
-║                                                                              ║
+║  VFX & OBJECT POOLING FOUNDATION                                             ║
+║  Established a scalable, data-driven system for spawning visual effects      ║
+║  and hardened the ObjectPool to be architecturally sound and free of         ║
+║  race conditions.                                                            ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Implemented a "VFX Cookbook" pattern by creating a `VFXEffect`       ║
+║     ░   Resource. This allows designers to define particle effects as data assets.║
+║     ░ ■ Upgraded `FXManager` with a `play_vfx()` method to serve as the      ║
+║     ░   single, decoupled API for triggering all visual effects.             ║
+║     ░ ■ Refactored the `ObjectPool` to use a canonical, robust pattern that  ║
+║     ░   eliminates all parenting-related errors and physics race conditions. ║
+║  █  Added                                                                    ║
+║     ░ ■ Created a new reusable, pooled `hit_spark.tscn` particle effect.     ║
+║     ░ ■ The `DamageInfo` resource was expanded to include `impact_position`  ║
+║     ░   and `impact_normal` to provide VFX with necessary spawn data.        ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Resolved a critical crash caused by incorrect state change calls in  ║
+║     ░   the `PlayerPhysicsComponent` during contact damage checks.           ║
+║     ░ ■ Eliminated a visual bug where pooled projectiles would not disappear ║
+║     ░   after being returned to the pool by adding `visible = false` to      ║
+║     ░   their `deactivate()` methods.                                        ║
 ║                                                                              ║
 ║  MEMORY MANAGEMENT & ARCHITECTURAL REFINEMENT                                ║
 ║  Resolved critical memory leaks on scene transitions by implementing a formal║

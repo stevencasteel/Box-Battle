@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="VFXEffect" load_steps=3 format=3 uid="uid://player_hit_spark_tres"]
+
+[ext_resource type="Script" path="res://src/core/data/effects/vfx_effect.gd" id="1_vfx_effect"]
+[ext_resource type="PackedScene" uid="uid://c8g7f6e5d4b3a" path="res://src/vfx/hit_spark.tscn" id="2_hit_spark_scene"]
+
+[resource]
+script = ExtResource("1_vfx_effect")
+scene = ExtResource("2_hit_spark_scene")
+pool_key = &"hit_sparks"

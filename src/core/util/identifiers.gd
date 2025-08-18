@@ -22,3 +22,4 @@ class Pools:
 	const PLAYER_SHOTS = &"player_shots"
 	const BOSS_SHOTS = &"boss_shots"
 	const TURRET_SHOTS = &"turret_shots"
+	const HIT_SPARKS = &"hit_sparks"

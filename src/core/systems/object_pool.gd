@@ -9,6 +9,7 @@ extends Node
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
 const TurretShotScene = preload(AssetPaths.SCENE_TURRET_SHOT)
+const HitSparkScene = preload(AssetPaths.SCENE_HIT_SPARK)
 
 # --- Private Member Variables ---
 var _pools: Dictionary = {}
@@ -19,6 +20,7 @@ func _ready() -> void:
 	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, PlayerShotScene, 15)
 	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, BossShotScene, 30)
 	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, TurretShotScene, 20)
+	_create_pool_for_scene(Identifiers.Pools.HIT_SPARKS, HitSparkScene, 25)
 
 # --- Public Methods ---
 
@@ -58,31 +60,28 @@ func get_instance(p_pool_name: StringName) -> Node:
 
 	if not pool.inactive.is_empty():
 		instance = pool.inactive.pop_front()
-	else: # Pool is empty, create a new instance
+	else:
 		instance = pool.scene.instantiate()
+		instance.set_meta("pool_name", p_pool_name)
 		pool.container.add_child(instance)
-
-	if instance.has_method("activate"):
-		instance.activate()
 
 	return instance
 
 ## Returns an active instance to its pool.
 func return_instance(p_instance: Node) -> void:
-	if not is_instance_valid(p_instance) or p_instance.process_mode == PROCESS_MODE_DISABLED:
-		return
+	if not is_instance_valid(p_instance): return
 
 	var pool_name = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
 		p_instance.queue_free()
 		return
 
-	if p_instance.has_method("deactivate"):
-		p_instance.call_deferred("deactivate")
+	var pool = _pools[pool_name]
+	if not pool.inactive.has(p_instance):
+		pool.inactive.push_front(p_instance)
 
-	# THE FIX: Use the correct variable 'pool_name' instead of 'p_pool_name'.
-	if not _pools[pool_name].inactive.has(p_instance):
-		_pools[pool_name].inactive.push_front(p_instance)
+	if p_instance.has_method("deactivate"):
+		p_instance.deactivate()
 
 # --- Private Methods ---
 
@@ -101,6 +100,8 @@ func _create_pool_for_scene(p_pool_name: StringName, p_scene: PackedScene, p_ini
 
 	for i in range(p_initial_size):
 		var instance = p_scene.instantiate()
+		instance.set_meta("pool_name", p_pool_name)
 		pool_container.add_child(instance)
-		instance.deactivate()
+		if instance.has_method("deactivate"):
+			instance.deactivate()
 		_pools[p_pool_name].inactive.append(instance)

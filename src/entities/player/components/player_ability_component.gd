@@ -16,6 +16,8 @@ var input_component: InputComponent
 # --- Godot Lifecycle Methods ---
 
 func _physics_process(_delta: float) -> void:
+	if not is_instance_valid(owner_node): return # Guard against post-teardown calls
+	
 	var current_state_key = state_machine.states.find_key(state_machine.current_state)
 	if not current_state_key in owner_node.ACTION_ALLOWED_STATES:
 		return
@@ -56,6 +58,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.input_component = p_dependencies.get("input_component")
 
 func teardown() -> void:
+	set_physics_process(false) # Immediately stop processing
 	owner_node = null
 	p_data = null
 	state_machine = null
