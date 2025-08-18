@@ -29,6 +29,36 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║  MEMORY MANAGEMENT & ARCHITECTURAL REFINEMENT                                ║
+║  Resolved critical memory leaks on scene transitions by implementing a formal║
+║  scene teardown contract and refining the engine's script loading order.     ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Introduced a new `ISceneController` interface with a `scene_exiting()`║
+║     ░   method to ensure robust, explicit cleanup before scene changes.      ║
+║     ░ ■ Upgraded `SceneManager` to call `scene_exiting()` on the active scene,║
+║     ░   allowing nodes like Player and Boss to properly run their `teardown()` logic.║
+║     ░ ■ Created a central `Interfaces.gd` autoload to manage the preloading of║
+║     ░   all interface scripts, resolving all `class_name` parse order errors.║
+║  █  Fixed                                                                    ║    
+║     ░ ■ Resolved all `ObjectDB instances leaked at exit` warnings and all    ║
+║     ░   associated RID allocation leaks by breaking dangling references held ║
+║     ░   by global singletons.                                                ║
+║     ░ ■ Fixed all `SHADOWED_GLOBAL_IDENTIFIER` warnings related to the new   ║
+║     ░   interface autoload script for a completely clean build.              ║                                                                ║
+║                                                                              ║
 ║  GAME FEEL & IMPACT FEEDBACK (JUICE)                                         ║
 ║  Implemented a suite of data-driven feedback systems, including screen shake ║
 ║  and hit-stop, to add significant weight and satisfaction to core combat actions.║

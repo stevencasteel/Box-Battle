@@ -1,17 +1,13 @@
 # src/api/interfaces/IDamageable.gd
-## The conceptual "interface" for any object that can take damage.
-##
-## This script is not meant to be extended directly. It serves as project
-## documentation for the damage system's API. A node is considered "damageable"
-## if it implements the methods defined in this contract. We check for compliance
-## using [code]target.has_method("apply_damage")[/code].
+## The "interface" contract for any object that can take damage.
 class_name IDamageable
+extends Node
 
 # --- The Contract ---
 
 ## Applies damage to the object.
-##
 ## [param damage_info]: A [DamageInfo] resource detailing the damage event.
 ## [return]: A [DamageResult] resource indicating the outcome.
-# func apply_damage(damage_info: DamageInfo) -> DamageResult:
-#     pass
+func apply_damage(_damage_info: DamageInfo) -> DamageResult:
+	# This is a virtual method and should be overridden by implementers.
+	return DamageResult.new()

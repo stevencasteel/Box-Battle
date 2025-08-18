@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 18 15:05:43 CDT 2025
+Generated on: Mon Aug 18 15:58:54 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -177,10 +177,12 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── combat
     │   │   ├── damage_info.gd
     │   │   └── damage_result.gd
-    │   └── interfaces
-    │       ├── IComponent.gd
-    │       ├── IDamageable.gd
-    │       └── IPoolable.gd
+    │   ├── interfaces
+    │   │   ├── IComponent.gd
+    │   │   ├── IDamageable.gd
+    │   │   ├── IPoolable.gd
+    │   │   └── ISceneController.gd
+    │   └── interfaces.gd
     ├── arenas
     ├── core
     │   ├── DEPRECATION.md
@@ -387,7 +389,7 @@ PROJECT DIRECTORY STRUCTURE:
         │   └── menu_manager.gd
         └── pause_menu
 
-68 directories, 311 files
+68 directories, 313 files
 
 
 =====================================
@@ -18797,21 +18799,19 @@ FILE: ./docs/BUGS.txt
 ║  ██                             OPEN ISSUES                              ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║   □  [BUG-MEM001] ObjectDB instances leaked on exit after running tests.     ║
-║      ░  STATUS: OPEN, DEFERRED                                               ║
-║      ░  DESCRIPTION: Running GUT tests that instantiate `Player.tscn` results║
-║      ░  in a `WARNING: ObjectDB instances leaked at exit` message. Diagnostic║
-║      ░  tests have confirmed a memory leak is consistently triggered by the  ║
-║      ░  Player scene's lifecycle.                                            ║
-║      ░  DECISION: This is a known issue with the Player scene's cleanup logic.║
-║      ░  It has been deferred to allow for the completion of the broader unit ║
-║      ░  test suite. The risk is contained to the test environment and does not║
-║      ░  block the verification of gameplay logic. We will return to this with║
-║      ░  a dedicated leak-hunting sprint.                                     ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██                             FIXED ISSUES                             ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║   ■  [BUG-MEM001] ObjectDB instances leaked on exit.                         ║
+║      ░  FIXED: 2025-08-18                                                    ║
+║      ░  SOLUTION: Implemented a formal `scene_exiting()` contract via an     ║
+║      ░  `ISceneController` interface. The `SceneManager` now calls this      ║
+║      ░  method on the outgoing scene, allowing entities like Player and      ║
+║      ░  Boss to run their explicit `teardown()` logic. This breaks the       ║
+║      ░  dangling references held by global singletons (e.g., EventBus)       ║
+║      ░  that were preventing garbage collection.                             ║
 ║                                                                              ║
 ║   ■  [BUG-F007] Intermittent major hitch on first run or debug mode toggle.  ║
 ║      ░  FIXED: 2025-08-07                                                    ║
@@ -19763,6 +19763,36 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║  MEMORY MANAGEMENT & ARCHITECTURAL REFINEMENT                                ║
+║  Resolved critical memory leaks on scene transitions by implementing a formal║
+║  scene teardown contract and refining the engine's script loading order.     ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Introduced a new `ISceneController` interface with a `scene_exiting()`║
+║     ░   method to ensure robust, explicit cleanup before scene changes.      ║
+║     ░ ■ Upgraded `SceneManager` to call `scene_exiting()` on the active scene,║
+║     ░   allowing nodes like Player and Boss to properly run their `teardown()` logic.║
+║     ░ ■ Created a central `Interfaces.gd` autoload to manage the preloading of║
+║     ░   all interface scripts, resolving all `class_name` parse order errors.║
+║  █  Fixed                                                                    ║    
+║     ░ ■ Resolved all `ObjectDB instances leaked at exit` warnings and all    ║
+║     ░   associated RID allocation leaks by breaking dangling references held ║
+║     ░   by global singletons.                                                ║
+║     ░ ■ Fixed all `SHADOWED_GLOBAL_IDENTIFIER` warnings related to the new   ║
+║     ░   interface autoload script for a completely clean build.              ║                                                                ║
 ║                                                                              ║
 ║  GAME FEEL & IMPACT FEEDBACK (JUICE)                                         ║
 ║  Implemented a suite of data-driven feedback systems, including screen shake ║
@@ -20954,6 +20984,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+Interfaces="*res://src/api/interfaces.gd"
 Settings="*res://src/core/data/config/settings.gd"
 AudioManager="*res://src/core/systems/audio_manager.gd"
 CursorManager="*res://src/core/systems/cursor_manager.gd"
@@ -22223,7 +22254,7 @@ FILE: ./src/scenes/game/encounter_scene.gd
 ## managing the game camera, and handling victory/defeat sequences.
 ## It also manages the developer debug overlay and target inspection.
 class_name EncounterScene
-extends Node
+extends ISceneController
 
 # --- Node References ---
 @onready var camera: Camera2D = $Camera2D
@@ -22284,15 +22315,24 @@ func _exit_tree() -> void:
 	if is_instance_valid(camera): camera.offset = Vector2.ZERO
 	get_tree().paused = false
 
+# --- Public Methods (ISceneController Contract) ---
+
+func scene_exiting() -> void:
+	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	if is_instance_valid(player_node):
+		player_node.teardown()
+
+	var boss_node = get_tree().get_first_node_in_group(Identifiers.Groups.ENEMY)
+	if is_instance_valid(boss_node) and boss_node is BaseBoss:
+		boss_node.teardown()
+
 # --- Private Methods ---
 
 func _initialize_camera_shaker() -> void:
 	var shaker_scene = load("res://src/core/systems/camera_shaker.tscn")
 	if shaker_scene:
 		_camera_shaker = shaker_scene.instantiate() as CameraShaker
-		# Add as a direct child of this scene, NOT the camera.
 		add_child(_camera_shaker)
-		# Inject the dependency.
 		_camera_shaker.target_camera = camera
 		FXManager.register_camera_shaker(_camera_shaker)
 
@@ -24293,9 +24333,17 @@ func go_to_victory() -> void:
 
 ## The core scene-switching logic.
 func _switch_to_scene(path: String) -> void:
-	# Perform necessary cleanup before changing scenes.
+	# --- Perform Pre-Transition Cleanup ---
+	# 1. Call the formal teardown method on the current scene controller if it exists.
+	var current_scene = get_tree().current_scene
+	if is_instance_valid(current_scene) and current_scene.has_method("scene_exiting"):
+		await current_scene.scene_exiting()
+
+	# 2. Reset global systems.
 	ObjectPool.reset()
 	Sequencer.cancel_all()
+
+	# 3. Change the scene.
 	get_tree().call_deferred("change_scene_to_file", path)
 
 =====================================
@@ -25921,52 +25969,77 @@ var was_damaged: bool = false
 var knockback_velocity: Vector2 = Vector2.ZERO
 
 =====================================
+FILE: ./src/api/interfaces.gd
+=====================================
+# src/api/interfaces.gd
+## A central autoload script whose sole purpose is to preload all interface
+## scripts in the project. This ensures their 'class_name' is registered
+## with Godot's ScriptServer before any other script tries to use them,
+## resolving parse order errors.
+extends Node
+
+func _ready() -> void:
+	# Preload all interfaces to register their class_names globally.
+	# We don't need to store them in variables, just ensure they are loaded.
+	preload("res://src/api/interfaces/IComponent.gd")
+	preload("res://src/api/interfaces/IDamageable.gd")
+	preload("res://src/api/interfaces/IPoolable.gd")
+	preload("res://src/api/interfaces/ISceneController.gd")
+
+
+=====================================
 FILE: ./src/api/interfaces/IPoolable.gd
 =====================================
 # src/api/interfaces/IPoolable.gd
-## The conceptual "interface" for any scene that can be managed by the [ObjectPool].
-##
-## This script is not meant to be extended directly. It serves as project
-## documentation. A scene is considered "poolable" if it implements the methods
-## defined in this contract.
+## The "interface" contract for any scene that can be managed by the [ObjectPool].
 class_name IPoolable
+extends Node
 
 # --- The Contract ---
 
 ## Prepares the node for use after being retrieved from the pool.
-##
-## This method should handle logic like enabling processing, making collision
-## shapes active, and resetting any state from its previous use.
-# func activate() -> void:
-#     pass
+func activate() -> void:
+	pass
 
 ## Prepares the node to be returned to the pool's inactive list.
+func deactivate() -> void:
+	pass
+
+=====================================
+FILE: ./src/api/interfaces/ISceneController.gd
+=====================================
+# src/api/interfaces/ISceneController.gd
+## The conceptual "interface" for all main scene controller scripts.
 ##
-## This method should handle logic like disabling processing, hiding the node,
-## disabling collision shapes, and moving it to an off-screen "graveyard" position.
-# func deactivate() -> void:
-#     pass
+## This defines a formal contract for scenes that require explicit cleanup
+## logic to be run by the SceneManager before the scene is changed.
+class_name ISceneController
+extends Node
+
+# --- Virtual Methods ---
+
+## Called by the SceneManager immediately before it changes the scene.
+## This function can be async to allow for cleanup animations or sequences.
+func scene_exiting() -> void:
+	pass
+
 
 =====================================
 FILE: ./src/api/interfaces/IDamageable.gd
 =====================================
 # src/api/interfaces/IDamageable.gd
-## The conceptual "interface" for any object that can take damage.
-##
-## This script is not meant to be extended directly. It serves as project
-## documentation for the damage system's API. A node is considered "damageable"
-## if it implements the methods defined in this contract. We check for compliance
-## using [code]target.has_method("apply_damage")[/code].
+## The "interface" contract for any object that can take damage.
 class_name IDamageable
+extends Node
 
 # --- The Contract ---
 
 ## Applies damage to the object.
-##
 ## [param damage_info]: A [DamageInfo] resource detailing the damage event.
 ## [return]: A [DamageResult] resource indicating the outcome.
-# func apply_damage(damage_info: DamageInfo) -> DamageResult:
-#     pass
+func apply_damage(_damage_info: DamageInfo) -> DamageResult:
+	# This is a virtual method and should be overridden by implementers.
+	return DamageResult.new()
 
 =====================================
 FILE: ./src/api/interfaces/IComponent.gd

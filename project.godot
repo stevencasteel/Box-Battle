@@ -18,6 +18,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+Interfaces="*res://src/api/interfaces.gd"
 Settings="*res://src/core/data/config/settings.gd"
 AudioManager="*res://src/core/systems/audio_manager.gd"
 CursorManager="*res://src/core/systems/cursor_manager.gd"

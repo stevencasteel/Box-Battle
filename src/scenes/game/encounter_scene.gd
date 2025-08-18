@@ -5,7 +5,7 @@
 ## managing the game camera, and handling victory/defeat sequences.
 ## It also manages the developer debug overlay and target inspection.
 class_name EncounterScene
-extends Node
+extends ISceneController
 
 # --- Node References ---
 @onready var camera: Camera2D = $Camera2D
@@ -66,15 +66,24 @@ func _exit_tree() -> void:
 	if is_instance_valid(camera): camera.offset = Vector2.ZERO
 	get_tree().paused = false
 
+# --- Public Methods (ISceneController Contract) ---
+
+func scene_exiting() -> void:
+	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	if is_instance_valid(player_node):
+		player_node.teardown()
+
+	var boss_node = get_tree().get_first_node_in_group(Identifiers.Groups.ENEMY)
+	if is_instance_valid(boss_node) and boss_node is BaseBoss:
+		boss_node.teardown()
+
 # --- Private Methods ---
 
 func _initialize_camera_shaker() -> void:
 	var shaker_scene = load("res://src/core/systems/camera_shaker.tscn")
 	if shaker_scene:
 		_camera_shaker = shaker_scene.instantiate() as CameraShaker
-		# Add as a direct child of this scene, NOT the camera.
 		add_child(_camera_shaker)
-		# Inject the dependency.
 		_camera_shaker.target_camera = camera
 		FXManager.register_camera_shaker(_camera_shaker)
 

@@ -32,7 +32,15 @@ func go_to_victory() -> void:
 
 ## The core scene-switching logic.
 func _switch_to_scene(path: String) -> void:
-	# Perform necessary cleanup before changing scenes.
+	# --- Perform Pre-Transition Cleanup ---
+	# 1. Call the formal teardown method on the current scene controller if it exists.
+	var current_scene = get_tree().current_scene
+	if is_instance_valid(current_scene) and current_scene.has_method("scene_exiting"):
+		await current_scene.scene_exiting()
+
+	# 2. Reset global systems.
 	ObjectPool.reset()
 	Sequencer.cancel_all()
+
+	# 3. Change the scene.
 	get_tree().call_deferred("change_scene_to_file", path)
