@@ -24,6 +24,7 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
+@export var hit_flash_effect: ShaderEffect
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect

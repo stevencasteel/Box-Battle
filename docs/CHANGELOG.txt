@@ -34,7 +34,45 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
-                                                                            
+
+   ENTITY ARCHITECTURE OVERHAUL (ENTITY ARCHETYPE PATTERN)                     
+   Completed a full-scale refactor of the entity system to a data-driven,     
+   archetype-based architecture. This foundational change enhances modularity, 
+   improves adherence to SOLID principles, and establishes a robust, future-   
+   proof pipeline for managing complex entities and their visual effects.      
+   ────────────────────────────────────────────────────────────────────────    
+   █  Architectural Changes                                                    
+      ░ ■ Implemented the Entity Archetype pattern. Entities are now built 
+      ░   at runtime based on a new `EntityArchetype.tres` resource, which     
+      ░   defines an entity's composition by listing its component scenes.     
+      ░ ■ Created a new generic `BaseEntity.gd` class that reads an archetype, 
+      ░   instantiates all components, and caches typed references, serving as 
+      ░   a Composition Root and Facade for all entities.                      
+      ░ ■ Implemented a robust Three-Phase Initialization pattern (Construct,
+      ░   Inject, Setup) to resolve complex dependency ordering issues between 
+      ░   entities and their components, particularly for `@onready` variables.
+      ░ ■ Created a new `FXComponent` to be the sole manager of all entity-    
+      ░   specific visual effects, fully decoupling visual feedback from game  
+      ░   logic components like `HealthComponent`.                             
+   █  Refactored                                                               
+      ░ ■ Migrated the `Player` and its components to the new archetype system.
+      ░   The `player.tscn` scene has been drastically simplified, with its     
+      ░   structure now defined in `player_archetype.tres`.                    
+      ░ ■ All individual component `.gd` scripts have been converted to reusable
+      ░   `.tscn` files to support the new archetype system.                   
+   █  Fixed                                                                    
+      ░ ■ Resolved a persistent, silent failure with shader effects. The complex
+      ░   `Tween`-based animation was replaced with a simpler, more reliable  
+      ░   `Timer`-based approach within the `FXComponent`, resulting in a      
+      ░   functional hit-flash effect.                                         
+      ░ ■ Eliminated all parse-order errors related to `BaseEntity` by correctly
+      ░   registering it as a `class_name` and preloading it.                  
+      ░ ■ Fixed a resource UID conflict in `player.tscn` that was preventing the
+      ░   scene from loading correctly.
+
+
+
+
    MEMORY MANAGEMENT & CRITICAL BUG FIXES                                      
    Resolved a critical crash-on-death and a major memory leak on scene exit    
    by hardening entity lifecycle management and teardown patterns.             

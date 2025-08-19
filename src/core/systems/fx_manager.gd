@@ -8,6 +8,7 @@ extends Node
 # --- Private Member Variables ---
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
+# TODO: We will add references to our other binding scripts here later.
 
 # --- Public Methods ---
 
@@ -40,11 +41,34 @@ func play_vfx(effect: VFXEffect, global_position: Vector2, direction: Vector2 = 
 	if not is_instance_valid(vfx_instance):
 		push_error("FXManager: Failed to get instance for pool key '%s'." % effect.pool_key)
 		return
-	
+
 	vfx_instance.global_position = global_position
 
 	if vfx_instance.has_method("activate"):
 		vfx_instance.call("activate", direction)
+
+## The main public API for triggering a shader-based effect.
+func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary = {}) -> void:
+	if not is_instance_valid(effect) or not is_instance_valid(target_node):
+		push_warning("FXManager.play_shader: Invalid effect or target node provided.")
+		return
+
+	match effect.target_scope:
+		ShaderEffect.TargetScope.ENTITY:
+			if target_node is CanvasItem:
+				var binding = EntityShaderBinding.new()
+				add_child(binding)
+				binding.apply_effect(target_node, effect)
+			else:
+				push_warning("FXManager: ENTITY scope requires a CanvasItem target.")
+		ShaderEffect.TargetScope.UI:
+			# TODO: Call the UIShaderBinding here.
+			print("FXManager: Playing UI shader on ", target_node.name)
+		ShaderEffect.TargetScope.FULLSCREEN:
+			# TODO: Call the FullscreenShaderBinding here.
+			print("FXManager: Playing FULLSCREEN shader.")
+		_:
+			push_error("FXManager: Unknown ShaderEffect.TargetScope.")
 
 ## Pauses the entire game tree for a short duration to add impact to an event.
 func request_hit_stop(duration: float) -> void:
@@ -57,5 +81,7 @@ func request_hit_stop(duration: float) -> void:
 	var timer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
+	# Check if the tree is still paused by this specific instance of hit-stop.
 	if get_tree().paused and _is_hit_stop_active:
 		get_tree().paused = false
+		_is_hit_stop_active = false

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ShaderEffect" load_steps=3 format=3 uid="uid://hit_flash_shader_effect"]
+
+[ext_resource type="Script" path="res://src/core/data/effects/shader_effect.gd" id="1_shader_effect"]
+[ext_resource type="Shader" path="res://assets/shaders/hit_flash.gdshader" id="2_hit_flash_shader"]
+
+[resource]
+script = ExtResource("1_shader_effect")
+shader = ExtResource("2_hit_flash_shader")
+duration = 0.12
+priority = 0
+target_scope = 0 # ENTITY
+params = {
+"intensity": 1.0,
+"tint_color": Color(1, 0, 0, 1)
+}

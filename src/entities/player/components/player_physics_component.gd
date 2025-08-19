@@ -75,7 +75,8 @@ func _check_for_contact_damage() -> void:
 		# GUARD: The owner may have been freed by the apply_damage call.
 		if not is_instance_valid(owner_node): return
 
-		if damage_result.was_damaged:
+		# THE FIX: Do not change to HURT state if the damage was lethal.
+		if damage_result.was_damaged and p_data.health > 0:
 			owner_node.velocity = damage_result.knockback_velocity
 			owner_node.state_machine.change_state(owner_node.State.HURT)
 		break

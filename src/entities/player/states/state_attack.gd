@@ -3,41 +3,26 @@
 class_name PlayerStateAttack
 extends BaseState
 
-# --- Constants ---
-const FORWARD_ATTACK_SHAPE = preload("res://src/entities/player/data/forward_attack_shape.tres")
-const UPWARD_ATTACK_SHAPE = preload("res://src/entities/player/data/upward_attack_shape.tres")
-
 # --- State Lifecycle ---
 
 func enter(_msg := {}) -> void:
-	# THE FIX: Provide a default value of 'false' to the get() call.
-	# This prevents a crash if the buffer hasn't been populated yet this frame.
 	state_data.is_pogo_attack = owner.input_component.buffer.get("down", false)
 	state_data.hit_targets_this_swing.clear()
 
 	if state_data.is_pogo_attack:
-		owner.pogo_hitbox.position = Vector2(0, 40)
-		owner.pogo_hitbox_shape.disabled = false
-
+		owner.enable_pogo_hitbox(true)
 		if not _check_for_immediate_pogo():
 			state_machine.change_state(owner.State.FALL)
 			return
 	else:
 		state_data.attack_duration_timer = state_data.config.player_attack_duration
 		state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
-
-		if owner.input_component.buffer.get("up", false):
-			owner.melee_hitbox_shape.shape = UPWARD_ATTACK_SHAPE
-			owner.melee_hitbox_shape.position = Vector2(0, -40)
-		else:
-			owner.melee_hitbox_shape.shape = FORWARD_ATTACK_SHAPE
-			owner.melee_hitbox_shape.position = Vector2(state_data.facing_direction * 60, 0)
-
-		owner.melee_hitbox_shape.disabled = false
+		var is_up_attack = owner.input_component.buffer.get("up", false)
+		owner.enable_melee_hitbox(true, is_up_attack)
 
 func exit() -> void:
-	owner.melee_hitbox_shape.call_deferred("set", "disabled", true)
-	owner.pogo_hitbox_shape.call_deferred("set", "disabled", true)
+	owner.call_deferred("enable_melee_hitbox", false)
+	owner.call_deferred("enable_pogo_hitbox", false)
 	state_data.is_pogo_attack = false
 	state_data.hit_targets_this_swing.clear()
 
@@ -52,9 +37,10 @@ func process_physics(delta: float) -> void:
 # --- Private Methods ---
 
 func _check_for_immediate_pogo() -> bool:
+	var pogo_hitbox: Area2D = owner.pogo_hitbox
 	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = owner.pogo_hitbox_shape.shape
-	query.transform = owner.global_transform * owner.pogo_hitbox.transform
+	query.shape = pogo_hitbox.get_node("CollisionShape2D").shape
+	query.transform = owner.global_transform * pogo_hitbox.transform
 	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [owner]
 	query.collide_with_areas = true

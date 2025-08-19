@@ -1,31 +1,25 @@
-[gd_scene load_steps=14 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=8 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
-[ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_hcomp"]
-[ext_resource type="Script" path="res://src/entities/components/combat_component.gd" id="3_combat_comp"]
-[ext_resource type="Script" path="res://src/entities/components/input_component.gd" id="4_input_comp"]
-[ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="5_fsm"]
-[ext_resource type="Script" path="res://src/entities/player/components/player_physics_component.gd" id="6_p_phys"]
-[ext_resource type="Script" path="res://src/entities/player/components/player_ability_component.gd" id="7_p_abil"]
-[ext_resource type="Script" path="res://src/entities/player/components/player_resource_component.gd" id="8_p_res"]
-[ext_resource type="Resource" uid="uid://player_damage_shake_tres" path="res://src/core/data/effects/player_damage_shake.tres" id="9_shake_effect"]
-[ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="10_hit_spark_effect"]
+[ext_resource type="Resource" uid="uid://player_archetype_resource" path="res://src/entities/archetypes/player_archetype.tres" id="2_archetype"]
+[ext_resource type="Resource" uid="uid://player_damage_shake_tres" path="res://src/core/data/effects/player_damage_shake.tres" id="3_shake_effect"]
+[ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="4_hit_spark_effect"]
+[ext_resource type="Resource" uid="uid://hit_flash_shader_effect" path="res://src/data/effects/shaders/hit_flash_effect.tres" id="5_hit_flash_effect"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_meleebox"]
-size = Vector2(80, 40)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_pogobox"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurtbox"]
 size = Vector2(40, 40)
 
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 1
 collision_mask = 14
 script = ExtResource("1_4d1td")
-damage_shake_effect = ExtResource("9_shake_effect")
-hit_spark_effect = ExtResource("10_hit_spark_effect")
+archetype = ExtResource("2_archetype")
+damage_shake_effect = ExtResource("3_shake_effect")
+hit_spark_effect = ExtResource("4_hit_spark_effect")
+hit_flash_effect = ExtResource("5_hit_flash_effect")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -20.0
@@ -43,7 +37,7 @@ collision_mask = 20
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeHitbox"]
 position = Vector2(60, 0)
-shape = SubResource("RectangleShape2D_meleebox")
+shape = SubResource("RectangleShape2D_playerbody")
 disabled = true
 
 [node name="PogoHitbox" type="Area2D" parent="."]
@@ -51,7 +45,7 @@ collision_layer = 32
 collision_mask = 22
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PogoHitbox"]
-shape = SubResource("RectangleShape2D_pogobox")
+shape = SubResource("RectangleShape2D_playerbody")
 disabled = true
 
 [node name="Hurtbox" type="Area2D" parent="."]
@@ -59,30 +53,9 @@ collision_layer = 64
 collision_mask = 28
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
-shape = SubResource("RectangleShape2D_playerbody")
+shape = SubResource("RectangleShape2D_hurtbox")
 
 [node name="HealingTimer" type="Timer" parent="."]
 one_shot = true
-
-[node name="HealthComponent" type="Node" parent="."]
-script = ExtResource("2_hcomp")
-
-[node name="CombatComponent" type="Node" parent="."]
-script = ExtResource("3_combat_comp")
-
-[node name="InputComponent" type="Node" parent="."]
-script = ExtResource("4_input_comp")
-
-[node name="StateMachine" type="Node" parent="."]
-script = ExtResource("5_fsm")
-
-[node name="PlayerPhysicsComponent" type="Node" parent="."]
-script = ExtResource("6_p_phys")
-
-[node name="PlayerAbilityComponent" type="Node" parent="."]
-script = ExtResource("7_p_abil")
-
-[node name="PlayerResourceComponent" type="Node" parent="."]
-script = ExtResource("8_p_res")
 
 [connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]

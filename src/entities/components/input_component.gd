@@ -44,12 +44,11 @@ func _physics_process(_delta: float) -> void:
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
-
 	self.p_data = p_dependencies.get("data_resource")
 	self.state_machine = p_dependencies.get("state_machine")
 	self._config = p_dependencies.get("config")
 
-	if not p_data or not state_machine or not _config:
+	if not p_data or not _config:
 		push_error("InputComponent.setup: Missing one or more required dependencies.")
 		return
 

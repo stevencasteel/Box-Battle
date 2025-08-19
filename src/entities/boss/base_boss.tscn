@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=15 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" uid="uid://5bkyx4fguxor" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
@@ -11,6 +11,7 @@
 [ext_resource type="Resource" uid="uid://boss_phase_change_shake_tres" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="9_phase_shake"]
 [ext_resource type="Resource" uid="uid://boss_death_shake_tres" path="res://src/core/data/effects/boss_death_shake.tres" id="10_death_shake"]
 [ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="11_hit_spark_effect"]
+[ext_resource type="Resource" uid="uid://hit_flash_shader_effect" path="res://src/data/effects/shaders/hit_flash_effect.tres" id="12_hit_flash_effect"]
 
 [sub_resource type="Resource" id="Resource_sjg2a"]
 script = ExtResource("2_30ufx")
@@ -34,6 +35,7 @@ intro_shake_effect = SubResource("Resource_sjg2a")
 phase_change_shake_effect = ExtResource("9_phase_shake")
 death_shake_effect = ExtResource("10_death_shake")
 hit_spark_effect = ExtResource("11_hit_spark_effect")
+hit_flash_effect = ExtResource("12_hit_flash_effect")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -30.0
@@ -55,6 +57,7 @@ one_shot = true
 
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_b0so8")
+visual_node = NodePath("../ColorRect")
 
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("3_fsm")

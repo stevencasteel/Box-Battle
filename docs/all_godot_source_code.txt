@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 18 19:47:25 CDT 2025
+Generated on: Tue Aug 19 12:30:32 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -203,6 +203,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   │   ├── player_damage_shake.tres
     │   │   │   ├── player_hit_spark_effect.tres
     │   │   │   ├── screen_shake_effect.gd
+    │   │   │   ├── shader_effect.gd
     │   │   │   └── vfx_effect.gd
     │   │   ├── game_state_data.gd
     │   │   └── level_build_data.gd
@@ -228,6 +229,8 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── camera_shaker.tscn
     │   │   ├── cursor_manager.gd
     │   │   ├── dialogue_manager.gd
+    │   │   ├── fx_bindings
+    │   │   │   └── entity_shader_binding.gd
     │   │   ├── fx_manager.gd
     │   │   ├── game_manager.gd
     │   │   ├── object_pool.gd
@@ -246,6 +249,9 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── dialogue
     │   │   ├── dialogue_data.gd
     │   │   └── test_conversation.tres
+    │   ├── effects
+    │   │   └── shaders
+    │   │       └── hit_flash_effect.tres
     │   ├── encounters
     │   │   ├── encounter_00.tres
     │   │   └── encounter_data.gd
@@ -254,6 +260,10 @@ PROJECT DIRECTORY STRUCTURE:
     │       └── level_layout.gd
     ├── entities
     │   ├── README.md
+    │   ├── archetypes
+    │   │   ├── entity_archetype.gd
+    │   │   └── player_archetype.tres
+    │   ├── base_entity.gd
     │   ├── boss
     │   │   ├── attack_patterns
     │   │   │   ├── attack_logic.gd
@@ -281,9 +291,15 @@ PROJECT DIRECTORY STRUCTURE:
     │   ├── components
     │   │   ├── base_state.gd
     │   │   ├── base_state_machine.gd
+    │   │   ├── base_state_machine.tscn
     │   │   ├── combat_component.gd
+    │   │   ├── combat_component.tscn
+    │   │   ├── fx_component.gd
+    │   │   ├── fx_component.tscn
     │   │   ├── health_component.gd
+    │   │   ├── health_component.tscn
     │   │   ├── input_component.gd
+    │   │   ├── input_component.tscn
     │   │   ├── telegraph_component.gd
     │   │   └── telegraph_component.tscn
     │   ├── minions
@@ -296,8 +312,11 @@ PROJECT DIRECTORY STRUCTURE:
     │   └── player
     │       ├── components
     │       │   ├── player_ability_component.gd
+    │       │   ├── player_ability_component.tscn
     │       │   ├── player_physics_component.gd
-    │       │   └── player_resource_component.gd
+    │       │   ├── player_physics_component.tscn
+    │       │   ├── player_resource_component.gd
+    │       │   └── player_resource_component.tscn
     │       ├── data
     │       │   ├── forward_attack_shape.tres
     │       │   ├── player_state_data.gd
@@ -393,7 +412,7 @@ PROJECT DIRECTORY STRUCTURE:
         ├── hit_spark.gd
         └── hit_spark.tscn
 
-69 directories, 316 files
+73 directories, 331 files
 
 
 =====================================
@@ -24830,6 +24849,90 @@ func _on_audio_settings_changed() -> void:
 
 
 =====================================
+FILE: ./src/core/systems/fx_bindings/entity_shader_binding.gd
+=====================================
+# src/core/systems/fx_bindings/entity_shader_binding.gd
+## Manages the lifecycle of a temporary shader effect on a single entity.
+##
+## It safely applies a shader, animates its uniforms via a Tween, and ensures
+## the entity's original material is restored when the effect is finished or
+## the entity is destroyed. This node frees itself upon completion.
+class_name EntityShaderBinding
+extends Node
+
+# --- Member Variables ---
+var _target_node: CanvasItem
+var _original_material: Material
+var _shader_material: ShaderMaterial
+var _tween: Tween
+
+# --- Private Member Variables ---
+# A proxy property that we will tween instead of the shader uniform directly.
+var _current_intensity: float = 0.0:
+	set(value):
+		_current_intensity = value
+		if is_instance_valid(_shader_material):
+			_shader_material.set_shader_parameter("intensity", _current_intensity)
+
+# --- Public Methods ---
+
+## Applies the shader effect to the target node and starts the animation.
+func apply_effect(p_target: CanvasItem, p_effect: ShaderEffect) -> void:
+	self._target_node = p_target
+	if not is_instance_valid(_target_node):
+		queue_free()
+		return
+
+	# Safely store the original material.
+	_original_material = _target_node.material
+	
+	_shader_material = ShaderMaterial.new()
+	_shader_material.shader = p_effect.shader
+	
+	# THE FIX: Apply our new shader material.
+	_target_node.material = _shader_material
+
+	# Set initial values from the effect resource.
+	for param_name in p_effect.params:
+		if param_name == "intensity":
+			self._current_intensity = p_effect.params[param_name]
+		else:
+			_shader_material.set_shader_parameter(param_name, p_effect.params[param_name])
+
+	# Watch for the target being deleted to prevent material leaks.
+	_target_node.tree_exiting.connect(_on_target_tree_exiting)
+
+	# Animate the shader uniforms.
+	_tween = create_tween()
+	_tween.tween_property(self, "_current_intensity", 0.0, p_effect.duration)
+	_tween.finished.connect(_on_tween_finished)
+
+# --- Private Methods ---
+
+## Restores the original material and cleans up the binding node.
+func _cleanup() -> void:
+	if is_instance_valid(_target_node):
+		# Restore the original material.
+		if _target_node.material == _shader_material:
+			_target_node.material = _original_material
+		if _target_node.tree_exiting.is_connected(_on_target_tree_exiting):
+			_target_node.tree_exiting.disconnect(_on_target_tree_exiting)
+	
+	if is_instance_valid(_tween):
+		_tween.kill()
+
+	queue_free()
+
+# --- Signal Handlers ---
+
+func _on_tween_finished() -> void:
+	_cleanup()
+
+func _on_target_tree_exiting() -> void:
+	# The target is being destroyed, so we must clean up immediately.
+	_cleanup()
+
+=====================================
 FILE: ./src/core/systems/camera_shaker.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://camera_shaker_scene_id"]
@@ -24896,6 +24999,7 @@ extends Node
 # --- Private Member Variables ---
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
+# TODO: We will add references to our other binding scripts here later.
 
 # --- Public Methods ---
 
@@ -24928,11 +25032,34 @@ func play_vfx(effect: VFXEffect, global_position: Vector2, direction: Vector2 = 
 	if not is_instance_valid(vfx_instance):
 		push_error("FXManager: Failed to get instance for pool key '%s'." % effect.pool_key)
 		return
-	
+
 	vfx_instance.global_position = global_position
 
 	if vfx_instance.has_method("activate"):
 		vfx_instance.call("activate", direction)
+
+## The main public API for triggering a shader-based effect.
+func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary = {}) -> void:
+	if not is_instance_valid(effect) or not is_instance_valid(target_node):
+		push_warning("FXManager.play_shader: Invalid effect or target node provided.")
+		return
+
+	match effect.target_scope:
+		ShaderEffect.TargetScope.ENTITY:
+			if target_node is CanvasItem:
+				var binding = EntityShaderBinding.new()
+				add_child(binding)
+				binding.apply_effect(target_node, effect)
+			else:
+				push_warning("FXManager: ENTITY scope requires a CanvasItem target.")
+		ShaderEffect.TargetScope.UI:
+			# TODO: Call the UIShaderBinding here.
+			print("FXManager: Playing UI shader on ", target_node.name)
+		ShaderEffect.TargetScope.FULLSCREEN:
+			# TODO: Call the FullscreenShaderBinding here.
+			print("FXManager: Playing FULLSCREEN shader.")
+		_:
+			push_error("FXManager: Unknown ShaderEffect.TargetScope.")
 
 ## Pauses the entire game tree for a short duration to add impact to an event.
 func request_hit_stop(duration: float) -> void:
@@ -24945,8 +25072,10 @@ func request_hit_stop(duration: float) -> void:
 	var timer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
+	# Check if the tree is still paused by this specific instance of hit-stop.
 	if get_tree().paused and _is_hit_stop_active:
 		get_tree().paused = false
+		_is_hit_stop_active = false
 
 
 =====================================
@@ -25170,6 +25299,44 @@ extends Resource
 
 ## The total duration of the shake effect in seconds.
 @export_range(0.1, 5.0, 0.05) var duration: float = 0.5
+
+=====================================
+FILE: ./src/core/data/effects/shader_effect.gd
+=====================================
+# src/core/data/effects/shader_effect.gd
+@tool
+## A data resource that defines a "recipe" for a shader-based visual effect.
+##
+## This allows the FXManager to treat shaders as reusable, configurable assets,
+## just like particle effects or screen shakes.
+class_name ShaderEffect
+extends Resource
+
+## The scope determines where the shader will be applied.
+enum TargetScope {
+	ENTITY,     # Applied to a single entity's visual node.
+	UI,         # Applied to a single UI control.
+	FULLSCREEN  # Applied to the entire screen.
+}
+
+# --- Editor Properties ---
+## The actual shader code to be applied.
+@export var shader: Shader
+
+## The duration of the effect in seconds. A value of 0 means it runs indefinitely
+## until manually stopped.
+@export var duration: float = 0.15
+
+## A priority level to resolve conflicts if multiple effects are triggered at once.
+## Higher numbers have higher priority.
+@export var priority: int = 0
+
+## The target scope for this effect.
+@export var target_scope: TargetScope = TargetScope.ENTITY
+
+## A dictionary of uniform parameters to be passed to the shader.
+## Example: { "intensity": 1.0, "tint_color": Color.RED }
+@export var params: Dictionary = {}
 
 =====================================
 FILE: ./src/core/data/effects/vfx_effect.gd
@@ -26385,18 +26552,18 @@ FILE: ./src/api/interfaces.gd
 =====================================
 # src/api/interfaces.gd
 ## A central autoload script whose sole purpose is to preload all interface
-## scripts in the project. This ensures their 'class_name' is registered
-## with Godot's ScriptServer before any other script tries to use them,
+## and critical base class scripts in the project. This ensures their 'class_name'
+## is registered with Godot's ScriptServer before any other script tries to use them,
 ## resolving parse order errors.
 extends Node
 
 func _ready() -> void:
-	# Preload all interfaces to register their class_names globally.
-	# We don't need to store them in variables, just ensure they are loaded.
+	# Preload all interfaces and base classes to register them globally.
 	preload("res://src/api/interfaces/IComponent.gd")
 	preload("res://src/api/interfaces/IDamageable.gd")
 	preload("res://src/api/interfaces/IPoolable.gd")
 	preload("res://src/api/interfaces/ISceneController.gd")
+	preload("res://src/entities/base_entity.gd")
 
 
 =====================================
@@ -26920,6 +27087,160 @@ extends Resource
 @export var minion_spawns: Dictionary = {}
 
 =====================================
+FILE: ./src/data/effects/shaders/hit_flash_effect.tres
+=====================================
+[gd_resource type="Resource" script_class="ShaderEffect" load_steps=3 format=3 uid="uid://hit_flash_shader_effect"]
+
+[ext_resource type="Script" path="res://src/core/data/effects/shader_effect.gd" id="1_shader_effect"]
+[ext_resource type="Shader" path="res://assets/shaders/hit_flash.gdshader" id="2_hit_flash_shader"]
+
+[resource]
+script = ExtResource("1_shader_effect")
+shader = ExtResource("2_hit_flash_shader")
+duration = 0.12
+priority = 0
+target_scope = 0 # ENTITY
+params = {
+"intensity": 1.0,
+"tint_color": Color(1, 0, 0, 1)
+}
+
+=====================================
+FILE: ./src/entities/base_entity.gd
+=====================================
+# src/entities/base_entity.gd
+@tool
+## The generic base class for all component-based entities in the game.
+class_name BaseEntity
+extends CharacterBody2D
+
+# --- Editor Properties ---
+@export var archetype: EntityArchetype
+
+# --- Public Member Variables ---
+var health_component: HealthComponent
+var combat_component: CombatComponent
+var input_component: InputComponent
+var state_machine: BaseStateMachine
+var physics_component: PlayerPhysicsComponent
+var ability_component: PlayerAbilityComponent
+var resource_component: PlayerResourceComponent
+var fx_component: FXComponent
+
+# --- Private Member Variables ---
+var _components_initialized: bool = false
+
+# --- Godot Lifecycle Methods ---
+
+func _ready() -> void:
+	if Engine.is_editor_hint(): return
+	_build_from_archetype()
+
+# --- Public Methods ---
+
+func teardown() -> void:
+	for child in get_children():
+		if child is IComponent:
+			child.teardown()
+
+## Initializes all attached components after dependencies have been injected.
+func setup_components(shared_dependencies: Dictionary = {}, per_component_dependencies: Dictionary = {}) -> void:
+	print("[BaseEntity] setup_components called. _components_initialized=", _components_initialized)
+	if _components_initialized: return
+
+	for child in get_children():
+		if not (child is IComponent): continue
+		
+		print("[BaseEntity] child:", child.name, " class:", child.get_script().get_global_name(), " instance_id:", child.get_instance_id())
+		var merged_deps := shared_dependencies.duplicate()
+
+		if per_component_dependencies.has(child):
+			merged_deps.merge(per_component_dependencies[child])
+		
+		var class_key: String = child.get_script().get_global_name()
+		if per_component_dependencies.has(class_key):
+			merged_deps.merge(per_component_dependencies[class_key])
+		
+		print("[BaseEntity] merged_deps keys for ", child.name, "=", merged_deps.keys())
+		print("    health_component present? ->", merged_deps.has("health_component"))
+		if merged_deps.has("health_component"):
+			var hc = merged_deps.get("health_component")
+			print("    health_component instance_id =", hc.get_instance_id() if is_instance_valid(hc) else "nil", " is_valid=", is_instance_valid(hc))
+		print("    child.has_method('setup') ->", child.has_method("setup"))
+		
+		if child.has_method("setup"):
+			print("    calling setup on ", child.name)
+			child.setup(self, merged_deps)
+
+	_components_initialized = true
+
+# --- Private Methods ---
+
+func _build_from_archetype() -> void:
+	if not is_instance_valid(archetype):
+		push_error("Entity '%s' is missing its Archetype resource." % name)
+		return
+
+	for component_scene in archetype.components:
+		if is_instance_valid(component_scene):
+			var component_instance = component_scene.instantiate()
+			add_child(component_instance)
+		else:
+			push_warning("Archetype for '%s' contains an invalid component scene." % name)
+
+	_cache_components_by_type()
+
+func _cache_components_by_type() -> void:
+	for child in get_children():
+		if not child is IComponent: continue
+
+		if child is HealthComponent: health_component = child
+		elif child is CombatComponent: combat_component = child
+		elif child is InputComponent: input_component = child
+		elif child is BaseStateMachine: state_machine = child
+		elif child is PlayerPhysicsComponent: physics_component = child
+		elif child is PlayerAbilityComponent: ability_component = child
+		elif child is PlayerResourceComponent: resource_component = child
+		elif child is FXComponent: fx_component = child
+		else: push_warning("Unbound component on '%s': %s" % [name, child.get_class()])
+
+
+=====================================
+FILE: ./src/entities/archetypes/player_archetype.tres
+=====================================
+[gd_resource type="Resource" script_class="EntityArchetype" load_steps=10 format=3 uid="uid://player_archetype_resource"]
+
+[ext_resource type="Script" path="res://src/entities/archetypes/entity_archetype.gd" id="1_archetype"]
+[ext_resource type="PackedScene" uid="uid://dpl3w8xqyq1a2" path="res://src/entities/components/health_component.tscn" id="2_health"]
+[ext_resource type="PackedScene" uid="uid://b1x2y3z4a5b6" path="res://src/entities/components/combat_component.tscn" id="3_combat"]
+[ext_resource type="PackedScene" uid="uid://c7d8e9f0g1h2" path="res://src/entities/components/input_component.tscn" id="4_input"]
+[ext_resource type="PackedScene" uid="uid://i3j4k5l6m7n8" path="res://src/entities/components/base_state_machine.tscn" id="5_fsm"]
+[ext_resource type="PackedScene" uid="uid://o9p0q1r2s3t4" path="res://src/entities/player/components/player_physics_component.tscn" id="6_phys"]
+[ext_resource type="PackedScene" uid="uid://u5v6w7x8y9z0" path="res://src/entities/player/components/player_ability_component.tscn" id="7_abil"]
+[ext_resource type="PackedScene" uid="uid://a1b2c3d4e5f6" path="res://src/entities/player/components/player_resource_component.tscn" id="8_res"]
+[ext_resource type="PackedScene" uid="uid://g7h8i9j0k1l2" path="res://src/entities/components/fx_component.tscn" id="9_fx"]
+
+[resource]
+script = ExtResource("1_archetype")
+components = [ExtResource("2_health"), ExtResource("3_combat"), ExtResource("4_input"), ExtResource("5_fsm"), ExtResource("6_phys"), ExtResource("7_abil"), ExtResource("8_res"), ExtResource("9_fx")]
+
+=====================================
+FILE: ./src/entities/archetypes/entity_archetype.gd
+=====================================
+# src/entities/archetypes/entity_archetype.gd
+@tool
+## A data resource that defines the component-based structure of an entity.
+##
+## This acts as a blueprint, telling a BaseEntity which components to instance
+## and attach to itself at runtime.
+class_name EntityArchetype
+extends Resource
+
+## An array of PackedScene files, where each scene is a component
+## (e.g., HealthComponent.tscn, InputComponent.tscn).
+@export var components: Array[PackedScene] = []
+
+=====================================
 FILE: ./src/entities/boss/attack_patterns/lunge_logic.gd
 =====================================
 # src/entities/boss/attack_patterns/lunge_logic.gd
@@ -27205,7 +27526,7 @@ var facing_direction: float = -1.0
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=14 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=15 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" uid="uid://5bkyx4fguxor" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
@@ -27218,6 +27539,7 @@ FILE: ./src/entities/boss/base_boss.tscn
 [ext_resource type="Resource" uid="uid://boss_phase_change_shake_tres" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="9_phase_shake"]
 [ext_resource type="Resource" uid="uid://boss_death_shake_tres" path="res://src/core/data/effects/boss_death_shake.tres" id="10_death_shake"]
 [ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="11_hit_spark_effect"]
+[ext_resource type="Resource" uid="uid://hit_flash_shader_effect" path="res://src/data/effects/shaders/hit_flash_effect.tres" id="12_hit_flash_effect"]
 
 [sub_resource type="Resource" id="Resource_sjg2a"]
 script = ExtResource("2_30ufx")
@@ -27241,6 +27563,7 @@ intro_shake_effect = SubResource("Resource_sjg2a")
 phase_change_shake_effect = ExtResource("9_phase_shake")
 death_shake_effect = ExtResource("10_death_shake")
 hit_spark_effect = ExtResource("11_hit_spark_effect")
+hit_flash_effect = ExtResource("12_hit_flash_effect")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -30.0
@@ -27262,6 +27585,7 @@ one_shot = true
 
 [node name="HealthComponent" type="Node" parent="."]
 script = ExtResource("2_b0so8")
+visual_node = NodePath("../ColorRect")
 
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource("3_fsm")
@@ -27449,6 +27773,7 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
+@export var hit_flash_effect: ShaderEffect
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -27780,6 +28105,17 @@ func change_state(new_state_key, msg := {}) -> void:
 		if state_history.size() > MAX_HISTORY_SIZE:
 			state_history.pop_back()
 
+
+=====================================
+FILE: ./src/entities/components/health_component.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://dpl3w8xqyq1a2"]
+
+[ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="1_health"]
+
+[node name="HealthComponent" type="Node"]
+script = ExtResource("1_health")
+
 =====================================
 FILE: ./src/entities/components/telegraph_component.gd
 =====================================
@@ -27815,6 +28151,16 @@ func start_telegraph(duration: float, p_size: Vector2, p_position: Vector2, p_co
 	if is_instance_valid(self):
 		telegraph_finished.emit()
 		queue_free()
+
+=====================================
+FILE: ./src/entities/components/fx_component.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://g7h8i9j0k1l2"]
+
+[ext_resource type="Script" path="res://src/entities/components/fx_component.gd" id="1_fx"]
+
+[node name="FXComponent" type="Node"]
+script = ExtResource("1_fx")
 
 =====================================
 FILE: ./src/entities/components/combat_component.gd
@@ -27911,15 +28257,21 @@ color = Color(1, 1, 1, 0.392157)
 
 
 =====================================
+FILE: ./src/entities/components/input_component.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://c7d8e9f0g1h2"]
+
+[ext_resource type="Script" path="res://src/entities/components/input_component.gd" id="1_input"]
+
+[node name="InputComponent" type="Node"]
+script = ExtResource("1_input")
+
+=====================================
 FILE: ./src/entities/components/health_component.gd
 =====================================
 # src/entities/components/health_component.gd
 @tool
 ## Manages all health, damage, and invincibility logic for an entity.
-##
-## This component is the single source of truth for damage and invincibility.
-## It uses a token-based system to manage multiple, overlapping sources of
-## invulnerability (e.g., post-hit i-frames, ability-based armor).
 class_name HealthComponent
 extends IComponent
 
@@ -27927,11 +28279,7 @@ extends IComponent
 signal health_changed(current_health: int, max_health: int)
 signal died
 signal health_threshold_reached(health_percentage: float)
-## Emitted after damage has been successfully applied.
 signal took_damage(damage_info: DamageInfo, damage_result: DamageResult)
-
-# --- Node References ---
-@onready var hit_flash_timer: Timer = Timer.new()
 
 # --- Member Variables ---
 var entity_data: Resource
@@ -27946,30 +28294,21 @@ var _next_token_id: int = 1
 
 # --- Godot Lifecycle Methods ---
 
-func _ready() -> void:
-	add_child(hit_flash_timer)
-	hit_flash_timer.wait_time = 0.4
-	hit_flash_timer.timeout.connect(_on_hit_flash_timer_timeout)
-
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		teardown()
 
 # --- Public Methods ---
 
-## Returns true if the entity has any active invincibility tokens.
 func is_invincible() -> bool:
 	return not _invincibility_tokens.is_empty()
 
-## Requests a temporary grant of invincibility. Returns a token ID.
-## The requester is responsible for calling release_invincibility() with this token.
 func grant_invincibility(requester: Object) -> int:
 	var token_id = _next_token_id
 	_next_token_id += 1
 	_invincibility_tokens[token_id] = requester.get_instance_id()
 	return token_id
 
-## Releases an invincibility token, removing one source of invulnerability.
 func release_invincibility(token: int) -> void:
 	if _invincibility_tokens.has(token):
 		_invincibility_tokens.erase(token)
@@ -27994,29 +28333,20 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		_hazard_knockback_speed = 0
 
 	entity_data.health = _max_health
-	var sprite = _get_visual_sprite()
-	if is_instance_valid(sprite) and not sprite.has_meta("original_color"):
-		sprite.set_meta("original_color", sprite.color)
-
 	health_changed.emit(entity_data.health, _max_health)
 
 func teardown() -> void:
-	if is_instance_valid(hit_flash_timer) and hit_flash_timer.timeout.is_connected(_on_hit_flash_timer_timeout):
-		hit_flash_timer.timeout.disconnect(_on_hit_flash_timer_timeout)
 	entity_data = null
 	owner_node = null
 
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	var result = DamageResult.new()
-
 	if is_invincible() and not damage_info.bypass_invincibility:
 		return result
 
 	var health_before_damage = entity_data.health
 	entity_data.health -= damage_info.amount
 	health_changed.emit(entity_data.health, _max_health)
-
-	_trigger_hit_flash()
 
 	var post_hit_token = grant_invincibility(self)
 	get_tree().create_timer(_invincibility_duration).timeout.connect(release_invincibility.bind(post_hit_token))
@@ -28025,7 +28355,6 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	_check_for_threshold_crossing(health_before_damage, entity_data.health)
 
 	result.was_damaged = true
-	# THE FIX: Pass the full DamageInfo object with the event payload.
 	took_damage.emit(damage_info, result)
 
 	if entity_data.health <= 0:
@@ -28049,21 +28378,17 @@ func _calculate_knockback(source: Node) -> Vector2:
 	if source.is_in_group(Identifiers.Groups.HAZARD):
 		speed = _hazard_knockback_speed
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
-func _trigger_hit_flash() -> void:
-	var sprite = _get_visual_sprite()
-	if is_instance_valid(sprite):
-		if not sprite.has_meta("original_color"):
-			sprite.set_meta("original_color", sprite.color)
-		sprite.color = Palette.COLOR_UI_ACCENT_PRIMARY
-		hit_flash_timer.start()
-func _get_visual_sprite() -> ColorRect:
-	if is_instance_valid(owner_node):
-		return owner_node.get_node_or_null("ColorRect")
-	return null
-func _on_hit_flash_timer_timeout() -> void:
-	var sprite = _get_visual_sprite()
-	if is_instance_valid(sprite) and sprite.has_meta("original_color"):
-		sprite.color = sprite.get_meta("original_color")
+
+
+=====================================
+FILE: ./src/entities/components/base_state_machine.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://i3j4k5l6m7n8"]
+
+[ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="1_fsm"]
+
+[node name="StateMachine" type="Node"]
+script = ExtResource("1_fsm")
 
 =====================================
 FILE: ./src/entities/components/input_component.gd
@@ -28114,12 +28439,11 @@ func _physics_process(_delta: float) -> void:
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
-
 	self.p_data = p_dependencies.get("data_resource")
 	self.state_machine = p_dependencies.get("state_machine")
 	self._config = p_dependencies.get("config")
 
-	if not p_data or not state_machine or not _config:
+	if not p_data or not _config:
 		push_error("InputComponent.setup: Missing one or more required dependencies.")
 		return
 
@@ -28130,6 +28454,17 @@ func teardown() -> void:
 	state_machine = null
 	_config = null
 	buffer.clear()
+
+
+=====================================
+FILE: ./src/entities/components/combat_component.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://b1x2y3z4a5b6"]
+
+[ext_resource type="Script" path="res://src/entities/components/combat_component.gd" id="1_combat"]
+
+[node name="CombatComponent" type="Node"]
+script = ExtResource("1_combat")
 
 =====================================
 FILE: ./src/entities/components/base_state.gd
@@ -28180,6 +28515,91 @@ func process_physics(_delta: float) -> void:
 ## Called during the `_unhandled_input` cycle. Used for immediate input reactions.
 func process_input(_event: InputEvent) -> void:
 	pass
+
+=====================================
+FILE: ./src/entities/components/fx_component.gd
+=====================================
+# src/entities/components/fx_component.gd
+@tool
+## A dedicated component for managing all entity-specific visual effects.
+class_name FXComponent
+extends IComponent
+
+@export var visual_node: CanvasItem
+
+var _owner: Node
+var _original_material: Material
+var _active_shader_material: ShaderMaterial
+var _tween: Tween
+
+var _shader_intensity: float = 0.0:
+	set(value):
+		_shader_intensity = value
+		if is_instance_valid(_active_shader_material):
+			_active_shader_material.set_shader_parameter("intensity", _shader_intensity)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		teardown()
+
+func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
+	self._owner = p_owner
+	print("[FXComponent] setup called on ", get_parent().name, " owner:", p_owner, " deps keys:", p_dependencies.keys())
+	var health_comp: HealthComponent = p_dependencies.get("health_component")
+	print("[FXComponent] health_comp:", health_comp, " is_valid:", is_instance_valid(health_comp))
+
+	if not is_instance_valid(visual_node):
+		push_warning("FXComponent missing visual_node at setup time on '%s' (will still hook signals)." % get_parent().name)
+	
+	if is_instance_valid(health_comp):
+		var cb = Callable(self, "_on_health_component_took_damage")
+		if not health_comp.took_damage.is_connected(cb):
+			health_comp.took_damage.connect(cb)
+			print("[FXComponent] connected took_damage -> _on_health_component_took_damage")
+
+func teardown() -> void:
+	if is_instance_valid(_tween): _tween.kill()
+	if is_instance_valid(visual_node) and is_instance_valid(_active_shader_material):
+		if visual_node.material == _active_shader_material:
+			visual_node.material = _original_material
+	
+	var health_comp: HealthComponent = _owner.get("health_component") if is_instance_valid(_owner) else null
+	if is_instance_valid(health_comp) and health_comp.took_damage.is_connected(_on_health_component_took_damage):
+		health_comp.took_damage.disconnect(_on_health_component_took_damage)
+
+	visual_node = null
+	_owner = null
+
+func play_shader_effect(effect: ShaderEffect) -> void:
+	if not is_instance_valid(visual_node) or not is_instance_valid(effect): return
+	if is_instance_valid(_tween):
+		_tween.kill()
+		visual_node.material = _original_material
+
+	_original_material = visual_node.material
+	_active_shader_material = ShaderMaterial.new()
+	_active_shader_material.shader = effect.shader
+	visual_node.material = _active_shader_material
+
+	for param_name in effect.params:
+		if param_name == "intensity": self._shader_intensity = effect.params[param_name]
+		else: _active_shader_material.set_shader_parameter(param_name, effect.params[param_name])
+
+	_tween = create_tween()
+	_tween.tween_property(self, "_shader_intensity", 0.0, effect.duration)
+	_tween.finished.connect(_on_effect_tween_finished)
+
+func _on_effect_tween_finished() -> void:
+	if is_instance_valid(visual_node):
+		visual_node.material = _original_material
+	_active_shader_material = null
+	_original_material = null
+
+func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
+	var effect: ShaderEffect = _owner.get("hit_flash_effect")
+	if is_instance_valid(effect):
+		play_shader_effect(effect)
+
 
 =====================================
 FILE: ./src/entities/minions/turret.gd
@@ -28434,34 +28854,28 @@ collision_mask = 1
 =====================================
 FILE: ./src/entities/player/player.tscn
 =====================================
-[gd_scene load_steps=14 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=8 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
-[ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_hcomp"]
-[ext_resource type="Script" path="res://src/entities/components/combat_component.gd" id="3_combat_comp"]
-[ext_resource type="Script" path="res://src/entities/components/input_component.gd" id="4_input_comp"]
-[ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="5_fsm"]
-[ext_resource type="Script" path="res://src/entities/player/components/player_physics_component.gd" id="6_p_phys"]
-[ext_resource type="Script" path="res://src/entities/player/components/player_ability_component.gd" id="7_p_abil"]
-[ext_resource type="Script" path="res://src/entities/player/components/player_resource_component.gd" id="8_p_res"]
-[ext_resource type="Resource" uid="uid://player_damage_shake_tres" path="res://src/core/data/effects/player_damage_shake.tres" id="9_shake_effect"]
-[ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="10_hit_spark_effect"]
+[ext_resource type="Resource" uid="uid://player_archetype_resource" path="res://src/entities/archetypes/player_archetype.tres" id="2_archetype"]
+[ext_resource type="Resource" uid="uid://player_damage_shake_tres" path="res://src/core/data/effects/player_damage_shake.tres" id="3_shake_effect"]
+[ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="4_hit_spark_effect"]
+[ext_resource type="Resource" uid="uid://hit_flash_shader_effect" path="res://src/data/effects/shaders/hit_flash_effect.tres" id="5_hit_flash_effect"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_meleebox"]
-size = Vector2(80, 40)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_pogobox"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurtbox"]
 size = Vector2(40, 40)
 
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 1
 collision_mask = 14
 script = ExtResource("1_4d1td")
-damage_shake_effect = ExtResource("9_shake_effect")
-hit_spark_effect = ExtResource("10_hit_spark_effect")
+archetype = ExtResource("2_archetype")
+damage_shake_effect = ExtResource("3_shake_effect")
+hit_spark_effect = ExtResource("4_hit_spark_effect")
+hit_flash_effect = ExtResource("5_hit_flash_effect")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -20.0
@@ -28479,7 +28893,7 @@ collision_mask = 20
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeHitbox"]
 position = Vector2(60, 0)
-shape = SubResource("RectangleShape2D_meleebox")
+shape = SubResource("RectangleShape2D_playerbody")
 disabled = true
 
 [node name="PogoHitbox" type="Area2D" parent="."]
@@ -28487,7 +28901,7 @@ collision_layer = 32
 collision_mask = 22
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PogoHitbox"]
-shape = SubResource("RectangleShape2D_pogobox")
+shape = SubResource("RectangleShape2D_playerbody")
 disabled = true
 
 [node name="Hurtbox" type="Area2D" parent="."]
@@ -28495,31 +28909,10 @@ collision_layer = 64
 collision_mask = 28
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
-shape = SubResource("RectangleShape2D_playerbody")
+shape = SubResource("RectangleShape2D_hurtbox")
 
 [node name="HealingTimer" type="Timer" parent="."]
 one_shot = true
-
-[node name="HealthComponent" type="Node" parent="."]
-script = ExtResource("2_hcomp")
-
-[node name="CombatComponent" type="Node" parent="."]
-script = ExtResource("3_combat_comp")
-
-[node name="InputComponent" type="Node" parent="."]
-script = ExtResource("4_input_comp")
-
-[node name="StateMachine" type="Node" parent="."]
-script = ExtResource("5_fsm")
-
-[node name="PlayerPhysicsComponent" type="Node" parent="."]
-script = ExtResource("6_p_phys")
-
-[node name="PlayerAbilityComponent" type="Node" parent="."]
-script = ExtResource("7_p_abil")
-
-[node name="PlayerResourceComponent" type="Node" parent="."]
-script = ExtResource("8_p_res")
 
 [connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]
 
@@ -28529,7 +28922,7 @@ FILE: ./src/entities/player/player.gd
 # src/entities/player/player.gd
 @tool
 class_name Player
-extends CharacterBody2D
+extends BaseEntity
 
 # --- Signals ---
 signal health_changed(current_health, max_health)
@@ -28546,6 +28939,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 # --- Editor Properties ---
 @export var damage_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
+@export var hit_flash_effect: ShaderEffect
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -28553,17 +28947,6 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 @onready var healing_timer: Timer = $HealingTimer
 @onready var melee_hitbox: Area2D = $MeleeHitbox
 @onready var pogo_hitbox: Area2D = $PogoHitbox
-@onready var melee_hitbox_shape: CollisionShape2D = $MeleeHitbox/CollisionShape2D
-@onready var pogo_hitbox_shape: CollisionShape2D = $PogoHitbox/CollisionShape2D
-
-# --- Component References ---
-@onready var health_component: HealthComponent = $HealthComponent
-@onready var combat_component: CombatComponent = $CombatComponent
-@onready var input_component: InputComponent = $InputComponent
-@onready var state_machine: BaseStateMachine = $StateMachine
-@onready var physics_component: PlayerPhysicsComponent = $PlayerPhysicsComponent
-@onready var ability_component: PlayerAbilityComponent = $PlayerAbilityComponent
-@onready var resource_component: PlayerResourceComponent = $PlayerResourceComponent
 
 # --- Data ---
 var entity_data: PlayerStateData
@@ -28571,18 +28954,16 @@ var entity_data: PlayerStateData
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
+	super._ready()
+	if Engine.is_editor_hint(): return
+
 	add_to_group(Identifiers.Groups.PLAYER)
-	_initialize_data()
-	_initialize_components()
-	_initialize_state_machine()
+	_initialize_and_setup_components()
 	_connect_signals()
+
 	visual_sprite.color = Palette.COLOR_PLAYER
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
-
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_PREDELETE:
-		teardown()
 
 func _physics_process(delta: float) -> void:
 	_update_timers(delta)
@@ -28590,7 +28971,6 @@ func _physics_process(delta: float) -> void:
 # --- Public Methods ---
 
 func teardown() -> void:
-	set_physics_process(false)
 	if is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(_on_health_component_health_changed):
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
@@ -28603,30 +28983,40 @@ func teardown() -> void:
 			combat_component.damage_dealt.disconnect(resource_component.on_damage_dealt)
 		if combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
 			combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
-	if is_instance_valid(state_machine): state_machine.teardown()
-	if is_instance_valid(health_component): health_component.teardown()
-	if is_instance_valid(combat_component): combat_component.teardown()
-	if is_instance_valid(input_component): input_component.teardown()
-	if is_instance_valid(physics_component): physics_component.teardown()
-	if is_instance_valid(ability_component): ability_component.teardown()
-	if is_instance_valid(resource_component): resource_component.teardown()
+	
+	super.teardown()
 	entity_data = null
+
+func enable_melee_hitbox(is_enabled: bool, is_up_attack: bool = false) -> void:
+	var shape_node: CollisionShape2D = melee_hitbox.get_node("CollisionShape2D")
+	if is_enabled:
+		if is_up_attack:
+			shape_node.shape = preload("res://src/entities/player/data/upward_attack_shape.tres")
+			shape_node.position = Vector2(0, -40)
+		else:
+			shape_node.shape = preload("res://src/entities/player/data/forward_attack_shape.tres")
+			shape_node.position = Vector2(entity_data.facing_direction * 60, 0)
+	shape_node.disabled = not is_enabled
+
+func enable_pogo_hitbox(is_enabled: bool) -> void:
+	var shape_node: CollisionShape2D = pogo_hitbox.get_node("CollisionShape2D")
+	shape_node.position = Vector2(0, 40)
+	shape_node.disabled = not is_enabled
 
 # --- Private Methods ---
 
-func _initialize_data() -> void:
+func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = CombatDB.config
-
-func _initialize_components() -> void:
-	health_component.setup(self, { "data_resource": entity_data, "config": entity_data.config })
-	combat_component.setup(self, { "data_resource": entity_data })
-	input_component.setup(self, { "data_resource": entity_data, "state_machine": state_machine, "config": entity_data.config })
-	physics_component.setup(self, { "data_resource": entity_data, "health_component": health_component })
-	ability_component.setup(self, { "data_resource": entity_data, "state_machine": state_machine, "input_component": input_component })
-	resource_component.setup(self, { "data_resource": entity_data })
-
-func _initialize_state_machine() -> void:
+	
+	fx_component.visual_node = visual_sprite
+	
+	var shared_deps := {
+		"data_resource": entity_data,
+		"config": entity_data.config,
+		"health_component": health_component,
+	}
+	
 	var states = {
 		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, entity_data),
 		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, entity_data),
@@ -28637,7 +29027,15 @@ func _initialize_state_machine() -> void:
 		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, entity_data),
 		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, entity_data),
 	}
-	state_machine.setup(self, { "states": states, "initial_state_key": State.FALL })
+	
+	var per_component_deps := {
+		state_machine: {"states": states, "initial_state_key": State.FALL},
+		input_component: {"state_machine": state_machine},
+		ability_component: {"state_machine": state_machine, "input_component": input_component}
+	}
+	
+	setup_components(shared_deps, per_component_deps)
+
 
 func _connect_signals() -> void:
 	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
@@ -28699,10 +29097,9 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		damage_info.impact_position = global_position
 		damage_info.impact_normal = (global_position - area.global_position).normalized()
 		var damage_result = health_component.apply_damage(damage_info)
-		if damage_result.was_damaged:
+		if is_instance_valid(self) and damage_result.was_damaged and entity_data.health > 0:
 			self.velocity = damage_result.knockback_velocity
 			state_machine.change_state(State.HURT)
-		# THE FIX: Defer the call to prevent physics-step race conditions.
 		ObjectPool.return_instance.call_deferred(area)
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
@@ -28733,6 +29130,17 @@ func _on_pogo_bounce_requested() -> void:
 func _cancel_heal() -> void:
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
+
+
+=====================================
+FILE: ./src/entities/player/components/player_resource_component.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://a1b2c3d4e5f6"]
+
+[ext_resource type="Script" path="res://src/entities/player/components/player_resource_component.gd" id="1_res"]
+
+[node name="PlayerResourceComponent" type="Node"]
+script = ExtResource("1_res")
 
 =====================================
 FILE: ./src/entities/player/components/player_ability_component.gd
@@ -28802,6 +29210,16 @@ func teardown() -> void:
 	p_data = null
 	state_machine = null
 	input_component = null
+
+=====================================
+FILE: ./src/entities/player/components/player_physics_component.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://o9p0q1r2s3t4"]
+
+[ext_resource type="Script" path="res://src/entities/player/components/player_physics_component.gd" id="1_phys"]
+
+[node name="PlayerPhysicsComponent" type="Node"]
+script = ExtResource("1_phys")
 
 =====================================
 FILE: ./src/entities/player/components/player_physics_component.gd
@@ -28883,10 +29301,22 @@ func _check_for_contact_damage() -> void:
 		# GUARD: The owner may have been freed by the apply_damage call.
 		if not is_instance_valid(owner_node): return
 
-		if damage_result.was_damaged:
+		# THE FIX: Do not change to HURT state if the damage was lethal.
+		if damage_result.was_damaged and p_data.health > 0:
 			owner_node.velocity = damage_result.knockback_velocity
 			owner_node.state_machine.change_state(owner_node.State.HURT)
 		break
+
+
+=====================================
+FILE: ./src/entities/player/components/player_ability_component.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://u5v6w7x8y9z0"]
+
+[ext_resource type="Script" path="res://src/entities/player/components/player_ability_component.gd" id="1_abil"]
+
+[node name="PlayerAbilityComponent" type="Node"]
+script = ExtResource("1_abil")
 
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.gd
@@ -29078,41 +29508,26 @@ FILE: ./src/entities/player/states/state_attack.gd
 class_name PlayerStateAttack
 extends BaseState
 
-# --- Constants ---
-const FORWARD_ATTACK_SHAPE = preload("res://src/entities/player/data/forward_attack_shape.tres")
-const UPWARD_ATTACK_SHAPE = preload("res://src/entities/player/data/upward_attack_shape.tres")
-
 # --- State Lifecycle ---
 
 func enter(_msg := {}) -> void:
-	# THE FIX: Provide a default value of 'false' to the get() call.
-	# This prevents a crash if the buffer hasn't been populated yet this frame.
 	state_data.is_pogo_attack = owner.input_component.buffer.get("down", false)
 	state_data.hit_targets_this_swing.clear()
 
 	if state_data.is_pogo_attack:
-		owner.pogo_hitbox.position = Vector2(0, 40)
-		owner.pogo_hitbox_shape.disabled = false
-
+		owner.enable_pogo_hitbox(true)
 		if not _check_for_immediate_pogo():
 			state_machine.change_state(owner.State.FALL)
 			return
 	else:
 		state_data.attack_duration_timer = state_data.config.player_attack_duration
 		state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
-
-		if owner.input_component.buffer.get("up", false):
-			owner.melee_hitbox_shape.shape = UPWARD_ATTACK_SHAPE
-			owner.melee_hitbox_shape.position = Vector2(0, -40)
-		else:
-			owner.melee_hitbox_shape.shape = FORWARD_ATTACK_SHAPE
-			owner.melee_hitbox_shape.position = Vector2(state_data.facing_direction * 60, 0)
-
-		owner.melee_hitbox_shape.disabled = false
+		var is_up_attack = owner.input_component.buffer.get("up", false)
+		owner.enable_melee_hitbox(true, is_up_attack)
 
 func exit() -> void:
-	owner.melee_hitbox_shape.call_deferred("set", "disabled", true)
-	owner.pogo_hitbox_shape.call_deferred("set", "disabled", true)
+	owner.call_deferred("enable_melee_hitbox", false)
+	owner.call_deferred("enable_pogo_hitbox", false)
 	state_data.is_pogo_attack = false
 	state_data.hit_targets_this_swing.clear()
 
@@ -29127,9 +29542,10 @@ func process_physics(delta: float) -> void:
 # --- Private Methods ---
 
 func _check_for_immediate_pogo() -> bool:
+	var pogo_hitbox: Area2D = owner.pogo_hitbox
 	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = owner.pogo_hitbox_shape.shape
-	query.transform = owner.global_transform * owner.pogo_hitbox.transform
+	query.shape = pogo_hitbox.get_node("CollisionShape2D").shape
+	query.transform = owner.global_transform * pogo_hitbox.transform
 	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
 	query.exclude = [owner]
 	query.collide_with_areas = true

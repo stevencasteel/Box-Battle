@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EntityArchetype" load_steps=10 format=3 uid="uid://player_archetype_resource"]
+
+[ext_resource type="Script" path="res://src/entities/archetypes/entity_archetype.gd" id="1_archetype"]
+[ext_resource type="PackedScene" uid="uid://dpl3w8xqyq1a2" path="res://src/entities/components/health_component.tscn" id="2_health"]
+[ext_resource type="PackedScene" uid="uid://b1x2y3z4a5b6" path="res://src/entities/components/combat_component.tscn" id="3_combat"]
+[ext_resource type="PackedScene" uid="uid://c7d8e9f0g1h2" path="res://src/entities/components/input_component.tscn" id="4_input"]
+[ext_resource type="PackedScene" uid="uid://i3j4k5l6m7n8" path="res://src/entities/components/base_state_machine.tscn" id="5_fsm"]
+[ext_resource type="PackedScene" uid="uid://o9p0q1r2s3t4" path="res://src/entities/player/components/player_physics_component.tscn" id="6_phys"]
+[ext_resource type="PackedScene" uid="uid://u5v6w7x8y9z0" path="res://src/entities/player/components/player_ability_component.tscn" id="7_abil"]
+[ext_resource type="PackedScene" uid="uid://a1b2c3d4e5f6" path="res://src/entities/player/components/player_resource_component.tscn" id="8_res"]
+[ext_resource type="PackedScene" uid="uid://g7h8i9j0k1l2" path="res://src/entities/components/fx_component.tscn" id="9_fx"]
+
+[resource]
+script = ExtResource("1_archetype")
+components = [ExtResource("2_health"), ExtResource("3_combat"), ExtResource("4_input"), ExtResource("5_fsm"), ExtResource("6_phys"), ExtResource("7_abil"), ExtResource("8_res"), ExtResource("9_fx")]
