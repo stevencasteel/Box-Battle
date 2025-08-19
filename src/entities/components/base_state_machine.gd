@@ -42,6 +42,8 @@ func teardown() -> void:
 	for state in states.values():
 		if is_instance_valid(state):
 			state.teardown()
+			# THE FIX: Manually free the state object.
+			state.free()
 			
 	states.clear()
 	state_history.clear()

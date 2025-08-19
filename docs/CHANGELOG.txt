@@ -34,6 +34,26 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+                                                                            
+   MEMORY MANAGEMENT & CRITICAL BUG FIXES                                      
+   Resolved a critical crash-on-death and a major memory leak on scene exit    
+   by hardening entity lifecycle management and teardown patterns.             
+   ────────────────────────────────────────────────────────────────────────    
+   █  Architectural Changes                                                    
+      ░ ■ Refactored the `BaseState` class to extend `Object` instead of       
+      ░   `RefCounted` to enforce explicit memory management.                  
+      ░ ■ Upgraded `BaseStateMachine` to manually free its state objects during
+      ░   `teardown()`, breaking a critical cyclic reference that was causing  
+      ░   the memory leak.                                                     
+   █  Fixed                                                                    
+      ░ ■ Resolved a null reference crash in `PlayerPhysicsComponent` that     
+      ░   occurred when the player was freed mid-physics-frame after dying.    
+      ░ ■ Eliminated all `ObjectDB instances leaked at exit` warnings and their
+      ░   associated RID leaks by fixing the state machine's memory management.
+   █  Removed                                                                  
+      ░ ■ Deleted the unused `vfx_manager.gd` to eliminate ambiguity with the  
+      ░   primary `FXManager` singleton.                                       
+                                                                             
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║

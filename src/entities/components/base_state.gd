@@ -5,7 +5,7 @@
 ## responsible for handling logic for a specific entity behavior (e.g., moving,
 ## attacking, dashing).
 class_name BaseState
-extends RefCounted # THE FIX: Extend RefCounted, not Object.
+extends Object
 
 # --- Member Variables ---
 var owner: Node

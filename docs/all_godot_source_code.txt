@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 18 18:16:26 CDT 2025
+Generated on: Mon Aug 18 19:47:25 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -231,8 +231,7 @@ PROJECT DIRECTORY STRUCTURE:
     │   │   ├── fx_manager.gd
     │   │   ├── game_manager.gd
     │   │   ├── object_pool.gd
-    │   │   ├── scene_manager.gd
-    │   │   └── vfx_manager.gd
+    │   │   └── scene_manager.gd
     │   └── util
     │       ├── asset_paths.gd
     │       ├── combat_utils.gd
@@ -394,7 +393,7 @@ PROJECT DIRECTORY STRUCTURE:
         ├── hit_spark.gd
         └── hit_spark.tscn
 
-69 directories, 317 files
+69 directories, 316 files
 
 
 =====================================
@@ -18496,6 +18495,260 @@ FILE: ./docs/TODO.txt
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 
+
+Add dust on landing, walking, touching wall, and jumping from wall.
+
+
+
+
+# Phase 2 Audit & Elevation Plan
+
+## Snapshot of what’s strong already
+
+* **Centralized FX service**: `FXManager` already cleanly owns screenshake, hit-stop, VFX pooling, prewarm, and camera registration, which is a great separation of concerns for “juice” orchestration. You’re already calling it from gameplay (e.g., Player and Boss).  &#x20;
+* **Composable entities**: Componentized player/boss with a state machine that’s DI-friendly via `setup(p_owner, p_dependencies)` and teardown hygiene. That’s very SOLID. &#x20;
+* **Damage pipeline**: `HealthComponent` as the single source of truth for invincibility, knockback, and signals (`took_damage`, `died`) is a solid foundation to hook FX and gameplay.&#x20;
+* **Events & identifiers**: A global EventBus and typed events are already in use (e.g., boss phase change, healing charges). This supports Dependency Inversion across systems. &#x20;
+
+---
+
+## 1) Juice & Feedback — Elevate the Shader Strategy (and unify FX)
+
+### Key risks/gaps
+
+* **Two managers present**: There’s a `vfx_manager.gd` and a production `FXManager`; only the latter is autoloaded. Remove/rename the legacy script to avoid drift. (Project docs explicitly list `FXManager` as an autoload.)&#x20;
+* **Shader effects are not first-class**: VFX pooling exists, but shader FX are not yet modeled as reusable resources or scheduled/stacked like other FX.
+
+### Elevated design (future-proof + SOLID)
+
+**A. Promote shaders to first-class “FX” alongside particles/VFX**
+
+* Introduce `ShaderEffect` (Resource) with:
+
+  * `shader: Shader`
+  * `params: Dictionary<String, Variant|Curve>` (supports static or animated values)
+  * `duration: float`
+  * `target_scope: enum { ENTITY, UI, FULLSCREEN }`
+  * `priority: int` (for conflict resolution)
+* Add `IFxEffect` interface semantics (or documented contract) so `FXManager` treats `VFXEffect`, `ScreenShakeEffect`, and `ShaderEffect` uniformly (Open/Closed). `FXManager` remains the single façade (DIP).
+
+**B. Binding layer per scope**
+
+* **EntityShaderBinding**: Attaches a temporary `ShaderMaterial` to a `CanvasItem`/`Sprite/Polygon2D/ColorRect`, pushes/restores original material safely, animates params via Tween. Handles **Hit-Flash** and **Dissolve** without leaking. (Entities already expose clear visuals: e.g., Player `ColorRect` at `$ColorRect` and Boss visual nodes.) &#x20;
+* **UIShaderBinding**: Applies SDF panel shader to `Control` via theme or per-node `Material`. Encourages design tokens (see below).
+* **FullscreenShaderBinding**: A dedicated `CanvasLayer` with a `ColorRect` + `ShaderMaterial` stack; `FXManager.trigger_fullscreen(shader_effect, world_pos?)` injects effects (Shockwave converts world→screen, queues by priority, cleans up).
+
+**C. Effect graph (optional but future-proof)**
+
+* If you foresee multiple overlapping fullscreen shaders (Shockwave + Chromatic Aberration + Bloom mask), model a lightweight “EffectGraph”:
+
+  * A queue of `ShaderEffect` with priorities and **mutual exclusion rules** (e.g., only one exposure-changing effect active).
+  * Blends via cumulative uniforms where safe (e.g., max ripple amplitude).
+* Keep graph in `FXManager` to avoid coupling gameplay to render internals.
+
+**D. Non-obvious wins**
+
+* **Prewarming & shader cache**: Add `FXManager.prewarm_shaders([ShaderEffect])` mirroring your VFX prewarm to avoid hitching on first use. (You already prewarm pooled nodes; extend the idea to shader variants.)&#x20;
+* **Performance guardrails**: `FXManager` tracks a per-frame cost budget; if frame time exceeds a threshold, degrade effect quality (shorter duration, fewer iterations) or skip low-priority FX.
+* **Param curves**: Let `params` accept `Curve` resources so designers can sculpt intensity/time without code.
+* **Conflict policies**: Screenshake already has clear calls; extend with **priority + override windows** (e.g., boss phase shake overrides minor hit shakes for 0.3s). You’re already calling shakes from Player/Boss. &#x20;
+* **Testbed scene**: A `res://tools/fx_playground.tscn` with toggles for each effect, param sliders, and a performance readout to rapidly iterate without booting gameplay.
+
+### Concrete Phase 2 tasks (refined)
+
+* **Task 1 (FX Cookbook for Shaders)**
+
+  * Implement `ShaderEffect.tres` assets and `FXManager.play_shader(effect, target, opts={})`.
+  * Provide bindings for `ENTITY`, `UI`, `FULLSCREEN`.
+  * Unit test: ensuring materials restore on teardown (esp. entity death and scene changes).
+* **Task 2 (Entity Shaders)**
+
+  * **Hit-Flash**: Use `HealthComponent.took_damage` to apply a 0.08–0.12s flash; you already emit `took_damage` with `DamageInfo`. Tie into it.&#x20;
+  * **Dissolve**: Triggered in `die()` paths for Player/Boss/Minions; ensure it cannot conflict with Hit-Flash (priority rules).
+* **Task 3 (UI SDF)**
+
+  * Add `Theme` with **design tokens** (radius, border thickness, spacing scale, brand colors). Use one SDF shader to produce borders/fills/shadows across panels. Have a single “Aesthetic Maximalism” token sheet.
+* **Task 4 (Fullscreen Shockwave)**
+
+  * `FXManager.trigger_shockwave(world_pos)` on boss phase change (you already call hit-stop + shake there—perfect insertion point).&#x20;
+
+**Acceptance checks**
+
+* Damage → flash visible; phase change → shockwave + hit-stop + shake; material restoration verified when an entity queues free; worst-case overlapping FX maintain framerate and prioritize correctly.
+
+---
+
+## 2) Gameplay & Design — Core Loop & Save
+
+### Gaps & design edges
+
+* World/loop scaffolding is light; Stage Select and saves are not yet implemented.
+* You already track boss health and emit phase/health events (great). Persisting which bosses are cleared will complete the loop.&#x20;
+
+### Elevated design
+
+**A. Versioned, multi-slot Save**
+
+* `SaveManager` (autoload) manages **profile slots** (e.g., `Slot_1`, `Slot_2`, `Slot_3`).
+* **Schema**:
+  `WorldState { version:int, bosses:{<boss_id>: {defeated:bool, best_time:float, deaths:int}}, options_ref:<guid> }`
+* **Atomic writes**: Save to `*.tmp`, then rename; keep a `.bak` of the last good file.
+* **Migration**: On load, if `version < CURRENT`, run registered migrators.
+* **Separation of concerns**: Keep **user options** (video, audio) separate from **progress**.
+
+**B. Encounter Registry**
+
+* A `EncounterRegistry.tres` listing available stages (id, name, scene path, thumbnail) so `StageSelect.tscn` can **data-drive** its UI, not hardcode. The registry decouples content shipping from UI logic.
+
+**C. Stage Select screen**
+
+* On `_ready()`, `SaveManager.load_active_slot()` and filter registry; enable/disable buttons with medallions/times.
+* UX: show boss card, defeat state, PB time, and a flashy SDF-framed button (uses your new UI shader).
+
+**D. Tests**
+
+* Unit test `SaveManager`: write/read parity; corrupted file fallback; migration path N→N+1.
+
+**Where to hook in current code**
+
+* You already funnel boss phase/health through events; add a **win event** from boss `die()` to update world state. You call `die()` in boss on health zero; emit a `BOSS_DEFEATED` with an ID you store on the boss. &#x20;
+
+---
+
+## 3) Systems & Narrative — Dialogue
+
+### Audit
+
+* `DialogueManager.gd` exists (empty) and `DialogueBox` is in progress with typewriter intent. You have `DialogueData.tres` samples. Good direction, needs flow control & extensibility.&#x20;
+
+### Elevated design
+
+**A. Resource-driven dialogue graph (lightweight)**
+
+* `DialogueData` becomes a mini graph: `lines: Array[DialogueLine]`, optional `branches: Array[DialogueBranch]` with simple conditions (e.g., `boss_defeated("turret")`).
+* Conditions implemented via **Query Interface** on `DialogueManager`, not by reading save files directly (Dependency Inversion: manager depends on an abstract `IWorldQuery` you implement using `SaveManager`).
+
+**B. Tags & signals**
+
+* Support **inline tags** (e.g., `[shake]`, `[sfx:blipA]`, `[fx:shockwave]`) that emit signals instead of hard-coding presentation. `DialogueBox` listens and animates UI/SDF or triggers FX via `FXManager`. Separation of concerns: Manager = state, Box = view.
+
+**C. Typewriter polish**
+
+* Variable CPS, optional easing `Curve`, auto-skip on hold, and **smart pauses** on punctuation.
+* Accessibility: instant reveal on input; queue mode for multi-line; per-character sfx with pitch variance.
+
+**D. Future-proof**
+
+* Localisation hooks: Each `DialogueLine` carries a key, not raw text (or supports both); swap table per language.
+
+---
+
+## Visual Identity — “Aesthetic Maximalism” without chaos
+
+* **Design Tokens**: `ThemeTokens.tres` (spacing scale, corner radius, border widths, shadow ramp, gradients list, primary/secondary palettes). Your `Palette` constants can seed this.&#x20;
+* **Single SDF panel shader** with params from tokens: corner radius, border width, inner glow, hatch pattern toggle, animation seed. Drive hover/press/alert states via uniform changes not separate shaders.
+* **Motion language**: micro-tweens (100–180ms), overshoot 1.05, settle to 1.0 with spring; consistent across buttons/modals/stage cards.
+
+---
+
+## SOLID Scorecard (how the plan maps)
+
+* **S**: Shader bindings split by scope; `DialogueManager` vs `DialogueBox`; `SaveManager` vs `EncounterRegistry`.
+* **O**: `FXManager` extended to new effect types without modifying callers; `Dialogue` adds tags/branches without altering the runner API.
+* **L**: `IFxEffect` contract keeps any new effect substitutable.
+* **I**: UI doesn’t need screenshake APIs; it listens to FX tags only. Gameplay doesn’t know how shaders render.
+* **D**: Gameplay posts events; `FXManager`, `SaveManager`, `DialogueManager` subscribe. You already use EventBus patterns across the code.&#x20;
+
+---
+
+## Prioritized Phase 2 Backlog (impact → effort)
+
+1. **Shader FX foundation (ENTITY/UI/FULLSCREEN bindings)**
+
+   * `ShaderEffect` resource + `FXManager.play_shader()`
+   * Shockwave fullscreen; Hit-Flash; Dissolve; UI SDF panel v1
+     *Accept*: Hit-Flash on damage; Dissolve on death; Shockwave on phase change; UI panels themed.
+
+2. **Design Tokens + SDF Theme integration**
+
+   * One shader, many looks; stage cards & menus adopt tokens
+     *Accept*: All panels/badges use same shader and tokens; hover/press transitions consistent.
+
+3. **Encounter Registry + Stage Select**
+
+   * Data-driven, thumbnails, defeat status, time PB
+     *Accept*: Disabling/enabling and badges reflect `WorldState`.
+
+4. **SaveManager v1 (versioned, atomic, multi-slot)**
+
+   * WorldState schema + migrator scaffolding
+     *Accept*: Corrupt file test passes; slots switch; migration stub is callable.
+
+5. **Dialogue v1 (runner + box + tags)**
+
+   * Typewriter polish, skip logic, `[fx:*]` tag to `FXManager`
+     *Accept*: Branch by a simple world query; tags fire without coupling.
+
+6. **FX Testbed + Performance budget**
+
+   * Prewarm path for shaders; frame budget degrade path
+     *Accept*: Toggle 3+ overlapping effects with steady frametime; low-priority FX drop under load.
+
+---
+
+## Not-obvious pitfalls & mitigations
+
+* **Material leaks**: Always store/restore the previous `material` on entities; guard against `queue_free()` mid-tween (cancel/cleanup). (Your components already have good teardown patterns—reuse those.)&#x20;
+* **Manager drift**: Delete/rename `vfx_manager.gd` to avoid confusion with `FXManager`.&#x20;
+* **Event storms**: Debounce rapid damage events to not stack infinite Hit-Flashes; let `FXManager` coalesce by priority.
+* **Save corruption**: Atomic writes + `.bak` restore; unit tests for both.
+* **Over-maximalism**: Let tokens define restraint: limit concurrent UI patterns; use one SDF shader with parameterized patterns.
+
+---
+
+## Tiny code-level contracts (just enough to align)
+
+**ShaderEffect.tres (concept)**
+
+```
+class_name ShaderEffect
+extends Resource
+@export var shader: Shader
+@export var duration: float = 0.15
+@export var priority: int = 0
+@export_enum("ENTITY","UI","FULLSCREEN") var scope := 0
+@export var params := {} # { "intensity": 1.0, "tint": Color, "curve": Curve, ... }
+```
+
+**FXManager surface (additions)**
+
+```
+func play_shader(effect: ShaderEffect, target: Node, opts := {}): void
+func trigger_shockwave(world_pos: Vector2): void # convenience wrapper
+func prewarm_shaders(effects: Array[ShaderEffect]): void
+```
+
+(Backed by scope-specific bindings that do all attach/animate/restore work.)
+
+---
+
+## Where to hook today (concrete)
+
+* **Player damage** → you already request shake/hit-stop and play a hit spark in `_on_health_component_took_damage`—just also call `FXManager.play_shader(hit_flash_effect, self.visual_sprite)`.&#x20;
+* **Boss phase change** → extend the existing phase change branch to call `trigger_shockwave(boss.global_position)` alongside shake/hit-stop.&#x20;
+* **Entity death** → in `HealthComponent.died` subscribers (Player/Boss/Minion), run `Dissolve` before `queue_free()`. You’re already centralizing death notification.&#x20;
+
+---
+
+If you want, I can turn this into:
+
+* a minimal **`ShaderEffect` resource + bindings** starter (ENTITY/UI/FULLSCREEN),
+* a **`SaveManager` v1** with slotting & atomic writes,
+* and a **`DialogueManager` v1** runner with tags.
+
+Just say the word and I’ll generate the code scaffolds aligned to your current structure.
+
+
 =====================================
 FILE: ./docs/all_script_errors.txt
 =====================================
@@ -19774,6 +20027,26 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+                                                                            
+   MEMORY MANAGEMENT & CRITICAL BUG FIXES                                      
+   Resolved a critical crash-on-death and a major memory leak on scene exit    
+   by hardening entity lifecycle management and teardown patterns.             
+   ────────────────────────────────────────────────────────────────────────    
+   █  Architectural Changes                                                    
+      ░ ■ Refactored the `BaseState` class to extend `Object` instead of       
+      ░   `RefCounted` to enforce explicit memory management.                  
+      ░ ■ Upgraded `BaseStateMachine` to manually free its state objects during
+      ░   `teardown()`, breaking a critical cyclic reference that was causing  
+      ░   the memory leak.                                                     
+   █  Fixed                                                                    
+      ░ ■ Resolved a null reference crash in `PlayerPhysicsComponent` that     
+      ░   occurred when the player was freed mid-physics-frame after dying.    
+      ░ ■ Eliminated all `ObjectDB instances leaked at exit` warnings and their
+      ░   associated RID leaks by fixing the state machine's memory management.
+   █  Removed                                                                  
+      ░ ■ Deleted the unused `vfx_manager.gd` to eliminate ambiguity with the  
+      ░   primary `FXManager` singleton.                                       
+                                                                             
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
@@ -24281,25 +24554,6 @@ func start_conversation(_p_data: DialogueData) -> void:
 # func _hide_dialogue_box() -> void:
 
 =====================================
-FILE: ./src/core/systems/vfx_manager.gd
-=====================================
-# src/core/systems/vfx_manager.gd
-## An autoloaded singleton for spawning and managing visual effects (VFX).
-##
-## This system will interact with the [ObjectPool] to efficiently create and
-## destroy short-lived visual effects like particle systems.
-extends Node
-
-# TODO: Add methods to spawn specific, named particle effects from a pool.
-# Example: func play_hit_spark(p_position: Vector2) -> void:
-
-# TODO: Add methods for controlling screen-wide shader effects.
-# Example: func start_vignette_pulse() -> void:
-
-func _ready() -> void:
-	pass
-
-=====================================
 FILE: ./src/core/systems/game_manager.gd
 =====================================
 # src/core/systems/game_manager.gd
@@ -27503,6 +27757,8 @@ func teardown() -> void:
 	for state in states.values():
 		if is_instance_valid(state):
 			state.teardown()
+			# THE FIX: Manually free the state object.
+			state.free()
 			
 	states.clear()
 	state_history.clear()
@@ -27523,7 +27779,6 @@ func change_state(new_state_key, msg := {}) -> void:
 		state_history.push_front(state_name)
 		if state_history.size() > MAX_HISTORY_SIZE:
 			state_history.pop_back()
-
 
 =====================================
 FILE: ./src/entities/components/telegraph_component.gd
@@ -27886,7 +28141,7 @@ FILE: ./src/entities/components/base_state.gd
 ## responsible for handling logic for a specific entity behavior (e.g., moving,
 ## attacking, dashing).
 class_name BaseState
-extends RefCounted # THE FIX: Extend RefCounted, not Object.
+extends Object
 
 # --- Member Variables ---
 var owner: Node
@@ -28574,6 +28829,9 @@ func _physics_process(_delta: float) -> void:
 	owner_node.move_and_slide()
 	_check_for_contact_damage()
 
+	# GUARD: The owner may have been freed by the contact damage check.
+	if not is_instance_valid(owner_node): return
+
 	if owner_node.is_on_wall() and not owner_node.is_on_floor():
 		p_data.wall_coyote_timer = p_data.config.player_wall_coyote_time
 		p_data.last_wall_normal = owner_node.get_wall_normal()
@@ -28604,7 +28862,7 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 
 func _check_for_contact_damage() -> void:
 	if health_component.is_invincible(): return
-	
+
 	for i in range(owner_node.get_slide_collision_count()):
 		var col = owner_node.get_slide_collision(i)
 		if not col: continue
@@ -28612,7 +28870,7 @@ func _check_for_contact_damage() -> void:
 		var collider = col.get_collider()
 		var is_damage_source = is_instance_valid(collider) and \
 			(collider.is_in_group(Identifiers.Groups.ENEMY) or collider.is_in_group(Identifiers.Groups.HAZARD))
-		
+
 		if not is_damage_source: continue
 
 		var damage_info = DamageInfo.new()
@@ -28622,12 +28880,13 @@ func _check_for_contact_damage() -> void:
 		damage_info.impact_normal = col.get_normal()
 		var damage_result = owner_node.health_component.apply_damage(damage_info)
 
+		# GUARD: The owner may have been freed by the apply_damage call.
+		if not is_instance_valid(owner_node): return
+
 		if damage_result.was_damaged:
 			owner_node.velocity = damage_result.knockback_velocity
-			# THE FIX: Use the enum key, not its integer value, to change state.
 			owner_node.state_machine.change_state(owner_node.State.HURT)
 		break
-
 
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.gd
