@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Tue Aug 19 12:30:32 CDT 2025
+Generated on: Tue Aug 19 16:56:58 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -142,6 +142,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── DEPRECATION.md
 │   ├── DESIGN.txt
 │   ├── DOCS_PROTOCOL.txt
+│   ├── HOW_TO_ADD_AN_EFFECT.md
 │   ├── PLAYTESTING.txt
 │   ├── ROADMAP.txt
 │   ├── TODO.txt
@@ -168,251 +169,278 @@ PROJECT DIRECTORY STRUCTURE:
 │       └── state_machine_flow.md
 ├── export_presets.cfg
 ├── icon.svg
+├── materials
+│   ├── hit_flash_material.tres
+│   ├── sdf_panel_material.tres
+│   └── shockwave_material.tres
 ├── pico.save
 ├── progess
 │   └── progress_001-1.jpg
 ├── project.godot
-└── src
-    ├── api
-    │   ├── combat
-    │   │   ├── damage_info.gd
-    │   │   └── damage_result.gd
-    │   ├── interfaces
-    │   │   ├── IComponent.gd
-    │   │   ├── IDamageable.gd
-    │   │   ├── IPoolable.gd
-    │   │   └── ISceneController.gd
-    │   └── interfaces.gd
-    ├── arenas
-    ├── core
-    │   ├── DEPRECATION.md
-    │   ├── README.md
-    │   ├── building
-    │   │   ├── arena_builder.gd
-    │   │   ├── level_build_data.gd
-    │   │   ├── level_parser.gd
-    │   │   └── terrain_builder.gd
-    │   ├── data
-    │   │   ├── combat_db.gd
-    │   │   ├── config
-    │   │   │   ├── combat_config.gd
-    │   │   │   └── settings.gd
-    │   │   ├── effects
-    │   │   │   ├── boss_death_shake.tres
-    │   │   │   ├── boss_phase_change_shake.tres
-    │   │   │   ├── player_damage_shake.tres
-    │   │   │   ├── player_hit_spark_effect.tres
-    │   │   │   ├── screen_shake_effect.gd
-    │   │   │   ├── shader_effect.gd
-    │   │   │   └── vfx_effect.gd
-    │   │   ├── game_state_data.gd
-    │   │   └── level_build_data.gd
-    │   ├── events
-    │   │   ├── event_bus.gd
-    │   │   ├── event_catalog.gd
-    │   │   └── typed_events
-    │   │       ├── boss_health_changed_event.gd
-    │   │       ├── player_healing_charges_changed_event.gd
-    │   │       └── player_health_changed_event.gd
-    │   ├── sequencing
-    │   │   ├── sequence_handle.gd
-    │   │   ├── sequence_step.gd
-    │   │   ├── sequencer.gd
-    │   │   └── steps
-    │   │       ├── callable_step.gd
-    │   │       ├── emit_step.gd
-    │   │       └── wait_step.gd
-    │   ├── systems
-    │   │   ├── audio_manager.gd
-    │   │   ├── camera_manager.gd
-    │   │   ├── camera_shaker.gd
-    │   │   ├── camera_shaker.tscn
-    │   │   ├── cursor_manager.gd
-    │   │   ├── dialogue_manager.gd
-    │   │   ├── fx_bindings
-    │   │   │   └── entity_shader_binding.gd
-    │   │   ├── fx_manager.gd
-    │   │   ├── game_manager.gd
-    │   │   ├── object_pool.gd
-    │   │   └── scene_manager.gd
-    │   └── util
-    │       ├── asset_paths.gd
-    │       ├── combat_utils.gd
-    │       ├── constants.gd
-    │       ├── grid_utils.gd
-    │       ├── identifiers.gd
-    │       ├── palette.gd
-    │       ├── physics_layers.gd
-    │       └── scene_validator.gd
-    ├── data
-    │   ├── combat_config.tres
-    │   ├── dialogue
-    │   │   ├── dialogue_data.gd
-    │   │   └── test_conversation.tres
-    │   ├── effects
-    │   │   └── shaders
-    │   │       └── hit_flash_effect.tres
-    │   ├── encounters
-    │   │   ├── encounter_00.tres
-    │   │   └── encounter_data.gd
-    │   └── layouts
-    │       ├── layout_00.tres
-    │       └── level_layout.gd
-    ├── entities
-    │   ├── README.md
-    │   ├── archetypes
-    │   │   ├── entity_archetype.gd
-    │   │   └── player_archetype.tres
-    │   ├── base_entity.gd
-    │   ├── boss
-    │   │   ├── attack_patterns
-    │   │   │   ├── attack_logic.gd
-    │   │   │   ├── attack_pattern.gd
-    │   │   │   ├── homing_omni_burst_logic.gd
-    │   │   │   ├── homing_omni_burst_pattern.tres
-    │   │   │   ├── lunge_attack.tres
-    │   │   │   ├── lunge_logic.gd
-    │   │   │   ├── lunge_logic.tres
-    │   │   │   ├── projectile_logic.gd
-    │   │   │   ├── single_shot.tres
-    │   │   │   ├── single_shot_logic.tres
-    │   │   │   ├── volley_shot.tres
-    │   │   │   ├── volley_shot_logic.tres
-    │   │   │   └── volley_shot_p3.tres
-    │   │   ├── base_boss.gd
-    │   │   ├── base_boss.tscn
-    │   │   ├── boss_state_data.gd
-    │   │   └── states
-    │   │       ├── state_boss_attack.gd
-    │   │       ├── state_boss_cooldown.gd
-    │   │       ├── state_boss_idle.gd
-    │   │       ├── state_boss_lunge.gd
-    │   │       └── state_boss_patrol.gd
-    │   ├── components
-    │   │   ├── base_state.gd
-    │   │   ├── base_state_machine.gd
-    │   │   ├── base_state_machine.tscn
-    │   │   ├── combat_component.gd
-    │   │   ├── combat_component.tscn
-    │   │   ├── fx_component.gd
-    │   │   ├── fx_component.tscn
-    │   │   ├── health_component.gd
-    │   │   ├── health_component.tscn
-    │   │   ├── input_component.gd
-    │   │   ├── input_component.tscn
-    │   │   ├── telegraph_component.gd
-    │   │   └── telegraph_component.tscn
-    │   ├── minions
-    │   │   ├── states
-    │   │   │   ├── state_turret_attack.gd
-    │   │   │   └── state_turret_idle.gd
-    │   │   ├── turret.gd
-    │   │   ├── turret.tscn
-    │   │   └── turret_state_data.gd
-    │   └── player
-    │       ├── components
-    │       │   ├── player_ability_component.gd
-    │       │   ├── player_ability_component.tscn
-    │       │   ├── player_physics_component.gd
-    │       │   ├── player_physics_component.tscn
-    │       │   ├── player_resource_component.gd
-    │       │   └── player_resource_component.tscn
-    │       ├── data
-    │       │   ├── forward_attack_shape.tres
-    │       │   ├── player_state_data.gd
-    │       │   └── upward_attack_shape.tres
-    │       ├── player.gd
-    │       ├── player.tscn
-    │       └── states
-    │           ├── state_attack.gd
-    │           ├── state_dash.gd
-    │           ├── state_fall.gd
-    │           ├── state_heal.gd
-    │           ├── state_hurt.gd
-    │           ├── state_jump.gd
-    │           ├── state_move.gd
-    │           └── state_wall_slide.gd
-    ├── projectiles
-    │   ├── boss_shot.gd
-    │   ├── boss_shot.tscn
-    │   ├── player_shot.gd
-    │   ├── player_shot.tscn
-    │   ├── turret_shot.gd
-    │   └── turret_shot.tscn
-    ├── scenes
-    │   ├── game
-    │   │   ├── encounter_scene.gd
-    │   │   └── encounter_scene.tscn
-    │   ├── game_over
-    │   │   ├── game_over_screen.gd
-    │   │   └── game_over_screen.tscn
-    │   ├── loading
-    │   │   ├── loading_screen.gd
-    │   │   └── loading_screen.tscn
-    │   ├── main
-    │   │   ├── main.gd
-    │   │   └── main.tscn
-    │   ├── menus
-    │   │   ├── controls_screen.gd
-    │   │   ├── controls_screen.tscn
-    │   │   ├── credits_screen.gd
-    │   │   ├── credits_screen.tscn
-    │   │   ├── options_screen.gd
-    │   │   ├── options_screen.tscn
-    │   │   ├── sound_screen.gd
-    │   │   ├── sound_screen.tscn
-    │   │   ├── title_screen.gd
-    │   │   └── title_screen.tscn
-    │   └── victory
-    │       ├── victory_screen.gd
-    │       └── victory_screen.tscn
-    ├── tests
-    │   ├── data
-    │   │   ├── test_encounter.tres
-    │   │   └── test_layout.tres
-    │   ├── integration
-    │   │   └── test_integration_combat_loop.gd
-    │   ├── isolation
-    │   │   └── test_player_lifecycle.gd
-    │   └── unit
-    │       ├── test_combat_component.gd
-    │       ├── test_combat_utils.gd
-    │       ├── test_health_component.gd
-    │       ├── test_input_component.gd
-    │       ├── test_level_parser.gd
-    │       ├── test_memory_leaks.gd
-    │       ├── test_object_pool.gd
-    │       └── test_player_resource_component.gd
-    ├── ui
-    │   ├── components
-    │   │   ├── custom_slider
-    │   │   │   └── custom_slider.gd
-    │   │   ├── logo_display
-    │   │   │   ├── logo_display.gd
-    │   │   │   └── logo_display.tscn
-    │   │   ├── mute_button
-    │   │   │   ├── mute_button.gd
-    │   │   │   └── mute_button.tscn
-    │   │   └── styled_menu_item
-    │   │       ├── styled_menu_item.gd
-    │   │       └── styled_menu_item.tscn
-    │   ├── dev
-    │   │   ├── debug_overlay.gd
-    │   │   └── debug_overlay.tscn
-    │   ├── dialogue
-    │   │   ├── dialogue_box.gd
-    │   │   └── dialogue_box.tscn
-    │   ├── game_hud
-    │   │   ├── game_hud.gd
-    │   │   └── game_hud.tscn
-    │   ├── menu_manager
-    │   │   └── menu_manager.gd
-    │   └── pause_menu
-    └── vfx
-        ├── hit_spark.gd
-        └── hit_spark.tscn
+├── shaders
+│   ├── entity
+│   │   ├── dissolve.gdshader
+│   │   └── hit_flash.gdshader
+│   ├── fullscreen
+│   │   └── shockwave.gdshader
+│   ├── includes
+│   │   ├── color.gdshaderinc
+│   │   ├── common_math.gdshaderinc
+│   │   ├── fx_blend.gdshaderinc
+│   │   └── noise.gdshaderinc
+│   └── ui
+│       └── sdf_panel.gdshader
+├── src
+│   ├── api
+│   │   ├── combat
+│   │   │   ├── damage_info.gd
+│   │   │   └── damage_result.gd
+│   │   ├── interfaces
+│   │   │   ├── IComponent.gd
+│   │   │   ├── IDamageable.gd
+│   │   │   ├── IPoolable.gd
+│   │   │   └── ISceneController.gd
+│   │   └── interfaces.gd
+│   ├── arenas
+│   ├── core
+│   │   ├── DEPRECATION.md
+│   │   ├── README.md
+│   │   ├── building
+│   │   │   ├── arena_builder.gd
+│   │   │   ├── level_build_data.gd
+│   │   │   ├── level_parser.gd
+│   │   │   └── terrain_builder.gd
+│   │   ├── data
+│   │   │   ├── combat_db.gd
+│   │   │   ├── config
+│   │   │   │   ├── combat_config.gd
+│   │   │   │   └── settings.gd
+│   │   │   ├── effects
+│   │   │   │   ├── boss_death_shake.tres
+│   │   │   │   ├── boss_phase_change_shake.tres
+│   │   │   │   ├── dissolve_effect.tres
+│   │   │   │   ├── player_damage_shake.tres
+│   │   │   │   ├── player_hit_spark_effect.tres
+│   │   │   │   ├── screen_shake_effect.gd
+│   │   │   │   ├── shader_effect.gd
+│   │   │   │   ├── shockwave_effect.tres
+│   │   │   │   └── vfx_effect.gd
+│   │   │   ├── game_state_data.gd
+│   │   │   └── level_build_data.gd
+│   │   ├── events
+│   │   │   ├── event_bus.gd
+│   │   │   ├── event_catalog.gd
+│   │   │   └── typed_events
+│   │   │       ├── boss_health_changed_event.gd
+│   │   │       ├── player_healing_charges_changed_event.gd
+│   │   │       └── player_health_changed_event.gd
+│   │   ├── sequencing
+│   │   │   ├── sequence_handle.gd
+│   │   │   ├── sequence_step.gd
+│   │   │   ├── sequencer.gd
+│   │   │   └── steps
+│   │   │       ├── callable_step.gd
+│   │   │       ├── emit_step.gd
+│   │   │       └── wait_step.gd
+│   │   ├── systems
+│   │   │   ├── audio_manager.gd
+│   │   │   ├── camera_manager.gd
+│   │   │   ├── camera_shaker.gd
+│   │   │   ├── camera_shaker.tscn
+│   │   │   ├── cursor_manager.gd
+│   │   │   ├── dialogue_manager.gd
+│   │   │   ├── fx_bindings
+│   │   │   │   ├── entity_shader_binding.gd
+│   │   │   │   ├── fullscreen_shader_binding.gd
+│   │   │   │   └── ui_shader_binding.gd
+│   │   │   ├── fx_manager.gd
+│   │   │   ├── game_manager.gd
+│   │   │   ├── object_pool.gd
+│   │   │   └── scene_manager.gd
+│   │   └── util
+│   │       ├── asset_paths.gd
+│   │       ├── combat_utils.gd
+│   │       ├── constants.gd
+│   │       ├── grid_utils.gd
+│   │       ├── identifiers.gd
+│   │       ├── palette.gd
+│   │       ├── physics_layers.gd
+│   │       └── scene_validator.gd
+│   ├── data
+│   │   ├── audio
+│   │   │   ├── sfx_player_footsteps.tres
+│   │   │   └── sfx_player_impact.tres
+│   │   ├── combat_config.tres
+│   │   ├── dialogue
+│   │   │   ├── dialogue_data.gd
+│   │   │   └── test_conversation.tres
+│   │   ├── effects
+│   │   │   └── shaders
+│   │   │       └── hit_flash_effect.tres
+│   │   ├── encounters
+│   │   │   ├── encounter_00.tres
+│   │   │   └── encounter_data.gd
+│   │   └── layouts
+│   │       ├── layout_00.tres
+│   │       └── level_layout.gd
+│   ├── entities
+│   │   ├── README.md
+│   │   ├── archetypes
+│   │   │   ├── entity_archetype.gd
+│   │   │   └── player_archetype.tres
+│   │   ├── base_entity.gd
+│   │   ├── boss
+│   │   │   ├── attack_patterns
+│   │   │   │   ├── attack_logic.gd
+│   │   │   │   ├── attack_pattern.gd
+│   │   │   │   ├── homing_omni_burst_logic.gd
+│   │   │   │   ├── homing_omni_burst_pattern.tres
+│   │   │   │   ├── lunge_attack.tres
+│   │   │   │   ├── lunge_logic.gd
+│   │   │   │   ├── lunge_logic.tres
+│   │   │   │   ├── projectile_logic.gd
+│   │   │   │   ├── single_shot.tres
+│   │   │   │   ├── single_shot_logic.tres
+│   │   │   │   ├── volley_shot.tres
+│   │   │   │   ├── volley_shot_logic.tres
+│   │   │   │   └── volley_shot_p3.tres
+│   │   │   ├── base_boss.gd
+│   │   │   ├── base_boss.tscn
+│   │   │   ├── boss_state_data.gd
+│   │   │   └── states
+│   │   │       ├── state_boss_attack.gd
+│   │   │       ├── state_boss_cooldown.gd
+│   │   │       ├── state_boss_idle.gd
+│   │   │       ├── state_boss_lunge.gd
+│   │   │       └── state_boss_patrol.gd
+│   │   ├── components
+│   │   │   ├── base_state.gd
+│   │   │   ├── base_state_machine.gd
+│   │   │   ├── base_state_machine.tscn
+│   │   │   ├── combat_component.gd
+│   │   │   ├── combat_component.tscn
+│   │   │   ├── fx_component.gd
+│   │   │   ├── fx_component.tscn
+│   │   │   ├── health_component.gd
+│   │   │   ├── health_component.tscn
+│   │   │   ├── input_component.gd
+│   │   │   ├── input_component.tscn
+│   │   │   ├── telegraph_component.gd
+│   │   │   └── telegraph_component.tscn
+│   │   ├── minions
+│   │   │   ├── states
+│   │   │   │   ├── state_turret_attack.gd
+│   │   │   │   └── state_turret_idle.gd
+│   │   │   ├── turret.gd
+│   │   │   ├── turret.tscn
+│   │   │   └── turret_state_data.gd
+│   │   └── player
+│   │       ├── components
+│   │       │   ├── player_ability_component.gd
+│   │       │   ├── player_ability_component.tscn
+│   │       │   ├── player_physics_component.gd
+│   │       │   ├── player_physics_component.tscn
+│   │       │   ├── player_resource_component.gd
+│   │       │   └── player_resource_component.tscn
+│   │       ├── data
+│   │       │   ├── forward_attack_shape.tres
+│   │       │   ├── player_state_data.gd
+│   │       │   └── upward_attack_shape.tres
+│   │       ├── player.gd
+│   │       ├── player.tscn
+│   │       └── states
+│   │           ├── state_attack.gd
+│   │           ├── state_dash.gd
+│   │           ├── state_fall.gd
+│   │           ├── state_heal.gd
+│   │           ├── state_hurt.gd
+│   │           ├── state_jump.gd
+│   │           ├── state_move.gd
+│   │           └── state_wall_slide.gd
+│   ├── projectiles
+│   │   ├── boss_shot.gd
+│   │   ├── boss_shot.tscn
+│   │   ├── player_shot.gd
+│   │   ├── player_shot.tscn
+│   │   ├── turret_shot.gd
+│   │   └── turret_shot.tscn
+│   ├── scenes
+│   │   ├── game
+│   │   │   ├── encounter_scene.gd
+│   │   │   └── encounter_scene.tscn
+│   │   ├── game_over
+│   │   │   ├── game_over_screen.gd
+│   │   │   └── game_over_screen.tscn
+│   │   ├── loading
+│   │   │   ├── loading_screen.gd
+│   │   │   └── loading_screen.tscn
+│   │   ├── main
+│   │   │   ├── main.gd
+│   │   │   └── main.tscn
+│   │   ├── menus
+│   │   │   ├── controls_screen.gd
+│   │   │   ├── controls_screen.tscn
+│   │   │   ├── credits_screen.gd
+│   │   │   ├── credits_screen.tscn
+│   │   │   ├── options_screen.gd
+│   │   │   ├── options_screen.tscn
+│   │   │   ├── sound_screen.gd
+│   │   │   ├── sound_screen.tscn
+│   │   │   ├── title_screen.gd
+│   │   │   └── title_screen.tscn
+│   │   └── victory
+│   │       ├── victory_screen.gd
+│   │       └── victory_screen.tscn
+│   ├── tests
+│   │   ├── data
+│   │   │   ├── test_encounter.tres
+│   │   │   └── test_layout.tres
+│   │   ├── integration
+│   │   │   └── test_integration_combat_loop.gd
+│   │   ├── isolation
+│   │   │   └── test_player_lifecycle.gd
+│   │   └── unit
+│   │       ├── test_combat_component.gd
+│   │       ├── test_combat_utils.gd
+│   │       ├── test_health_component.gd
+│   │       ├── test_input_component.gd
+│   │       ├── test_level_parser.gd
+│   │       ├── test_memory_leaks.gd
+│   │       ├── test_object_pool.gd
+│   │       └── test_player_resource_component.gd
+│   ├── ui
+│   │   ├── components
+│   │   │   ├── custom_slider
+│   │   │   │   └── custom_slider.gd
+│   │   │   ├── logo_display
+│   │   │   │   ├── logo_display.gd
+│   │   │   │   └── logo_display.tscn
+│   │   │   ├── mute_button
+│   │   │   │   ├── mute_button.gd
+│   │   │   │   └── mute_button.tscn
+│   │   │   └── styled_menu_item
+│   │   │       ├── styled_menu_item.gd
+│   │   │       └── styled_menu_item.tscn
+│   │   ├── dev
+│   │   │   ├── debug_overlay.gd
+│   │   │   └── debug_overlay.tscn
+│   │   ├── dialogue
+│   │   │   ├── dialogue_box.gd
+│   │   │   └── dialogue_box.tscn
+│   │   ├── game_hud
+│   │   │   ├── game_hud.gd
+│   │   │   └── game_hud.tscn
+│   │   ├── menu_manager
+│   │   │   └── menu_manager.gd
+│   │   └── pause_menu
+│   └── vfx
+│       ├── hit_spark.gd
+│       └── hit_spark.tscn
+└── tools
+    ├── fx_playground.gd
+    └── fx_playground.tscn
 
-73 directories, 331 files
+81 directories, 351 files
 
 
 =====================================
@@ -423,6 +451,52 @@ FILE: ./.gutconfig.json
         "res://src/tests"
     ]
 }
+
+
+=====================================
+FILE: ./tools/fx_playground.tscn
+=====================================
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tools/fx_playground.gd" id="1"]
+
+[node name="FXPlayground" type="Control"]
+script = ExtResource("1")
+
+# TODO: Build the node structure for the FX testbed scene.
+
+
+=====================================
+FILE: ./tools/fx_playground.gd
+=====================================
+# tools/fx_playground.gd
+extends Control
+
+# TODO: Build a UI to preview and test all ShaderEffect and VFXEffect resources.
+
+
+=====================================
+FILE: ./materials/sdf_panel_material.tres
+=====================================
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+# TODO: Link this material to its corresponding .gdshader file.
+
+
+=====================================
+FILE: ./materials/hit_flash_material.tres
+=====================================
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+# TODO: Link this material to its corresponding .gdshader file.
+
+
+=====================================
+FILE: ./materials/shockwave_material.tres
+=====================================
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+# TODO: Link this material to its corresponding .gdshader file.
 
 
 =====================================
@@ -18520,6 +18594,8 @@ Add dust on landing, walking, touching wall, and jumping from wall.
 
 
 
+Older TODO need to investigate again.
+
 # Phase 2 Audit & Elevation Plan
 
 ## Snapshot of what’s strong already
@@ -18759,13 +18835,288 @@ func prewarm_shaders(effects: Array[ShaderEffect]): void
 
 ---
 
-If you want, I can turn this into:
 
-* a minimal **`ShaderEffect` resource + bindings** starter (ENTITY/UI/FULLSCREEN),
-* a **`SaveManager` v1** with slotting & atomic writes,
-* and a **`DialogueManager` v1** runner with tags.
 
-Just say the word and I’ll generate the code scaffolds aligned to your current structure.
+
+
+Aug 19th TODO from GPT-5. Currently working on this stuff.
+
+
+===============================================================================
+| TODO.txt — FX & Shader Refactor (Mobile Renderer)                                |
+| Project: Steven Casteel / Box Battle                                         |
+| Purpose: Major overhaul to stabilize .gdshader usage on Mobile renderer, finish   |
+|          FX + audio pipelines, and apply Godot 4.4 best practices across the repo |
+===============================================================================
+
+ASCII GUIDE: keep this file purely procedural. Use it as the single source of truth
+for tasks, ordered PRs, acceptance criteria, and quick implementation notes.
+
+--------------------------------------------------------------------------------
+PHASE SUMMARY (HIGH-LEVEL)
+--------------------------------------------------------------------------------
+  [PHASE 1] Stabilize .gdshader usage on Mobile renderer
+  [PHASE 2] Complete and formalize the data-driven FX system
+  [PHASE 3] Performance-safe shader patterns & anti-patterns
+  [PHASE 4] Audio architecture overhaul (mobile-ready)
+  [PHASE 5] Scene & code organization, SOLID idioms (Godot 4.4)
+  [PHASE 6] Concrete deliverables & ordered tasks (PR list)
+  [PHASE 7] Guardrails, linting, CI checks, docs, QA
+
+--------------------------------------------------------------------------------
+PHASE 1 — STABILIZE .GDSHADER (MOBILE RENDERER)
+--------------------------------------------------------------------------------
+  - Task 1.1: File & Material basics
+    * Ensure every runtime FX shader starts with: "shader_type canvas_item;"
+    * Convert VisualShader FX used at runtime into text `.gdshader` files.
+    * ALWAYS apply ShaderMaterial instances to the node that is actually drawing.
+    * Rule: duplicate materials when changing per-node parameters. Never mutably edit
+      a shared material at runtime.
+
+  - Task 1.2: Color-space & texture hints
+    * Enforce `: source_color` on any albedo/palette sampler declarations.
+    * Add a lint rule to scan `.gdshader` files for `sampler2D .*: source_color` hints.
+
+  - Task 1.3: Shader Globals
+    * Add global shader uniforms in Project Settings as the canonical place for
+      shared values (e.g., fx_global_time, vignette_intensity, pal_index).
+    * Add a `ShaderGlobalsOverride` node pattern for level-specific overrides.
+
+  - Task 1.4: Mobile constraints baked into shader style
+    * Avoid heavy branching/loops and minimize texture lookups.
+    * Pack maps into channels wherever possible (RGB packing).
+    * Prefer vertex-computed offsets for distortion effects when possible.
+
+  - Task 1.5: Modular shader includes
+    * Create `res://shaders/includes/` and add small, composable `.gdshaderinc`
+      files: common_math, color, noise, fx_blend.
+
+  - Task 1.6: Pre-warm materials
+    * Add a warm-up routine that compiles important shaders early (staggered
+      across frames to avoid hitching on startup).
+
+  - Task 1.7: Renderer verification
+    * Confirm `Rendering -> Renderer = Mobile` in Project Settings; document
+      behavior and planned fallbacks for older/compat mode.
+
+--------------------------------------------------------------------------------
+PHASE 2 — DATA-DRIVEN FX (FINISH THE SYSTEM)
+--------------------------------------------------------------------------------
+  - Core responsibilities (separate concerns):
+    1) Effect Definition (resource): ShaderEffect.gd / VFXEffect.gd
+    2) Binding (helpers): EntityShaderBinding.gd (bind/unbind only)
+    3) Orchestration (singleton): FXManager.gd (duplicate/apply/drive/teardown)
+
+  - Task 2.1: Standard parameter contract (required across shaders)
+    * Per-node shaders must declare:
+        uniform float fx_progress;       // 0 -> 1 lifetime driver
+        uniform float fx_intensity;      // artist control
+        global uniform float fx_global_time; // optional
+    * Fullscreen shaders must declare:
+        uniform sampler2D SCREEN_TEXTURE; // when used as blit
+        uniform vec2 viewport_size;
+
+  - Task 2.2: Effect Resource fields
+    * material: ShaderMaterial (reference)
+    * duration: float
+    * fullscreen: bool
+    * default_params: Dictionary
+    * sound: AudioStream | AudioStreamRandomizer (optional)
+    * tags: Array[String]
+
+  - Task 2.3: FXManager responsibilities
+    * Listen to EventBus (damage, heal, parry, low_hp, phase_change) and
+      map events -> ShaderEffect resources.
+    * Duplicate material instances when applying to nodes.
+    * Drive `fx_progress` via Tween or in `_process` (consistent timing).
+    * Return materials/nodes to ObjectPool on completion.
+    * Provide a warm-up compile pass for top N materials.
+
+  - Task 2.4: Binding behaviour (EntityShaderBinding)
+    * Only: bind/unbind/apply parameter dictionary to a given CanvasItem.
+    * Do not handle timers, tweens, or lifecycle — orchestration only.
+
+  - Task 2.5: Object pooling
+    * Use existing ObjectPool autoload to recycle ShaderMaterial instances,
+      GPUParticles2D nodes, ColorRect post layers, and Audio player nodes.
+
+  - Example flows (implementation notes)
+    * Hit Flash (per-node): duplicate material -> set fx_progress=0 -> animate -> on
+      complete restore previous material.
+    * Phase Pulse (fullscreen): enable post layer (ColorRect), animate fx_progress,
+      disable layer when done.
+
+--------------------------------------------------------------------------------
+PHASE 3 — SHADER PATTERNS & ANTI-PATTERNS
+--------------------------------------------------------------------------------
+  - Color textures = sRGB. Require `: source_color` on declarations.
+  - Default to mediump/half precision mental model on mobile; avoid heavy
+    precision-dependent effects.
+  - Combine multiple maps into channels to minimize samplers.
+  - Reuse shaders and materials; only duplicate when parameters change.
+  - Minimize dynamic indexing and branching in fragment shaders.
+
+--------------------------------------------------------------------------------
+PHASE 4 — AUDIO PIPELINE (MOBILE READY)
+--------------------------------------------------------------------------------
+  - Bus layout:
+      Master
+        ├─ SFX  (short, non-streamed, WAV or small OGG)  // cap polyphony
+        ├─ UI   (one-shots, non-positional)
+        └─ Music (streaming OGG)  // crossfade via AudioManager
+    * Put a Master limiter; gentle compressor on Music for ducking.
+
+  - Import rules:
+    * SFX < ~1s -> WAV (decode cost but faster playback); otherwise OGG if size
+      is critical. Music/ambience -> OGG streaming.
+
+  - AudioManager features:
+    * Pools of AudioStreamPlayer2D (positional SFX) and AudioStreamPlayer
+      (non-positional UI/music).
+    * `play_sfx(tag, pos)`, `play_ui(tag)`, `play_music(track, crossfade_sec=1.5)`
+    * Voice caps per category; implement quietest/oldest stealing.
+    * Integrate AudioStreamRandomizer resources for natural variation.
+
+--------------------------------------------------------------------------------
+PHASE 5 — SCENE & CODE ORGANIZATION (SOLID + GODOT 4.4 IDIOMS)
+--------------------------------------------------------------------------------
+  - Autoloads: keep them thin and focused — do not put gameplay state in singletons.
+    Examples: FXManager, AudioManager, EventBus, ObjectPool, Router, GlobalState.
+
+  - Component-first nodes: Health, Damageable, VFXAnchor. Use Groups for discovery.
+
+  - Resource-driven definitions: Effect resources, audio sets, curves should be
+    .tres resources referenced by scenes and code (no hardcoded paths in scripts).
+
+  - Asset graph discipline: shaders in `res://shaders/`, materials in
+    `res://materials/`, effects in `res://data/effects/`, audio in `res://audio/`.
+
+  - Editor-safety: do not rely on editor-only signals for runtime logic.
+
+--------------------------------------------------------------------------------
+PHASE 6 — CONCRETE DELIVERABLES & PR ORDER
+--------------------------------------------------------------------------------
+  PR 01 — shader-foundation
+    * Add `res://shaders/includes/` files.
+    * Convert critical VisualShaders to `.gdshader` text variants.
+    * Add shader parameter contract enforcement linter (script).
+
+  PR 02 — fx-manager-completion
+    * Finalize FXManager orchestration (duplicate/apply/drive/teardown).
+    * Implement warm-up pass for top materials.
+    * Hook FXManager into EventBus mapping table (event -> effect resource).
+
+  PR 03 — audio-bus-and-pool
+    * Implement bus layout (Master/SFX/UI/Music), add limiter.
+    * Add Audio import presets and AudioManager pooling + voice caps.
+
+  PR 04 — resources-and-samples
+    * Add `ShaderEffect` resources for hit-flash, dissolve, palette-swap,
+      fullscreen pulse. Include small sample scenes to preview each.
+
+  PR 05 — docs-and-tests
+    * Add "How to add a new effect in 5 minutes" doc, shader lint rule,
+      CI hooks for missing resource checks, and mobile QA checklist.
+
+  PR 06 — profiling-and-fixes
+    * Device profiling harness, baseline captures, and targeted shader fixes.
+
+  Note: Execute PRs in order. Break each PR into bite-sized commits with clear
+  atomic messages (e.g., "Add shader include: common_math.gdshaderinc").
+
+--------------------------------------------------------------------------------
+PHASE 7 — GUARDRAILS, LINTING, QA
+--------------------------------------------------------------------------------
+  - Add a shader lint script (CI-friendly) that validates:
+    * presence of `shader_type canvas_item` (for FX shaders)
+    * required uniforms (`fx_progress`, `fx_intensity`) for effect shaders
+    * `: source_color` on color sampler declarations
+  - Disk-check CI: fail if a scene references a missing resource path.
+  - Enforce: "no set_shader_parameter on shared materials" rule in reviews.
+  - Add a mobile QA checklist: test on at least two device tiers, collect
+    profile captures for before/after (frame time, active FX count, shader
+    compile stalls).
+
+--------------------------------------------------------------------------------
+IMPLEMENTATION NOTES & QUICK LOOKUPS
+--------------------------------------------------------------------------------
+  - Shader apply pattern (pseudocode):
+
+    var inst = effect.material.duplicate()
+    for key,val in effect.default_params:
+        inst.set_shader_parameter(key, val)
+    target.material = inst
+    FXManager.drive_progress(inst, effect.duration)
+    on_complete: restore previous material or return inst to pool
+
+  - Parameter contract reminder:
+      uniform float fx_progress; // 0..1
+      uniform float fx_intensity;
+      global uniform float fx_global_time;
+
+  - Shader include files to create:
+      res://shaders/includes/common_math.gdshaderinc
+      res://shaders/includes/color.gdshaderinc
+      res://shaders/includes/noise.gdshaderinc
+      res://shaders/includes/fx_blend.gdshaderinc
+
+  - Audio tips:
+      Master at -6dB headroom; SFX ~-6dB; Music ~-10dB to start. Limiters as safety.
+      Pool small AudioStreamPlayers and cap voices per bus.
+
+--------------------------------------------------------------------------------
+ACCEPTANCE CRITERIA (for the whole refactor)
+--------------------------------------------------------------------------------
+  - .gdshader-based FX behave identically (visual parity within +/- subjective
+    tolerance) on Mobile renderer and Desktop (compat mode optional fallback).
+  - No startup or runtime shader compile hitching greater than a single frame
+    after warm-up pass runs.
+  - CI enforces shader param contract and missing resource checks.
+  - Audio bus + pooling in place; voice caps prevent crashes/overload on device.
+  - Designers can create a new ShaderEffect resource, drop it into an effect map,
+    and see the result in the sample preview scene within ~5 minutes.
+
+--------------------------------------------------------------------------------
+HAND-OFF CHECKLIST FOR THE IMPLEMENTER (Gemini AI)
+--------------------------------------------------------------------------------
+  1) Implement PR 01 (shader-foundation)
+  2) Implement PR 02 (fx-manager-completion)
+  3) Implement PR 03 (audio-bus-and-pool)
+  4) Create sample resources & scenes (PR 04)
+  5) Add docs, lints, and CI hooks (PR 05)
+  6) Run device profiling, fix hotspots (PR 06)
+
+--------------------------------------------------------------------------------
+NOT-OBVIOUS TIPS & GOTCHAS (from transcripts + repo audit)
+--------------------------------------------------------------------------------
+  - Always duplicate ShaderMaterials before mutation — this prevents hard-to-see
+    issues where multiple nodes share a reference and unexpectedly change.
+  - Use `: source_color` texture hints to avoid gamma/space mismatch; these are
+    commonly missed when porting from desktop to mobile.
+  - Warm compiles: compile-heavy shaders early and stagger the warm-up across
+    frames rather than trying to do everything on frame 1.
+  - Keep the FXManager as the single place that mutates ShaderMaterial instances.
+  - Don’t rely on editor-only events like `Resource.changed` for runtime flows.
+
+--------------------------------------------------------------------------------
+QUICK-START: "Do this now" (first 48 hours)
+--------------------------------------------------------------------------------
+  1) Create `res://shaders/includes/` and add `common_math.gdshaderinc`.
+  2) Add shader lint script (scan repository for `.gdshader` files).
+  3) Convert 1–2 critical VisualShaders to text shaders (hit-flash + pulse).
+  4) Implement material duplicate + apply pattern in FXManager (minimal).
+  5) Add Master/SFX/UI/Music buses and a Master limiter in the audio panel.
+
+--------------------------------------------------------------------------------
+REVISION HISTORY
+--------------------------------------------------------------------------------
+  - v1.0 — Initial overhaul TODO — contains full-phase breakdown, PR order,
+           acceptance criteria, and quick-start.
+
+===============================================================================
+END OF TODO.txt
+===============================================================================
+
 
 
 =====================================
@@ -20024,8 +20375,20 @@ FILE: ./docs/CHANGELOG.txt
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██           [0.12.0] - CURRENT VERSION NEEDS TITLE - 08/XX/2025        ██  ║
+║  ██        [0.12.0] -  NEEDS TITLE AND BORDER REPAIRED - 08/XX/2025      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║                                                                              ║
@@ -20034,19 +20397,60 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-                                                                            
+ARCHITECTURAL PREPARATION FOR FX & SHADER OVERHAUL                           
+   Laid the complete file and folder foundation for a multi-phase refactor of  
+   the visual effects and shader pipelines. This work prepares the project for 
+   a new data-driven, mobile-first rendering architecture.                      
+   ────────────────────────────────────────────────────────────────────────    
+   █  Added                                                                    
+      ░ ■ Created a new, organized `shaders/` directory with subfolders for    
+      ░   entity, fullscreen, UI, and reusable include files (`.gdshaderinc`). 
+      ░ ■ Added a corresponding `materials/` directory for all `ShaderMaterial`
+      ░   resources.                                                           
+      ░ ■ Established new file scaffolds for data-driven `ShaderEffect`        
+      ░   resources (`dissolve_effect.tres`, `shockwave_effect.tres`).         
+      ░ ■ Created placeholder scripts for new `FXManager` binding layers that  
+      ░   will manage applying effects to their targets.                       
+      ░ ■ Added a scene and script for a new `fx_playground` developer tool to 
+      ░   enable rapid iteration and testing of visual effects.                
+      ░ ■ Added a placeholder script for a CI-driven shader linter to enforce  
+      ░   code quality and mobile best practices.  
+
+   ENTITY ARCHITECTURE OVERHAUL (ENTITY ARCHETYPE PATTERN)                     
+   Completed a full-scale refactor of the entity system to a data-driven,     
+   archetype-based architecture. This foundational change enhances modularity, 
+   improves adherence to SOLID principles, and establishes a robust, future-   
+   proof pipeline for managing complex entities and their visual effects.      
+   ────────────────────────────────────────────────────────────────────────    
+   █  Architectural Changes                                                    
+      ░ ■ Implemented the Entity Archetype pattern. Entities are now built 
+      ░   at runtime based on a new `EntityArchetype.tres` resource, which     
+      ░   defines an entity's composition by listing its component scenes.     
+      ░ ■ Created a new generic `BaseEntity.gd` class that reads an archetype, 
+      ░   instantiates all components, and caches typed references, serving as 
+      ░   a Composition Root and Facade for all entities.                      
+      ░ ■ Implemented a robust Three-Phase Initialization pattern (Construct,
+      ░   Inject, Setup) to resolve complex dependency ordering issues between 
+      ░   entities and their components, particularly for `@onready` variables.
+      ░ ■ Created a new `FXComponent` to be the sole manager of all entity-    
+      ░   specific visual effects, fully decoupling visual feedback from game  
+      ░   logic components like `HealthComponent`.                             
+   █  Refactored                                                               
+      ░ ■ Migrated the `Player` and its components to the new archetype system.
+      ░   The `player.tscn` scene has been drastically simplified, with its     
+      ░   structure now defined in `player_archetype.tres`.                    
+      ░ ■ All individual component `.gd` scripts have been converted to reusable
+      ░   `.tscn` files to support the new archetype system.                   
+   █  Fixed                                                                    
+      ░ ■ Resolved a persistent, silent failure with shader effects. The complex
+      ░   `Tween`-based animation was replaced with a simpler, more reliable  
+      ░   `Timer`-based approach within the `FXComponent`, resulting in a      
+      ░   functional hit-flash effect.                                         
+      ░ ■ Eliminated all parse-order errors related to `BaseEntity` by correctly
+      ░   registering it as a `class_name` and preloading it.                  
+      ░ ■ Fixed a resource UID conflict in `player.tscn` that was preventing the
+      ░   scene from loading correctly.
+
    MEMORY MANAGEMENT & CRITICAL BUG FIXES                                      
    Resolved a critical crash-on-death and a major memory leak on scene exit    
    by hardening entity lifecycle management and teardown patterns.             
@@ -21186,6 +21590,17 @@ This document tracks major file renames and moves across the entire project.
 | `res://src/core/events/*_event.gd` | `res://src/core/events/typed_events/*_event.gd` | Architectural refactor | 2025-08-10 | Update `preload` or `load` paths in scripts if referenced directly. |
 
 =====================================
+FILE: ./docs/HOW_TO_ADD_AN_EFFECT.md
+=====================================
+# How to Add a New Effect
+
+## TODO: Write a step-by-step guide for designers.
+1. Create a new ShaderEffect resource...
+2. Configure the shader and parameters...
+3. Link it to an event in FXManager...
+
+
+=====================================
 FILE: ./README.md
 =====================================
 # BOX BATTLE
@@ -21281,6 +21696,51 @@ func _init():
     var version = ProjectSettings.get_setting("application/config/version")
     print(version)
     quit()
+
+=====================================
+FILE: ./.github/scripts/lint_shaders.gd
+=====================================
+# .github/scripts/lint_shaders.gd
+extends SceneTree
+
+# TODO: Implement linter to scan .gdshader files for required headers (shader_type) and hints (: source_color).
+
+
+=====================================
+FILE: ./shaders/ui/sdf_panel.gdshader
+=====================================
+# shaders/ui/sdf_panel.gdshader
+shader_type canvas_item;
+
+# TODO: Implement SDF for rounded corners, borders, and glow.
+
+
+=====================================
+FILE: ./shaders/entity/hit_flash.gdshader
+=====================================
+# shaders/entity/hit_flash.gdshader
+shader_type canvas_item;
+
+# TODO: Implement hit-flash logic with fx_progress and fx_intensity uniforms.
+
+
+=====================================
+FILE: ./shaders/entity/dissolve.gdshader
+=====================================
+# shaders/entity/dissolve.gdshader
+shader_type canvas_item;
+
+# TODO: Implement dissolve effect driven by fx_progress.
+
+
+=====================================
+FILE: ./shaders/fullscreen/shockwave.gdshader
+=====================================
+# shaders/fullscreen/shockwave.gdshader
+shader_type canvas_item;
+
+# TODO: Implement shockwave post-processing effect using SCREEN_TEXTURE.
+
 
 =====================================
 FILE: ./project.godot
@@ -24849,6 +25309,26 @@ func _on_audio_settings_changed() -> void:
 
 
 =====================================
+FILE: ./src/core/systems/fx_bindings/fullscreen_shader_binding.gd
+=====================================
+# src/core/systems/fx_bindings/fullscreen_shader_binding.gd
+class_name FullscreenShaderBinding
+extends CanvasLayer
+
+# TODO: Manage a full-screen ColorRect to apply and animate post-processing shaders.
+
+
+=====================================
+FILE: ./src/core/systems/fx_bindings/ui_shader_binding.gd
+=====================================
+# src/core/systems/fx_bindings/ui_shader_binding.gd
+class_name UIShaderBinding
+extends Node
+
+# TODO: Manage applying shader effects to UI Control nodes.
+
+
+=====================================
 FILE: ./src/core/systems/fx_bindings/entity_shader_binding.gd
 =====================================
 # src/core/systems/fx_bindings/entity_shader_binding.gd
@@ -25242,6 +25722,14 @@ frequency = 35.0
 duration = 0.3
 
 =====================================
+FILE: ./src/core/data/effects/dissolve_effect.tres
+=====================================
+[gd_resource type="Resource" script_class="ShaderEffect" format=3]
+
+# TODO: Configure this resource to define the dissolve effect.
+
+
+=====================================
 FILE: ./src/core/data/effects/boss_death_shake.tres
 =====================================
 [gd_resource type="Resource" script_class="ScreenShakeEffect" load_steps=2 format=3 uid="uid://boss_death_shake_tres"]
@@ -25253,6 +25741,14 @@ script = ExtResource("1_shake_effect")
 amplitude = 40.0
 frequency = 10.0
 duration = 1.2
+
+=====================================
+FILE: ./src/core/data/effects/shockwave_effect.tres
+=====================================
+[gd_resource type="Resource" script_class="ShaderEffect" format=3]
+
+# TODO: Configure this resource to define the shockwave effect.
+
 
 =====================================
 FILE: ./src/core/data/effects/player_hit_spark_effect.tres
@@ -26940,6 +27436,22 @@ class DialogueLine extends Resource:
 @export var conversation: Array[DialogueLine] = []
 
 =====================================
+FILE: ./src/data/audio/sfx_player_footsteps.tres
+=====================================
+[gd_resource type="AudioStreamRandomizer" load_steps=2 format=3]
+
+# TODO: Add footstep audio samples and configure randomization.
+
+
+=====================================
+FILE: ./src/data/audio/sfx_player_impact.tres
+=====================================
+[gd_resource type="AudioStreamRandomizer" load_steps=2 format=3]
+
+# TODO: Add impact audio samples and configure randomization.
+
+
+=====================================
 FILE: ./src/data/combat_config.tres
 =====================================
 [gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3 uid="uid://kov03lmcorvh"]
@@ -27145,13 +27657,11 @@ func teardown() -> void:
 
 ## Initializes all attached components after dependencies have been injected.
 func setup_components(shared_dependencies: Dictionary = {}, per_component_dependencies: Dictionary = {}) -> void:
-	print("[BaseEntity] setup_components called. _components_initialized=", _components_initialized)
 	if _components_initialized: return
 
 	for child in get_children():
 		if not (child is IComponent): continue
 		
-		print("[BaseEntity] child:", child.name, " class:", child.get_script().get_global_name(), " instance_id:", child.get_instance_id())
 		var merged_deps := shared_dependencies.duplicate()
 
 		if per_component_dependencies.has(child):
@@ -27161,15 +27671,7 @@ func setup_components(shared_dependencies: Dictionary = {}, per_component_depend
 		if per_component_dependencies.has(class_key):
 			merged_deps.merge(per_component_dependencies[class_key])
 		
-		print("[BaseEntity] merged_deps keys for ", child.name, "=", merged_deps.keys())
-		print("    health_component present? ->", merged_deps.has("health_component"))
-		if merged_deps.has("health_component"):
-			var hc = merged_deps.get("health_component")
-			print("    health_component instance_id =", hc.get_instance_id() if is_instance_valid(hc) else "nil", " is_valid=", is_instance_valid(hc))
-		print("    child.has_method('setup') ->", child.has_method("setup"))
-		
 		if child.has_method("setup"):
-			print("    calling setup on ", child.name)
 			child.setup(self, merged_deps)
 
 	_components_initialized = true
@@ -28527,16 +29029,18 @@ extends IComponent
 
 @export var visual_node: CanvasItem
 
+# --- Private Member Variables ---
 var _owner: Node
 var _original_material: Material
-var _active_shader_material: ShaderMaterial
-var _tween: Tween
+var _is_effect_active: bool = false
+var _hit_flash_shader: Shader
 
-var _shader_intensity: float = 0.0:
-	set(value):
-		_shader_intensity = value
-		if is_instance_valid(_active_shader_material):
-			_active_shader_material.set_shader_parameter("intensity", _shader_intensity)
+# --- Godot Lifecycle Methods ---
+
+func _ready() -> void:
+	# Pre-compile the simple shader once to avoid doing it on every hit.
+	_hit_flash_shader = Shader.new()
+	_hit_flash_shader.code = "shader_type canvas_item; uniform vec4 tint_color : source_color; void fragment() { COLOR = tint_color; }"
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
@@ -28544,25 +29048,17 @@ func _notification(what: int) -> void:
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
-	print("[FXComponent] setup called on ", get_parent().name, " owner:", p_owner, " deps keys:", p_dependencies.keys())
 	var health_comp: HealthComponent = p_dependencies.get("health_component")
-	print("[FXComponent] health_comp:", health_comp, " is_valid:", is_instance_valid(health_comp))
-
+	
 	if not is_instance_valid(visual_node):
-		push_warning("FXComponent missing visual_node at setup time on '%s' (will still hook signals)." % get_parent().name)
+		push_warning("FXComponent missing visual_node at setup time on '%s'." % get_parent().name)
 	
 	if is_instance_valid(health_comp):
 		var cb = Callable(self, "_on_health_component_took_damage")
 		if not health_comp.took_damage.is_connected(cb):
 			health_comp.took_damage.connect(cb)
-			print("[FXComponent] connected took_damage -> _on_health_component_took_damage")
 
 func teardown() -> void:
-	if is_instance_valid(_tween): _tween.kill()
-	if is_instance_valid(visual_node) and is_instance_valid(_active_shader_material):
-		if visual_node.material == _active_shader_material:
-			visual_node.material = _original_material
-	
 	var health_comp: HealthComponent = _owner.get("health_component") if is_instance_valid(_owner) else null
 	if is_instance_valid(health_comp) and health_comp.took_damage.is_connected(_on_health_component_took_damage):
 		health_comp.took_damage.disconnect(_on_health_component_took_damage)
@@ -28570,35 +29066,31 @@ func teardown() -> void:
 	visual_node = null
 	_owner = null
 
-func play_shader_effect(effect: ShaderEffect) -> void:
-	if not is_instance_valid(visual_node) or not is_instance_valid(effect): return
-	if is_instance_valid(_tween):
-		_tween.kill()
-		visual_node.material = _original_material
+# --- Private Methods ---
 
-	_original_material = visual_node.material
-	_active_shader_material = ShaderMaterial.new()
-	_active_shader_material.shader = effect.shader
-	visual_node.material = _active_shader_material
-
-	for param_name in effect.params:
-		if param_name == "intensity": self._shader_intensity = effect.params[param_name]
-		else: _active_shader_material.set_shader_parameter(param_name, effect.params[param_name])
-
-	_tween = create_tween()
-	_tween.tween_property(self, "_shader_intensity", 0.0, effect.duration)
-	_tween.finished.connect(_on_effect_tween_finished)
-
-func _on_effect_tween_finished() -> void:
+func _on_effect_finished() -> void:
 	if is_instance_valid(visual_node):
 		visual_node.material = _original_material
-	_active_shader_material = null
-	_original_material = null
+	_is_effect_active = false
+
+# --- Signal Handlers ---
 
 func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	var effect: ShaderEffect = _owner.get("hit_flash_effect")
-	if is_instance_valid(effect):
-		play_shader_effect(effect)
+	# Prevent overlapping effects from causing issues.
+	if _is_effect_active or not is_instance_valid(visual_node):
+		return
+
+	_is_effect_active = true
+	_original_material = visual_node.material
+
+	# Create and apply the simple shader material.
+	var flash_material = ShaderMaterial.new()
+	flash_material.shader = _hit_flash_shader
+	flash_material.set_shader_parameter("tint_color", Color.RED)
+	visual_node.material = flash_material
+	
+	# Use a simple, one-shot SceneTreeTimer to revert the effect.
+	get_tree().create_timer(0.12).timeout.connect(_on_effect_finished)
 
 
 =====================================
@@ -29097,7 +29589,12 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		damage_info.impact_position = global_position
 		damage_info.impact_normal = (global_position - area.global_position).normalized()
 		var damage_result = health_component.apply_damage(damage_info)
-		if is_instance_valid(self) and damage_result.was_damaged and entity_data.health > 0:
+		
+		# THE FIX: If entity_data is null, it means teardown() was called.
+		# This happens on the lethal hit. We must exit immediately to prevent a crash.
+		if not is_instance_valid(entity_data): return
+		
+		if damage_result.was_damaged and entity_data.health > 0:
 			self.velocity = damage_result.knockback_velocity
 			state_machine.change_state(State.HURT)
 		ObjectPool.return_instance.call_deferred(area)

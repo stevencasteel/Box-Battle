@@ -117,6 +117,8 @@ Add dust on landing, walking, touching wall, and jumping from wall.
 
 
 
+Older TODO need to investigate again.
+
 # Phase 2 Audit & Elevation Plan
 
 ## Snapshot of what’s strong already
@@ -356,10 +358,285 @@ func prewarm_shaders(effects: Array[ShaderEffect]): void
 
 ---
 
-If you want, I can turn this into:
 
-* a minimal **`ShaderEffect` resource + bindings** starter (ENTITY/UI/FULLSCREEN),
-* a **`SaveManager` v1** with slotting & atomic writes,
-* and a **`DialogueManager` v1** runner with tags.
 
-Just say the word and I’ll generate the code scaffolds aligned to your current structure.
+
+
+Aug 19th TODO from GPT-5. Currently working on this stuff.
+
+
+===============================================================================
+| TODO.txt — FX & Shader Refactor (Mobile Renderer)                                |
+| Project: Steven Casteel / Box Battle                                         |
+| Purpose: Major overhaul to stabilize .gdshader usage on Mobile renderer, finish   |
+|          FX + audio pipelines, and apply Godot 4.4 best practices across the repo |
+===============================================================================
+
+ASCII GUIDE: keep this file purely procedural. Use it as the single source of truth
+for tasks, ordered PRs, acceptance criteria, and quick implementation notes.
+
+--------------------------------------------------------------------------------
+PHASE SUMMARY (HIGH-LEVEL)
+--------------------------------------------------------------------------------
+  [PHASE 1] Stabilize .gdshader usage on Mobile renderer
+  [PHASE 2] Complete and formalize the data-driven FX system
+  [PHASE 3] Performance-safe shader patterns & anti-patterns
+  [PHASE 4] Audio architecture overhaul (mobile-ready)
+  [PHASE 5] Scene & code organization, SOLID idioms (Godot 4.4)
+  [PHASE 6] Concrete deliverables & ordered tasks (PR list)
+  [PHASE 7] Guardrails, linting, CI checks, docs, QA
+
+--------------------------------------------------------------------------------
+PHASE 1 — STABILIZE .GDSHADER (MOBILE RENDERER)
+--------------------------------------------------------------------------------
+  - Task 1.1: File & Material basics
+    * Ensure every runtime FX shader starts with: "shader_type canvas_item;"
+    * Convert VisualShader FX used at runtime into text `.gdshader` files.
+    * ALWAYS apply ShaderMaterial instances to the node that is actually drawing.
+    * Rule: duplicate materials when changing per-node parameters. Never mutably edit
+      a shared material at runtime.
+
+  - Task 1.2: Color-space & texture hints
+    * Enforce `: source_color` on any albedo/palette sampler declarations.
+    * Add a lint rule to scan `.gdshader` files for `sampler2D .*: source_color` hints.
+
+  - Task 1.3: Shader Globals
+    * Add global shader uniforms in Project Settings as the canonical place for
+      shared values (e.g., fx_global_time, vignette_intensity, pal_index).
+    * Add a `ShaderGlobalsOverride` node pattern for level-specific overrides.
+
+  - Task 1.4: Mobile constraints baked into shader style
+    * Avoid heavy branching/loops and minimize texture lookups.
+    * Pack maps into channels wherever possible (RGB packing).
+    * Prefer vertex-computed offsets for distortion effects when possible.
+
+  - Task 1.5: Modular shader includes
+    * Create `res://shaders/includes/` and add small, composable `.gdshaderinc`
+      files: common_math, color, noise, fx_blend.
+
+  - Task 1.6: Pre-warm materials
+    * Add a warm-up routine that compiles important shaders early (staggered
+      across frames to avoid hitching on startup).
+
+  - Task 1.7: Renderer verification
+    * Confirm `Rendering -> Renderer = Mobile` in Project Settings; document
+      behavior and planned fallbacks for older/compat mode.
+
+--------------------------------------------------------------------------------
+PHASE 2 — DATA-DRIVEN FX (FINISH THE SYSTEM)
+--------------------------------------------------------------------------------
+  - Core responsibilities (separate concerns):
+    1) Effect Definition (resource): ShaderEffect.gd / VFXEffect.gd
+    2) Binding (helpers): EntityShaderBinding.gd (bind/unbind only)
+    3) Orchestration (singleton): FXManager.gd (duplicate/apply/drive/teardown)
+
+  - Task 2.1: Standard parameter contract (required across shaders)
+    * Per-node shaders must declare:
+        uniform float fx_progress;       // 0 -> 1 lifetime driver
+        uniform float fx_intensity;      // artist control
+        global uniform float fx_global_time; // optional
+    * Fullscreen shaders must declare:
+        uniform sampler2D SCREEN_TEXTURE; // when used as blit
+        uniform vec2 viewport_size;
+
+  - Task 2.2: Effect Resource fields
+    * material: ShaderMaterial (reference)
+    * duration: float
+    * fullscreen: bool
+    * default_params: Dictionary
+    * sound: AudioStream | AudioStreamRandomizer (optional)
+    * tags: Array[String]
+
+  - Task 2.3: FXManager responsibilities
+    * Listen to EventBus (damage, heal, parry, low_hp, phase_change) and
+      map events -> ShaderEffect resources.
+    * Duplicate material instances when applying to nodes.
+    * Drive `fx_progress` via Tween or in `_process` (consistent timing).
+    * Return materials/nodes to ObjectPool on completion.
+    * Provide a warm-up compile pass for top N materials.
+
+  - Task 2.4: Binding behaviour (EntityShaderBinding)
+    * Only: bind/unbind/apply parameter dictionary to a given CanvasItem.
+    * Do not handle timers, tweens, or lifecycle — orchestration only.
+
+  - Task 2.5: Object pooling
+    * Use existing ObjectPool autoload to recycle ShaderMaterial instances,
+      GPUParticles2D nodes, ColorRect post layers, and Audio player nodes.
+
+  - Example flows (implementation notes)
+    * Hit Flash (per-node): duplicate material -> set fx_progress=0 -> animate -> on
+      complete restore previous material.
+    * Phase Pulse (fullscreen): enable post layer (ColorRect), animate fx_progress,
+      disable layer when done.
+
+--------------------------------------------------------------------------------
+PHASE 3 — SHADER PATTERNS & ANTI-PATTERNS
+--------------------------------------------------------------------------------
+  - Color textures = sRGB. Require `: source_color` on declarations.
+  - Default to mediump/half precision mental model on mobile; avoid heavy
+    precision-dependent effects.
+  - Combine multiple maps into channels to minimize samplers.
+  - Reuse shaders and materials; only duplicate when parameters change.
+  - Minimize dynamic indexing and branching in fragment shaders.
+
+--------------------------------------------------------------------------------
+PHASE 4 — AUDIO PIPELINE (MOBILE READY)
+--------------------------------------------------------------------------------
+  - Bus layout:
+      Master
+        ├─ SFX  (short, non-streamed, WAV or small OGG)  // cap polyphony
+        ├─ UI   (one-shots, non-positional)
+        └─ Music (streaming OGG)  // crossfade via AudioManager
+    * Put a Master limiter; gentle compressor on Music for ducking.
+
+  - Import rules:
+    * SFX < ~1s -> WAV (decode cost but faster playback); otherwise OGG if size
+      is critical. Music/ambience -> OGG streaming.
+
+  - AudioManager features:
+    * Pools of AudioStreamPlayer2D (positional SFX) and AudioStreamPlayer
+      (non-positional UI/music).
+    * `play_sfx(tag, pos)`, `play_ui(tag)`, `play_music(track, crossfade_sec=1.5)`
+    * Voice caps per category; implement quietest/oldest stealing.
+    * Integrate AudioStreamRandomizer resources for natural variation.
+
+--------------------------------------------------------------------------------
+PHASE 5 — SCENE & CODE ORGANIZATION (SOLID + GODOT 4.4 IDIOMS)
+--------------------------------------------------------------------------------
+  - Autoloads: keep them thin and focused — do not put gameplay state in singletons.
+    Examples: FXManager, AudioManager, EventBus, ObjectPool, Router, GlobalState.
+
+  - Component-first nodes: Health, Damageable, VFXAnchor. Use Groups for discovery.
+
+  - Resource-driven definitions: Effect resources, audio sets, curves should be
+    .tres resources referenced by scenes and code (no hardcoded paths in scripts).
+
+  - Asset graph discipline: shaders in `res://shaders/`, materials in
+    `res://materials/`, effects in `res://data/effects/`, audio in `res://audio/`.
+
+  - Editor-safety: do not rely on editor-only signals for runtime logic.
+
+--------------------------------------------------------------------------------
+PHASE 6 — CONCRETE DELIVERABLES & PR ORDER
+--------------------------------------------------------------------------------
+  PR 01 — shader-foundation
+    * Add `res://shaders/includes/` files.
+    * Convert critical VisualShaders to `.gdshader` text variants.
+    * Add shader parameter contract enforcement linter (script).
+
+  PR 02 — fx-manager-completion
+    * Finalize FXManager orchestration (duplicate/apply/drive/teardown).
+    * Implement warm-up pass for top materials.
+    * Hook FXManager into EventBus mapping table (event -> effect resource).
+
+  PR 03 — audio-bus-and-pool
+    * Implement bus layout (Master/SFX/UI/Music), add limiter.
+    * Add Audio import presets and AudioManager pooling + voice caps.
+
+  PR 04 — resources-and-samples
+    * Add `ShaderEffect` resources for hit-flash, dissolve, palette-swap,
+      fullscreen pulse. Include small sample scenes to preview each.
+
+  PR 05 — docs-and-tests
+    * Add "How to add a new effect in 5 minutes" doc, shader lint rule,
+      CI hooks for missing resource checks, and mobile QA checklist.
+
+  PR 06 — profiling-and-fixes
+    * Device profiling harness, baseline captures, and targeted shader fixes.
+
+  Note: Execute PRs in order. Break each PR into bite-sized commits with clear
+  atomic messages (e.g., "Add shader include: common_math.gdshaderinc").
+
+--------------------------------------------------------------------------------
+PHASE 7 — GUARDRAILS, LINTING, QA
+--------------------------------------------------------------------------------
+  - Add a shader lint script (CI-friendly) that validates:
+    * presence of `shader_type canvas_item` (for FX shaders)
+    * required uniforms (`fx_progress`, `fx_intensity`) for effect shaders
+    * `: source_color` on color sampler declarations
+  - Disk-check CI: fail if a scene references a missing resource path.
+  - Enforce: "no set_shader_parameter on shared materials" rule in reviews.
+  - Add a mobile QA checklist: test on at least two device tiers, collect
+    profile captures for before/after (frame time, active FX count, shader
+    compile stalls).
+
+--------------------------------------------------------------------------------
+IMPLEMENTATION NOTES & QUICK LOOKUPS
+--------------------------------------------------------------------------------
+  - Shader apply pattern (pseudocode):
+
+    var inst = effect.material.duplicate()
+    for key,val in effect.default_params:
+        inst.set_shader_parameter(key, val)
+    target.material = inst
+    FXManager.drive_progress(inst, effect.duration)
+    on_complete: restore previous material or return inst to pool
+
+  - Parameter contract reminder:
+      uniform float fx_progress; // 0..1
+      uniform float fx_intensity;
+      global uniform float fx_global_time;
+
+  - Shader include files to create:
+      res://shaders/includes/common_math.gdshaderinc
+      res://shaders/includes/color.gdshaderinc
+      res://shaders/includes/noise.gdshaderinc
+      res://shaders/includes/fx_blend.gdshaderinc
+
+  - Audio tips:
+      Master at -6dB headroom; SFX ~-6dB; Music ~-10dB to start. Limiters as safety.
+      Pool small AudioStreamPlayers and cap voices per bus.
+
+--------------------------------------------------------------------------------
+ACCEPTANCE CRITERIA (for the whole refactor)
+--------------------------------------------------------------------------------
+  - .gdshader-based FX behave identically (visual parity within +/- subjective
+    tolerance) on Mobile renderer and Desktop (compat mode optional fallback).
+  - No startup or runtime shader compile hitching greater than a single frame
+    after warm-up pass runs.
+  - CI enforces shader param contract and missing resource checks.
+  - Audio bus + pooling in place; voice caps prevent crashes/overload on device.
+  - Designers can create a new ShaderEffect resource, drop it into an effect map,
+    and see the result in the sample preview scene within ~5 minutes.
+
+--------------------------------------------------------------------------------
+HAND-OFF CHECKLIST FOR THE IMPLEMENTER (Gemini AI)
+--------------------------------------------------------------------------------
+  1) Implement PR 01 (shader-foundation)
+  2) Implement PR 02 (fx-manager-completion)
+  3) Implement PR 03 (audio-bus-and-pool)
+  4) Create sample resources & scenes (PR 04)
+  5) Add docs, lints, and CI hooks (PR 05)
+  6) Run device profiling, fix hotspots (PR 06)
+
+--------------------------------------------------------------------------------
+NOT-OBVIOUS TIPS & GOTCHAS (from transcripts + repo audit)
+--------------------------------------------------------------------------------
+  - Always duplicate ShaderMaterials before mutation — this prevents hard-to-see
+    issues where multiple nodes share a reference and unexpectedly change.
+  - Use `: source_color` texture hints to avoid gamma/space mismatch; these are
+    commonly missed when porting from desktop to mobile.
+  - Warm compiles: compile-heavy shaders early and stagger the warm-up across
+    frames rather than trying to do everything on frame 1.
+  - Keep the FXManager as the single place that mutates ShaderMaterial instances.
+  - Don’t rely on editor-only events like `Resource.changed` for runtime flows.
+
+--------------------------------------------------------------------------------
+QUICK-START: "Do this now" (first 48 hours)
+--------------------------------------------------------------------------------
+  1) Create `res://shaders/includes/` and add `common_math.gdshaderinc`.
+  2) Add shader lint script (scan repository for `.gdshader` files).
+  3) Convert 1–2 critical VisualShaders to text shaders (hit-flash + pulse).
+  4) Implement material duplicate + apply pattern in FXManager (minimal).
+  5) Add Master/SFX/UI/Music buses and a Master limiter in the audio panel.
+
+--------------------------------------------------------------------------------
+REVISION HISTORY
+--------------------------------------------------------------------------------
+  - v1.0 — Initial overhaul TODO — contains full-phase breakdown, PR order,
+           acceptance criteria, and quick-start.
+
+===============================================================================
+END OF TODO.txt
+===============================================================================
+

@@ -12,8 +12,20 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██           [0.12.0] - CURRENT VERSION NEEDS TITLE - 08/XX/2025        ██  ║
+║  ██        [0.12.0] -  NEEDS TITLE AND BORDER REPAIRED - 08/XX/2025      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║                                                                              ║
@@ -22,18 +34,24 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
+ARCHITECTURAL PREPARATION FOR FX & SHADER OVERHAUL                           
+   Laid the complete file and folder foundation for a multi-phase refactor of  
+   the visual effects and shader pipelines. This work prepares the project for 
+   a new data-driven, mobile-first rendering architecture.                      
+   ────────────────────────────────────────────────────────────────────────    
+   █  Added                                                                    
+      ░ ■ Created a new, organized `shaders/` directory with subfolders for    
+      ░   entity, fullscreen, UI, and reusable include files (`.gdshaderinc`). 
+      ░ ■ Added a corresponding `materials/` directory for all `ShaderMaterial`
+      ░   resources.                                                           
+      ░ ■ Established new file scaffolds for data-driven `ShaderEffect`        
+      ░   resources (`dissolve_effect.tres`, `shockwave_effect.tres`).         
+      ░ ■ Created placeholder scripts for new `FXManager` binding layers that  
+      ░   will manage applying effects to their targets.                       
+      ░ ■ Added a scene and script for a new `fx_playground` developer tool to 
+      ░   enable rapid iteration and testing of visual effects.                
+      ░ ■ Added a placeholder script for a CI-driven shader linter to enforce  
+      ░   code quality and mobile best practices.  
 
    ENTITY ARCHITECTURE OVERHAUL (ENTITY ARCHETYPE PATTERN)                     
    Completed a full-scale refactor of the entity system to a data-driven,     
@@ -69,9 +87,6 @@
       ░   registering it as a `class_name` and preloading it.                  
       ░ ■ Fixed a resource UID conflict in `player.tscn` that was preventing the
       ░   scene from loading correctly.
-
-
-
 
    MEMORY MANAGEMENT & CRITICAL BUG FIXES                                      
    Resolved a critical crash-on-death and a major memory leak on scene exit    
