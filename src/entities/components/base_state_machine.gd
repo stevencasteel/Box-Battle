@@ -4,6 +4,8 @@
 class_name BaseStateMachine
 extends IComponent
 
+signal action_requested(command: Callable)
+
 const MAX_HISTORY_SIZE = 5
 var states: Dictionary = {}
 var current_state: BaseState
@@ -42,7 +44,6 @@ func teardown() -> void:
 	for state in states.values():
 		if is_instance_valid(state):
 			state.teardown()
-			# THE FIX: Manually free the state object.
 			state.free()
 			
 	states.clear()

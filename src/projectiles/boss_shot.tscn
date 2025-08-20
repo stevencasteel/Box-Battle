@@ -7,7 +7,7 @@ size = Vector2(60, 60)
 
 [node name="BossShot" type="Area2D"]
 collision_layer = 16
-collision_mask = 193
+collision_mask = 65
 script = ExtResource("1_4qgog")
 metadata/pool_name = &"boss_shots"
 

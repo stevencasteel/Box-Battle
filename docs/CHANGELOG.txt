@@ -61,7 +61,22 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
-GAMEPLAY MECHANICS & BUG FIXES                                              
+   ARCHITECTURAL REFINEMENT & GAMEPLAY FIXES                                   
+   Completed a deep refactor of the entity state machine and attack systems    
+   to use the Command Pattern, fully decoupling logic from implementation.     
+   This also resolved a series of critical, long-standing gameplay bugs.     
+   ────────────────────────────────────────────────────────────────────────    
+   █  Architectural Changes                                                    
+      ░ ■ Refactored the `AttackLogic` system to use the Command Pattern.      
+      ░   Attack logic resources now return a `Callable` command instead of    
+      ░   executing actions directly, making the system more modular and reusable.
+      ░ ■ Refactored the Player's state machine to emit an `action_requested`  
+      ░   signal with a `Callable` payload, decoupling states from the Player's
+      ░   internal component structure.                                        
+
+
+
+   GAMEPLAY MECHANICS & BUG FIXES                                              
    Restored and hardened several core player mechanics that had regressed      
    during previous architectural refactors.                                    
    ────────────────────────────────────────────────────────────────────────    

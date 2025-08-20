@@ -10,8 +10,8 @@ func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary
 		"offset": Vector2(100, 0)
 	}
 
-func execute(owner: BaseBoss, pattern: AttackPattern) -> void:
+func execute(owner: BaseBoss, pattern: AttackPattern) -> Callable:
 	if pattern.projectile_count <= 1:
-		owner.fire_shot_at_player()
+		return owner.fire_shot_at_player.bind()
 	else:
-		owner.fire_volley(pattern.projectile_count, pattern.volley_delay)
+		return owner.fire_volley.bind(pattern.projectile_count, pattern.volley_delay)

@@ -42,7 +42,6 @@ func _start_telegraph_and_attack() -> void:
 	var telegraph_size = telegraph_info.get("size", Vector2.ONE * 100)
 	var relative_offset = telegraph_info.get("offset", Vector2.ZERO)
 	
-	# THE FIX: Access the new public 'entity_data' property on the boss.
 	var directional_offset = Vector2(relative_offset.x * _boss.entity_data.facing_direction, relative_offset.y)
 	var telegraph_position = _boss.global_position + directional_offset
 	
@@ -54,7 +53,10 @@ func _start_telegraph_and_attack() -> void:
 	)
 	await telegraph.telegraph_finished
 
-	_current_pattern.logic.execute(_boss, _current_pattern)
+	# THE FIX: Get the command and execute it.
+	var attack_command: Callable = _current_pattern.logic.execute(_boss, _current_pattern)
+	if attack_command.is_valid():
+		attack_command.call()
 	
 	if state_machine.current_state == self:
 		_boss.cooldown_timer.wait_time = _current_pattern.cooldown

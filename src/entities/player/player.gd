@@ -52,7 +52,6 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
-	# This call sequence ensures the HUD initializes with the correct charge count.
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
@@ -74,7 +73,10 @@ func teardown() -> void:
 			combat_component.damage_dealt.disconnect(resource_component.on_damage_dealt)
 		if combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
 			combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
-	
+	if is_instance_valid(state_machine):
+		if state_machine.action_requested.is_connected(_on_state_machine_action_requested):
+			state_machine.action_requested.disconnect(_on_state_machine_action_requested)
+
 	super.teardown()
 	entity_data = null
 
@@ -139,6 +141,7 @@ func _connect_signals() -> void:
 	health_component.took_damage.connect(_on_health_component_took_damage)
 	combat_component.damage_dealt.connect(resource_component.on_damage_dealt)
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
+	state_machine.action_requested.connect(_on_state_machine_action_requested)
 
 func _update_timers(delta: float) -> void:
 	if not is_instance_valid(entity_data): return
@@ -155,6 +158,11 @@ func _update_timers(delta: float) -> void:
 		entity_data.charge_timer += delta
 
 # --- Signal Handlers ---
+
+func _on_state_machine_action_requested(command: Callable) -> void:
+	if command.is_valid():
+		command.call()
+
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
 	if entity_data.hit_targets_this_swing.has(target_id): return
@@ -201,7 +209,6 @@ func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
 		entity_data.health += 1
 		resource_component.consume_healing_charge()
-		# Manually emit the health_changed signal since we modified health directly.
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
 		state_machine.change_state(State.MOVE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:

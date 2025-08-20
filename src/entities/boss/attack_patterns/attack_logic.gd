@@ -12,9 +12,11 @@ func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary
 	# Default to a simple square
 	return {
 		"size": Vector2(150, 150),
-		"offset": Vector2(_owner.state_data.facing_direction * 100, 0)
+		"offset": Vector2(_owner.entity_data.facing_direction * 100, 0)
 	}
 
-## Executes the attack. The core of the Strategy Pattern.
-func execute(_owner: BaseBoss, _pattern: AttackPattern) -> void:
+## Prepares and returns the attack action as a Callable.
+## This is the core of the Command Pattern implementation.
+func execute(_owner: BaseBoss, _pattern: AttackPattern) -> Callable:
 	push_warning("AttackLogic.execute() was called but not overridden.")
+	return Callable() # Return an empty, safe callable
