@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug 20 16:11:24 CDT 2025
+Generated on: Wed Aug 20 17:12:19 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -291,6 +291,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   │   ├── attack_logic.gd
 │   │   │   │   ├── attack_pattern.gd
 │   │   │   │   ├── homing_omni_burst_logic.gd
+│   │   │   │   ├── homing_omni_burst_logic.tres
 │   │   │   │   ├── homing_omni_burst_pattern.tres
 │   │   │   │   ├── lunge_attack.tres
 │   │   │   │   ├── lunge_logic.gd
@@ -358,6 +359,8 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── projectiles
 │   │   ├── boss_shot.gd
 │   │   ├── boss_shot.tscn
+│   │   ├── homing_boss_shot.gd
+│   │   ├── homing_boss_shot.tscn
 │   │   ├── player_shot.gd
 │   │   ├── player_shot.tscn
 │   │   ├── turret_shot.gd
@@ -437,7 +440,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.gd
     └── fx_playground.tscn
 
-78 directories, 351 files
+78 directories, 354 files
 
 
 =====================================
@@ -20414,6 +20417,60 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+
+   NEW BOSS ATTACK & SYSTEM HARDENING                                          
+   Implemented a complex, data-driven homing projectile attack for the boss    
+   and resolved a series of critical, low-level bugs related to resource       
+   loading, physics safety, and object pooling state.                          
+   ────────────────────────────────────────────────────────────────────────    
+   █  Added                                                                    
+      ░ ■ Implemented a new `HomingOmniBurst` attack for the boss's third phase,
+      ░   featuring 30 projectiles that actively seek the player and shrink    
+      ░   over their lifetime.                                                 
+      ░ ■ Created a new `HomingBossShot` projectile scene and script with      
+      ░   built-in tween-based scaling and target tracking logic.              
+      ░ ■ Integrated the new projectile into the `ObjectPool`, `Identifiers`,  
+      ░   and `AssetPaths` singletons for project-wide consistency.   
+
+
+
+   ARCHITECTURAL REFINEMENT & GAMEPLAY FIXES                                   
+   Completed a deep refactor of the entity state machine and attack systems    
+   to use the Command Pattern, fully decoupling logic from implementation.     
+   This also resolved a series of critical, long-standing gameplay bugs.     
+   ────────────────────────────────────────────────────────────────────────    
+   █  Architectural Changes                                                    
+      ░ ■ Refactored the `AttackLogic` system to use the Command Pattern.      
+      ░   Attack logic resources now return a `Callable` command instead of    
+      ░   executing actions directly, making the system more modular and reusable.
+      ░ ■ Refactored the Player's state machine to emit an `action_requested`  
+      ░   signal with a `Callable` payload, decoupling states from the Player's
+      ░   internal component structure.                                        
+
+
+
+   GAMEPLAY MECHANICS & BUG FIXES                                              
+   Restored and hardened several core player mechanics that had regressed      
+   during previous architectural refactors.                                    
+   ────────────────────────────────────────────────────────────────────────    
+   █  Fixed                                                                    
+      ░ ■ Restored the pogo attack, which was non-functional due to a race     
+      ░   condition in the attack state. Logic was separated into a dedicated  
+      ░   `StatePogo` for clarity and reliability.                             
+      ░ ■ Fixed a bug where the pogo attack did not generate visual effects by 
+      ░   ensuring the `DamageInfo` object contained the necessary impact data.
+      ░ ■ Restored the healing mechanic, which was broken by an incorrect      
+      ░   input check (`is_action_just_pressed` vs. `is_action_pressed`).      
+      ░ ■ Fixed a bug where the HUD did not update after healing by ensuring   
+      ░   all changes to healing charges are routed through the                
+      ░   `PlayerResourceComponent` to guarantee the proper event is emitted.  
+      ░ ■ Restored the ability to drop through one-way platforms by            
+      ░   centralizing and correctly ordering input action logic in the        
+      ░   `PlayerAbilityComponent`.                                            
+   █  Code Quality                                                             
+      ░ ■ Resolved a critical circular dependency between `Player`,            
+      ░   `BaseEntity`, and `PlayerResourceComponent` that was causing a parse 
+      ░   error on startup.
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
@@ -24767,6 +24824,7 @@ class Pools:
 	const PLAYER_SHOTS = &"player_shots"
 	const BOSS_SHOTS = &"boss_shots"
 	const TURRET_SHOTS = &"turret_shots"
+	const HOMING_BOSS_SHOTS = &"homing_boss_shots"
 	const HIT_SPARKS = &"hit_sparks"
 
 =====================================
@@ -24798,6 +24856,7 @@ const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"
 # --- BOSS, MINIONS & RELATED ---
 const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
 const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
+const SCENE_HOMING_BOSS_SHOT = "res://src/projectiles/homing_boss_shot.tscn"
 const SCENE_TELEGRAPH_COMPONENT = "res://src/entities/components/telegraph_component.tscn"
 const SCENE_TURRET = "res://src/entities/minions/turret.tscn"
 const SCENE_TURRET_SHOT = "res://src/projectiles/turret_shot.tscn"
@@ -25253,6 +25312,7 @@ extends Node
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
 const TurretShotScene = preload(AssetPaths.SCENE_TURRET_SHOT)
+const HomingBossShotScene = preload(AssetPaths.SCENE_HOMING_BOSS_SHOT)
 const HitSparkScene = preload(AssetPaths.SCENE_HIT_SPARK)
 
 # --- Private Member Variables ---
@@ -25264,6 +25324,7 @@ func _ready() -> void:
 	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, PlayerShotScene, 15)
 	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, BossShotScene, 30)
 	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, TurretShotScene, 20)
+	_create_pool_for_scene(Identifiers.Pools.HOMING_BOSS_SHOTS, HomingBossShotScene, 40)
 	_create_pool_for_scene(Identifiers.Pools.HIT_SPARKS, HitSparkScene, 25)
 
 # --- Public Methods ---
@@ -25349,7 +25410,6 @@ func _create_pool_for_scene(p_pool_name: StringName, p_scene: PackedScene, p_ini
 		if instance.has_method("deactivate"):
 			instance.deactivate()
 		_pools[p_pool_name].inactive.append(instance)
-
 
 =====================================
 FILE: ./src/core/systems/audio_manager.gd
@@ -27257,7 +27317,7 @@ size = Vector2(60, 60)
 
 [node name="BossShot" type="Area2D"]
 collision_layer = 16
-collision_mask = 193
+collision_mask = 65
 script = ExtResource("1_4qgog")
 metadata/pool_name = &"boss_shots"
 
@@ -27462,6 +27522,145 @@ func _on_area_entered(area: Area2D) -> void:
 	ObjectPool.return_instance.call_deferred(self)
 
 func _on_screen_exited() -> void:
+	ObjectPool.return_instance.call_deferred(self)
+
+=====================================
+FILE: ./src/projectiles/homing_boss_shot.tscn
+=====================================
+[gd_scene load_steps=3 format=3 uid="uid://homing_boss_shot_scene"]
+
+[ext_resource type="Script" path="res://src/projectiles/homing_boss_shot.gd" id="1_homing_shot_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_homing_shot_body"]
+size = Vector2(20, 20)
+
+[node name="HomingBossShot" type="Area2D"]
+collision_layer = 16
+collision_mask = 65
+script = ExtResource("1_homing_shot_script")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+unique_name_in_owner = true
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+shape = SubResource("RectangleShape2D_homing_shot_body")
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+rect = Rect2(-10, -10, 20, 20)
+
+[node name="LifetimeTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
+[connection signal="timeout" from="LifetimeTimer" to="." method="_on_lifetime_timer_timeout"]
+
+=====================================
+FILE: ./src/projectiles/homing_boss_shot.gd
+=====================================
+# src/projectiles/homing_boss_shot.gd
+## A projectile that seeks the player and shrinks over time.
+class_name HomingBossShot
+extends Area2D
+
+# --- Constants ---
+const LIFESPAN_SECONDS = 10.0
+const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
+
+# --- Editor Properties ---
+@export var speed: float = 250.0
+@export var damage: int = 1
+
+# --- Node References ---
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var visual: ColorRect = $ColorRect
+@onready var lifetime_timer: Timer = $LifetimeTimer
+
+# --- Private Member Variables ---
+var _player_ref: WeakRef
+var _active_tween: Tween # THE FIX: Add a member variable to hold the tween.
+
+# --- Godot Lifecycle Methods ---
+
+func _ready() -> void:
+	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
+	visual.color = Palette.COLOR_HAZARD_PRIMARY
+
+func _physics_process(delta: float) -> void:
+	if not _player_ref or not _player_ref.get_ref():
+		# If the player is gone, just continue in a straight line.
+		global_position += transform.x * speed * delta
+		return
+	
+	var player_node = _player_ref.get_ref()
+	var direction_to_player = (player_node.global_position - global_position).normalized()
+	
+	# Simple rotation towards the player
+	rotation = lerp_angle(rotation, direction_to_player.angle(), 0.05)
+	
+	global_position += transform.x * speed * delta
+
+# --- IPoolable Contract ---
+
+func activate() -> void:
+	visible = true
+	process_mode = PROCESS_MODE_INHERIT
+	collision_shape.disabled = false
+	
+	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	_player_ref = weakref(player_node)
+	
+	lifetime_timer.start(LIFESPAN_SECONDS)
+	
+	# THE FIX: Kill any previous tween before creating a new one.
+	if is_instance_valid(_active_tween):
+		_active_tween.kill()
+		
+	_active_tween = create_tween()
+	_active_tween.tween_property(visual, "scale", Vector2.ZERO, LIFESPAN_SECONDS)
+	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, LIFESPAN_SECONDS)
+
+func deactivate() -> void:
+	# THE FIX: Kill the tween immediately upon deactivation.
+	if is_instance_valid(_active_tween):
+		_active_tween.kill()
+		_active_tween = null
+		
+	visible = false
+	process_mode = PROCESS_MODE_DISABLED
+	collision_shape.disabled = true
+	# THE FIX: Reset scale for the next use. This is now guaranteed to stick.
+	visual.scale = Vector2.ONE
+	collision_shape.scale = Vector2.ONE
+
+# --- Signal Handlers ---
+
+func _on_body_entered(_body: Node) -> void:
+	ObjectPool.return_instance.call_deferred(self)
+
+func _on_area_entered(area: Area2D) -> void:
+	var damageable = CombatUtilsScript.find_damageable(area)
+	if is_instance_valid(damageable):
+		var damage_info = DamageInfo.new()
+		damage_info.amount = damage
+		damage_info.source_node = self
+		damage_info.impact_position = global_position
+		damage_info.impact_normal = (global_position - area.global_position).normalized()
+		damageable.apply_damage(damage_info)
+	
+	ObjectPool.return_instance.call_deferred(self)
+
+func _on_screen_exited() -> void:
+	ObjectPool.return_instance.call_deferred(self)
+
+func _on_lifetime_timer_timeout() -> void:
 	ObjectPool.return_instance.call_deferred(self)
 
 =====================================
@@ -27854,7 +28053,6 @@ extends AttackLogic
 func get_telegraph_info(owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
 	var lunge_width = 800.0
 	var owner_width = owner.get_node("CollisionShape2D").shape.size.x
-	# This offset is now just a magnitude, not direction-aware.
 	var x_offset = (lunge_width / 2.0) + (owner_width / 2.0)
 	
 	return {
@@ -27862,8 +28060,9 @@ func get_telegraph_info(owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
 		"offset": Vector2(x_offset, 0)
 	}
 
-func execute(owner: BaseBoss, pattern: AttackPattern) -> void:
-	owner.state_machine.change_state(owner.State.LUNGE, {"pattern": pattern})
+func execute(owner: BaseBoss, pattern: AttackPattern) -> Callable:
+	var lunge_params = {"pattern": pattern}
+	return owner.state_machine.change_state.bind(owner.State.LUNGE, lunge_params)
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/lunge_attack.tres
@@ -27892,7 +28091,7 @@ FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
 [gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://homing_omni_burst_tres"]
 
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd" id="2_logic"]
+[ext_resource type="Resource" uid="uid://homing_logic_tres" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
@@ -27904,7 +28103,7 @@ cooldown = 3.5
 
 ; --- Logic-Specific Data ---
 logic = ExtResource("2_logic")
-projectile_count = 12
+projectile_count = 30
 volley_delay = 0.0
 
 =====================================
@@ -27964,12 +28163,11 @@ func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary
 		"offset": Vector2(100, 0)
 	}
 
-func execute(owner: BaseBoss, pattern: AttackPattern) -> void:
+func execute(owner: BaseBoss, pattern: AttackPattern) -> Callable:
 	if pattern.projectile_count <= 1:
-		owner.fire_shot_at_player()
+		return owner.fire_shot_at_player.bind()
 	else:
-		owner.fire_volley(pattern.projectile_count, pattern.volley_delay)
-
+		return owner.fire_volley.bind(pattern.projectile_count, pattern.volley_delay)
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/volley_shot_logic.tres
@@ -28040,6 +28238,18 @@ projectile_count = 1
 volley_delay = 0.2
 
 =====================================
+FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_logic.tres
+=====================================
+[gd_resource type="Resource" script_class="HomingOmniBurstLogic" load_steps=2 format=3 uid="uid://homing_logic_tres"]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd" id="1_logic_script"]
+
+[resource]
+script = ExtResource("1_logic_script")
+projectile_count = 30
+projectile_speed = 250.0
+
+=====================================
 FILE: ./src/entities/boss/attack_patterns/single_shot_logic.tres
 =====================================
 [gd_resource type="Resource" script_class="ProjectileLogic" load_steps=2 format=3]
@@ -28069,13 +28279,14 @@ func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary
 	# Default to a simple square
 	return {
 		"size": Vector2(150, 150),
-		"offset": Vector2(_owner.state_data.facing_direction * 100, 0)
+		"offset": Vector2(_owner.entity_data.facing_direction * 100, 0)
 	}
 
-## Executes the attack. The core of the Strategy Pattern.
-func execute(_owner: BaseBoss, _pattern: AttackPattern) -> void:
+## Prepares and returns the attack action as a Callable.
+## This is the core of the Command Pattern implementation.
+func execute(_owner: BaseBoss, _pattern: AttackPattern) -> Callable:
 	push_warning("AttackLogic.execute() was called but not overridden.")
-
+	return Callable() # Return an empty, safe callable
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
@@ -28083,44 +28294,30 @@ FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
 # src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
 @tool
 ## Concrete AttackLogic for a complex, multi-projectile homing attack.
-##
-## This script serves as a template for future advanced attack patterns.
-## The logic here could be expanded to spawn projectiles that actively seek
-## the player. For now, it fires a simple, non-homing circular burst.
 class_name HomingOmniBurstLogic
 extends AttackLogic
 
-## The number of projectiles to spawn in the burst.
-@export var projectile_count: int = 10
-## The speed of the projectiles.
-@export var projectile_speed: float = 350.0
+@export var projectile_count: int = 30
+@export var projectile_speed: float = 250.0
 
-func get_telegraph_info(owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
-	# A large circular telegraph is appropriate for a burst attack.
-	return {
-		"size": Vector2(600, 600),
-		"offset": Vector2.ZERO # Centered on the boss
-	}
+func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
+	return { "size": Vector2(600, 600), "offset": Vector2.ZERO }
 
-func execute(owner: BaseBoss, _pattern: AttackPattern) -> void:
-	# --- FUTURE IMPLEMENTATION NOTES ---
-	# To make these projectiles "homing", we would need a new projectile scene
-	# (e.g., 'HomingBossShot.tscn') with a script that includes a 'target'
-	# property. In this 'execute' method, we would get the player node, and
-	# for each spawned projectile, set its 'target' to the player. The
-	# projectile's own '_physics_process' would then handle adjusting its
-	# direction towards the target.
-	
+func execute(owner: BaseBoss, _pattern: AttackPattern) -> Callable:
+	return Callable(self, "_fire_omni_burst").bind(owner)
+
+# --- Private Helper for Execution ---
+func _fire_omni_burst(owner: BaseBoss) -> void:
 	if not is_instance_valid(owner): return
 	
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
-		var shot = ObjectPool.get_instance(Identifiers.Pools.BOSS_SHOTS)
+		var shot: HomingBossShot = ObjectPool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
 		if not is_instance_valid(shot): continue
 		
 		var angle = i * angle_step
-		shot.direction = Vector2.RIGHT.rotated(angle)
-		shot.speed = projectile_speed # Use the speed from this logic resource
+		shot.rotation = angle
+		shot.speed = projectile_speed
 		shot.global_position = owner.global_position
 		shot.activate()
 
@@ -28147,7 +28344,7 @@ var facing_direction: float = -1.0
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=17 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=18 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
@@ -28159,11 +28356,12 @@ FILE: ./src/entities/boss/base_boss.tscn
 [ext_resource type="Resource" uid="uid://boss_death_shake_tres" path="res://src/core/data/effects/boss_death_shake.tres" id="8_death_shake"]
 [ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="9_hit_spark_effect"]
 [ext_resource type="Resource" uid="uid://boss_archetype_resource" path="res://src/entities/archetypes/boss_archetype.tres" id="10_archetype"]
-[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_idle.gd" id="11_state_idle"]
-[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_attack.gd" id="12_state_attack"]
-[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_cooldown.gd" id="13_state_cooldown"]
-[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_patrol.gd" id="14_state_patrol"]
-[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_lunge.gd" id="15_state_lunge"]
+[ext_resource type="Resource" uid="uid://homing_omni_burst_tres" path="res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres" id="11_pattern_homing"]
+[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_idle.gd" id="12_state_idle"]
+[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_attack.gd" id="13_state_attack"]
+[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_cooldown.gd" id="14_state_cooldown"]
+[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_patrol.gd" id="15_state_patrol"]
+[ext_resource type="Script" path="res://src/entities/boss/states/state_boss_lunge.gd" id="16_state_lunge"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -28177,7 +28375,7 @@ archetype = ExtResource("10_archetype")
 ; Phase Configuration
 phase_1_patterns = Array[ExtResource("2_30ufx")]([ExtResource("3_pattern_single")])
 phase_2_patterns = Array[ExtResource("2_30ufx")]([ExtResource("4_pattern_volley"), ExtResource("5_pattern_lunge")])
-phase_3_patterns = Array[ExtResource("2_30ufx")]([ExtResource("6_pattern_volley_p3"), ExtResource("5_pattern_lunge")])
+phase_3_patterns = Array[ExtResource("2_30ufx")]([ExtResource("6_pattern_volley_p3"), ExtResource("5_pattern_lunge"), ExtResource("11_pattern_homing")])
 
 ; Juice & Feedback
 phase_change_shake_effect = ExtResource("7_phase_shake")
@@ -28185,11 +28383,11 @@ death_shake_effect = ExtResource("8_death_shake")
 hit_spark_effect = ExtResource("9_hit_spark_effect")
 
 ; State Scripts
-state_idle_script = ExtResource("11_state_idle")
-state_attack_script = ExtResource("12_state_attack")
-state_cooldown_script = ExtResource("13_state_cooldown")
-state_patrol_script = ExtResource("14_state_patrol")
-state_lunge_script = ExtResource("15_state_lunge")
+state_idle_script = ExtResource("12_state_idle")
+state_attack_script = ExtResource("13_state_attack")
+state_cooldown_script = ExtResource("14_state_cooldown")
+state_patrol_script = ExtResource("15_state_patrol")
+state_lunge_script = ExtResource("16_state_lunge")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -30.0
@@ -28329,7 +28527,6 @@ func _start_telegraph_and_attack() -> void:
 	var telegraph_size = telegraph_info.get("size", Vector2.ONE * 100)
 	var relative_offset = telegraph_info.get("offset", Vector2.ZERO)
 	
-	# THE FIX: Access the new public 'entity_data' property on the boss.
 	var directional_offset = Vector2(relative_offset.x * _boss.entity_data.facing_direction, relative_offset.y)
 	var telegraph_position = _boss.global_position + directional_offset
 	
@@ -28341,12 +28538,14 @@ func _start_telegraph_and_attack() -> void:
 	)
 	await telegraph.telegraph_finished
 
-	_current_pattern.logic.execute(_boss, _current_pattern)
+	# THE FIX: Get the command and execute it.
+	var attack_command: Callable = _current_pattern.logic.execute(_boss, _current_pattern)
+	if attack_command.is_valid():
+		attack_command.call()
 	
 	if state_machine.current_state == self:
 		_boss.cooldown_timer.wait_time = _current_pattern.cooldown
 		state_machine.change_state(_boss.State.COOLDOWN)
-
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_patrol.gd
@@ -28674,6 +28873,8 @@ FILE: ./src/entities/components/base_state_machine.gd
 class_name BaseStateMachine
 extends IComponent
 
+signal action_requested(command: Callable)
+
 const MAX_HISTORY_SIZE = 5
 var states: Dictionary = {}
 var current_state: BaseState
@@ -28712,7 +28913,6 @@ func teardown() -> void:
 	for state in states.values():
 		if is_instance_valid(state):
 			state.teardown()
-			# THE FIX: Manually free the state object.
 			state.free()
 			
 	states.clear()
@@ -28734,7 +28934,6 @@ func change_state(new_state_key, msg := {}) -> void:
 		state_history.push_front(state_name)
 		if state_history.size() > MAX_HISTORY_SIZE:
 			state_history.pop_back()
-
 
 =====================================
 FILE: ./src/entities/components/health_component.tscn
@@ -29643,7 +29842,6 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
-	# This call sequence ensures the HUD initializes with the correct charge count.
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
@@ -29665,7 +29863,10 @@ func teardown() -> void:
 			combat_component.damage_dealt.disconnect(resource_component.on_damage_dealt)
 		if combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
 			combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
-	
+	if is_instance_valid(state_machine):
+		if state_machine.action_requested.is_connected(_on_state_machine_action_requested):
+			state_machine.action_requested.disconnect(_on_state_machine_action_requested)
+
 	super.teardown()
 	entity_data = null
 
@@ -29730,6 +29931,7 @@ func _connect_signals() -> void:
 	health_component.took_damage.connect(_on_health_component_took_damage)
 	combat_component.damage_dealt.connect(resource_component.on_damage_dealt)
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
+	state_machine.action_requested.connect(_on_state_machine_action_requested)
 
 func _update_timers(delta: float) -> void:
 	if not is_instance_valid(entity_data): return
@@ -29746,6 +29948,11 @@ func _update_timers(delta: float) -> void:
 		entity_data.charge_timer += delta
 
 # --- Signal Handlers ---
+
+func _on_state_machine_action_requested(command: Callable) -> void:
+	if command.is_valid():
+		command.call()
+
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
 	if entity_data.hit_targets_this_swing.has(target_id): return
@@ -29792,7 +29999,6 @@ func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
 		entity_data.health += 1
 		resource_component.consume_healing_charge()
-		# Manually emit the health_changed signal since we modified health directly.
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
 		state_machine.change_state(State.MOVE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:

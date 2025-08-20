@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://homing_omni_burst_tres"]
 
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd" id="2_logic"]
+[ext_resource type="Resource" uid="uid://homing_logic_tres" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
@@ -13,5 +13,5 @@ cooldown = 3.5
 
 ; --- Logic-Specific Data ---
 logic = ExtResource("2_logic")
-projectile_count = 12
+projectile_count = 30
 volley_delay = 0.0

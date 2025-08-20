@@ -9,6 +9,7 @@ extends Node
 const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
 const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
 const TurretShotScene = preload(AssetPaths.SCENE_TURRET_SHOT)
+const HomingBossShotScene = preload(AssetPaths.SCENE_HOMING_BOSS_SHOT)
 const HitSparkScene = preload(AssetPaths.SCENE_HIT_SPARK)
 
 # --- Private Member Variables ---
@@ -20,6 +21,7 @@ func _ready() -> void:
 	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, PlayerShotScene, 15)
 	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, BossShotScene, 30)
 	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, TurretShotScene, 20)
+	_create_pool_for_scene(Identifiers.Pools.HOMING_BOSS_SHOTS, HomingBossShotScene, 40)
 	_create_pool_for_scene(Identifiers.Pools.HIT_SPARKS, HitSparkScene, 25)
 
 # --- Public Methods ---

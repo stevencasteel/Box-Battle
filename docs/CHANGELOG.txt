@@ -61,6 +61,23 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+
+   NEW BOSS ATTACK & SYSTEM HARDENING                                          
+   Implemented a complex, data-driven homing projectile attack for the boss    
+   and resolved a series of critical, low-level bugs related to resource       
+   loading, physics safety, and object pooling state.                          
+   ────────────────────────────────────────────────────────────────────────    
+   █  Added                                                                    
+      ░ ■ Implemented a new `HomingOmniBurst` attack for the boss's third phase,
+      ░   featuring 30 projectiles that actively seek the player and shrink    
+      ░   over their lifetime.                                                 
+      ░ ■ Created a new `HomingBossShot` projectile scene and script with      
+      ░   built-in tween-based scaling and target tracking logic.              
+      ░ ■ Integrated the new projectile into the `ObjectPool`, `Identifiers`,  
+      ░   and `AssetPaths` singletons for project-wide consistency.   
+
+
+
    ARCHITECTURAL REFINEMENT & GAMEPLAY FIXES                                   
    Completed a deep refactor of the entity state machine and attack systems    
    to use the Command Pattern, fully decoupling logic from implementation.     

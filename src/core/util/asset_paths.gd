@@ -24,6 +24,7 @@ const SCENE_PLAYER_SHOT = "res://src/projectiles/player_shot.tscn"
 # --- BOSS, MINIONS & RELATED ---
 const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
 const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
+const SCENE_HOMING_BOSS_SHOT = "res://src/projectiles/homing_boss_shot.tscn"
 const SCENE_TELEGRAPH_COMPONENT = "res://src/entities/components/telegraph_component.tscn"
 const SCENE_TURRET = "res://src/entities/minions/turret.tscn"
 const SCENE_TURRET_SHOT = "res://src/projectiles/turret_shot.tscn"
