@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug 20 17:42:59 CDT 2025
+Generated on: Wed Aug 20 18:31:20 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -20418,6 +20418,29 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 
+
+PLAYER MECHANICS HARDENING & REFACTOR
+   Completed a full refactor of the player's jump system to be state-driven,
+   resolving an infinite jump bug and enabling air jumps during ascent. Also
+   unified all player knockback values for consistent gameplay feedback.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Refactored all jump logic out of the generic `PlayerAbilityComponent`
+      ░   and into the relevant states (`StateMove`, `StateFall`, `StateJump`),
+      ░   making the behavior context-aware and architecturally robust.
+   █  Fixed
+      ░ ■ Resolved a critical bug that allowed for infinite air jumps. Air jumps
+      ░   are now correctly consumed and reset upon landing or wall contact.
+      ░ ■ The player can now correctly perform an air jump at any point during
+      ░   their initial jump arc (both ascending and descending).
+      ░ ■ Unified the knockback speed for enemy and hazard damage in the
+      ░   `CombatConfig`, ensuring consistent and predictable feedback when
+      ░   the player takes damage from any source.
+
+
+
+
+
    NEW BOSS ATTACK & SYSTEM HARDENING                                          
    Implemented a complex, data-driven homing projectile attack for the boss    
    and resolved a series of critical, low-level bugs related to resource       
@@ -20692,7 +20715,7 @@ FILE: ./docs/CHANGELOG.txt
 ║     ░   structure standards.                                                 ║
 ║  █  Fixed                                                                    ║
 ║     ░ ■ Corrected the camera shake implementation to use the `Camera2D.offset`║
-║     ░   property, ensuring the shake works correctly with the camera system. ║                                                                              ║
+║     ░   property, ensuring the shake works correctly with the camera system. ║
 ║                                                                              ║
 ║  SCREEN SHAKE & GAME FEEL FOUNDATION                                         ║
 ║  Implemented a robust, data-driven screen shake system to serve as the       ║
@@ -20716,7 +20739,7 @@ FILE: ./docs/CHANGELOG.txt
 ║  █  Fixed                                                                    ║
 ║     ░ ■ Corrected the camera shake implementation to use the `Camera2D.offset`║
 ║     ░   property, ensuring the shake works correctly with the existing       ║
-║     ░   camera and level rendering architecture.║                            ║                                                 ║
+║     ░   camera and level rendering architecture.║                            ║
 ║                                                                              ║
 ║                                                                              ║
 ║   DATA-DRIVEN ATTACK SYSTEM & DEBUGGER OVERHAUL                              ║
@@ -21355,7 +21378,6 @@ FILE: ./docs/CHANGELOG.txt
 ║      ░ ■ Fully restored the pogo mechanic.                                   ║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
-
 
 =====================================
 FILE: ./docs/BRAINSTORM.txt
@@ -25354,6 +25376,8 @@ func reset() -> void:
 		for node in active_nodes_to_return:
 			# THE FIX: Defer the return call to prevent physics race conditions.
 			return_instance.call_deferred(node)
+			# THE FIX: Defer the return call to prevent physics race conditions.
+			return_instance.call_deferred(node)
 
 ## Retrieves an inactive instance from the specified pool.
 func get_instance(p_pool_name: StringName) -> Node:
@@ -25760,11 +25784,16 @@ extends Resource
 @export_range(0.05, 0.5, 0.01) var player_knockback_duration: float = 0.1
 @export_range(100, 1500, 25) var player_hazard_knockback_speed: float = 400.0
 @export_range(10, 200, 5) var player_close_range_threshold: float = 75.0
+@export_range(10, 200, 5) var player_close_range_threshold: float = 75.0
 
+@export_group("Boss - General")
 @export_group("Boss - General")
 @export_range(10, 500, 5) var boss_health: int = 30
 @export_range(50, 500, 5) var boss_patrol_speed: float = 100.0
 @export_range(0.0, 2.0, 0.01) var boss_invincibility_duration: float = 0.1
+
+@export_group("Boss - Lunge Attack")
+@export_range(500, 3000, 50) var boss_lunge_speed: float = 1200.0
 
 @export_group("Boss - Lunge Attack")
 @export_range(500, 3000, 50) var boss_lunge_speed: float = 1200.0
@@ -25778,10 +25807,19 @@ extends Resource
 @export_range(100, 1000, 10) var homing_shot_speed: float = 250.0
 @export_range(1.0, 20.0, 0.5) var homing_shot_lifespan: float = 10.0
 
+@export_group("Projectiles")
+@export_range(1, 20, 1) var homing_shot_damage: int = 1
+@export_range(100, 1000, 10) var homing_shot_speed: float = 250.0
+@export_range(1.0, 20.0, 0.5) var homing_shot_lifespan: float = 10.0
+
 @export_group("Global - Physics")
 @export_range(500, 3000, 10) var gravity: float = 1200.0
 
 @export_group("Global - Juice & Feedback (Hit-Stop)")
+@export_range(0.0, 0.5, 0.01) var player_melee_close_range_hit_stop_duration: float = 0.025
+@export_range(0.0, 0.5, 0.01) var player_damage_taken_hit_stop_duration: float = 0.04
+@export_range(0.0, 1.0, 0.01) var boss_phase_change_hit_stop_duration: float = 0.1
+@export_range(0.0, 1.0, 0.01) var boss_death_hit_stop_duration: float = 0.2
 @export_range(0.0, 0.5, 0.01) var player_melee_close_range_hit_stop_duration: float = 0.025
 @export_range(0.0, 0.5, 0.01) var player_damage_taken_hit_stop_duration: float = 0.04
 @export_range(0.0, 1.0, 0.01) var boss_phase_change_hit_stop_duration: float = 0.1
@@ -27587,6 +27625,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 @export var speed: float = 250.0
 @export var damage: int = 1
 @export var lifespan: float = 10.0
+@export var lifespan: float = 10.0
 
 # --- Node References ---
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
@@ -27595,6 +27634,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
 # --- Private Member Variables ---
 var _player_ref: WeakRef
+var _active_tween: Tween
 var _active_tween: Tween
 
 # --- Godot Lifecycle Methods ---
@@ -27626,11 +27666,14 @@ func activate() -> void:
 	_player_ref = weakref(player_node)
 	
 	lifetime_timer.start(lifespan)
+	lifetime_timer.start(lifespan)
 	
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 		
 	_active_tween = create_tween()
+	_active_tween.tween_property(visual, "scale", Vector2.ZERO, lifespan)
+	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, lifespan)
 	_active_tween.tween_property(visual, "scale", Vector2.ZERO, lifespan)
 	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, lifespan)
 
@@ -27667,6 +27710,7 @@ func _on_screen_exited() -> void:
 
 func _on_lifetime_timer_timeout() -> void:
 	ObjectPool.return_instance.call_deferred(self)
+
 
 
 =====================================
@@ -27742,6 +27786,7 @@ player_coyote_time = 0.1
 player_jump_buffer = 0.1
 player_fast_fall_gravity_multiplier = 1.4
 player_max_air_jumps = 1
+player_max_air_jumps = 1
 player_wall_slide_speed = 120.0
 player_wall_coyote_time = 0.05
 player_wall_jump_force_x = 1650.0
@@ -27756,16 +27801,21 @@ player_attack_duration = 0.1
 player_attack_friction = 2000.0
 player_charge_time = 0.35
 player_pogo_force = 450.0
-player_knockback_speed = 700.0
+player_knockback_speed = 400.0
 player_knockback_duration = 0.1
 player_hazard_knockback_speed = 400.0
+player_close_range_threshold = 75.0
 player_close_range_threshold = 75.0
 boss_health = 30
 boss_patrol_speed = 100.0
 boss_invincibility_duration = 0.1
 boss_lunge_speed = 1200.0
+boss_lunge_speed = 1200.0
 turret_fire_rate = 2.0
 turret_detection_radius = 400.0
+homing_shot_damage = 1
+homing_shot_speed = 250.0
+homing_shot_lifespan = 10.0
 homing_shot_damage = 1
 homing_shot_speed = 250.0
 homing_shot_lifespan = 10.0
@@ -27774,7 +27824,6 @@ player_melee_close_range_hit_stop_duration = 0.025
 player_damage_taken_hit_stop_duration = 0.04
 boss_phase_change_hit_stop_duration = 0.1
 boss_death_hit_stop_duration = 0.2
-
 
 =====================================
 FILE: ./src/data/layouts/level_layout.gd
@@ -28322,10 +28371,17 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 	
 	print("Executing Homing Omni Burst!")
 	
+	print("Executing Homing Omni Burst!")
+	
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
 		var shot: HomingBossShot = ObjectPool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
 		if not is_instance_valid(shot): continue
+		
+		# Configure the projectile from the central config
+		shot.damage = owner.entity_data.config.homing_shot_damage
+		shot.speed = owner.entity_data.config.homing_shot_speed
+		shot.lifespan = owner.entity_data.config.homing_shot_lifespan
 		
 		# Configure the projectile from the central config
 		shot.damage = owner.entity_data.config.homing_shot_damage
@@ -28469,6 +28525,7 @@ func enter(msg := {}) -> void:
 	_lunge_duration = pattern.attack_duration if pattern else 0.5
 
 	_invincibility_token = _boss.health_component.grant_invincibility(self)
+	_boss.velocity = Vector2(state_data.facing_direction * state_data.config.boss_lunge_speed, 0)
 	_boss.velocity = Vector2(state_data.facing_direction * state_data.config.boss_lunge_speed, 0)
 
 func exit() -> void:
@@ -28891,6 +28948,11 @@ extends IComponent
 ## specific methods. The warning is ignored because the signal is emitted by
 ## the state objects, not this script directly.
 @warning_ignore("unused_signal")
+## This signal is used by the Player states to request actions (like enabling
+## a hitbox) from the Player node, decoupling the states from the Player's
+## specific methods. The warning is ignored because the signal is emitted by
+## the state objects, not this script directly.
+@warning_ignore("unused_signal")
 signal action_requested(command: Callable)
 
 const MAX_HISTORY_SIZE = 5
@@ -28952,6 +29014,7 @@ func change_state(new_state_key, msg := {}) -> void:
 		state_history.push_front(state_name)
 		if state_history.size() > MAX_HISTORY_SIZE:
 			state_history.pop_back()
+
 
 
 =====================================
@@ -29983,6 +30046,7 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		damage_info.source_node = self
 		var distance = self.global_position.distance_to(body.global_position)
 		var is_close_range = distance <= entity_data.config.player_close_range_threshold
+		var is_close_range = distance <= entity_data.config.player_close_range_threshold
 		damage_info.amount = 5 if is_close_range else 1
 		damage_info.impact_position = body.global_position
 		damage_info.impact_normal = (body.global_position - global_position).normalized()
@@ -30046,6 +30110,7 @@ func _cancel_heal() -> void:
 	healing_timer.stop()
 
 
+
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn
 =====================================
@@ -30094,23 +30159,6 @@ func _physics_process(_delta: float) -> void:
 
 	# --- Action State Logic ---
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
-		return
-
-	# --- Jump & Drop-Through Logic ---
-	if input_component.buffer.get("jump_just_pressed"):
-		# THE FIX: Check for drop-through *before* jumping.
-		var is_trying_drop = owner_node.is_on_floor() and input_component.buffer.get("down")
-		if is_trying_drop:
-			var floor_col = owner_node.get_last_slide_collision()
-			if floor_col:
-				var floor_collider = floor_col.get_collider()
-				if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
-					owner_node.position.y += 2 # Nudge the player down to clear the platform
-					state_machine.change_state(Player.State.FALL)
-					return # Do not proceed to the jump logic
-
-		# If not dropping through, then it's a regular jump.
-		state_machine.change_state(Player.State.JUMP)
 		return
 
 	# --- Attack / Charge Shot Logic ---
@@ -30319,6 +30367,13 @@ func enter(msg := {}) -> void:
 func process_physics(delta: float) -> void:
 	owner.physics_component.apply_horizontal_movement()
 
+	# --- Air Jump Logic ---
+	# Allow spending an air jump while ascending.
+	if owner.input_component.buffer.get("jump_just_pressed"):
+		if state_data.air_jumps_left > 0:
+			_perform_air_jump()
+			# No return here; we still need to apply gravity and other checks.
+
 	if owner.input_component.buffer.get("jump_released") and owner.velocity.y < 0:
 		owner.velocity.y *= state_data.config.player_jump_release_dampener
 
@@ -30343,6 +30398,11 @@ func _check_for_wall_slide() -> void:
 		
 	if can_wall_slide:
 		state_machine.change_state(owner.State.WALL_SLIDE)
+
+func _perform_air_jump() -> void:
+	state_data.air_jumps_left -= 1
+	# Reset vertical velocity to perform the air jump.
+	owner.velocity.y = -state_data.config.player_jump_force
 
 =====================================
 FILE: ./src/entities/player/states/state_dash.gd
@@ -30547,7 +30607,8 @@ func process_physics(delta: float) -> void:
 		elif state_data.coyote_timer > 0:
 			state_machine.change_state(owner.State.JUMP)
 		elif state_data.air_jumps_left > 0:
-			_perform_air_jump()
+			state_data.air_jumps_left -= 1
+			state_machine.change_state(owner.State.JUMP)
 
 func _apply_gravity(delta: float) -> void:
 	var gravity_multiplier = 1.0
@@ -30564,11 +30625,8 @@ func _check_for_wall_slide() -> void:
 	if can_wall_slide:
 		state_machine.change_state(owner.State.WALL_SLIDE)
 
-func _perform_air_jump() -> void:
-	# THE FIX: Pass a message to the JUMP state instead of decrementing here.
-	state_machine.change_state(owner.State.JUMP, {"is_air_jump": true})
-
 func _perform_wall_jump() -> void:
+	owner.velocity.y = -state_data.config.player_wall_jump_force_y
 	owner.velocity.x = state_data.last_wall_normal.x * state_data.config.player_wall_jump_force_x
 	state_data.coyote_timer = 0
 	state_data.wall_coyote_timer = 0
@@ -30590,6 +30648,22 @@ func process_physics(delta: float) -> void:
 
 	owner.physics_component.apply_gravity(delta)
 	owner.physics_component.apply_horizontal_movement()
+
+	if owner.input_component.buffer.get("jump_just_pressed"):
+		# Check for drop-through platform
+		var is_trying_drop = owner.input_component.buffer.get("down", false)
+		if is_trying_drop:
+			var floor_col = owner.get_last_slide_collision()
+			if floor_col:
+				var floor_collider = floor_col.get_collider()
+				if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
+					owner.position.y += 2
+					state_machine.change_state(owner.State.FALL)
+					return
+
+		# If not dropping, then it's a ground jump
+		state_machine.change_state(owner.State.JUMP)
+		return
 
 	if not owner.is_on_floor():
 		state_machine.change_state(owner.State.FALL)

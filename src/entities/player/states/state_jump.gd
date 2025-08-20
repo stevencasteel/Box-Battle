@@ -13,6 +13,13 @@ func enter(msg := {}) -> void:
 func process_physics(delta: float) -> void:
 	owner.physics_component.apply_horizontal_movement()
 
+	# --- Air Jump Logic ---
+	# Allow spending an air jump while ascending.
+	if owner.input_component.buffer.get("jump_just_pressed"):
+		if state_data.air_jumps_left > 0:
+			_perform_air_jump()
+			# No return here; we still need to apply gravity and other checks.
+
 	if owner.input_component.buffer.get("jump_released") and owner.velocity.y < 0:
 		owner.velocity.y *= state_data.config.player_jump_release_dampener
 
@@ -37,3 +44,8 @@ func _check_for_wall_slide() -> void:
 		
 	if can_wall_slide:
 		state_machine.change_state(owner.State.WALL_SLIDE)
+
+func _perform_air_jump() -> void:
+	state_data.air_jumps_left -= 1
+	# Reset vertical velocity to perform the air jump.
+	owner.velocity.y = -state_data.config.player_jump_force

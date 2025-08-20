@@ -18,7 +18,8 @@ func process_physics(delta: float) -> void:
 		elif state_data.coyote_timer > 0:
 			state_machine.change_state(owner.State.JUMP)
 		elif state_data.air_jumps_left > 0:
-			_perform_air_jump()
+			state_data.air_jumps_left -= 1
+			state_machine.change_state(owner.State.JUMP)
 
 func _apply_gravity(delta: float) -> void:
 	var gravity_multiplier = 1.0
@@ -40,6 +41,7 @@ func _perform_air_jump() -> void:
 	state_machine.change_state(owner.State.JUMP, {"is_air_jump": true})
 
 func _perform_wall_jump() -> void:
+	owner.velocity.y = -state_data.config.player_wall_jump_force_y
 	owner.velocity.x = state_data.last_wall_normal.x * state_data.config.player_wall_jump_force_x
 	state_data.coyote_timer = 0
 	state_data.wall_coyote_timer = 0

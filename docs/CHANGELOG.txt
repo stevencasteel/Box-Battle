@@ -65,6 +65,29 @@
 
 
 
+
+PLAYER MECHANICS HARDENING & REFACTOR
+   Completed a full refactor of the player's jump system to be state-driven,
+   resolving an infinite jump bug and enabling air jumps during ascent. Also
+   unified all player knockback values for consistent gameplay feedback.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Refactored all jump logic out of the generic `PlayerAbilityComponent`
+      ░   and into the relevant states (`StateMove`, `StateFall`, `StateJump`),
+      ░   making the behavior context-aware and architecturally robust.
+   █  Fixed
+      ░ ■ Resolved a critical bug that allowed for infinite air jumps. Air jumps
+      ░   are now correctly consumed and reset upon landing or wall contact.
+      ░ ■ The player can now correctly perform an air jump at any point during
+      ░   their initial jump arc (both ascending and descending).
+      ░ ■ Unified the knockback speed for enemy and hazard damage in the
+      ░   `CombatConfig`, ensuring consistent and predictable feedback when
+      ░   the player takes damage from any source.
+
+
+
+
+
    NEW BOSS ATTACK & SYSTEM HARDENING                                          
    Implemented a complex, data-driven homing projectile attack for the boss    
    and resolved a series of critical, low-level bugs related to resource       
@@ -342,7 +365,7 @@
 ║     ░   structure standards.                                                 ║
 ║  █  Fixed                                                                    ║
 ║     ░ ■ Corrected the camera shake implementation to use the `Camera2D.offset`║
-║     ░   property, ensuring the shake works correctly with the camera system. ║                                                                              ║
+║     ░   property, ensuring the shake works correctly with the camera system. ║
 ║                                                                              ║
 ║  SCREEN SHAKE & GAME FEEL FOUNDATION                                         ║
 ║  Implemented a robust, data-driven screen shake system to serve as the       ║
@@ -366,7 +389,7 @@
 ║  █  Fixed                                                                    ║
 ║     ░ ■ Corrected the camera shake implementation to use the `Camera2D.offset`║
 ║     ░   property, ensuring the shake works correctly with the existing       ║
-║     ░   camera and level rendering architecture.║                            ║                                                 ║
+║     ░   camera and level rendering architecture.║                            ║
 ║                                                                              ║
 ║                                                                              ║
 ║   DATA-DRIVEN ATTACK SYSTEM & DEBUGGER OVERHAUL                              ║

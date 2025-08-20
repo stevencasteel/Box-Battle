@@ -35,23 +35,6 @@ func _physics_process(_delta: float) -> void:
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
 
-	# --- Jump & Drop-Through Logic ---
-	if input_component.buffer.get("jump_just_pressed"):
-		# THE FIX: Check for drop-through *before* jumping.
-		var is_trying_drop = owner_node.is_on_floor() and input_component.buffer.get("down")
-		if is_trying_drop:
-			var floor_col = owner_node.get_last_slide_collision()
-			if floor_col:
-				var floor_collider = floor_col.get_collider()
-				if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
-					owner_node.position.y += 2 # Nudge the player down to clear the platform
-					state_machine.change_state(Player.State.FALL)
-					return # Do not proceed to the jump logic
-
-		# If not dropping through, then it's a regular jump.
-		state_machine.change_state(Player.State.JUMP)
-		return
-
 	# --- Attack / Charge Shot Logic ---
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
 		p_data.is_charging = true
