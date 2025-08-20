@@ -14,6 +14,7 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 const CLOSE_RANGE_THRESHOLD = 75.0
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
+const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Editor Properties ---
 @export var damage_shake_effect: ScreenShakeEffect
@@ -85,7 +86,7 @@ func enable_pogo_hitbox(is_enabled: bool) -> void:
 
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
-	entity_data.config = CombatDB.config
+	entity_data.config = COMBAT_CONFIG
 	
 	var shared_deps := {
 		"data_resource": entity_data,

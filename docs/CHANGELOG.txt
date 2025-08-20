@@ -31,7 +31,27 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
-                                                                           
+
+                                                                         
+   ARCHITECTURAL REFINEMENT & CODE QUALITY                                     
+   Completed a targeted refactor to improve architectural clarity and adhere   
+   more closely to the Principle of Least Astonishment.                        
+   ────────────────────────────────────────────────────────────────────────    
+   █  Architectural Changes                                                    
+      ░ ■ Eliminated the `CombatDB` singleton. All scripts now load the        
+      ░   `CombatConfig.tres` resource directly, removing an unnecessary layer 
+      ░   of abstraction and making dependencies more transparent.             
+      ░ ■ Renamed the `Interfaces.gd` autoload to `GlobalPreloader.gd` to      
+      ░   accurately reflect its true purpose of resolving critical script     
+      ░   parse-order dependencies, not just defining interfaces.              
+   █  Fixed                                                                    
+      ░ ■ Resolved a `class_name` conflict with the preloader autoload that was
+      ░   causing a parse error on startup.                                    
+                                                                              
+
+
+
+
    VISUAL EFFECTS & ROBUSTNESS                                                 
    Implemented a robust, code-driven hit-flash shader effect and resolved      
    critical resource loading errors. The new system is immune to editor cache  

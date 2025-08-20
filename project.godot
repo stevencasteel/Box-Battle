@@ -11,14 +11,14 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.12.0"
+config/version="0.12.1"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Interfaces="*res://src/api/interfaces.gd"
+GlobalPreloader="*res://src/api/global_preloader.gd"
 Settings="*res://src/core/data/config/settings.gd"
 AudioManager="*res://src/core/systems/audio_manager.gd"
 CursorManager="*res://src/core/systems/cursor_manager.gd"
@@ -29,7 +29,6 @@ SceneManager="*res://src/core/systems/scene_manager.gd"
 ArenaBuilder="*res://src/core/building/arena_builder.gd"
 EventBus="*res://src/core/events/event_bus.gd"
 Sequencer="*res://src/core/sequencing/sequencer.gd"
-CombatDB="*res://src/core/data/combat_db.gd"
 Palette="*res://src/core/util/palette.gd"
 ObjectPool="*res://src/core/systems/object_pool.gd"
 PhysicsLayers="*res://src/core/util/physics_layers.gd"

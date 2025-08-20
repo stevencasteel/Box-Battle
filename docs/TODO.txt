@@ -107,6 +107,7 @@
 ║   ░ Advanced Boss AI (Adaptive tactics, environmental interaction).          ║
 ║   ░ Player Loadout System (Alternative weapons or abilities).                ║
 ║   ░ Special Game Modes (Boss Rush, Time Attack).                             ║
+║   ░ Automated Component Dependency Injection (reduce entity setup boilerplate).║
 ║                                                                              ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 

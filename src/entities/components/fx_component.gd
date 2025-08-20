@@ -1,6 +1,11 @@
 # src/entities/components/fx_component.gd
 @tool
 ## A dedicated component for managing all entity-specific visual effects.
+##
+## CONTRACT: This component requires the following dependencies to be passed
+## into its setup() method:
+##  - "visual_node": A CanvasItem to which the shader will be applied.
+##  - "health_component": A HealthComponent to connect the `took_damage` signal.
 class_name FXComponent
 extends IComponent
 
@@ -28,14 +33,16 @@ func _notification(what: int) -> void:
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
+	
+	# --- Dependency Validation ---
+	assert(p_dependencies.has("visual_node"), "FXComponent requires a 'visual_node' dependency.")
+	assert(p_dependencies.has("health_component"), "FXComponent requires a 'health_component' dependency.")
 	self._visual_node = p_dependencies.get("visual_node")
 	var health_comp: HealthComponent = p_dependencies.get("health_component")
+	assert(is_instance_valid(_visual_node) and _visual_node is CanvasItem, "'visual_node' must be a valid CanvasItem.")
+	assert(is_instance_valid(health_comp) and health_comp is HealthComponent, "'health_component' must be a valid HealthComponent.")
 
-	if not is_instance_valid(_visual_node):
-		push_warning("FXComponent on '%s' is missing its visual_node dependency." % get_parent().name)
-		return
-
-	# Create and configure the material once at setup.
+	# --- Initialization ---
 	_hit_flash_material = ShaderMaterial.new()
 	_hit_flash_material.shader = HIT_FLASH_SHADER
 
@@ -63,11 +70,9 @@ func _play_hit_flash() -> void:
 
 	_original_material = _visual_node.material
 	
-	# We must duplicate the material to get a unique instance for this effect.
 	var material_instance = _hit_flash_material.duplicate()
 	_visual_node.material = material_instance
 	
-	# Set the proxy property directly to start the tween from full intensity.
 	self._intensity = 1.0
 	material_instance.set_shader_parameter("intensity", 1.0)
 	

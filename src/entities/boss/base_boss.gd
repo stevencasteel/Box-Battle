@@ -5,6 +5,7 @@ extends CharacterBody2D
 
 # --- Constants ---
 const Validator = preload("res://src/core/util/scene_validator.gd")
+const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Enums ---
 enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
@@ -132,7 +133,7 @@ func _initialize_data() -> void:
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	current_attack_patterns = phase_1_patterns
 	entity_data = BossStateData.new()
-	entity_data.config = CombatDB.config
+	entity_data.config = COMBAT_CONFIG
 
 func _initialize_components() -> void:
 	var dependencies = {

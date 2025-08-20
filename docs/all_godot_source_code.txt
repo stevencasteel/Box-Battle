@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug 20 11:39:11 CDT 2025
+Generated on: Wed Aug 20 12:15:59 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -194,12 +194,12 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── combat
 │   │   │   ├── damage_info.gd
 │   │   │   └── damage_result.gd
-│   │   ├── interfaces
-│   │   │   ├── IComponent.gd
-│   │   │   ├── IDamageable.gd
-│   │   │   ├── IPoolable.gd
-│   │   │   └── ISceneController.gd
-│   │   └── interfaces.gd
+│   │   ├── global_preloader.gd
+│   │   └── interfaces
+│   │       ├── IComponent.gd
+│   │       ├── IDamageable.gd
+│   │       ├── IPoolable.gd
+│   │       └── ISceneController.gd
 │   ├── arenas
 │   ├── core
 │   │   ├── DEPRECATION.md
@@ -210,7 +210,6 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── level_parser.gd
 │   │   │   └── terrain_builder.gd
 │   │   ├── data
-│   │   │   ├── combat_db.gd
 │   │   │   ├── config
 │   │   │   │   ├── combat_config.gd
 │   │   │   │   └── settings.gd
@@ -435,7 +434,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.gd
     └── fx_playground.tscn
 
-78 directories, 349 files
+78 directories, 348 files
 
 
 =====================================
@@ -21776,14 +21775,14 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.12.0"
+config/version="0.12.1"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Interfaces="*res://src/api/interfaces.gd"
+GlobalPreloader="*res://src/api/global_preloader.gd"
 Settings="*res://src/core/data/config/settings.gd"
 AudioManager="*res://src/core/systems/audio_manager.gd"
 CursorManager="*res://src/core/systems/cursor_manager.gd"
@@ -21794,7 +21793,6 @@ SceneManager="*res://src/core/systems/scene_manager.gd"
 ArenaBuilder="*res://src/core/building/arena_builder.gd"
 EventBus="*res://src/core/events/event_bus.gd"
 Sequencer="*res://src/core/sequencing/sequencer.gd"
-CombatDB="*res://src/core/data/combat_db.gd"
 Palette="*res://src/core/util/palette.gd"
 ObjectPool="*res://src/core/systems/object_pool.gd"
 PhysicsLayers="*res://src/core/util/physics_layers.gd"
@@ -21927,6 +21925,9 @@ FILE: ./src/ui/game_hud/game_hud.gd
 ## and phase indicators updated in real-time.
 extends CanvasLayer
 
+# --- Constants ---
+const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+
 # --- Node References ---
 @onready var player_health_value: Label = $PlayerInfo/PlayerHealthHBox/PlayerHealthValue
 @onready var player_heal_charges_value: Label = $PlayerInfo/PlayerHealChargesHBox/PlayerHealChargesValue
@@ -21971,7 +21972,7 @@ func _unsubscribe_from_events() -> void:
 	EventBus.off(_boss_died_token)
 
 func _initialize_ui_state() -> void:
-	var max_health = CombatDB.config.player_max_health
+	var max_health = COMBAT_CONFIG.player_max_health
 	player_health_value.text = "%d / %d" % [max_health, max_health]
 	player_heal_charges_value.text = "0"
 
@@ -21979,7 +21980,7 @@ func _initialize_ui_state() -> void:
 	health_bar_style.bg_color = Palette.COLOR_PLAYER_PROJECTILE
 	boss_health_bar.add_theme_stylebox_override("fill", health_bar_style)
 
-	boss_health_bar.max_value = CombatDB.config.boss_health
+	boss_health_bar.max_value = COMBAT_CONFIG.boss_health
 	boss_health_bar.value = boss_health_bar.max_value
 
 	phase_indicators.add_theme_constant_override("separation", 5)
@@ -25506,28 +25507,6 @@ func request_hit_stop(duration: float) -> void:
 
 
 =====================================
-FILE: ./src/core/data/combat_db.gd
-=====================================
-# src/core/data/combat_db.gd
-## An autoloaded singleton that provides global, read-only access to the
-## main combat configuration resource file.
-extends Node
-
-# --- Constants ---
-const CONFIG_PATH: String = "res://src/data/combat_config.tres"
-
-# --- Public Member Variables ---
-## A reference to the loaded [CombatConfig] resource.
-var config: CombatConfig = null
-
-# --- Godot Lifecycle Methods ---
-
-func _ready() -> void:
-	config = load(CONFIG_PATH) as CombatConfig
-	if not config:
-		push_error("CombatDB: Failed to load CombatConfig at %s" % CONFIG_PATH)
-
-=====================================
 FILE: ./src/core/data/config/settings.gd
 =====================================
 # src/core/data/config/settings.gd
@@ -26918,7 +26897,7 @@ func _on_finished() -> void:
 =====================================
 FILE: ./src/vfx/hit_spark.tscn
 =====================================
-[gd_scene load_steps=5 format=3 uid="uid://c8g7f6e5d4b3a"]
+[gd_scene load_steps=9 format=3 uid="uid://c8g7f6e5d4b3a"]
 
 [ext_resource type="Script" path="res://src/vfx/hit_spark.gd" id="1_hit_spark_script"]
 
@@ -26929,26 +26908,41 @@ colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_1"]
 gradient = SubResource("Gradient_1")
 
+[sub_resource type="Curve" id="Curve_1"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_1"]
+curve = SubResource("Curve_1")
+
+[sub_resource type="Gradient" id="Gradient_2"]
+colors = PackedColorArray(1, 0.898039, 0.4, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_2"]
+gradient = SubResource("Gradient_2")
+
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_1"]
 particle_flag_disable_z = true
 emission_shape = 1
 emission_sphere_radius = 1.0
 direction = Vector3(1, 0, 0)
-spread = 35.0
+spread = 90.0
 initial_velocity_min = 150.0
-initial_velocity_max = 250.0
+initial_velocity_max = 400.0
 gravity = Vector3(0, 0, 0)
 damping_min = 200.0
 damping_max = 300.0
-scale_min = 0.5
-scale_max = 1.0
+scale_min = 1.5
+scale_max = 2.5
+scale_curve = SubResource("CurveTexture_1")
 color_ramp = SubResource("GradientTexture1D_1")
+color_initial_ramp = SubResource("GradientTexture1D_2")
 
 [node name="HitSpark" type="GPUParticles2D"]
 emitting = false
-amount = 12
+amount = 30
 process_material = SubResource("ParticleProcessMaterial_1")
-lifetime = 0.3
+lifetime = 0.35
 one_shot = true
 explosiveness = 1.0
 local_coords = true
@@ -26991,9 +26985,9 @@ var was_damaged: bool = false
 var knockback_velocity: Vector2 = Vector2.ZERO
 
 =====================================
-FILE: ./src/api/interfaces.gd
+FILE: ./src/api/global_preloader.gd
 =====================================
-# src/api/interfaces.gd
+# src/api/global_preloader.gd
 ## A central autoload script whose sole purpose is to preload all interface
 ## and critical base class scripts in the project. This ensures their 'class_name'
 ## is registered with Godot's ScriptServer before any other script tries to use them,
@@ -27001,7 +26995,7 @@ FILE: ./src/api/interfaces.gd
 extends Node
 
 func _ready() -> void:
-	# Preload all interfaces and base classes to register them globally.
+	# Preload all interfaces and critical base classes to register them globally.
 	preload("res://src/api/interfaces/IComponent.gd")
 	preload("res://src/api/interfaces/IDamageable.gd")
 	preload("res://src/api/interfaces/IPoolable.gd")
@@ -28173,6 +28167,7 @@ extends CharacterBody2D
 
 # --- Constants ---
 const Validator = preload("res://src/core/util/scene_validator.gd")
+const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Enums ---
 enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
@@ -28300,7 +28295,7 @@ func _initialize_data() -> void:
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	current_attack_patterns = phase_1_patterns
 	entity_data = BossStateData.new()
-	entity_data.config = CombatDB.config
+	entity_data.config = COMBAT_CONFIG
 
 func _initialize_components() -> void:
 	var dependencies = {
@@ -28643,11 +28638,12 @@ func fire_shot() -> void:
 
 ## Attempts to perform a pogo action on a target.
 func trigger_pogo(pogo_target: Node) -> bool:
+	if not p_data.is_pogo_attack: return false
 	if not is_instance_valid(pogo_target): return false
 
 	var should_bounce = false
 
-	if p_data.is_pogo_attack and pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
+	if pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		should_bounce = true
 		ObjectPool.return_instance(pogo_target)
 
@@ -28658,6 +28654,9 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		damage_info.amount = 1
 		damage_info.source_node = owner_node
 		damage_info.bypass_invincibility = true
+		# THE FIX: Provide the necessary position and normal data for VFX.
+		damage_info.impact_position = pogo_target.global_position
+		damage_info.impact_normal = Vector2.UP # Pogo impact is always from above.
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
 			damage_dealt.emit()
@@ -28954,6 +28953,11 @@ FILE: ./src/entities/components/fx_component.gd
 # src/entities/components/fx_component.gd
 @tool
 ## A dedicated component for managing all entity-specific visual effects.
+##
+## CONTRACT: This component requires the following dependencies to be passed
+## into its setup() method:
+##  - "visual_node": A CanvasItem to which the shader will be applied.
+##  - "health_component": A HealthComponent to connect the `took_damage` signal.
 class_name FXComponent
 extends IComponent
 
@@ -28981,14 +28985,16 @@ func _notification(what: int) -> void:
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
+	
+	# --- Dependency Validation ---
+	assert(p_dependencies.has("visual_node"), "FXComponent requires a 'visual_node' dependency.")
+	assert(p_dependencies.has("health_component"), "FXComponent requires a 'health_component' dependency.")
 	self._visual_node = p_dependencies.get("visual_node")
 	var health_comp: HealthComponent = p_dependencies.get("health_component")
+	assert(is_instance_valid(_visual_node) and _visual_node is CanvasItem, "'visual_node' must be a valid CanvasItem.")
+	assert(is_instance_valid(health_comp) and health_comp is HealthComponent, "'health_component' must be a valid HealthComponent.")
 
-	if not is_instance_valid(_visual_node):
-		push_warning("FXComponent on '%s' is missing its visual_node dependency." % get_parent().name)
-		return
-
-	# Create and configure the material once at setup.
+	# --- Initialization ---
 	_hit_flash_material = ShaderMaterial.new()
 	_hit_flash_material.shader = HIT_FLASH_SHADER
 
@@ -29016,11 +29022,9 @@ func _play_hit_flash() -> void:
 
 	_original_material = _visual_node.material
 	
-	# We must duplicate the material to get a unique instance for this effect.
 	var material_instance = _hit_flash_material.duplicate()
 	_visual_node.material = material_instance
 	
-	# Set the proxy property directly to start the tween from full intensity.
 	self._intensity = 1.0
 	material_instance.set_shader_parameter("intensity", 1.0)
 	
@@ -29038,6 +29042,7 @@ func _on_flash_finished() -> void:
 func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	_play_hit_flash()
 
+
 =====================================
 FILE: ./src/entities/minions/turret.gd
 =====================================
@@ -29053,6 +29058,9 @@ extends CharacterBody2D
 # --- Enums ---
 enum State { IDLE, ATTACK }
 
+# --- Constants ---
+const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+
 # --- Editor Configuration ---
 @export var fire_rate: float = 2.0
 @export var detection_radius: float = 400.0
@@ -29064,6 +29072,7 @@ enum State { IDLE, ATTACK }
 @onready var state_machine: BaseStateMachine = $StateMachine
 @onready var attack_timer: Timer = $AttackTimer
 @onready var range_detector_shape: CollisionShape2D = $RangeDetector/CollisionShape2D
+@onready var fx_component: FXComponent = $FXComponent
 
 # --- Public Member Variables ---
 var entity_data: TurretStateData
@@ -29087,6 +29096,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(state_machine): state_machine.teardown()
 		if is_instance_valid(health_component): health_component.teardown()
+		if is_instance_valid(fx_component): fx_component.teardown()
 		entity_data = null
 
 # --- Public Methods ---
@@ -29122,7 +29132,7 @@ func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 	entity_data = TurretStateData.new()
-	entity_data.config = CombatDB.config
+	entity_data.config = COMBAT_CONFIG
 
 func _initialize_components() -> void:
 	var circle_shape = CircleShape2D.new()
@@ -29132,6 +29142,11 @@ func _initialize_components() -> void:
 	health_component.setup(self, {
 		"data_resource": entity_data,
 		"config": entity_data.config
+	})
+	
+	fx_component.setup(self, {
+		"visual_node": visual,
+		"health_component": health_component
 	})
 
 func _initialize_state_machine() -> void:
@@ -29246,12 +29261,13 @@ func process_physics(_delta: float) -> void:
 =====================================
 FILE: ./src/entities/minions/turret.tscn
 =====================================
-[gd_scene load_steps=6 format=3 uid="uid://c7d8faf0g1h2i"]
+[gd_scene load_steps=7 format=3 uid="uid://c7d8faf0g1h2i"]
 
 [ext_resource type="Script" path="res://src/entities/minions/turret.gd" id="1_turret_script"]
 [ext_resource type="Script" path="res://src/entities/components/health_component.gd" id="2_health_comp"]
 [ext_resource type="Script" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
 [ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="4_hit_spark_effect"]
+[ext_resource type="PackedScene" uid="uid://g7h8i9j0k1l2" path="res://src/entities/components/fx_component.tscn" id="5_fx_comp"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_turretbody"]
 size = Vector2(50, 50)
@@ -29284,6 +29300,8 @@ collision_layer = 0
 collision_mask = 1
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RangeDetector"]
+
+[node name="FXComponent" parent="." instance=ExtResource("5_fx_comp")]
 
 [connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
 [connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]
@@ -29367,6 +29385,7 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 const CLOSE_RANGE_THRESHOLD = 75.0
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
+const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Editor Properties ---
 @export var damage_shake_effect: ScreenShakeEffect
@@ -29438,7 +29457,7 @@ func enable_pogo_hitbox(is_enabled: bool) -> void:
 
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
-	entity_data.config = CombatDB.config
+	entity_data.config = COMBAT_CONFIG
 	
 	var shared_deps := {
 		"data_resource": entity_data,
@@ -29949,9 +29968,8 @@ func enter(_msg := {}) -> void:
 
 	if state_data.is_pogo_attack:
 		owner.enable_pogo_hitbox(true)
-		if not _check_for_immediate_pogo():
-			state_machine.change_state(owner.State.FALL)
-			return
+		# THE FIX: We no longer check immediately. The state will persist,
+		# allowing the hitbox to remain active while falling.
 	else:
 		state_data.attack_duration_timer = state_data.config.player_attack_duration
 		state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
@@ -29965,33 +29983,21 @@ func exit() -> void:
 	state_data.hit_targets_this_swing.clear()
 
 func process_physics(delta: float) -> void:
-	if not state_data.is_pogo_attack:
-		var friction = state_data.config.player_attack_friction
-		owner.velocity = owner.velocity.move_toward(Vector2.ZERO, friction * delta)
+	# THE FIX: If this is a pogo attack, just apply gravity. The collision
+	# handlers in player.gd will trigger the exit from this state.
+	if state_data.is_pogo_attack:
+		owner.physics_component.apply_gravity(delta)
+		# If we hit the ground, cancel the pogo.
+		if owner.is_on_floor():
+			state_machine.change_state(owner.State.MOVE)
+		return
+	
+	# Original melee attack logic remains unchanged.
+	var friction = state_data.config.player_attack_friction
+	owner.velocity = owner.velocity.move_toward(Vector2.ZERO, friction * delta)
 
 	if state_data.attack_duration_timer <= 0:
 		state_machine.change_state(owner.State.FALL)
-
-# --- Private Methods ---
-
-func _check_for_immediate_pogo() -> bool:
-	var pogo_hitbox: Area2D = owner.pogo_hitbox
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.shape = pogo_hitbox.get_node("CollisionShape2D").shape
-	query.transform = owner.global_transform * pogo_hitbox.transform
-	query.collision_mask = PhysicsLayers.WORLD | PhysicsLayers.ENEMY | PhysicsLayers.HAZARD | PhysicsLayers.ENEMY_PROJECTILE
-	query.exclude = [owner]
-	query.collide_with_areas = true
-
-	var results = owner.get_world_2d().direct_space_state.intersect_shape(query)
-	if results.is_empty(): return false
-
-	for result in results:
-		var pogo_target = result.collider
-		if owner.combat_component.trigger_pogo(pogo_target):
-			return true
-
-	return false
 
 
 =====================================

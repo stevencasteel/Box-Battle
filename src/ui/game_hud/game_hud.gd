@@ -5,6 +5,9 @@
 ## and phase indicators updated in real-time.
 extends CanvasLayer
 
+# --- Constants ---
+const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+
 # --- Node References ---
 @onready var player_health_value: Label = $PlayerInfo/PlayerHealthHBox/PlayerHealthValue
 @onready var player_heal_charges_value: Label = $PlayerInfo/PlayerHealChargesHBox/PlayerHealChargesValue
@@ -49,7 +52,7 @@ func _unsubscribe_from_events() -> void:
 	EventBus.off(_boss_died_token)
 
 func _initialize_ui_state() -> void:
-	var max_health = CombatDB.config.player_max_health
+	var max_health = COMBAT_CONFIG.player_max_health
 	player_health_value.text = "%d / %d" % [max_health, max_health]
 	player_heal_charges_value.text = "0"
 
@@ -57,7 +60,7 @@ func _initialize_ui_state() -> void:
 	health_bar_style.bg_color = Palette.COLOR_PLAYER_PROJECTILE
 	boss_health_bar.add_theme_stylebox_override("fill", health_bar_style)
 
-	boss_health_bar.max_value = CombatDB.config.boss_health
+	boss_health_bar.max_value = COMBAT_CONFIG.boss_health
 	boss_health_bar.value = boss_health_bar.max_value
 
 	phase_indicators.add_theme_constant_override("separation", 5)

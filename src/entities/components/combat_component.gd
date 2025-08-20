@@ -44,11 +44,12 @@ func fire_shot() -> void:
 
 ## Attempts to perform a pogo action on a target.
 func trigger_pogo(pogo_target: Node) -> bool:
+	if not p_data.is_pogo_attack: return false
 	if not is_instance_valid(pogo_target): return false
 
 	var should_bounce = false
 
-	if p_data.is_pogo_attack and pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
+	if pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		should_bounce = true
 		ObjectPool.return_instance(pogo_target)
 
@@ -59,6 +60,9 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		damage_info.amount = 1
 		damage_info.source_node = owner_node
 		damage_info.bypass_invincibility = true
+		# THE FIX: Provide the necessary position and normal data for VFX.
+		damage_info.impact_position = pogo_target.global_position
+		damage_info.impact_normal = Vector2.UP # Pogo impact is always from above.
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
 			damage_dealt.emit()

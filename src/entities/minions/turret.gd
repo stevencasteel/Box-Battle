@@ -10,6 +10,9 @@ extends CharacterBody2D
 # --- Enums ---
 enum State { IDLE, ATTACK }
 
+# --- Constants ---
+const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+
 # --- Editor Configuration ---
 @export var fire_rate: float = 2.0
 @export var detection_radius: float = 400.0
@@ -21,6 +24,7 @@ enum State { IDLE, ATTACK }
 @onready var state_machine: BaseStateMachine = $StateMachine
 @onready var attack_timer: Timer = $AttackTimer
 @onready var range_detector_shape: CollisionShape2D = $RangeDetector/CollisionShape2D
+@onready var fx_component: FXComponent = $FXComponent
 
 # --- Public Member Variables ---
 var entity_data: TurretStateData
@@ -44,6 +48,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		if is_instance_valid(state_machine): state_machine.teardown()
 		if is_instance_valid(health_component): health_component.teardown()
+		if is_instance_valid(fx_component): fx_component.teardown()
 		entity_data = null
 
 # --- Public Methods ---
@@ -79,7 +84,7 @@ func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 	entity_data = TurretStateData.new()
-	entity_data.config = CombatDB.config
+	entity_data.config = COMBAT_CONFIG
 
 func _initialize_components() -> void:
 	var circle_shape = CircleShape2D.new()
@@ -89,6 +94,11 @@ func _initialize_components() -> void:
 	health_component.setup(self, {
 		"data_resource": entity_data,
 		"config": entity_data.config
+	})
+	
+	fx_component.setup(self, {
+		"visual_node": visual,
+		"health_component": health_component
 	})
 
 func _initialize_state_machine() -> void:
