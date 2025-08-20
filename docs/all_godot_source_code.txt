@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug 20 17:12:19 CDT 2025
+Generated on: Wed Aug 20 17:42:59 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -25352,7 +25352,8 @@ func reset() -> void:
 				active_nodes_to_return.append(child)
 		
 		for node in active_nodes_to_return:
-			return_instance(node)
+			# THE FIX: Defer the return call to prevent physics race conditions.
+			return_instance.call_deferred(node)
 
 ## Retrieves an inactive instance from the specified pool.
 func get_instance(p_pool_name: StringName) -> Node:
@@ -25758,24 +25759,33 @@ extends Resource
 @export_range(100, 1500, 25) var player_knockback_speed: float = 700.0
 @export_range(0.05, 0.5, 0.01) var player_knockback_duration: float = 0.1
 @export_range(100, 1500, 25) var player_hazard_knockback_speed: float = 400.0
+@export_range(10, 200, 5) var player_close_range_threshold: float = 75.0
 
-@export_group("Boss")
+@export_group("Boss - General")
 @export_range(10, 500, 5) var boss_health: int = 30
 @export_range(50, 500, 5) var boss_patrol_speed: float = 100.0
 @export_range(0.0, 2.0, 0.01) var boss_invincibility_duration: float = 0.1
+
+@export_group("Boss - Lunge Attack")
+@export_range(500, 3000, 50) var boss_lunge_speed: float = 1200.0
 
 @export_group("Minion - Turret")
 @export_range(0.5, 5.0, 0.1) var turret_fire_rate: float = 2.0
 @export_range(100, 1000, 10) var turret_detection_radius: float = 400.0
 
+@export_group("Projectiles")
+@export_range(1, 20, 1) var homing_shot_damage: int = 1
+@export_range(100, 1000, 10) var homing_shot_speed: float = 250.0
+@export_range(1.0, 20.0, 0.5) var homing_shot_lifespan: float = 10.0
+
 @export_group("Global - Physics")
 @export_range(500, 3000, 10) var gravity: float = 1200.0
 
 @export_group("Global - Juice & Feedback (Hit-Stop)")
-@export_range(0.0, 0.5, 0.01) var player_melee_close_range_hit_stop_duration: float = 0.05
-@export_range(0.0, 0.5, 0.01) var player_damage_taken_hit_stop_duration: float = 0.08
-@export_range(0.0, 1.0, 0.01) var boss_phase_change_hit_stop_duration: float = 0.2
-@export_range(0.0, 1.0, 0.01) var boss_death_hit_stop_duration: float = 0.4
+@export_range(0.0, 0.5, 0.01) var player_melee_close_range_hit_stop_duration: float = 0.025
+@export_range(0.0, 0.5, 0.01) var player_damage_taken_hit_stop_duration: float = 0.04
+@export_range(0.0, 1.0, 0.01) var boss_phase_change_hit_stop_duration: float = 0.1
+@export_range(0.0, 1.0, 0.01) var boss_death_hit_stop_duration: float = 0.2
 
 =====================================
 FILE: ./src/core/data/game_state_data.gd
@@ -27571,12 +27581,12 @@ class_name HomingBossShot
 extends Area2D
 
 # --- Constants ---
-const LIFESPAN_SECONDS = 10.0
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
 # --- Editor Properties ---
 @export var speed: float = 250.0
 @export var damage: int = 1
+@export var lifespan: float = 10.0
 
 # --- Node References ---
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
@@ -27585,7 +27595,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
 # --- Private Member Variables ---
 var _player_ref: WeakRef
-var _active_tween: Tween # THE FIX: Add a member variable to hold the tween.
+var _active_tween: Tween
 
 # --- Godot Lifecycle Methods ---
 
@@ -27595,14 +27605,12 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if not _player_ref or not _player_ref.get_ref():
-		# If the player is gone, just continue in a straight line.
 		global_position += transform.x * speed * delta
 		return
 	
 	var player_node = _player_ref.get_ref()
 	var direction_to_player = (player_node.global_position - global_position).normalized()
 	
-	# Simple rotation towards the player
 	rotation = lerp_angle(rotation, direction_to_player.angle(), 0.05)
 	
 	global_position += transform.x * speed * delta
@@ -27617,18 +27625,16 @@ func activate() -> void:
 	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	_player_ref = weakref(player_node)
 	
-	lifetime_timer.start(LIFESPAN_SECONDS)
+	lifetime_timer.start(lifespan)
 	
-	# THE FIX: Kill any previous tween before creating a new one.
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 		
 	_active_tween = create_tween()
-	_active_tween.tween_property(visual, "scale", Vector2.ZERO, LIFESPAN_SECONDS)
-	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, LIFESPAN_SECONDS)
+	_active_tween.tween_property(visual, "scale", Vector2.ZERO, lifespan)
+	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, lifespan)
 
 func deactivate() -> void:
-	# THE FIX: Kill the tween immediately upon deactivation.
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 		_active_tween = null
@@ -27636,7 +27642,6 @@ func deactivate() -> void:
 	visible = false
 	process_mode = PROCESS_MODE_DISABLED
 	collision_shape.disabled = true
-	# THE FIX: Reset scale for the next use. This is now guaranteed to stick.
 	visual.scale = Vector2.ONE
 	collision_shape.scale = Vector2.ONE
 
@@ -27662,6 +27667,7 @@ func _on_screen_exited() -> void:
 
 func _on_lifetime_timer_timeout() -> void:
 	ObjectPool.return_instance.call_deferred(self)
+
 
 =====================================
 FILE: ./src/data/dialogue/test_conversation.tres
@@ -27735,7 +27741,7 @@ player_jump_release_dampener = 0.4
 player_coyote_time = 0.1
 player_jump_buffer = 0.1
 player_fast_fall_gravity_multiplier = 1.4
-player_max_air_jumps = 0
+player_max_air_jumps = 1
 player_wall_slide_speed = 120.0
 player_wall_coyote_time = 0.05
 player_wall_jump_force_x = 1650.0
@@ -27753,11 +27759,16 @@ player_pogo_force = 450.0
 player_knockback_speed = 700.0
 player_knockback_duration = 0.1
 player_hazard_knockback_speed = 400.0
+player_close_range_threshold = 75.0
 boss_health = 30
 boss_patrol_speed = 100.0
 boss_invincibility_duration = 0.1
+boss_lunge_speed = 1200.0
 turret_fire_rate = 2.0
 turret_detection_radius = 400.0
+homing_shot_damage = 1
+homing_shot_speed = 250.0
+homing_shot_lifespan = 10.0
 gravity = 1200.0
 player_melee_close_range_hit_stop_duration = 0.025
 player_damage_taken_hit_stop_duration = 0.04
@@ -28298,7 +28309,6 @@ class_name HomingOmniBurstLogic
 extends AttackLogic
 
 @export var projectile_count: int = 30
-@export var projectile_speed: float = 250.0
 
 func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
 	return { "size": Vector2(600, 600), "offset": Vector2.ZERO }
@@ -28310,14 +28320,20 @@ func execute(owner: BaseBoss, _pattern: AttackPattern) -> Callable:
 func _fire_omni_burst(owner: BaseBoss) -> void:
 	if not is_instance_valid(owner): return
 	
+	print("Executing Homing Omni Burst!")
+	
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
 		var shot: HomingBossShot = ObjectPool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
 		if not is_instance_valid(shot): continue
 		
+		# Configure the projectile from the central config
+		shot.damage = owner.entity_data.config.homing_shot_damage
+		shot.speed = owner.entity_data.config.homing_shot_speed
+		shot.lifespan = owner.entity_data.config.homing_shot_lifespan
+		
 		var angle = i * angle_step
 		shot.rotation = angle
-		shot.speed = projectile_speed
 		shot.global_position = owner.global_position
 		shot.activate()
 
@@ -28438,9 +28454,6 @@ FILE: ./src/entities/boss/states/state_boss_lunge.gd
 extends BaseState
 class_name BossStateLunge
 
-# --- Constants ---
-const LUNGE_SPEED = 1200.0
-
 # --- Private Member Variables ---
 var _boss: BaseBoss
 var _lunge_duration: float
@@ -28456,7 +28469,7 @@ func enter(msg := {}) -> void:
 	_lunge_duration = pattern.attack_duration if pattern else 0.5
 
 	_invincibility_token = _boss.health_component.grant_invincibility(self)
-	_boss.velocity = Vector2(state_data.facing_direction * LUNGE_SPEED, 0)
+	_boss.velocity = Vector2(state_data.facing_direction * state_data.config.boss_lunge_speed, 0)
 
 func exit() -> void:
 	if is_instance_valid(_boss) and is_instance_valid(_boss.health_component):
@@ -28873,6 +28886,11 @@ FILE: ./src/entities/components/base_state_machine.gd
 class_name BaseStateMachine
 extends IComponent
 
+## This signal is used by the Player states to request actions (like enabling
+## a hitbox) from the Player node, decoupling the states from the Player's
+## specific methods. The warning is ignored because the signal is emitted by
+## the state objects, not this script directly.
+@warning_ignore("unused_signal")
 signal action_requested(command: Callable)
 
 const MAX_HISTORY_SIZE = 5
@@ -28934,6 +28952,7 @@ func change_state(new_state_key, msg := {}) -> void:
 		state_history.push_front(state_name)
 		if state_history.size() > MAX_HISTORY_SIZE:
 			state_history.pop_back()
+
 
 =====================================
 FILE: ./src/entities/components/health_component.tscn
@@ -29802,7 +29821,6 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO}
 
 # --- Constants ---
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
-const CLOSE_RANGE_THRESHOLD = 75.0
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
@@ -29891,6 +29909,8 @@ func _enable_pogo_hitbox(is_enabled: bool) -> void:
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = COMBAT_CONFIG
+	# THE FIX: Explicitly set the initial air jump count from the config.
+	entity_data.air_jumps_left = entity_data.config.player_max_air_jumps
 	
 	var shared_deps := {
 		"data_resource": entity_data,
@@ -29962,7 +29982,7 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		var damage_info = DamageInfo.new()
 		damage_info.source_node = self
 		var distance = self.global_position.distance_to(body.global_position)
-		var is_close_range = distance <= CLOSE_RANGE_THRESHOLD
+		var is_close_range = distance <= entity_data.config.player_close_range_threshold
 		damage_info.amount = 5 if is_close_range else 1
 		damage_info.impact_position = body.global_position
 		damage_info.impact_normal = (body.global_position - global_position).normalized()
@@ -30024,6 +30044,7 @@ func _on_pogo_bounce_requested() -> void:
 func _cancel_heal() -> void:
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
+
 
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn
@@ -30287,7 +30308,11 @@ FILE: ./src/entities/player/states/state_jump.gd
 ## Handles the player's upward movement (jump).
 extends BaseState
 
-func enter(_msg := {}) -> void:
+func enter(msg := {}) -> void:
+	# THE FIX: If this state was entered via an air jump, consume the resource.
+	if msg.get("is_air_jump", false):
+		state_data.air_jumps_left -= 1
+
 	owner.velocity.y = -state_data.config.player_jump_force
 	state_data.coyote_timer = 0
 
@@ -30318,7 +30343,6 @@ func _check_for_wall_slide() -> void:
 		
 	if can_wall_slide:
 		state_machine.change_state(owner.State.WALL_SLIDE)
-
 
 =====================================
 FILE: ./src/entities/player/states/state_dash.gd
@@ -30541,8 +30565,8 @@ func _check_for_wall_slide() -> void:
 		state_machine.change_state(owner.State.WALL_SLIDE)
 
 func _perform_air_jump() -> void:
-	state_data.air_jumps_left -= 1
-	state_machine.change_state(owner.State.JUMP)
+	# THE FIX: Pass a message to the JUMP state instead of decrementing here.
+	state_machine.change_state(owner.State.JUMP, {"is_air_jump": true})
 
 func _perform_wall_jump() -> void:
 	owner.velocity.x = state_data.last_wall_normal.x * state_data.config.player_wall_jump_force_x

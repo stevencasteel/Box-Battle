@@ -2,7 +2,11 @@
 ## Handles the player's upward movement (jump).
 extends BaseState
 
-func enter(_msg := {}) -> void:
+func enter(msg := {}) -> void:
+	# THE FIX: If this state was entered via an air jump, consume the resource.
+	if msg.get("is_air_jump", false):
+		state_data.air_jumps_left -= 1
+
 	owner.velocity.y = -state_data.config.player_jump_force
 	state_data.coyote_timer = 0
 

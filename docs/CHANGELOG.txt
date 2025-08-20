@@ -62,6 +62,9 @@
 ║                                                                              ║
 ║                                                                              ║
 
+
+
+
    NEW BOSS ATTACK & SYSTEM HARDENING                                          
    Implemented a complex, data-driven homing projectile attack for the boss    
    and resolved a series of critical, low-level bugs related to resource       
@@ -90,6 +93,9 @@
       ░ ■ Refactored the Player's state machine to emit an `action_requested`  
       ░   signal with a `Callable` payload, decoupling states from the Player's
       ░   internal component structure.                                        
+      ░ ■ Centralized all remaining "magic numbers" (e.g., lunge speed,       
+      ░   projectile stats, melee range) from scripts into `CombatConfig.tres`,
+      ░   making the project fully data-driven.                                
 
 
 

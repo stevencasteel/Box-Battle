@@ -4,6 +4,11 @@
 class_name BaseStateMachine
 extends IComponent
 
+## This signal is used by the Player states to request actions (like enabling
+## a hitbox) from the Player node, decoupling the states from the Player's
+## specific methods. The warning is ignored because the signal is emitted by
+## the state objects, not this script directly.
+@warning_ignore("unused_signal")
 signal action_requested(command: Callable)
 
 const MAX_HISTORY_SIZE = 5

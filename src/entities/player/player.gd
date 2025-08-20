@@ -12,7 +12,6 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO}
 
 # --- Constants ---
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
-const CLOSE_RANGE_THRESHOLD = 75.0
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
@@ -101,6 +100,8 @@ func _enable_pogo_hitbox(is_enabled: bool) -> void:
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = COMBAT_CONFIG
+	# THE FIX: Explicitly set the initial air jump count from the config.
+	entity_data.air_jumps_left = entity_data.config.player_max_air_jumps
 	
 	var shared_deps := {
 		"data_resource": entity_data,
@@ -172,7 +173,7 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		var damage_info = DamageInfo.new()
 		damage_info.source_node = self
 		var distance = self.global_position.distance_to(body.global_position)
-		var is_close_range = distance <= CLOSE_RANGE_THRESHOLD
+		var is_close_range = distance <= entity_data.config.player_close_range_threshold
 		damage_info.amount = 5 if is_close_range else 1
 		damage_info.impact_position = body.global_position
 		damage_info.impact_normal = (body.global_position - global_position).normalized()

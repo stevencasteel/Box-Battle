@@ -49,7 +49,8 @@ func reset() -> void:
 				active_nodes_to_return.append(child)
 		
 		for node in active_nodes_to_return:
-			return_instance(node)
+			# THE FIX: Defer the return call to prevent physics race conditions.
+			return_instance.call_deferred(node)
 
 ## Retrieves an inactive instance from the specified pool.
 func get_instance(p_pool_name: StringName) -> Node:
