@@ -8,7 +8,7 @@ signal health_changed(current_health, max_health)
 signal died
 
 # --- Enums ---
-enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
+enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO}
 
 # --- Constants ---
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
@@ -29,6 +29,7 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 @export var state_attack_script: Script
 @export var state_hurt_script: Script
 @export var state_heal_script: Script
+@export var state_pogo_script: Script
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -51,6 +52,7 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
+	# This call sequence ensures the HUD initializes with the correct charge count.
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
@@ -113,6 +115,7 @@ func _initialize_and_setup_components() -> void:
 		State.ATTACK: state_attack_script.new(self, state_machine, entity_data),
 		State.HURT: state_hurt_script.new(self, state_machine, entity_data),
 		State.HEAL: state_heal_script.new(self, state_machine, entity_data),
+		State.POGO: state_pogo_script.new(self, state_machine, entity_data),
 	}
 	
 	var per_component_deps := {
@@ -138,7 +141,6 @@ func _connect_signals() -> void:
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 func _update_timers(delta: float) -> void:
-	# THE FIX: Add a guard clause to prevent crash on exit.
 	if not is_instance_valid(entity_data): return
 
 	entity_data.coyote_timer = max(0.0, entity_data.coyote_timer - delta)
@@ -197,9 +199,10 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		ObjectPool.return_instance.call_deferred(area)
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
-		entity_data.health += 1; entity_data.healing_charges -= 1
+		entity_data.health += 1
+		resource_component.consume_healing_charge()
+		# Manually emit the health_changed signal since we modified health directly.
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
-		resource_component.on_damage_dealt()
 		state_machine.change_state(State.MOVE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = PlayerHealthChangedEvent.new()

@@ -8,7 +8,7 @@ class_name PlayerAbilityComponent
 extends IComponent
 
 # --- Member Variables ---
-var owner_node: Player
+var owner_node: BaseEntity
 var p_data: PlayerStateData
 var state_machine: BaseStateMachine
 var input_component: InputComponent
@@ -16,10 +16,40 @@ var input_component: InputComponent
 # --- Godot Lifecycle Methods ---
 
 func _physics_process(_delta: float) -> void:
-	if not is_instance_valid(owner_node): return # Guard against post-teardown calls
-	
+	if not is_instance_valid(owner_node): return
+
 	var current_state_key = state_machine.states.find_key(state_machine.current_state)
-	if not current_state_key in owner_node.ACTION_ALLOWED_STATES:
+
+	# --- Heal Logic (Highest Priority) ---
+	var can_try_heal = owner_node.is_on_floor() and \
+		input_component.buffer.get("down") and \
+		input_component.buffer.get("jump_held") and \
+		p_data.healing_charges > 0 and \
+		is_zero_approx(owner_node.velocity.x)
+	
+	if can_try_heal:
+		state_machine.change_state(Player.State.HEAL)
+		return
+
+	# --- Action State Logic ---
+	if not current_state_key in Player.ACTION_ALLOWED_STATES:
+		return
+
+	# --- Jump & Drop-Through Logic ---
+	if input_component.buffer.get("jump_just_pressed"):
+		# THE FIX: Check for drop-through *before* jumping.
+		var is_trying_drop = owner_node.is_on_floor() and input_component.buffer.get("down")
+		if is_trying_drop:
+			var floor_col = owner_node.get_last_slide_collision()
+			if floor_col:
+				var floor_collider = floor_col.get_collider()
+				if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
+					owner_node.position.y += 2 # Nudge the player down to clear the platform
+					state_machine.change_state(Player.State.FALL)
+					return # Do not proceed to the jump logic
+
+		# If not dropping through, then it's a regular jump.
+		state_machine.change_state(Player.State.JUMP)
 		return
 
 	# --- Attack / Charge Shot Logic ---
@@ -30,35 +60,28 @@ func _physics_process(_delta: float) -> void:
 	if input_component.buffer.get("attack_released"):
 		if p_data.is_charging:
 			if p_data.charge_timer >= p_data.config.player_charge_time:
-				owner_node.combat_component.fire_shot()
+				(owner_node as Player).combat_component.fire_shot()
+			elif input_component.buffer.get("down"):
+				state_machine.change_state(Player.State.POGO)
 			else:
-				state_machine.change_state(owner_node.State.ATTACK)
+				state_machine.change_state(Player.State.ATTACK)
 			p_data.is_charging = false
 
 	# --- Dash Logic ---
 	if input_component.buffer.get("dash_pressed") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
-		state_machine.change_state(owner_node.State.DASH)
+		state_machine.change_state(Player.State.DASH)
 
-	# --- Heal Logic ---
-	var can_try_heal = owner_node.is_on_floor() and \
-		input_component.buffer.get("down") and \
-		input_component.buffer.get("jump_pressed") and \
-		p_data.healing_charges > 0 and \
-		is_zero_approx(owner_node.velocity.x)
-	
-	if can_try_heal:
-		state_machine.change_state(owner_node.State.HEAL)
 
 # --- Public Methods ---
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
-	self.owner_node = p_owner as Player
+	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
 	self.state_machine = p_dependencies.get("state_machine")
 	self.input_component = p_dependencies.get("input_component")
 
 func teardown() -> void:
-	set_physics_process(false) # Immediately stop processing
+	set_physics_process(false)
 	owner_node = null
 	p_data = null
 	state_machine = null

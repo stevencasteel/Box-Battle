@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=15 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
 [ext_resource type="Resource" uid="uid://player_archetype_resource" path="res://src/entities/archetypes/player_archetype.tres" id="2_archetype"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://src/entities/player/states/state_attack.gd" id="10_state_attack"]
 [ext_resource type="Script" path="res://src/entities/player/states/state_hurt.gd" id="11_state_hurt"]
 [ext_resource type="Script" path="res://src/entities/player/states/state_heal.gd" id="12_state_heal"]
+[ext_resource type="Script" path="res://src/entities/player/states/state_pogo.gd" id="13_state_pogo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -33,6 +34,7 @@ state_wall_slide_script = ExtResource("9_state_wall_slide")
 state_attack_script = ExtResource("10_state_attack")
 state_hurt_script = ExtResource("11_state_hurt")
 state_heal_script = ExtResource("12_state_heal")
+state_pogo_script = ExtResource("13_state_pogo")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -20.0

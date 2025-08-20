@@ -12,7 +12,7 @@ func process_physics(delta: float) -> void:
 
 	_check_for_wall_slide()
 
-	if owner.input_component.buffer.get("jump_pressed"):
+	if owner.input_component.buffer.get("jump_just_pressed"):
 		if state_data.wall_coyote_timer > 0:
 			_perform_wall_jump()
 		elif state_data.coyote_timer > 0:

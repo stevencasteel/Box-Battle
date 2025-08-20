@@ -31,7 +31,8 @@ func _physics_process(_delta: float) -> void:
 	buffer["up"] = Input.is_action_pressed("ui_up")
 	buffer["down"] = Input.is_action_pressed("ui_down")
 
-	buffer["jump_pressed"] = Input.is_action_just_pressed("ui_jump")
+	buffer["jump_just_pressed"] = Input.is_action_just_pressed("ui_jump")
+	buffer["jump_held"] = Input.is_action_pressed("ui_jump")
 	buffer["jump_released"] = Input.is_action_just_released("ui_jump")
 
 	buffer["attack_pressed"] = Input.is_action_pressed("ui_attack")

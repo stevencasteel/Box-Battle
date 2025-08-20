@@ -17,7 +17,7 @@ func process_physics(delta: float):
 	
 	state_data.facing_direction = sign(-state_data.last_wall_normal.x)
 	
-	if owner.input_component.buffer.get("jump_pressed"):
+	if owner.input_component.buffer.get("jump_just_pressed"):
 		_perform_wall_jump()
 		return
 	

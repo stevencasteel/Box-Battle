@@ -61,6 +61,28 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+GAMEPLAY MECHANICS & BUG FIXES                                              
+   Restored and hardened several core player mechanics that had regressed      
+   during previous architectural refactors.                                    
+   ────────────────────────────────────────────────────────────────────────    
+   █  Fixed                                                                    
+      ░ ■ Restored the pogo attack, which was non-functional due to a race     
+      ░   condition in the attack state. Logic was separated into a dedicated  
+      ░   `StatePogo` for clarity and reliability.                             
+      ░ ■ Fixed a bug where the pogo attack did not generate visual effects by 
+      ░   ensuring the `DamageInfo` object contained the necessary impact data.
+      ░ ■ Restored the healing mechanic, which was broken by an incorrect      
+      ░   input check (`is_action_just_pressed` vs. `is_action_pressed`).      
+      ░ ■ Fixed a bug where the HUD did not update after healing by ensuring   
+      ░   all changes to healing charges are routed through the                
+      ░   `PlayerResourceComponent` to guarantee the proper event is emitted.  
+      ░ ■ Restored the ability to drop through one-way platforms by            
+      ░   centralizing and correctly ordering input action logic in the        
+      ░   `PlayerAbilityComponent`.                                            
+   █  Code Quality                                                             
+      ░ ■ Resolved a critical circular dependency between `Player`,            
+      ░   `BaseEntity`, and `PlayerResourceComponent` that was causing a parse 
+      ░   error on startup.
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║

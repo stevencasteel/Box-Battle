@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug 20 15:04:27 CDT 2025
+Generated on: Wed Aug 20 16:11:24 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -298,9 +298,9 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   │   ├── projectile_logic.gd
 │   │   │   │   ├── single_shot.tres
 │   │   │   │   ├── single_shot_logic.tres
-│   │   │   │   ├── volley_shot.tres
-│   │   │   │   ├── volley_shot_logic.tres
-│   │   │   │   └── volley_shot_p3.tres
+│   │   │   │   ├── volley_3_shot.tres
+│   │   │   │   ├── volley_5_shot.tres
+│   │   │   │   └── volley_shot_logic.tres
 │   │   │   ├── base_boss.gd
 │   │   │   ├── base_boss.tscn
 │   │   │   ├── boss_state_data.gd
@@ -353,6 +353,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │           ├── state_hurt.gd
 │   │           ├── state_jump.gd
 │   │           ├── state_move.gd
+│   │           ├── state_pogo.gd
 │   │           └── state_wall_slide.gd
 │   ├── projectiles
 │   │   ├── boss_shot.gd
@@ -436,7 +437,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.gd
     └── fx_playground.tscn
 
-78 directories, 350 files
+78 directories, 351 files
 
 
 =====================================
@@ -20364,6 +20365,47 @@ FILE: ./docs/CHANGELOG.txt
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██     [0.13.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/XX/2025    ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
@@ -20377,133 +20419,153 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██        [0.12.0] -  NEEDS TITLE AND BORDER REPAIRED - 08/XX/2025      ██  ║
+║  ██   [0.12.0] - UNIFIED ENTITY ARCHITECTURE & ROBUSTNESS - 08/20/2025   ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║                                                                              ║
+║  ENTITY ARCHITECTURE UNIFICATION                                             ║
+║  Completed a major refactor to unify all entities under the `BaseEntity` and ║
+║  `EntityArchetype` pattern, eliminating the "dual architecture" and          ║
+║  enforcing a single, consistent method for building entities.                ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Refactored `BaseBoss` and `Turret` to extend `BaseEntity`.           ║
+║     ░ ■ Created `boss_archetype.tres` and `turret_archetype.tres` to define  ║
+║     ░   their component compositions as data, not scene structure.           ║
+║     ░ ■ Simplified the `base_boss.tscn` and `turret.tscn` scenes to be minimal║
+║     ░   nodes that reference their respective archetypes.                    ║
 ║                                                                              ║
+║  DATA-DRIVEN & POLA REFINEMENTS                                              ║
+║  Enhanced adherence to data-driven design and the Principle of Least         ║
+║  Astonishment (POLA) by centralizing configuration and clarifying APIs.      ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Refactored all entities (`Player`, `BaseBoss`, `Turret`) to expose   ║
+║     ░   their state script dependencies as `@export` variables, fully        ║
+║     ░   decoupling them from hardcoded `load()` paths.                       ║
+║     ░ ■ Centralized all remaining entity configuration (`turret_fire_rate`,  ║
+║     ░   `player_attack_shape`s) into the `CombatConfig.tres` resource.       ║
+║     ░ ■ Cleaned up entity APIs by making internal helper methods (`_die`,     ║
+║     ░   `_fire_at_player`) private to prevent misuse and clarify the public- ║
+║     ░   facing contract of each entity.                                      ║
+║  █  Code Quality                                                             ║
+║     ░ ■ Systematically organized and commented all key configuration files   ║
+║     ░   (`.tres`, `.tscn`, `project.godot`) for improved readability and     ║
+║     ░   maintainability.                                                     ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Resolved a critical bug in the `turret.gd` `teardown()` method, which║
+║     ░   was failing to disconnect signals, preventing a future memory leak.  ║
+║     ░ ■ Corrected a syntax error in the `.tres` file format that was causing ║
+║     ░   a parse failure on startup.                                          ║
 ║                                                                              ║
-
-                                                                         
-   ARCHITECTURAL REFINEMENT & CODE QUALITY                                     
-   Completed a targeted refactor to improve architectural clarity and adhere   
-   more closely to the Principle of Least Astonishment.                        
-   ────────────────────────────────────────────────────────────────────────    
-   █  Architectural Changes                                                    
-      ░ ■ Eliminated the `CombatDB` singleton. All scripts now load the        
-      ░   `CombatConfig.tres` resource directly, removing an unnecessary layer 
-      ░   of abstraction and making dependencies more transparent.             
-      ░ ■ Renamed the `Interfaces.gd` autoload to `GlobalPreloader.gd` to      
-      ░   accurately reflect its true purpose of resolving critical script     
-      ░   parse-order dependencies, not just defining interfaces.              
-   █  Fixed                                                                    
-      ░ ■ Resolved a `class_name` conflict with the preloader autoload that was
-      ░   causing a parse error on startup.                                    
-                                                                              
-
-
-
-
-   VISUAL EFFECTS & ROBUSTNESS                                                 
-   Implemented a robust, code-driven hit-flash shader effect and resolved      
-   critical resource loading errors. The new system is immune to editor cache  
-   issues and provides reliable visual feedback for combat.                    
-   ────────────────────────────────────────────────────────────────────────    
-   █  Fixed                                                                    
-      ░ ■ Corrected the hit-flash shader to use the `COLOR` varying instead of 
-      ░   `texture(TEXTURE, UV)`, enabling it to work correctly on `ColorRect` 
-      ░   nodes.                                                               
-      ░ ■ Refactored the `FXComponent` to be self-sufficient, creating and     
-      ░   managing its own shader materials and tweens, which bypasses fragile 
-      ░   resource chains.                                                     
-   █  Removed                                                                  
-      ░ ■ Deleted obsolete shader, material, and effect resource files related 
-      ░   to the old hit-flash system.                                         
-      ░ ■ Removed the now-unused `EntityShaderBinding` system.
-
-
-
+║  ARCHITECTURAL REFINEMENT & CODE QUALITY                                     ║
+║  Completed a targeted refactor to improve architectural clarity and adhere    ║
+║  more closely to the Principle of Least Astonishment.                        ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Eliminated the `CombatDB` singleton. All scripts now load the        ║
+║     ░   `CombatConfig.tres` resource directly, removing an unnecessary layer ║
+║     ░   of abstraction and making dependencies more transparent.             ║
+║     ░ ■ Renamed the `Interfaces.gd` autoload to `GlobalPreloader.gd` to      ║
+║     ░   accurately reflect its true purpose of resolving critical script     ║
+║     ░   parse-order dependencies, not just defining interfaces.              ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Resolved a `class_name` conflict with the preloader autoload that was║
+║     ░   causing a parse error on startup.                                    ║
 ║                                                                              ║
+║  VISUAL EFFECTS & ROBUSTNESS                                                 ║
+║  Implemented a robust, code-driven hit-flash shader effect and resolved      ║
+║  critical resource loading errors. The new system is immune to editor cache  ║
+║  issues and provides reliable visual feedback for combat.                    ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Corrected the hit-flash shader to use the `COLOR` varying instead of ║
+║     ░   `texture(TEXTURE, UV)`, enabling it to work correctly on `ColorRect` ║
+║     ░   nodes.                                                               ║
+║     ░ ■ Refactored the `FXComponent` to be self-sufficient, creating and     ║
+║     ░   managing its own shader materials and tweens, which bypasses fragile ║
+║     ░   resource chains.                                                     ║
+║  █  Removed                                                                  ║
+║     ░ ■ Deleted obsolete shader, material, and effect resource files related ║
+║     ░   to the old hit-flash system.                                         ║
+║     ░ ■ Removed the now-unused `EntityShaderBinding` system.                 ║
 ║                                                                              ║
+║  ARCHITECTURAL PREPARATION FOR FX & SHADER OVERHAUL                          ║
+║  Laid the complete file and folder foundation for a multi-phase refactor of  ║
+║  the visual effects and shader pipelines. This work prepares the project for ║
+║  a new data-driven, mobile-first rendering architecture.                     ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Added                                                                    ║
+║     ░ ■ Created a new, organized `shaders/` directory with subfolders for    ║
+║     ░   entity, fullscreen, UI, and reusable include files (`.gdshaderinc`). ║
+║     ░ ■ Added a corresponding `materials/` directory for all `ShaderMaterial`║
+║     ░   resources.                                                           ║
+║     ░ ■ Established new file scaffolds for data-driven `ShaderEffect`        ║
+║     ░   resources (`dissolve_effect.tres`, `shockwave_effect.tres`).         ║
+║     ░ ■ Created placeholder scripts for new `FXManager` binding layers that  ║
+║     ░   will manage applying effects to their targets.                       ║
+║     ░ ■ Added a scene and script for a new `fx_playground` developer tool to ║
+║     ░   enable rapid iteration and testing of visual effects.                ║
+║     ░ ■ Added a placeholder script for a CI-driven shader linter to enforce  ║
+║     ░   code quality and mobile best practices.                              ║
 ║                                                                              ║
-ARCHITECTURAL PREPARATION FOR FX & SHADER OVERHAUL                           
-   Laid the complete file and folder foundation for a multi-phase refactor of  
-   the visual effects and shader pipelines. This work prepares the project for 
-   a new data-driven, mobile-first rendering architecture.                      
-   ────────────────────────────────────────────────────────────────────────    
-   █  Added                                                                    
-      ░ ■ Created a new, organized `shaders/` directory with subfolders for    
-      ░   entity, fullscreen, UI, and reusable include files (`.gdshaderinc`). 
-      ░ ■ Added a corresponding `materials/` directory for all `ShaderMaterial`
-      ░   resources.                                                           
-      ░ ■ Established new file scaffolds for data-driven `ShaderEffect`        
-      ░   resources (`dissolve_effect.tres`, `shockwave_effect.tres`).         
-      ░ ■ Created placeholder scripts for new `FXManager` binding layers that  
-      ░   will manage applying effects to their targets.                       
-      ░ ■ Added a scene and script for a new `fx_playground` developer tool to 
-      ░   enable rapid iteration and testing of visual effects.                
-      ░ ■ Added a placeholder script for a CI-driven shader linter to enforce  
-      ░   code quality and mobile best practices.  
-
-   ENTITY ARCHITECTURE OVERHAUL (ENTITY ARCHETYPE PATTERN)                     
-   Completed a full-scale refactor of the entity system to a data-driven,     
-   archetype-based architecture. This foundational change enhances modularity, 
-   improves adherence to SOLID principles, and establishes a robust, future-   
-   proof pipeline for managing complex entities and their visual effects.      
-   ────────────────────────────────────────────────────────────────────────    
-   █  Architectural Changes                                                    
-      ░ ■ Implemented the Entity Archetype pattern. Entities are now built 
-      ░   at runtime based on a new `EntityArchetype.tres` resource, which     
-      ░   defines an entity's composition by listing its component scenes.     
-      ░ ■ Created a new generic `BaseEntity.gd` class that reads an archetype, 
-      ░   instantiates all components, and caches typed references, serving as 
-      ░   a Composition Root and Facade for all entities.                      
-      ░ ■ Implemented a robust Three-Phase Initialization pattern (Construct,
-      ░   Inject, Setup) to resolve complex dependency ordering issues between 
-      ░   entities and their components, particularly for `@onready` variables.
-      ░ ■ Created a new `FXComponent` to be the sole manager of all entity-    
-      ░   specific visual effects, fully decoupling visual feedback from game  
-      ░   logic components like `HealthComponent`.                             
-   █  Refactored                                                               
-      ░ ■ Migrated the `Player` and its components to the new archetype system.
-      ░   The `player.tscn` scene has been drastically simplified, with its     
-      ░   structure now defined in `player_archetype.tres`.                    
-      ░ ■ All individual component `.gd` scripts have been converted to reusable
-      ░   `.tscn` files to support the new archetype system.                   
-   █  Fixed                                                                    
-      ░ ■ Resolved a persistent, silent failure with shader effects. The complex
-      ░   `Tween`-based animation was replaced with a simpler, more reliable  
-      ░   `Timer`-based approach within the `FXComponent`, resulting in a      
-      ░   functional hit-flash effect.                                         
-      ░ ■ Eliminated all parse-order errors related to `BaseEntity` by correctly
-      ░   registering it as a `class_name` and preloading it.                  
-      ░ ■ Fixed a resource UID conflict in `player.tscn` that was preventing the
-      ░   scene from loading correctly.
-
-   MEMORY MANAGEMENT & CRITICAL BUG FIXES                                      
-   Resolved a critical crash-on-death and a major memory leak on scene exit    
-   by hardening entity lifecycle management and teardown patterns.             
-   ────────────────────────────────────────────────────────────────────────    
-   █  Architectural Changes                                                    
-      ░ ■ Refactored the `BaseState` class to extend `Object` instead of       
-      ░   `RefCounted` to enforce explicit memory management.                  
-      ░ ■ Upgraded `BaseStateMachine` to manually free its state objects during
-      ░   `teardown()`, breaking a critical cyclic reference that was causing  
-      ░   the memory leak.                                                     
-   █  Fixed                                                                    
-      ░ ■ Resolved a null reference crash in `PlayerPhysicsComponent` that     
-      ░   occurred when the player was freed mid-physics-frame after dying.    
-      ░ ■ Eliminated all `ObjectDB instances leaked at exit` warnings and their
-      ░   associated RID leaks by fixing the state machine's memory management.
-   █  Removed                                                                  
-      ░ ■ Deleted the unused `vfx_manager.gd` to eliminate ambiguity with the  
-      ░   primary `FXManager` singleton.                                       
-                                                                             
+║  ENTITY ARCHITECTURE OVERHAUL (ENTITY ARCHETYPE PATTERN)                     ║
+║  Completed a full-scale refactor of the entity system to a data-driven,      ║
+║  archetype-based architecture. This foundational change enhances modularity, ║
+║  improves adherence to SOLID principles, and establishes a robust, future-   ║
+║  proof pipeline for managing complex entities and their visual effects.      ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Implemented the Entity Archetype pattern. Entities are now built     ║
+║     ░   at runtime based on a new `EntityArchetype.tres` resource, which     ║
+║     ░   defines an entity's composition by listing its component scenes.     ║
+║     ░ ■ Created a new generic `BaseEntity.gd` class that reads an archetype, ║
+║     ░   instantiates all components, and caches typed references, serving as ║
+║     ░   a Composition Root and Facade for all entities.                      ║
+║     ░ ■ Implemented a robust Three-Phase Initialization pattern (Construct,  ║
+║     ░   Inject, Setup) to resolve complex dependency ordering issues between ║
+║     ░   entities and their components, particularly for `@onready` variables.║
+║     ░ ■ Created a new `FXComponent` to be the sole manager of all entity-    ║
+║     ░   specific visual effects, fully decoupling visual feedback from game  ║
+║     ░   logic components like `HealthComponent`.                             ║
+║  █  Refactored                                                               ║
+║     ░ ■ Migrated the `Player` and its components to the new archetype system.║
+║     ░   The `player.tscn` scene has been drastically simplified, with its    ║
+║     ░   structure now defined in `player_archetype.tres`.                    ║
+║     ░ ■ All individual component `.gd` scripts have been converted to reusable║
+║     ░   `.tscn` files to support the new archetype system.                   ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Resolved a persistent, silent failure with shader effects. The complex║
+║     ░   `Tween`-based animation was replaced with a simpler, more reliable   ║
+║     ░   `Timer`-based approach within the `FXComponent`, resulting in a      ║
+║     ░   functional hit-flash effect.                                         ║
+║     ░ ■ Eliminated all parse-order errors related to `BaseEntity` by correctly║
+║     ░   registering it as a `class_name` and preloading it.                  ║
+║     ░ ■ Fixed a resource UID conflict in `player.tscn` that was preventing the║
+║     ░   scene from loading correctly.                                        ║
 ║                                                                              ║
+║  MEMORY MANAGEMENT & CRITICAL BUG FIXES                                      ║
+║  Resolved a critical crash-on-death and a major memory leak on scene exit    ║
+║  by hardening entity lifecycle management and teardown patterns.             ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Refactored the `BaseState` class to extend `Object` instead of       ║
+║     ░   `RefCounted` to enforce explicit memory management.                  ║
+║     ░ ■ Upgraded `BaseStateMachine` to manually free its state objects during║
+║     ░   `teardown()`, breaking a critical cyclic reference that was causing  ║
+║     ░   the memory leak.                                                     ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Resolved a null reference crash in `PlayerPhysicsComponent` that     ║
+║     ░   occurred when the player was freed mid-physics-frame after dying.    ║
+║     ░ ■ Eliminated all `ObjectDB instances leaked at exit` warnings and their║
+║     ░   associated RID leaks by fixing the state machine's memory management.║
+║  █  Removed                                                                  ║
+║     ░ ■ Deleted the unused `vfx_manager.gd` to eliminate ambiguity with the  ║
+║     ░   primary `FXManager` singleton.                                       ║
 ║                                                                              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                 [0.11.0] - NEEDS TITLE - 08/18/2025                  ██  ║
+║  ██      [0.11.0] - VISUAL EFFECTS & MEMORY MANAGEMENT - 08/18/2025      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║                                                                              ║
@@ -20546,7 +20608,7 @@ ARCHITECTURAL PREPARATION FOR FX & SHADER OVERHAUL
 ║     ░   associated RID allocation leaks by breaking dangling references held ║
 ║     ░   by global singletons.                                                ║
 ║     ░ ■ Fixed all `SHADOWED_GLOBAL_IDENTIFIER` warnings related to the new   ║
-║     ░   interface autoload script for a completely clean build.              ║                                                                ║
+║     ░   interface autoload script for a completely clean build.              ║
 ║                                                                              ║
 ║  GAME FEEL & IMPACT FEEDBACK (JUICE)                                         ║
 ║  Implemented a suite of data-driven feedback systems, including screen shake ║
@@ -21798,7 +21860,7 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.12.2"
+config/version="0.13.0"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
@@ -23402,6 +23464,7 @@ horizontal_alignment = 1
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 
+; --- Menu Items ---
 [node name="MenuItemsVBox" type="VBoxContainer" parent="MainVBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -23434,6 +23497,7 @@ font_size = 64
 layout_mode = 2
 size_flags_vertical = 3
 
+; --- Footer Logos ---
 [node name="FooterHBox" type="HBoxContainer" parent="MainVBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -23463,6 +23527,7 @@ logo_name = "Itch"
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 
+; --- Global UI ---
 [node name="MuteButtonContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -23478,7 +23543,6 @@ theme_override_constants/margin_right = 350
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
-
 
 =====================================
 FILE: ./src/scenes/menus/title_screen.gd
@@ -25719,6 +25783,8 @@ FILE: ./src/core/data/effects/player_hit_spark_effect.tres
 
 [resource]
 script = ExtResource("1_vfx_effect")
+
+; --- Configuration ---
 scene = ExtResource("2_hit_spark_scene")
 pool_key = &"hit_sparks"
 
@@ -26874,10 +26940,11 @@ FILE: ./src/tests/data/test_encounter.tres
 
 [resource]
 script = ExtResource("1_encounter")
+
+; --- Test Configuration ---
 level_layout = ExtResource("2_layout")
 player_spawn_marker = "@"
 boss_spawn_marker = "&"
-
 
 =====================================
 FILE: ./src/tests/data/test_layout.tres
@@ -26893,7 +26960,6 @@ terrain_data = PackedStringArray(
 "#@.&-#",
 "#^###"
 )
-
 
 =====================================
 FILE: ./src/vfx/hit_spark.gd
@@ -27714,7 +27780,19 @@ FILE: ./src/entities/archetypes/player_archetype.tres
 
 [resource]
 script = ExtResource("1_archetype")
-components = [ExtResource("2_health"), ExtResource("3_combat"), ExtResource("4_input"), ExtResource("5_fsm"), ExtResource("6_phys"), ExtResource("7_abil"), ExtResource("8_res"), ExtResource("9_fx")]
+components = [
+	; --- Core Components ---
+	ExtResource("2_health"), 
+	ExtResource("3_combat"), 
+	ExtResource("4_input"), 
+	ExtResource("5_fsm"), 
+	ExtResource("9_fx"), 
+	
+	; --- Player-Specific Components ---
+	ExtResource("6_phys"), 
+	ExtResource("7_abil"), 
+	ExtResource("8_res")
+]
 
 =====================================
 FILE: ./src/entities/archetypes/turret_archetype.tres
@@ -27728,8 +27806,9 @@ FILE: ./src/entities/archetypes/turret_archetype.tres
 
 [resource]
 script = ExtResource("1_archetype")
-components = [ExtResource("2_health"), ExtResource("3_fsm"), ExtResource("4_fx")]
 
+; --- Core Components ---
+components = [ExtResource("2_health"), ExtResource("3_fsm"), ExtResource("4_fx")]
 
 =====================================
 FILE: ./src/entities/archetypes/boss_archetype.tres
@@ -27743,8 +27822,9 @@ FILE: ./src/entities/archetypes/boss_archetype.tres
 
 [resource]
 script = ExtResource("1_archetype")
-components = [ExtResource("2_health"), ExtResource("3_fsm"), ExtResource("4_fx")]
 
+; --- Core Components ---
+components = [ExtResource("2_health"), ExtResource("3_fsm"), ExtResource("4_fx")]
 
 =====================================
 FILE: ./src/entities/archetypes/entity_archetype.gd
@@ -27795,10 +27875,14 @@ FILE: ./src/entities/boss/attack_patterns/lunge_attack.tres
 
 [resource]
 script = ExtResource("1_attack_pattern")
-logic = ExtResource("2_lunge_logic")
+
+; --- Core Timings ---
 telegraph_duration = 0.8
 attack_duration = 0.5
 cooldown = 2.0
+
+; --- Logic-Specific Data ---
+logic = ExtResource("2_lunge_logic")
 projectile_count = 0
 volley_delay = 0.0
 
@@ -27812,13 +27896,58 @@ FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
 
 [resource]
 script = ExtResource("1_attack_pattern")
-logic = ExtResource("2_logic")
+
+; --- Core Timings ---
 telegraph_duration = 1.2
 attack_duration = 1.0
 cooldown = 3.5
+
+; --- Logic-Specific Data ---
+logic = ExtResource("2_logic")
 projectile_count = 12
 volley_delay = 0.0
 
+=====================================
+FILE: ./src/entities/boss/attack_patterns/volley_3_shot.tres
+=====================================
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://k3dglh3t1b4a"]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot_logic.tres" id="2_logic"]
+
+[resource]
+script = ExtResource("1_attack_pattern")
+
+; --- Core Timings ---
+telegraph_duration = 0.7
+attack_duration = 0.6
+cooldown = 2.5
+
+; --- Logic-Specific Data ---
+logic = ExtResource("2_logic")
+projectile_count = 3
+volley_delay = 0.2
+
+=====================================
+FILE: ./src/entities/boss/attack_patterns/volley_5_shot.tres
+=====================================
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://z1x2y3a4b5c6"]
+
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot_logic.tres" id="2_logic"]
+
+[resource]
+script = ExtResource("1_attack_pattern")
+
+; --- Core Timings ---
+telegraph_duration = 0.6
+attack_duration = 1.0
+cooldown = 2.5
+
+; --- Logic-Specific Data ---
+logic = ExtResource("2_logic")
+projectile_count = 5
+volley_delay = 0.15
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/projectile_logic.gd
@@ -27879,23 +28008,6 @@ extends Resource
 @export var volley_delay: float = 0.2
 
 =====================================
-FILE: ./src/entities/boss/attack_patterns/volley_shot.tres
-=====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://k3dglh3t1b4a"]
-
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot_logic.tres" id="2_logic"]
-
-[resource]
-script = ExtResource("1_attack_pattern")
-logic = ExtResource("2_logic")
-telegraph_duration = 0.7
-attack_duration = 0.6
-cooldown = 2.5
-projectile_count = 3
-volley_delay = 0.2
-
-=====================================
 FILE: ./src/entities/boss/attack_patterns/lunge_logic.tres
 =====================================
 [gd_resource type="Resource" script_class="LungeLogic" load_steps=2 format=3 uid="uid://lunge_logic_tres_id"]
@@ -27907,23 +28019,6 @@ script = ExtResource("1_lunge_logic")
 
 
 =====================================
-FILE: ./src/entities/boss/attack_patterns/volley_shot_p3.tres
-=====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://z1x2y3a4b5c6"]
-
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot_logic.tres" id="2_logic"]
-
-[resource]
-script = ExtResource("1_attack_pattern")
-logic = ExtResource("2_logic")
-telegraph_duration = 0.6
-attack_duration = 1.0
-cooldown = 2.5
-projectile_count = 5
-volley_delay = 0.15
-
-=====================================
 FILE: ./src/entities/boss/attack_patterns/single_shot.tres
 =====================================
 [gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://bve7t5ucr1k"]
@@ -27933,10 +28028,14 @@ FILE: ./src/entities/boss/attack_patterns/single_shot.tres
 
 [resource]
 script = ExtResource("1_attack_pattern")
-logic = ExtResource("2_logic")
+
+; --- Core Timings ---
 telegraph_duration = 0.5
 attack_duration = 0.1
 cooldown = 1.5
+
+; --- Logic-Specific Data ---
+logic = ExtResource("2_logic")
 projectile_count = 1
 volley_delay = 0.2
 
@@ -28053,9 +28152,9 @@ FILE: ./src/entities/boss/base_boss.tscn
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
 [ext_resource type="Resource" uid="uid://bve7t5ucr1k" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="3_pattern_single"]
-[ext_resource type="Resource" uid="uid://k3dglh3t1b4a" path="res://src/entities/boss/attack_patterns/volley_shot.tres" id="4_pattern_volley"]
+[ext_resource type="Resource" uid="uid://k3dglh3t1b4a" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="4_pattern_volley"]
 [ext_resource type="Resource" uid="uid://y6g5o6f7h8i9" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="5_pattern_lunge"]
-[ext_resource type="Resource" uid="uid://z1x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_shot_p3.tres" id="6_pattern_volley_p3"]
+[ext_resource type="Resource" uid="uid://z1x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_5_shot.tres" id="6_pattern_volley_p3"]
 [ext_resource type="Resource" uid="uid://boss_phase_change_shake_tres" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="7_phase_shake"]
 [ext_resource type="Resource" uid="uid://boss_death_shake_tres" path="res://src/core/data/effects/boss_death_shake.tres" id="8_death_shake"]
 [ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="9_hit_spark_effect"]
@@ -28960,7 +29059,8 @@ func _physics_process(_delta: float) -> void:
 	buffer["up"] = Input.is_action_pressed("ui_up")
 	buffer["down"] = Input.is_action_pressed("ui_down")
 
-	buffer["jump_pressed"] = Input.is_action_just_pressed("ui_jump")
+	buffer["jump_just_pressed"] = Input.is_action_just_pressed("ui_jump")
+	buffer["jump_held"] = Input.is_action_pressed("ui_jump")
 	buffer["jump_released"] = Input.is_action_just_released("ui_jump")
 
 	buffer["attack_pressed"] = Input.is_action_pressed("ui_attack")
@@ -28988,7 +29088,6 @@ func teardown() -> void:
 	state_machine = null
 	_config = null
 	buffer.clear()
-
 
 =====================================
 FILE: ./src/entities/components/combat_component.tscn
@@ -29410,7 +29509,7 @@ collision_mask = 1
 =====================================
 FILE: ./src/entities/player/player.tscn
 =====================================
-[gd_scene load_steps=14 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=15 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
 [ext_resource type="Resource" uid="uid://player_archetype_resource" path="res://src/entities/archetypes/player_archetype.tres" id="2_archetype"]
@@ -29424,6 +29523,7 @@ FILE: ./src/entities/player/player.tscn
 [ext_resource type="Script" path="res://src/entities/player/states/state_attack.gd" id="10_state_attack"]
 [ext_resource type="Script" path="res://src/entities/player/states/state_hurt.gd" id="11_state_hurt"]
 [ext_resource type="Script" path="res://src/entities/player/states/state_heal.gd" id="12_state_heal"]
+[ext_resource type="Script" path="res://src/entities/player/states/state_pogo.gd" id="13_state_pogo"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -29445,6 +29545,7 @@ state_wall_slide_script = ExtResource("9_state_wall_slide")
 state_attack_script = ExtResource("10_state_attack")
 state_hurt_script = ExtResource("11_state_hurt")
 state_heal_script = ExtResource("12_state_heal")
+state_pogo_script = ExtResource("13_state_pogo")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -20.0
@@ -29498,7 +29599,7 @@ signal health_changed(current_health, max_health)
 signal died
 
 # --- Enums ---
-enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL}
+enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO}
 
 # --- Constants ---
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
@@ -29519,6 +29620,7 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 @export var state_attack_script: Script
 @export var state_hurt_script: Script
 @export var state_heal_script: Script
+@export var state_pogo_script: Script
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -29541,6 +29643,7 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
+	# This call sequence ensures the HUD initializes with the correct charge count.
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
@@ -29603,6 +29706,7 @@ func _initialize_and_setup_components() -> void:
 		State.ATTACK: state_attack_script.new(self, state_machine, entity_data),
 		State.HURT: state_hurt_script.new(self, state_machine, entity_data),
 		State.HEAL: state_heal_script.new(self, state_machine, entity_data),
+		State.POGO: state_pogo_script.new(self, state_machine, entity_data),
 	}
 	
 	var per_component_deps := {
@@ -29628,7 +29732,6 @@ func _connect_signals() -> void:
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 func _update_timers(delta: float) -> void:
-	# THE FIX: Add a guard clause to prevent crash on exit.
 	if not is_instance_valid(entity_data): return
 
 	entity_data.coyote_timer = max(0.0, entity_data.coyote_timer - delta)
@@ -29687,9 +29790,10 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		ObjectPool.return_instance.call_deferred(area)
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
-		entity_data.health += 1; entity_data.healing_charges -= 1
+		entity_data.health += 1
+		resource_component.consume_healing_charge()
+		# Manually emit the health_changed signal since we modified health directly.
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
-		resource_component.on_damage_dealt()
 		state_machine.change_state(State.MOVE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = PlayerHealthChangedEvent.new()
@@ -29715,7 +29819,6 @@ func _cancel_heal() -> void:
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
 
-
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn
 =====================================
@@ -29739,7 +29842,7 @@ class_name PlayerAbilityComponent
 extends IComponent
 
 # --- Member Variables ---
-var owner_node: Player
+var owner_node: BaseEntity
 var p_data: PlayerStateData
 var state_machine: BaseStateMachine
 var input_component: InputComponent
@@ -29747,10 +29850,40 @@ var input_component: InputComponent
 # --- Godot Lifecycle Methods ---
 
 func _physics_process(_delta: float) -> void:
-	if not is_instance_valid(owner_node): return # Guard against post-teardown calls
-	
+	if not is_instance_valid(owner_node): return
+
 	var current_state_key = state_machine.states.find_key(state_machine.current_state)
-	if not current_state_key in owner_node.ACTION_ALLOWED_STATES:
+
+	# --- Heal Logic (Highest Priority) ---
+	var can_try_heal = owner_node.is_on_floor() and \
+		input_component.buffer.get("down") and \
+		input_component.buffer.get("jump_held") and \
+		p_data.healing_charges > 0 and \
+		is_zero_approx(owner_node.velocity.x)
+	
+	if can_try_heal:
+		state_machine.change_state(Player.State.HEAL)
+		return
+
+	# --- Action State Logic ---
+	if not current_state_key in Player.ACTION_ALLOWED_STATES:
+		return
+
+	# --- Jump & Drop-Through Logic ---
+	if input_component.buffer.get("jump_just_pressed"):
+		# THE FIX: Check for drop-through *before* jumping.
+		var is_trying_drop = owner_node.is_on_floor() and input_component.buffer.get("down")
+		if is_trying_drop:
+			var floor_col = owner_node.get_last_slide_collision()
+			if floor_col:
+				var floor_collider = floor_col.get_collider()
+				if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
+					owner_node.position.y += 2 # Nudge the player down to clear the platform
+					state_machine.change_state(Player.State.FALL)
+					return # Do not proceed to the jump logic
+
+		# If not dropping through, then it's a regular jump.
+		state_machine.change_state(Player.State.JUMP)
 		return
 
 	# --- Attack / Charge Shot Logic ---
@@ -29761,35 +29894,28 @@ func _physics_process(_delta: float) -> void:
 	if input_component.buffer.get("attack_released"):
 		if p_data.is_charging:
 			if p_data.charge_timer >= p_data.config.player_charge_time:
-				owner_node.combat_component.fire_shot()
+				(owner_node as Player).combat_component.fire_shot()
+			elif input_component.buffer.get("down"):
+				state_machine.change_state(Player.State.POGO)
 			else:
-				state_machine.change_state(owner_node.State.ATTACK)
+				state_machine.change_state(Player.State.ATTACK)
 			p_data.is_charging = false
 
 	# --- Dash Logic ---
 	if input_component.buffer.get("dash_pressed") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
-		state_machine.change_state(owner_node.State.DASH)
+		state_machine.change_state(Player.State.DASH)
 
-	# --- Heal Logic ---
-	var can_try_heal = owner_node.is_on_floor() and \
-		input_component.buffer.get("down") and \
-		input_component.buffer.get("jump_pressed") and \
-		p_data.healing_charges > 0 and \
-		is_zero_approx(owner_node.velocity.x)
-	
-	if can_try_heal:
-		state_machine.change_state(owner_node.State.HEAL)
 
 # --- Public Methods ---
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
-	self.owner_node = p_owner as Player
+	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
 	self.state_machine = p_dependencies.get("state_machine")
 	self.input_component = p_dependencies.get("input_component")
 
 func teardown() -> void:
-	set_physics_process(false) # Immediately stop processing
+	set_physics_process(false)
 	owner_node = null
 	p_data = null
 	state_machine = null
@@ -29912,19 +30038,20 @@ class_name PlayerResourceComponent
 extends IComponent
 
 # --- Member Variables ---
-var owner_node: Player
+var owner_node: BaseEntity # THE FIX: Use the generic base class to break the cycle.
 var p_data: PlayerStateData
 
 # --- Public Methods ---
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
-	self.owner_node = p_owner as Player
+	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
 
 func teardown() -> void:
 	owner_node = null
 	p_data = null
 
+## Called when the player successfully deals damage to an enemy.
 func on_damage_dealt() -> void:
 	if p_data.healing_charges >= p_data.config.player_max_healing_charges: return
 
@@ -29932,6 +30059,12 @@ func on_damage_dealt() -> void:
 	if p_data.determination_counter >= p_data.config.player_determination_per_charge:
 		p_data.determination_counter = 0
 		p_data.healing_charges += 1
+		_emit_healing_charges_changed_event()
+
+## Consumes one healing charge.
+func consume_healing_charge() -> void:
+	if p_data.healing_charges > 0:
+		p_data.healing_charges -= 1
 		_emit_healing_charges_changed_event()
 
 # --- Private Methods ---
@@ -30036,7 +30169,6 @@ func process_physics(_delta: float):
 	if not Input.is_action_pressed("ui_down") or not Input.is_action_pressed("ui_jump") or not is_zero_approx(owner.velocity.x) or not owner.is_on_floor():
 		state_machine.change_state(owner.State.MOVE)
 
-
 =====================================
 FILE: ./src/entities/player/states/state_wall_slide.gd
 =====================================
@@ -30059,7 +30191,7 @@ func process_physics(delta: float):
 	
 	state_data.facing_direction = sign(-state_data.last_wall_normal.x)
 	
-	if owner.input_component.buffer.get("jump_pressed"):
+	if owner.input_component.buffer.get("jump_just_pressed"):
 		_perform_wall_jump()
 		return
 	
@@ -30083,44 +30215,60 @@ func _perform_wall_jump():
 	state_data.wall_coyote_timer = 0
 	state_machine.change_state(owner.State.JUMP)
 
-
 =====================================
 FILE: ./src/entities/player/states/state_attack.gd
 =====================================
 # src/entities/player/states/state_attack.gd
-## This state handles the player's melee and pogo attacks.
+## This state handles the player's melee attack.
 class_name PlayerStateAttack
 extends BaseState
 
 # --- State Lifecycle ---
 
 func enter(_msg := {}) -> void:
-	state_data.is_pogo_attack = owner.input_component.buffer.get("down", false)
 	state_data.hit_targets_this_swing.clear()
-
-	if state_data.is_pogo_attack:
-		owner._enable_pogo_hitbox(true)
-	else:
-		state_data.attack_duration_timer = state_data.config.player_attack_duration
-		state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
-		var is_up_attack = owner.input_component.buffer.get("up", false)
-		owner._enable_melee_hitbox(true, is_up_attack)
+	state_data.attack_duration_timer = state_data.config.player_attack_duration
+	state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
+	var is_up_attack = owner.input_component.buffer.get("up", false)
+	owner._enable_melee_hitbox(true, is_up_attack)
 
 func exit() -> void:
 	owner.call_deferred("_enable_melee_hitbox", false)
-	owner.call_deferred("_enable_pogo_hitbox", false)
-	state_data.is_pogo_attack = false
 	state_data.hit_targets_this_swing.clear()
 
 func process_physics(delta: float) -> void:
-	if state_data.is_pogo_attack:
-		owner.physics_component.apply_gravity(delta)
-		if owner.is_on_floor():
-			state_machine.change_state(owner.State.MOVE)
-		return
-	
 	var friction = state_data.config.player_attack_friction
 	owner.velocity = owner.velocity.move_toward(Vector2.ZERO, friction * delta)
+
+	if state_data.attack_duration_timer <= 0:
+		state_machine.change_state(owner.State.FALL)
+
+=====================================
+FILE: ./src/entities/player/states/state_pogo.gd
+=====================================
+# src/entities/player/states/state_pogo.gd
+## Handles the player's downward pogo attack state.
+class_name PlayerStatePogo
+extends BaseState
+
+# --- State Lifecycle ---
+
+func enter(_msg := {}) -> void:
+	state_data.is_pogo_attack = true
+	# Use the existing attack timer to give the pogo a limited duration.
+	state_data.attack_duration_timer = state_data.config.player_attack_duration
+	owner._enable_pogo_hitbox(true)
+
+func exit() -> void:
+	owner.call_deferred("_enable_pogo_hitbox", false)
+	state_data.is_pogo_attack = false
+
+func process_physics(delta: float) -> void:
+	owner.physics_component.apply_gravity(delta)
+
+	if owner.is_on_floor():
+		state_machine.change_state(owner.State.MOVE)
+		return
 
 	if state_data.attack_duration_timer <= 0:
 		state_machine.change_state(owner.State.FALL)
@@ -30163,7 +30311,7 @@ func process_physics(delta: float) -> void:
 
 	_check_for_wall_slide()
 
-	if owner.input_component.buffer.get("jump_pressed"):
+	if owner.input_component.buffer.get("jump_just_pressed"):
 		if state_data.wall_coyote_timer > 0:
 			_perform_wall_jump()
 		elif state_data.coyote_timer > 0:
@@ -30196,7 +30344,6 @@ func _perform_wall_jump() -> void:
 	state_data.wall_coyote_timer = 0
 	state_machine.change_state(owner.State.JUMP)
 
-
 =====================================
 FILE: ./src/entities/player/states/state_move.gd
 =====================================
@@ -30217,21 +30364,6 @@ func process_physics(delta: float) -> void:
 	if not owner.is_on_floor():
 		state_machine.change_state(owner.State.FALL)
 		return
-
-	var is_trying_drop = owner.input_component.buffer.get("down") and owner.input_component.buffer.get("jump_pressed")
-	if is_trying_drop:
-		var floor_col = owner.get_last_slide_collision()
-		if floor_col:
-			var floor_collider = floor_col.get_collider()
-			if is_instance_valid(floor_collider) and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS):
-				owner.position.y += 2
-				state_machine.change_state(owner.State.FALL)
-				return
-
-	if owner.input_component.buffer.get("jump_pressed"):
-		state_machine.change_state(owner.State.JUMP)
-		return
-
 
 =====================================
 FILE: ./src/entities/player/data/player_state_data.gd
