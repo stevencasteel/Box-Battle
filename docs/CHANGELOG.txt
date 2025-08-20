@@ -12,6 +12,47 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██     [0.13.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/XX/2025    ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
@@ -25,133 +66,153 @@
 ║                                                                              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██        [0.12.0] -  NEEDS TITLE AND BORDER REPAIRED - 08/XX/2025      ██  ║
+║  ██   [0.12.0] - UNIFIED ENTITY ARCHITECTURE & ROBUSTNESS - 08/20/2025   ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║                                                                              ║
+║  ENTITY ARCHITECTURE UNIFICATION                                             ║
+║  Completed a major refactor to unify all entities under the `BaseEntity` and ║
+║  `EntityArchetype` pattern, eliminating the "dual architecture" and          ║
+║  enforcing a single, consistent method for building entities.                ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Refactored `BaseBoss` and `Turret` to extend `BaseEntity`.           ║
+║     ░ ■ Created `boss_archetype.tres` and `turret_archetype.tres` to define  ║
+║     ░   their component compositions as data, not scene structure.           ║
+║     ░ ■ Simplified the `base_boss.tscn` and `turret.tscn` scenes to be minimal║
+║     ░   nodes that reference their respective archetypes.                    ║
 ║                                                                              ║
+║  DATA-DRIVEN & POLA REFINEMENTS                                              ║
+║  Enhanced adherence to data-driven design and the Principle of Least         ║
+║  Astonishment (POLA) by centralizing configuration and clarifying APIs.      ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Refactored all entities (`Player`, `BaseBoss`, `Turret`) to expose   ║
+║     ░   their state script dependencies as `@export` variables, fully        ║
+║     ░   decoupling them from hardcoded `load()` paths.                       ║
+║     ░ ■ Centralized all remaining entity configuration (`turret_fire_rate`,  ║
+║     ░   `player_attack_shape`s) into the `CombatConfig.tres` resource.       ║
+║     ░ ■ Cleaned up entity APIs by making internal helper methods (`_die`,     ║
+║     ░   `_fire_at_player`) private to prevent misuse and clarify the public- ║
+║     ░   facing contract of each entity.                                      ║
+║  █  Code Quality                                                             ║
+║     ░ ■ Systematically organized and commented all key configuration files   ║
+║     ░   (`.tres`, `.tscn`, `project.godot`) for improved readability and     ║
+║     ░   maintainability.                                                     ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Resolved a critical bug in the `turret.gd` `teardown()` method, which║
+║     ░   was failing to disconnect signals, preventing a future memory leak.  ║
+║     ░ ■ Corrected a syntax error in the `.tres` file format that was causing ║
+║     ░   a parse failure on startup.                                          ║
 ║                                                                              ║
-
-                                                                         
-   ARCHITECTURAL REFINEMENT & CODE QUALITY                                     
-   Completed a targeted refactor to improve architectural clarity and adhere   
-   more closely to the Principle of Least Astonishment.                        
-   ────────────────────────────────────────────────────────────────────────    
-   █  Architectural Changes                                                    
-      ░ ■ Eliminated the `CombatDB` singleton. All scripts now load the        
-      ░   `CombatConfig.tres` resource directly, removing an unnecessary layer 
-      ░   of abstraction and making dependencies more transparent.             
-      ░ ■ Renamed the `Interfaces.gd` autoload to `GlobalPreloader.gd` to      
-      ░   accurately reflect its true purpose of resolving critical script     
-      ░   parse-order dependencies, not just defining interfaces.              
-   █  Fixed                                                                    
-      ░ ■ Resolved a `class_name` conflict with the preloader autoload that was
-      ░   causing a parse error on startup.                                    
-                                                                              
-
-
-
-
-   VISUAL EFFECTS & ROBUSTNESS                                                 
-   Implemented a robust, code-driven hit-flash shader effect and resolved      
-   critical resource loading errors. The new system is immune to editor cache  
-   issues and provides reliable visual feedback for combat.                    
-   ────────────────────────────────────────────────────────────────────────    
-   █  Fixed                                                                    
-      ░ ■ Corrected the hit-flash shader to use the `COLOR` varying instead of 
-      ░   `texture(TEXTURE, UV)`, enabling it to work correctly on `ColorRect` 
-      ░   nodes.                                                               
-      ░ ■ Refactored the `FXComponent` to be self-sufficient, creating and     
-      ░   managing its own shader materials and tweens, which bypasses fragile 
-      ░   resource chains.                                                     
-   █  Removed                                                                  
-      ░ ■ Deleted obsolete shader, material, and effect resource files related 
-      ░   to the old hit-flash system.                                         
-      ░ ■ Removed the now-unused `EntityShaderBinding` system.
-
-
-
+║  ARCHITECTURAL REFINEMENT & CODE QUALITY                                     ║
+║  Completed a targeted refactor to improve architectural clarity and adhere    ║
+║  more closely to the Principle of Least Astonishment.                        ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Eliminated the `CombatDB` singleton. All scripts now load the        ║
+║     ░   `CombatConfig.tres` resource directly, removing an unnecessary layer ║
+║     ░   of abstraction and making dependencies more transparent.             ║
+║     ░ ■ Renamed the `Interfaces.gd` autoload to `GlobalPreloader.gd` to      ║
+║     ░   accurately reflect its true purpose of resolving critical script     ║
+║     ░   parse-order dependencies, not just defining interfaces.              ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Resolved a `class_name` conflict with the preloader autoload that was║
+║     ░   causing a parse error on startup.                                    ║
 ║                                                                              ║
+║  VISUAL EFFECTS & ROBUSTNESS                                                 ║
+║  Implemented a robust, code-driven hit-flash shader effect and resolved      ║
+║  critical resource loading errors. The new system is immune to editor cache  ║
+║  issues and provides reliable visual feedback for combat.                    ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Corrected the hit-flash shader to use the `COLOR` varying instead of ║
+║     ░   `texture(TEXTURE, UV)`, enabling it to work correctly on `ColorRect` ║
+║     ░   nodes.                                                               ║
+║     ░ ■ Refactored the `FXComponent` to be self-sufficient, creating and     ║
+║     ░   managing its own shader materials and tweens, which bypasses fragile ║
+║     ░   resource chains.                                                     ║
+║  █  Removed                                                                  ║
+║     ░ ■ Deleted obsolete shader, material, and effect resource files related ║
+║     ░   to the old hit-flash system.                                         ║
+║     ░ ■ Removed the now-unused `EntityShaderBinding` system.                 ║
 ║                                                                              ║
+║  ARCHITECTURAL PREPARATION FOR FX & SHADER OVERHAUL                          ║
+║  Laid the complete file and folder foundation for a multi-phase refactor of  ║
+║  the visual effects and shader pipelines. This work prepares the project for ║
+║  a new data-driven, mobile-first rendering architecture.                     ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Added                                                                    ║
+║     ░ ■ Created a new, organized `shaders/` directory with subfolders for    ║
+║     ░   entity, fullscreen, UI, and reusable include files (`.gdshaderinc`). ║
+║     ░ ■ Added a corresponding `materials/` directory for all `ShaderMaterial`║
+║     ░   resources.                                                           ║
+║     ░ ■ Established new file scaffolds for data-driven `ShaderEffect`        ║
+║     ░   resources (`dissolve_effect.tres`, `shockwave_effect.tres`).         ║
+║     ░ ■ Created placeholder scripts for new `FXManager` binding layers that  ║
+║     ░   will manage applying effects to their targets.                       ║
+║     ░ ■ Added a scene and script for a new `fx_playground` developer tool to ║
+║     ░   enable rapid iteration and testing of visual effects.                ║
+║     ░ ■ Added a placeholder script for a CI-driven shader linter to enforce  ║
+║     ░   code quality and mobile best practices.                              ║
 ║                                                                              ║
-ARCHITECTURAL PREPARATION FOR FX & SHADER OVERHAUL                           
-   Laid the complete file and folder foundation for a multi-phase refactor of  
-   the visual effects and shader pipelines. This work prepares the project for 
-   a new data-driven, mobile-first rendering architecture.                      
-   ────────────────────────────────────────────────────────────────────────    
-   █  Added                                                                    
-      ░ ■ Created a new, organized `shaders/` directory with subfolders for    
-      ░   entity, fullscreen, UI, and reusable include files (`.gdshaderinc`). 
-      ░ ■ Added a corresponding `materials/` directory for all `ShaderMaterial`
-      ░   resources.                                                           
-      ░ ■ Established new file scaffolds for data-driven `ShaderEffect`        
-      ░   resources (`dissolve_effect.tres`, `shockwave_effect.tres`).         
-      ░ ■ Created placeholder scripts for new `FXManager` binding layers that  
-      ░   will manage applying effects to their targets.                       
-      ░ ■ Added a scene and script for a new `fx_playground` developer tool to 
-      ░   enable rapid iteration and testing of visual effects.                
-      ░ ■ Added a placeholder script for a CI-driven shader linter to enforce  
-      ░   code quality and mobile best practices.  
-
-   ENTITY ARCHITECTURE OVERHAUL (ENTITY ARCHETYPE PATTERN)                     
-   Completed a full-scale refactor of the entity system to a data-driven,     
-   archetype-based architecture. This foundational change enhances modularity, 
-   improves adherence to SOLID principles, and establishes a robust, future-   
-   proof pipeline for managing complex entities and their visual effects.      
-   ────────────────────────────────────────────────────────────────────────    
-   █  Architectural Changes                                                    
-      ░ ■ Implemented the Entity Archetype pattern. Entities are now built 
-      ░   at runtime based on a new `EntityArchetype.tres` resource, which     
-      ░   defines an entity's composition by listing its component scenes.     
-      ░ ■ Created a new generic `BaseEntity.gd` class that reads an archetype, 
-      ░   instantiates all components, and caches typed references, serving as 
-      ░   a Composition Root and Facade for all entities.                      
-      ░ ■ Implemented a robust Three-Phase Initialization pattern (Construct,
-      ░   Inject, Setup) to resolve complex dependency ordering issues between 
-      ░   entities and their components, particularly for `@onready` variables.
-      ░ ■ Created a new `FXComponent` to be the sole manager of all entity-    
-      ░   specific visual effects, fully decoupling visual feedback from game  
-      ░   logic components like `HealthComponent`.                             
-   █  Refactored                                                               
-      ░ ■ Migrated the `Player` and its components to the new archetype system.
-      ░   The `player.tscn` scene has been drastically simplified, with its     
-      ░   structure now defined in `player_archetype.tres`.                    
-      ░ ■ All individual component `.gd` scripts have been converted to reusable
-      ░   `.tscn` files to support the new archetype system.                   
-   █  Fixed                                                                    
-      ░ ■ Resolved a persistent, silent failure with shader effects. The complex
-      ░   `Tween`-based animation was replaced with a simpler, more reliable  
-      ░   `Timer`-based approach within the `FXComponent`, resulting in a      
-      ░   functional hit-flash effect.                                         
-      ░ ■ Eliminated all parse-order errors related to `BaseEntity` by correctly
-      ░   registering it as a `class_name` and preloading it.                  
-      ░ ■ Fixed a resource UID conflict in `player.tscn` that was preventing the
-      ░   scene from loading correctly.
-
-   MEMORY MANAGEMENT & CRITICAL BUG FIXES                                      
-   Resolved a critical crash-on-death and a major memory leak on scene exit    
-   by hardening entity lifecycle management and teardown patterns.             
-   ────────────────────────────────────────────────────────────────────────    
-   █  Architectural Changes                                                    
-      ░ ■ Refactored the `BaseState` class to extend `Object` instead of       
-      ░   `RefCounted` to enforce explicit memory management.                  
-      ░ ■ Upgraded `BaseStateMachine` to manually free its state objects during
-      ░   `teardown()`, breaking a critical cyclic reference that was causing  
-      ░   the memory leak.                                                     
-   █  Fixed                                                                    
-      ░ ■ Resolved a null reference crash in `PlayerPhysicsComponent` that     
-      ░   occurred when the player was freed mid-physics-frame after dying.    
-      ░ ■ Eliminated all `ObjectDB instances leaked at exit` warnings and their
-      ░   associated RID leaks by fixing the state machine's memory management.
-   █  Removed                                                                  
-      ░ ■ Deleted the unused `vfx_manager.gd` to eliminate ambiguity with the  
-      ░   primary `FXManager` singleton.                                       
-                                                                             
+║  ENTITY ARCHITECTURE OVERHAUL (ENTITY ARCHETYPE PATTERN)                     ║
+║  Completed a full-scale refactor of the entity system to a data-driven,      ║
+║  archetype-based architecture. This foundational change enhances modularity, ║
+║  improves adherence to SOLID principles, and establishes a robust, future-   ║
+║  proof pipeline for managing complex entities and their visual effects.      ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Implemented the Entity Archetype pattern. Entities are now built     ║
+║     ░   at runtime based on a new `EntityArchetype.tres` resource, which     ║
+║     ░   defines an entity's composition by listing its component scenes.     ║
+║     ░ ■ Created a new generic `BaseEntity.gd` class that reads an archetype, ║
+║     ░   instantiates all components, and caches typed references, serving as ║
+║     ░   a Composition Root and Facade for all entities.                      ║
+║     ░ ■ Implemented a robust Three-Phase Initialization pattern (Construct,  ║
+║     ░   Inject, Setup) to resolve complex dependency ordering issues between ║
+║     ░   entities and their components, particularly for `@onready` variables.║
+║     ░ ■ Created a new `FXComponent` to be the sole manager of all entity-    ║
+║     ░   specific visual effects, fully decoupling visual feedback from game  ║
+║     ░   logic components like `HealthComponent`.                             ║
+║  █  Refactored                                                               ║
+║     ░ ■ Migrated the `Player` and its components to the new archetype system.║
+║     ░   The `player.tscn` scene has been drastically simplified, with its    ║
+║     ░   structure now defined in `player_archetype.tres`.                    ║
+║     ░ ■ All individual component `.gd` scripts have been converted to reusable║
+║     ░   `.tscn` files to support the new archetype system.                   ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Resolved a persistent, silent failure with shader effects. The complex║
+║     ░   `Tween`-based animation was replaced with a simpler, more reliable   ║
+║     ░   `Timer`-based approach within the `FXComponent`, resulting in a      ║
+║     ░   functional hit-flash effect.                                         ║
+║     ░ ■ Eliminated all parse-order errors related to `BaseEntity` by correctly║
+║     ░   registering it as a `class_name` and preloading it.                  ║
+║     ░ ■ Fixed a resource UID conflict in `player.tscn` that was preventing the║
+║     ░   scene from loading correctly.                                        ║
 ║                                                                              ║
+║  MEMORY MANAGEMENT & CRITICAL BUG FIXES                                      ║
+║  Resolved a critical crash-on-death and a major memory leak on scene exit    ║
+║  by hardening entity lifecycle management and teardown patterns.             ║
+║  ────────────────────────────────────────────────────────────────────────    ║
+║  █  Architectural Changes                                                    ║
+║     ░ ■ Refactored the `BaseState` class to extend `Object` instead of       ║
+║     ░   `RefCounted` to enforce explicit memory management.                  ║
+║     ░ ■ Upgraded `BaseStateMachine` to manually free its state objects during║
+║     ░   `teardown()`, breaking a critical cyclic reference that was causing  ║
+║     ░   the memory leak.                                                     ║
+║  █  Fixed                                                                    ║
+║     ░ ■ Resolved a null reference crash in `PlayerPhysicsComponent` that     ║
+║     ░   occurred when the player was freed mid-physics-frame after dying.    ║
+║     ░ ■ Eliminated all `ObjectDB instances leaked at exit` warnings and their║
+║     ░   associated RID leaks by fixing the state machine's memory management.║
+║  █  Removed                                                                  ║
+║     ░ ■ Deleted the unused `vfx_manager.gd` to eliminate ambiguity with the  ║
+║     ░   primary `FXManager` singleton.                                       ║
 ║                                                                              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██                 [0.11.0] - NEEDS TITLE - 08/18/2025                  ██  ║
+║  ██      [0.11.0] - VISUAL EFFECTS & MEMORY MANAGEMENT - 08/18/2025      ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 ║                                                                              ║
@@ -194,7 +255,7 @@ ARCHITECTURAL PREPARATION FOR FX & SHADER OVERHAUL
 ║     ░   associated RID allocation leaks by breaking dangling references held ║
 ║     ░   by global singletons.                                                ║
 ║     ░ ■ Fixed all `SHADOWED_GLOBAL_IDENTIFIER` warnings related to the new   ║
-║     ░   interface autoload script for a completely clean build.              ║                                                                ║
+║     ░   interface autoload script for a completely clean build.              ║
 ║                                                                              ║
 ║  GAME FEEL & IMPACT FEEDBACK (JUICE)                                         ║
 ║  Implemented a suite of data-driven feedback systems, including screen shake ║

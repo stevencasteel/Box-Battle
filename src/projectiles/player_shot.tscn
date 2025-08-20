@@ -7,7 +7,7 @@ size = Vector2(40, 40)
 
 [node name="PlayerShot" type="Area2D" groups=["player_projectile"]]
 collision_layer = 0
-collision_mask = 22
+collision_mask = 148
 script = ExtResource("1_4wg7x")
 metadata/pool_name = &"player_shots"
 

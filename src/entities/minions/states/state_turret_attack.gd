@@ -12,8 +12,8 @@ func enter(_msg := {}) -> void:
 	self._turret = owner as Turret
 	if not is_instance_valid(_turret): return
 
-	_turret.fire_at_player()
-	_turret.attack_timer.start(_turret.fire_rate)
+	_turret._fire_at_player()
+	_turret.attack_timer.start(state_data.config.turret_fire_rate)
 
 func process_physics(_delta: float) -> void:
 	if not is_instance_valid(_turret): return
@@ -23,5 +23,5 @@ func process_physics(_delta: float) -> void:
 		return
 
 	if _turret.attack_timer.is_stopped():
-		_turret.fire_at_player()
-		_turret.attack_timer.start(_turret.fire_rate)
+		_turret._fire_at_player()
+		_turret.attack_timer.start(state_data.config.turret_fire_rate)

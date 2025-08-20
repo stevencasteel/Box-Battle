@@ -7,7 +7,7 @@ size = Vector2(20, 20)
 
 [node name="TurretShot" type="Area2D"]
 collision_layer = 16
-collision_mask = 65
+collision_mask = 193
 script = ExtResource("1_turret_shot_script")
 metadata/pool_name = &"turret_shots"
 

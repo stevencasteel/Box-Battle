@@ -7,7 +7,7 @@ size = Vector2(60, 60)
 
 [node name="BossShot" type="Area2D"]
 collision_layer = 16
-collision_mask = 0
+collision_mask = 193
 script = ExtResource("1_4qgog")
 metadata/pool_name = &"boss_shots"
 
@@ -24,4 +24,6 @@ shape = SubResource("RectangleShape2D_bossshot")
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
 rect = Rect2(-30, -30, 60, 60)
 
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]

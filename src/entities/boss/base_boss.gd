@@ -1,10 +1,9 @@
 # src/entities/boss/base_boss.gd
 @tool
 class_name BaseBoss
-extends CharacterBody2D
+extends BaseEntity
 
 # --- Constants ---
-const Validator = preload("res://src/core/util/scene_validator.gd")
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Enums ---
@@ -14,25 +13,26 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @export_group("Phase Configuration")
 @export_range(0.0, 1.0, 0.01) var phase_2_threshold: float = 0.7
 @export_range(0.0, 1.0, 0.01) var phase_3_threshold: float = 0.4
-
 @export_group("Attack Patterns")
 @export var phase_1_patterns: Array[AttackPattern] = []
 @export var phase_2_patterns: Array[AttackPattern] = []
 @export var phase_3_patterns: Array[AttackPattern] = []
-
 @export_group("Juice & Feedback")
 @export var intro_shake_effect: ScreenShakeEffect
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
+@export_group("State Scripts")
+@export var state_idle_script: Script
+@export var state_attack_script: Script
+@export var state_cooldown_script: Script
+@export var state_patrol_script: Script
+@export var state_lunge_script: Script
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
 @onready var cooldown_timer: Timer = $CooldownTimer
 @onready var patrol_timer: Timer = $PatrolTimer
-@onready var health_component: HealthComponent = $HealthComponent
-@onready var state_machine: BaseStateMachine = $StateMachine
-@onready var fx_component: FXComponent = $FXComponent
 
 # --- Public Member Variables ---
 var current_attack_patterns: Array[AttackPattern] = []
@@ -48,17 +48,19 @@ var _is_dead: bool = false
 
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
-	if not has_node("HealthComponent"): warnings.append("A HealthComponent node is required.")
-	if not has_node("StateMachine"): warnings.append("A StateMachine node is required.")
-	if not has_node("FXComponent"): warnings.append("An FXComponent node is required.")
-	if phase_1_patterns.is_empty(): warnings.append("Phase 1 has no attack patterns assigned.")
+	if not archetype:
+		warnings.append("This node requires an EntityArchetype resource.")
+		return warnings
+	if phase_1_patterns.is_empty():
+		warnings.append("Phase 1 has no attack patterns assigned.")
 	return warnings
 
 func _ready() -> void:
+	super._ready()
 	if Engine.is_editor_hint(): return
+	
 	_initialize_data()
-	_initialize_components()
-	_initialize_state_machine()
+	_initialize_and_setup_components()
 	_connect_signals()
 	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	
@@ -78,10 +80,9 @@ func _physics_process(delta: float) -> void:
 
 # --- Public Methods ---
 
-func teardown():
+func teardown() -> void:
 	set_physics_process(false)
 	if is_instance_valid(health_component):
-		health_component.set_physics_process(false)
 		if health_component.health_changed.is_connected(_on_health_component_health_changed):
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
 		if health_component.died.is_connected(_on_health_component_died):
@@ -91,24 +92,11 @@ func teardown():
 		if health_component.took_damage.is_connected(_on_health_component_took_damage):
 			health_component.took_damage.disconnect(_on_health_component_took_damage)
 	
-	if is_instance_valid(fx_component): fx_component.teardown()
-	if is_instance_valid(state_machine): state_machine.teardown()
-	if is_instance_valid(health_component): health_component.teardown()
+	super.teardown()
 	entity_data = null
 
 func get_health_thresholds() -> Array[float]:
 	return [phase_2_threshold, phase_3_threshold]
-
-func die() -> void:
-	if _is_dead: return
-	if is_instance_valid(death_shake_effect):
-		FXManager.request_screen_shake(death_shake_effect)
-	FXManager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
-	_is_dead = true
-	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
-	set_physics_process(false)
-	hide()
-	EventBus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
 
 func fire_volley(shot_count: int, delay: float) -> void:
 	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
@@ -128,6 +116,17 @@ func fire_shot_at_player() -> void:
 
 # --- Private Methods ---
 
+func _die() -> void:
+	if _is_dead: return
+	if is_instance_valid(death_shake_effect):
+		FXManager.request_screen_shake(death_shake_effect)
+	FXManager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
+	_is_dead = true
+	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
+	set_physics_process(false)
+	hide()
+	EventBus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
+
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
@@ -135,28 +134,26 @@ func _initialize_data() -> void:
 	entity_data = BossStateData.new()
 	entity_data.config = COMBAT_CONFIG
 
-func _initialize_components() -> void:
-	var dependencies = {
+func _initialize_and_setup_components() -> void:
+	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config
 	}
-	health_component.setup(self, dependencies)
 	
-	var fx_dependencies = {
-		"health_component": health_component,
-		"visual_node": visual_sprite,
-	}
-	fx_component.setup(self, fx_dependencies)
-
-func _initialize_state_machine() -> void:
 	var states = {
-		State.IDLE: load("res://src/entities/boss/states/state_boss_idle.gd").new(self, state_machine, entity_data),
-		State.ATTACK: load("res://src/entities/boss/states/state_boss_attack.gd").new(self, state_machine, entity_data),
-		State.COOLDOWN: load("res://src/entities/boss/states/state_boss_cooldown.gd").new(self, state_machine, entity_data),
-		State.PATROL: load("res://src/entities/boss/states/state_boss_patrol.gd").new(self, state_machine, entity_data),
-		State.LUNGE: load("res://src/entities/boss/states/state_boss_lunge.gd").new(self, state_machine, entity_data),
+		State.IDLE: state_idle_script.new(self, state_machine, entity_data),
+		State.ATTACK: state_attack_script.new(self, state_machine, entity_data),
+		State.COOLDOWN: state_cooldown_script.new(self, state_machine, entity_data),
+		State.PATROL: state_patrol_script.new(self, state_machine, entity_data),
+		State.LUNGE: state_lunge_script.new(self, state_machine, entity_data),
 	}
-	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
+	
+	var per_component_deps := {
+		state_machine: {"states": states, "initial_state_key": State.COOLDOWN},
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component}
+	}
+	
+	setup_components(shared_deps, per_component_deps)
 
 func _connect_signals() -> void:
 	health_component.health_changed.connect(_on_health_component_health_changed)
@@ -201,7 +198,7 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	ev.max_health = max_val
 	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
 func _on_health_component_died() -> void:
-	die()
+	_die()
 func _on_health_component_took_damage(damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(hit_spark_effect):
 		FXManager.play_vfx(hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)

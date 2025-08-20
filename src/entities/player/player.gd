@@ -17,8 +17,18 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Editor Properties ---
+@export_group("Juice & Feedback")
 @export var damage_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
+@export_group("State Scripts")
+@export var state_move_script: Script
+@export var state_jump_script: Script
+@export var state_fall_script: Script
+@export var state_dash_script: Script
+@export var state_wall_slide_script: Script
+@export var state_attack_script: Script
+@export var state_hurt_script: Script
+@export var state_heal_script: Script
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -66,23 +76,23 @@ func teardown() -> void:
 	super.teardown()
 	entity_data = null
 
-func enable_melee_hitbox(is_enabled: bool, is_up_attack: bool = false) -> void:
+# --- Private Methods ---
+
+func _enable_melee_hitbox(is_enabled: bool, is_up_attack: bool = false) -> void:
 	var shape_node: CollisionShape2D = melee_hitbox.get_node("CollisionShape2D")
 	if is_enabled:
 		if is_up_attack:
-			shape_node.shape = preload("res://src/entities/player/data/upward_attack_shape.tres")
+			shape_node.shape = entity_data.config.player_upward_attack_shape
 			shape_node.position = Vector2(0, -40)
 		else:
-			shape_node.shape = preload("res://src/entities/player/data/forward_attack_shape.tres")
+			shape_node.shape = entity_data.config.player_forward_attack_shape
 			shape_node.position = Vector2(entity_data.facing_direction * 60, 0)
 	shape_node.disabled = not is_enabled
 
-func enable_pogo_hitbox(is_enabled: bool) -> void:
+func _enable_pogo_hitbox(is_enabled: bool) -> void:
 	var shape_node: CollisionShape2D = pogo_hitbox.get_node("CollisionShape2D")
 	shape_node.position = Vector2(0, 40)
 	shape_node.disabled = not is_enabled
-
-# --- Private Methods ---
 
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
@@ -95,14 +105,14 @@ func _initialize_and_setup_components() -> void:
 	}
 	
 	var states = {
-		State.MOVE: load("res://src/entities/player/states/state_move.gd").new(self, state_machine, entity_data),
-		State.FALL: load("res://src/entities/player/states/state_fall.gd").new(self, state_machine, entity_data),
-		State.JUMP: load("res://src/entities/player/states/state_jump.gd").new(self, state_machine, entity_data),
-		State.DASH: load("res://src/entities/player/states/state_dash.gd").new(self, state_machine, entity_data),
-		State.WALL_SLIDE: load("res://src/entities/player/states/state_wall_slide.gd").new(self, state_machine, entity_data),
-		State.ATTACK: load("res://src/entities/player/states/state_attack.gd").new(self, state_machine, entity_data),
-		State.HURT: load("res://src/entities/player/states/state_hurt.gd").new(self, state_machine, entity_data),
-		State.HEAL: load("res://src/entities/player/states/state_heal.gd").new(self, state_machine, entity_data),
+		State.MOVE: state_move_script.new(self, state_machine, entity_data),
+		State.FALL: state_fall_script.new(self, state_machine, entity_data),
+		State.JUMP: state_jump_script.new(self, state_machine, entity_data),
+		State.DASH: state_dash_script.new(self, state_machine, entity_data),
+		State.WALL_SLIDE: state_wall_slide_script.new(self, state_machine, entity_data),
+		State.ATTACK: state_attack_script.new(self, state_machine, entity_data),
+		State.HURT: state_hurt_script.new(self, state_machine, entity_data),
+		State.HEAL: state_heal_script.new(self, state_machine, entity_data),
 	}
 	
 	var per_component_deps := {
@@ -128,6 +138,9 @@ func _connect_signals() -> void:
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 func _update_timers(delta: float) -> void:
+	# THE FIX: Add a guard clause to prevent crash on exit.
+	if not is_instance_valid(entity_data): return
+
 	entity_data.coyote_timer = max(0.0, entity_data.coyote_timer - delta)
 	entity_data.wall_coyote_timer = max(0.0, entity_data.wall_coyote_timer - delta)
 	entity_data.dash_cooldown_timer = max(0.0, entity_data.dash_cooldown_timer - delta)

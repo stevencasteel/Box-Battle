@@ -1,40 +1,46 @@
-[gd_resource type="Resource" script_class="CombatConfig" load_steps=2 format=3 uid="uid://kov03lmcorvh"]
+[gd_resource type="Resource" script_class="CombatConfig" load_steps=4 format=3 uid="uid://kov03lmcorvh"]
 
-[ext_resource type="Script" path="res://src/core/data/config/combat_config.gd" id="1_config"]
+[ext_resource type="Script" uid="uid://bhpg5eaxemkw1" path="res://src/core/data/config/combat_config.gd" id="1_config"]
+[ext_resource type="Shape2D" uid="uid://c1b2d3e4f5g6h" path="res://src/entities/player/data/forward_attack_shape.tres" id="2_forward_shape"]
+[ext_resource type="Shape2D" uid="uid://c0dt7jqwtnbr" path="res://src/entities/player/data/upward_attack_shape.tres" id="3_upward_shape"]
 
 [resource]
 script = ExtResource("1_config")
-gravity = 1200.0
+player_max_health = 5
+player_max_healing_charges = 1
+player_heal_duration = 2.0
+player_determination_per_charge = 10
+player_invincibility_duration = 1.5
 player_speed = 450.0
 player_jump_force = 680.0
-player_pogo_force = 450.0
+player_jump_release_dampener = 0.4
 player_coyote_time = 0.1
 player_jump_buffer = 0.1
-player_jump_release_dampener = 0.4
-player_wall_coyote_time = 0.05
 player_fast_fall_gravity_multiplier = 1.4
 player_max_air_jumps = 0
+player_wall_slide_speed = 120.0
+player_wall_coyote_time = 0.05
+player_wall_jump_force_x = 1650.0
+player_wall_jump_force_y = 680.0
 player_dash_speed = 1400.0
 player_dash_duration = 0.15
 player_dash_cooldown = 0.5
-player_wall_slide_speed = 120.0
-player_wall_jump_force_x = 1650.0
-player_wall_jump_force_y = 680.0
+player_forward_attack_shape = ExtResource("2_forward_shape")
+player_upward_attack_shape = ExtResource("3_upward_shape")
 player_attack_cooldown = 0.12
-player_charge_time = 0.35
 player_attack_duration = 0.1
 player_attack_friction = 2000.0
+player_charge_time = 0.35
+player_pogo_force = 450.0
 player_knockback_speed = 700.0
 player_knockback_duration = 0.1
 player_hazard_knockback_speed = 400.0
-player_determination_per_charge = 10
-player_max_health = 5
-player_heal_duration = 2.0
-player_max_healing_charges = 1
-player_invincibility_duration = 1.5
 boss_health = 30
 boss_patrol_speed = 100.0
 boss_invincibility_duration = 0.1
+turret_fire_rate = 2.0
+turret_detection_radius = 400.0
+gravity = 1200.0
 player_melee_close_range_hit_stop_duration = 0.025
 player_damage_taken_hit_stop_duration = 0.04
 boss_phase_change_hit_stop_duration = 0.1

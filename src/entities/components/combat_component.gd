@@ -51,7 +51,7 @@ func trigger_pogo(pogo_target: Node) -> bool:
 
 	if pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		should_bounce = true
-		ObjectPool.return_instance(pogo_target)
+		ObjectPool.return_instance.call_deferred(pogo_target)
 
 	var damageable = CombatUtilsScript.find_damageable(pogo_target)
 	if is_instance_valid(damageable):
@@ -60,7 +60,6 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		damage_info.amount = 1
 		damage_info.source_node = owner_node
 		damage_info.bypass_invincibility = true
-		# THE FIX: Provide the necessary position and normal data for VFX.
 		damage_info.impact_position = pogo_target.global_position
 		damage_info.impact_normal = Vector2.UP # Pogo impact is always from above.
 		var damage_result = damageable.apply_damage(damage_info)

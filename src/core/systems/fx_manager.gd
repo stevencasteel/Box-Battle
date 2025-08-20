@@ -53,9 +53,7 @@ func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary =
 		return
 
 	match effect.target_scope:
-		ShaderEffect.TargetScope.ENTITY:
-			# This is now handled by FXComponent, so this can be a no-op or a warning.
-			push_warning("FXManager.play_shader for ENTITY scope is deprecated. Use FXComponent.")
+		# ENTITY scope is now handled directly by FXComponent.
 		ShaderEffect.TargetScope.UI:
 			print("FXManager: Playing UI shader on ", target_node.name)
 			# TODO: Implement UIShaderBinding logic

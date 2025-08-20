@@ -12,4 +12,16 @@
 
 [resource]
 script = ExtResource("1_archetype")
-components = [ExtResource("2_health"), ExtResource("3_combat"), ExtResource("4_input"), ExtResource("5_fsm"), ExtResource("6_phys"), ExtResource("7_abil"), ExtResource("8_res"), ExtResource("9_fx")]
+components = [
+	; --- Core Components ---
+	ExtResource("2_health"), 
+	ExtResource("3_combat"), 
+	ExtResource("4_input"), 
+	ExtResource("5_fsm"), 
+	ExtResource("9_fx"), 
+	
+	; --- Player-Specific Components ---
+	ExtResource("6_phys"), 
+	ExtResource("7_abil"), 
+	ExtResource("8_res")
+]

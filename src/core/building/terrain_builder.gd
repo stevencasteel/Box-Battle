@@ -62,7 +62,7 @@ func _create_background_tile(parent_node: Node, grid_pos: Vector2i) -> void:
 func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
-	static_body.collision_layer = PhysicsLayers.WORLD
+	static_body.collision_layer = PhysicsLayers.SOLID_WORLD
 	static_body.add_to_group(Identifiers.Groups.WORLD)
 
 	var collision_shape := CollisionShape2D.new()
@@ -85,7 +85,7 @@ func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
-	static_body.collision_layer = PhysicsLayers.WORLD
+	static_body.collision_layer = PhysicsLayers.PLATFORMS
 	static_body.add_to_group(Identifiers.Groups.WORLD)
 	static_body.add_to_group(Identifiers.Groups.ONEWAY_PLATFORMS)
 
@@ -114,7 +114,7 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
-	static_body.collision_layer = PhysicsLayers.WORLD | PhysicsLayers.HAZARD
+	static_body.collision_layer = PhysicsLayers.HAZARD | PhysicsLayers.SOLID_WORLD
 	static_body.add_to_group(Identifiers.Groups.WORLD)
 	static_body.add_to_group(Identifiers.Groups.HAZARD)
 

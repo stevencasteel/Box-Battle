@@ -7,10 +7,16 @@
 
 [resource]
 script = ExtResource("1_encounter")
+
+; --- Layout & Spawning ---
 level_layout = ExtResource("2_x64bm")
 player_spawn_marker = "@"
-boss_scene = ExtResource("2_boss_scene")
 boss_spawn_marker = "&"
+
+; --- Boss ---
+boss_scene = ExtResource("2_boss_scene")
+
+; --- Minions ---
 minion_spawns = {
 "T": ExtResource("3_turret_scene")
 }
