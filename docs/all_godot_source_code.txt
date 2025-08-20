@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Tue Aug 19 16:56:58 CDT 2025
+Generated on: Tue Aug 19 19:28:47 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -130,7 +130,6 @@ PROJECT DIRECTORY STRUCTURE:
 │       ├── version_conversion.gd
 │       ├── version_numbers.gd
 │       └── warnings_manager.gd
-├── data
 ├── default_bus_layout.tres
 ├── docs
 │   ├── ARCHITECTURE.txt
@@ -225,8 +224,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   │   ├── shader_effect.gd
 │   │   │   │   ├── shockwave_effect.tres
 │   │   │   │   └── vfx_effect.gd
-│   │   │   ├── game_state_data.gd
-│   │   │   └── level_build_data.gd
+│   │   │   └── game_state_data.gd
 │   │   ├── events
 │   │   │   ├── event_bus.gd
 │   │   │   ├── event_catalog.gd
@@ -430,9 +428,8 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── game_hud
 │   │   │   ├── game_hud.gd
 │   │   │   └── game_hud.tscn
-│   │   ├── menu_manager
-│   │   │   └── menu_manager.gd
-│   │   └── pause_menu
+│   │   └── menu_manager
+│   │       └── menu_manager.gd
 │   └── vfx
 │       ├── hit_spark.gd
 │       └── hit_spark.tscn
@@ -440,7 +437,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.gd
     └── fx_playground.tscn
 
-81 directories, 351 files
+78 directories, 351 files
 
 
 =====================================
@@ -21718,11 +21715,25 @@ shader_type canvas_item;
 =====================================
 FILE: ./shaders/entity/hit_flash.gdshader
 =====================================
-# shaders/entity/hit_flash.gdshader
+// shaders/entity/hit_flash.gdshader
 shader_type canvas_item;
 
-# TODO: Implement hit-flash logic with fx_progress and fx_intensity uniforms.
+// The color to flash.
+uniform vec4 tint_color : source_color = vec4(1.0, 0.0, 0.0, 1.0);
+// The strength of the flash, from 0.0 (no flash) to 1.0 (full flash).
+uniform float intensity : hint_range(0.0, 1.0) = 0.0;
 
+void fragment() {
+	// 1. Get the original color of the pixel from the texture.
+	vec4 original_color = texture(TEXTURE, UV);
+	
+	// 2. Mix the original color with the tint color based on the intensity.
+	// The mix() function performs a linear interpolation: mix(x, y, a) -> x*(1-a) + y*a
+	vec3 final_rgb = mix(original_color.rgb, tint_color.rgb, intensity);
+	
+	// 3. Combine the final RGB with the ORIGINAL alpha channel. This is the fix.
+	COLOR = vec4(final_rgb, original_color.a);
+}
 
 =====================================
 FILE: ./shaders/entity/dissolve.gdshader
@@ -21758,7 +21769,7 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.10.4"
+config/version="0.12.0"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
@@ -21871,6 +21882,25 @@ debug_cycle_target={
 renderer/rendering_method="mobile"
 textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_clear_color=Color(0, 0, 0, 1)
+
+[shader_globals]
+
+fx_global_time={
+"type": "float",
+"value": 0.0
+}
+vignette_intensity={
+"type": "float",
+"value": 0.0
+}
+desat_amount={
+"type": "float",
+"value": 0.0
+}
+pal_index={
+"type": "int",
+"value": 0
+}
 
 
 =====================================
@@ -25333,7 +25363,6 @@ FILE: ./src/core/systems/fx_bindings/entity_shader_binding.gd
 =====================================
 # src/core/systems/fx_bindings/entity_shader_binding.gd
 ## Manages the lifecycle of a temporary shader effect on a single entity.
-##
 ## It safely applies a shader, animates its uniforms via a Tween, and ensures
 ## the entity's original material is restored when the effect is finished or
 ## the entity is destroyed. This node frees itself upon completion.
@@ -25346,7 +25375,6 @@ var _original_material: Material
 var _shader_material: ShaderMaterial
 var _tween: Tween
 
-# --- Private Member Variables ---
 # A proxy property that we will tween instead of the shader uniform directly.
 var _current_intensity: float = 0.0:
 	set(value):
@@ -25363,36 +25391,35 @@ func apply_effect(p_target: CanvasItem, p_effect: ShaderEffect) -> void:
 		queue_free()
 		return
 
-	# Safely store the original material.
 	_original_material = _target_node.material
 	
-	_shader_material = ShaderMaterial.new()
-	_shader_material.shader = p_effect.shader
-	
-	# THE FIX: Apply our new shader material.
+	# We must duplicate the material to avoid modifying the shared resource.
+	if p_effect.shader:
+		_shader_material = ShaderMaterial.new()
+		_shader_material.shader = p_effect.shader
+	else:
+		push_error("ShaderEffect resource is missing its shader.")
+		queue_free()
+		return
+
 	_target_node.material = _shader_material
 
-	# Set initial values from the effect resource.
 	for param_name in p_effect.params:
 		if param_name == "intensity":
 			self._current_intensity = p_effect.params[param_name]
 		else:
 			_shader_material.set_shader_parameter(param_name, p_effect.params[param_name])
 
-	# Watch for the target being deleted to prevent material leaks.
 	_target_node.tree_exiting.connect(_on_target_tree_exiting)
 
-	# Animate the shader uniforms.
-	_tween = create_tween()
+	_tween = create_tween().set_parallel(true)
 	_tween.tween_property(self, "_current_intensity", 0.0, p_effect.duration)
 	_tween.finished.connect(_on_tween_finished)
 
 # --- Private Methods ---
 
-## Restores the original material and cleans up the binding node.
 func _cleanup() -> void:
 	if is_instance_valid(_target_node):
-		# Restore the original material.
 		if _target_node.material == _shader_material:
 			_target_node.material = _original_material
 		if _target_node.tree_exiting.is_connected(_on_target_tree_exiting):
@@ -25409,7 +25436,6 @@ func _on_tween_finished() -> void:
 	_cleanup()
 
 func _on_target_tree_exiting() -> void:
-	# The target is being destroyed, so we must clean up immediately.
 	_cleanup()
 
 =====================================
@@ -25479,7 +25505,6 @@ extends Node
 # --- Private Member Variables ---
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
-# TODO: We will add references to our other binding scripts here later.
 
 # --- Public Methods ---
 
@@ -25533,11 +25558,11 @@ func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary =
 			else:
 				push_warning("FXManager: ENTITY scope requires a CanvasItem target.")
 		ShaderEffect.TargetScope.UI:
-			# TODO: Call the UIShaderBinding here.
 			print("FXManager: Playing UI shader on ", target_node.name)
+			# TODO: Implement UIShaderBinding logic
 		ShaderEffect.TargetScope.FULLSCREEN:
-			# TODO: Call the FullscreenShaderBinding here.
 			print("FXManager: Playing FULLSCREEN shader.")
+			# TODO: Implement FullscreenShaderBinding logic
 		_:
 			push_error("FXManager: Unknown ShaderEffect.TargetScope.")
 
@@ -25552,7 +25577,6 @@ func request_hit_stop(duration: float) -> void:
 	var timer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
-	# Check if the tree is still paused by this specific instance of hit-stop.
 	if get_tree().paused and _is_hit_stop_active:
 		get_tree().paused = false
 		_is_hit_stop_active = false
@@ -25821,7 +25845,7 @@ enum TargetScope {
 
 ## The duration of the effect in seconds. A value of 0 means it runs indefinitely
 ## until manually stopped.
-@export var duration: float = 0.15
+@export_range(0.0, 5.0, 0.01) var duration: float = 0.15
 
 ## A priority level to resolve conflicts if multiple effects are triggered at once.
 ## Higher numbers have higher priority.
@@ -28028,20 +28052,21 @@ var facing_direction: float = -1.0
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=15 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=16 format=3 uid="uid://dmej4a7ykn2q0"]
 
-[ext_resource type="Script" uid="uid://5bkyx4fguxor" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
-[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
-[ext_resource type="Script" uid="uid://ctgxiw44ctnwu" path="res://src/entities/components/health_component.gd" id="2_b0so8"]
-[ext_resource type="Script" uid="uid://bbtepurljrp6c" path="res://src/entities/components/base_state_machine.gd" id="3_fsm"]
+[ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
+[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
+[ext_resource type="PackedScene" uid="uid://dpl3w8xqyq1a2" path="res://src/entities/components/health_component.tscn" id="3_vj47k"]
+[ext_resource type="PackedScene" uid="uid://i3j4k5l6m7n8" path="res://src/entities/components/base_state_machine.tscn" id="4_v24wa"]
 [ext_resource type="Resource" uid="uid://bve7t5ucr1k" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="5_pattern_single"]
 [ext_resource type="Resource" uid="uid://k3dglh3t1b4a" path="res://src/entities/boss/attack_patterns/volley_shot.tres" id="6_pattern_volley"]
-[ext_resource type="Resource" uid="uid://y6g5o6f7h8ja" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="7_pattern_lunge"]
-[ext_resource type="Resource" uid="uid://01x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_shot_p3.tres" id="8_pattern_volley_p3"]
+[ext_resource type="Resource" uid="uid://y6g5o6f7h8i9" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="7_pattern_lunge"]
+[ext_resource type="Resource" uid="uid://z1x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_shot_p3.tres" id="8_pattern_volley_p3"]
 [ext_resource type="Resource" uid="uid://boss_phase_change_shake_tres" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="9_phase_shake"]
 [ext_resource type="Resource" uid="uid://boss_death_shake_tres" path="res://src/core/data/effects/boss_death_shake.tres" id="10_death_shake"]
 [ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="11_hit_spark_effect"]
 [ext_resource type="Resource" uid="uid://hit_flash_shader_effect" path="res://src/data/effects/shaders/hit_flash_effect.tres" id="12_hit_flash_effect"]
+[ext_resource type="PackedScene" uid="uid://g7h8i9j0k1l2" path="res://src/entities/components/fx_component.tscn" id="13_t3jae"]
 
 [sub_resource type="Resource" id="Resource_sjg2a"]
 script = ExtResource("2_30ufx")
@@ -28085,12 +28110,11 @@ one_shot = true
 wait_time = 3.0
 one_shot = true
 
-[node name="HealthComponent" type="Node" parent="."]
-script = ExtResource("2_b0so8")
-visual_node = NodePath("../ColorRect")
+[node name="HealthComponent" parent="." instance=ExtResource("3_vj47k")]
 
-[node name="StateMachine" type="Node" parent="."]
-script = ExtResource("3_fsm")
+[node name="StateMachine" parent="." instance=ExtResource("4_v24wa")]
+
+[node name="FXComponent" parent="." instance=ExtResource("13_t3jae")]
 
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]
@@ -28283,6 +28307,7 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @onready var patrol_timer: Timer = $PatrolTimer
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var state_machine: BaseStateMachine = $StateMachine
+@onready var fx_component: FXComponent = $FXComponent
 
 # --- Public Member Variables ---
 var current_attack_patterns: Array[AttackPattern] = []
@@ -28300,6 +28325,7 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
 	if not has_node("HealthComponent"): warnings.append("A HealthComponent node is required.")
 	if not has_node("StateMachine"): warnings.append("A StateMachine node is required.")
+	if not has_node("FXComponent"): warnings.append("An FXComponent node is required.")
 	if phase_1_patterns.is_empty(): warnings.append("Phase 1 has no attack patterns assigned.")
 	return warnings
 
@@ -28339,6 +28365,8 @@ func teardown():
 			health_component.health_threshold_reached.disconnect(_on_health_threshold_reached)
 		if health_component.took_damage.is_connected(_on_health_component_took_damage):
 			health_component.took_damage.disconnect(_on_health_component_took_damage)
+	
+	if is_instance_valid(fx_component): fx_component.teardown()
 	if is_instance_valid(state_machine): state_machine.teardown()
 	if is_instance_valid(health_component): health_component.teardown()
 	entity_data = null
@@ -28383,15 +28411,26 @@ func _initialize_data() -> void:
 	entity_data.config = CombatDB.config
 
 func _initialize_components() -> void:
-	health_component.setup(self, { "data_resource": entity_data, "config": entity_data.config })
+	var dependencies = {
+		"data_resource": entity_data,
+		"config": entity_data.config
+	}
+	health_component.setup(self, dependencies)
+	
+	var fx_dependencies = {
+		"health_component": health_component,
+		"visual_node": visual_sprite,
+		"hit_flash_effect": hit_flash_effect
+	}
+	fx_component.setup(self, fx_dependencies)
 
 func _initialize_state_machine() -> void:
 	var states = {
-		State.IDLE: BossStateIdle.new(self, state_machine, entity_data),
-		State.ATTACK: BossStateAttack.new(self, state_machine, entity_data),
-		State.COOLDOWN: BossStateCooldown.new(self, state_machine, entity_data),
-		State.PATROL: BossStatePatrol.new(self, state_machine, entity_data),
-		State.LUNGE: BossStateLunge.new(self, state_machine, entity_data),
+		State.IDLE: load("res://src/entities/boss/states/state_boss_idle.gd").new(self, state_machine, entity_data),
+		State.ATTACK: load("res://src/entities/boss/states/state_boss_attack.gd").new(self, state_machine, entity_data),
+		State.COOLDOWN: load("res://src/entities/boss/states/state_boss_cooldown.gd").new(self, state_machine, entity_data),
+		State.PATROL: load("res://src/entities/boss/states/state_boss_patrol.gd").new(self, state_machine, entity_data),
+		State.LUNGE: load("res://src/entities/boss/states/state_boss_lunge.gd").new(self, state_machine, entity_data),
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
 
@@ -29024,35 +29063,29 @@ FILE: ./src/entities/components/fx_component.gd
 # src/entities/components/fx_component.gd
 @tool
 ## A dedicated component for managing all entity-specific visual effects.
+## It acts as a decoupled bridge to the global FXManager.
 class_name FXComponent
 extends IComponent
 
-@export var visual_node: CanvasItem
-
-# --- Private Member Variables ---
+# --- Member Variables ---
 var _owner: Node
-var _original_material: Material
-var _is_effect_active: bool = false
-var _hit_flash_shader: Shader
+var _visual_node: CanvasItem
+var _hit_flash_effect: ShaderEffect
 
 # --- Godot Lifecycle Methods ---
-
-func _ready() -> void:
-	# Pre-compile the simple shader once to avoid doing it on every hit.
-	_hit_flash_shader = Shader.new()
-	_hit_flash_shader.code = "shader_type canvas_item; uniform vec4 tint_color : source_color; void fragment() { COLOR = tint_color; }"
-
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		teardown()
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
+	self._visual_node = p_dependencies.get("visual_node")
+	self._hit_flash_effect = p_dependencies.get("hit_flash_effect")
 	var health_comp: HealthComponent = p_dependencies.get("health_component")
-	
-	if not is_instance_valid(visual_node):
-		push_warning("FXComponent missing visual_node at setup time on '%s'." % get_parent().name)
-	
+
+	if not is_instance_valid(_visual_node):
+		push_warning("FXComponent on '%s' is missing its visual_node dependency." % get_parent().name)
+
 	if is_instance_valid(health_comp):
 		var cb = Callable(self, "_on_health_component_took_damage")
 		if not health_comp.took_damage.is_connected(cb):
@@ -29063,34 +29096,14 @@ func teardown() -> void:
 	if is_instance_valid(health_comp) and health_comp.took_damage.is_connected(_on_health_component_took_damage):
 		health_comp.took_damage.disconnect(_on_health_component_took_damage)
 
-	visual_node = null
+	_visual_node = null
 	_owner = null
-
-# --- Private Methods ---
-
-func _on_effect_finished() -> void:
-	if is_instance_valid(visual_node):
-		visual_node.material = _original_material
-	_is_effect_active = false
 
 # --- Signal Handlers ---
 
 func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	# Prevent overlapping effects from causing issues.
-	if _is_effect_active or not is_instance_valid(visual_node):
-		return
-
-	_is_effect_active = true
-	_original_material = visual_node.material
-
-	# Create and apply the simple shader material.
-	var flash_material = ShaderMaterial.new()
-	flash_material.shader = _hit_flash_shader
-	flash_material.set_shader_parameter("tint_color", Color.RED)
-	visual_node.material = flash_material
-	
-	# Use a simple, one-shot SceneTreeTimer to revert the effect.
-	get_tree().create_timer(0.12).timeout.connect(_on_effect_finished)
+	if is_instance_valid(_hit_flash_effect):
+		FXManager.play_shader(_hit_flash_effect, _visual_node)
 
 
 =====================================
@@ -29501,8 +29514,6 @@ func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = CombatDB.config
 	
-	fx_component.visual_node = visual_sprite
-	
 	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config,
@@ -29523,7 +29534,8 @@ func _initialize_and_setup_components() -> void:
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
-		ability_component: {"state_machine": state_machine, "input_component": input_component}
+		ability_component: {"state_machine": state_machine, "input_component": input_component},
+		fx_component: {"visual_node": visual_sprite, "hit_flash_effect": hit_flash_effect}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
@@ -29590,8 +29602,6 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		damage_info.impact_normal = (global_position - area.global_position).normalized()
 		var damage_result = health_component.apply_damage(damage_info)
 		
-		# THE FIX: If entity_data is null, it means teardown() was called.
-		# This happens on the lethal hit. We must exit immediately to prevent a crash.
 		if not is_instance_valid(entity_data): return
 		
 		if damage_result.was_damaged and entity_data.health > 0:

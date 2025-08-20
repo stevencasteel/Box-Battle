@@ -32,6 +32,7 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @onready var patrol_timer: Timer = $PatrolTimer
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var state_machine: BaseStateMachine = $StateMachine
+@onready var fx_component: FXComponent = $FXComponent
 
 # --- Public Member Variables ---
 var current_attack_patterns: Array[AttackPattern] = []
@@ -49,6 +50,7 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
 	if not has_node("HealthComponent"): warnings.append("A HealthComponent node is required.")
 	if not has_node("StateMachine"): warnings.append("A StateMachine node is required.")
+	if not has_node("FXComponent"): warnings.append("An FXComponent node is required.")
 	if phase_1_patterns.is_empty(): warnings.append("Phase 1 has no attack patterns assigned.")
 	return warnings
 
@@ -88,6 +90,8 @@ func teardown():
 			health_component.health_threshold_reached.disconnect(_on_health_threshold_reached)
 		if health_component.took_damage.is_connected(_on_health_component_took_damage):
 			health_component.took_damage.disconnect(_on_health_component_took_damage)
+	
+	if is_instance_valid(fx_component): fx_component.teardown()
 	if is_instance_valid(state_machine): state_machine.teardown()
 	if is_instance_valid(health_component): health_component.teardown()
 	entity_data = null
@@ -132,15 +136,26 @@ func _initialize_data() -> void:
 	entity_data.config = CombatDB.config
 
 func _initialize_components() -> void:
-	health_component.setup(self, { "data_resource": entity_data, "config": entity_data.config })
+	var dependencies = {
+		"data_resource": entity_data,
+		"config": entity_data.config
+	}
+	health_component.setup(self, dependencies)
+	
+	var fx_dependencies = {
+		"health_component": health_component,
+		"visual_node": visual_sprite,
+		"hit_flash_effect": hit_flash_effect
+	}
+	fx_component.setup(self, fx_dependencies)
 
 func _initialize_state_machine() -> void:
 	var states = {
-		State.IDLE: BossStateIdle.new(self, state_machine, entity_data),
-		State.ATTACK: BossStateAttack.new(self, state_machine, entity_data),
-		State.COOLDOWN: BossStateCooldown.new(self, state_machine, entity_data),
-		State.PATROL: BossStatePatrol.new(self, state_machine, entity_data),
-		State.LUNGE: BossStateLunge.new(self, state_machine, entity_data),
+		State.IDLE: load("res://src/entities/boss/states/state_boss_idle.gd").new(self, state_machine, entity_data),
+		State.ATTACK: load("res://src/entities/boss/states/state_boss_attack.gd").new(self, state_machine, entity_data),
+		State.COOLDOWN: load("res://src/entities/boss/states/state_boss_cooldown.gd").new(self, state_machine, entity_data),
+		State.PATROL: load("res://src/entities/boss/states/state_boss_patrol.gd").new(self, state_machine, entity_data),
+		State.LUNGE: load("res://src/entities/boss/states/state_boss_lunge.gd").new(self, state_machine, entity_data),
 	}
 	state_machine.setup(self, { "states": states, "initial_state_key": State.COOLDOWN })
 

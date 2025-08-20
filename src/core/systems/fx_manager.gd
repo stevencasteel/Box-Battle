@@ -8,7 +8,6 @@ extends Node
 # --- Private Member Variables ---
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
-# TODO: We will add references to our other binding scripts here later.
 
 # --- Public Methods ---
 
@@ -62,11 +61,11 @@ func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary =
 			else:
 				push_warning("FXManager: ENTITY scope requires a CanvasItem target.")
 		ShaderEffect.TargetScope.UI:
-			# TODO: Call the UIShaderBinding here.
 			print("FXManager: Playing UI shader on ", target_node.name)
+			# TODO: Implement UIShaderBinding logic
 		ShaderEffect.TargetScope.FULLSCREEN:
-			# TODO: Call the FullscreenShaderBinding here.
 			print("FXManager: Playing FULLSCREEN shader.")
+			# TODO: Implement FullscreenShaderBinding logic
 		_:
 			push_error("FXManager: Unknown ShaderEffect.TargetScope.")
 
@@ -81,7 +80,6 @@ func request_hit_stop(duration: float) -> void:
 	var timer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
-	# Check if the tree is still paused by this specific instance of hit-stop.
 	if get_tree().paused and _is_hit_stop_active:
 		get_tree().paused = false
 		_is_hit_stop_active = false

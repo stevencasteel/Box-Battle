@@ -20,7 +20,7 @@ enum TargetScope {
 
 ## The duration of the effect in seconds. A value of 0 means it runs indefinitely
 ## until manually stopped.
-@export var duration: float = 0.15
+@export_range(0.0, 5.0, 0.01) var duration: float = 0.15
 
 ## A priority level to resolve conflicts if multiple effects are triggered at once.
 ## Higher numbers have higher priority.

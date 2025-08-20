@@ -88,8 +88,6 @@ func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = CombatDB.config
 	
-	fx_component.visual_node = visual_sprite
-	
 	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config,
@@ -110,7 +108,8 @@ func _initialize_and_setup_components() -> void:
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
-		ability_component: {"state_machine": state_machine, "input_component": input_component}
+		ability_component: {"state_machine": state_machine, "input_component": input_component},
+		fx_component: {"visual_node": visual_sprite, "hit_flash_effect": hit_flash_effect}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
@@ -177,8 +176,6 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		damage_info.impact_normal = (global_position - area.global_position).normalized()
 		var damage_result = health_component.apply_damage(damage_info)
 		
-		# THE FIX: If entity_data is null, it means teardown() was called.
-		# This happens on the lethal hit. We must exit immediately to prevent a crash.
 		if not is_instance_valid(entity_data): return
 		
 		if damage_result.was_damaged and entity_data.health > 0:
