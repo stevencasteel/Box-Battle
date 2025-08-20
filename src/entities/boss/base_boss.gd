@@ -24,7 +24,6 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
-@export var hit_flash_effect: ShaderEffect
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -145,7 +144,6 @@ func _initialize_components() -> void:
 	var fx_dependencies = {
 		"health_component": health_component,
 		"visual_node": visual_sprite,
-		"hit_flash_effect": hit_flash_effect
 	}
 	fx_component.setup(self, fx_dependencies)
 

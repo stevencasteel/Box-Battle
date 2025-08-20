@@ -31,6 +31,26 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+                                                                           
+   VISUAL EFFECTS & ROBUSTNESS                                                 
+   Implemented a robust, code-driven hit-flash shader effect and resolved      
+   critical resource loading errors. The new system is immune to editor cache  
+   issues and provides reliable visual feedback for combat.                    
+   ────────────────────────────────────────────────────────────────────────    
+   █  Fixed                                                                    
+      ░ ■ Corrected the hit-flash shader to use the `COLOR` varying instead of 
+      ░   `texture(TEXTURE, UV)`, enabling it to work correctly on `ColorRect` 
+      ░   nodes.                                                               
+      ░ ■ Refactored the `FXComponent` to be self-sufficient, creating and     
+      ░   managing its own shader materials and tweens, which bypasses fragile 
+      ░   resource chains.                                                     
+   █  Removed                                                                  
+      ░ ■ Deleted obsolete shader, material, and effect resource files related 
+      ░   to the old hit-flash system.                                         
+      ░ ■ Removed the now-unused `EntityShaderBinding` system.
+
+
+
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║

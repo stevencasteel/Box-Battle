@@ -54,12 +54,8 @@ func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary =
 
 	match effect.target_scope:
 		ShaderEffect.TargetScope.ENTITY:
-			if target_node is CanvasItem:
-				var binding = EntityShaderBinding.new()
-				add_child(binding)
-				binding.apply_effect(target_node, effect)
-			else:
-				push_warning("FXManager: ENTITY scope requires a CanvasItem target.")
+			# This is now handled by FXComponent, so this can be a no-op or a warning.
+			push_warning("FXManager.play_shader for ENTITY scope is deprecated. Use FXComponent.")
 		ShaderEffect.TargetScope.UI:
 			print("FXManager: Playing UI shader on ", target_node.name)
 			# TODO: Implement UIShaderBinding logic

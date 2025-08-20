@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Tue Aug 19 19:28:47 CDT 2025
+Generated on: Wed Aug 20 11:39:11 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -169,7 +169,6 @@ PROJECT DIRECTORY STRUCTURE:
 ├── export_presets.cfg
 ├── icon.svg
 ├── materials
-│   ├── hit_flash_material.tres
 │   ├── sdf_panel_material.tres
 │   └── shockwave_material.tres
 ├── pico.save
@@ -179,7 +178,8 @@ PROJECT DIRECTORY STRUCTURE:
 ├── shaders
 │   ├── entity
 │   │   ├── dissolve.gdshader
-│   │   └── hit_flash.gdshader
+│   │   ├── red_hit_flash_test.gdshader
+│   │   └── red_hit_flash_test.gdshader.save
 │   ├── fullscreen
 │   │   └── shockwave.gdshader
 │   ├── includes
@@ -248,7 +248,6 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── cursor_manager.gd
 │   │   │   ├── dialogue_manager.gd
 │   │   │   ├── fx_bindings
-│   │   │   │   ├── entity_shader_binding.gd
 │   │   │   │   ├── fullscreen_shader_binding.gd
 │   │   │   │   └── ui_shader_binding.gd
 │   │   │   ├── fx_manager.gd
@@ -274,7 +273,6 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   └── test_conversation.tres
 │   │   ├── effects
 │   │   │   └── shaders
-│   │   │       └── hit_flash_effect.tres
 │   │   ├── encounters
 │   │   │   ├── encounter_00.tres
 │   │   │   └── encounter_data.gd
@@ -437,7 +435,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.gd
     └── fx_playground.tscn
 
-78 directories, 351 files
+78 directories, 349 files
 
 
 =====================================
@@ -474,14 +472,6 @@ extends Control
 
 =====================================
 FILE: ./materials/sdf_panel_material.tres
-=====================================
-[gd_resource type="ShaderMaterial" load_steps=2 format=3]
-
-# TODO: Link this material to its corresponding .gdshader file.
-
-
-=====================================
-FILE: ./materials/hit_flash_material.tres
 =====================================
 [gd_resource type="ShaderMaterial" load_steps=2 format=3]
 
@@ -20391,6 +20381,26 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+                                                                           
+   VISUAL EFFECTS & ROBUSTNESS                                                 
+   Implemented a robust, code-driven hit-flash shader effect and resolved      
+   critical resource loading errors. The new system is immune to editor cache  
+   issues and provides reliable visual feedback for combat.                    
+   ────────────────────────────────────────────────────────────────────────    
+   █  Fixed                                                                    
+      ░ ■ Corrected the hit-flash shader to use the `COLOR` varying instead of 
+      ░   `texture(TEXTURE, UV)`, enabling it to work correctly on `ColorRect` 
+      ░   nodes.                                                               
+      ░ ■ Refactored the `FXComponent` to be self-sufficient, creating and     
+      ░   managing its own shader materials and tweens, which bypasses fragile 
+      ░   resource chains.                                                     
+   █  Removed                                                                  
+      ░ ■ Deleted obsolete shader, material, and effect resource files related 
+      ░   to the old hit-flash system.                                         
+      ░ ■ Removed the now-unused `EntityShaderBinding` system.
+
+
+
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
@@ -21713,29 +21723,6 @@ shader_type canvas_item;
 
 
 =====================================
-FILE: ./shaders/entity/hit_flash.gdshader
-=====================================
-// shaders/entity/hit_flash.gdshader
-shader_type canvas_item;
-
-// The color to flash.
-uniform vec4 tint_color : source_color = vec4(1.0, 0.0, 0.0, 1.0);
-// The strength of the flash, from 0.0 (no flash) to 1.0 (full flash).
-uniform float intensity : hint_range(0.0, 1.0) = 0.0;
-
-void fragment() {
-	// 1. Get the original color of the pixel from the texture.
-	vec4 original_color = texture(TEXTURE, UV);
-	
-	// 2. Mix the original color with the tint color based on the intensity.
-	// The mix() function performs a linear interpolation: mix(x, y, a) -> x*(1-a) + y*a
-	vec3 final_rgb = mix(original_color.rgb, tint_color.rgb, intensity);
-	
-	// 3. Combine the final RGB with the ORIGINAL alpha channel. This is the fix.
-	COLOR = vec4(final_rgb, original_color.a);
-}
-
-=====================================
 FILE: ./shaders/entity/dissolve.gdshader
 =====================================
 # shaders/entity/dissolve.gdshader
@@ -21743,6 +21730,26 @@ shader_type canvas_item;
 
 # TODO: Implement dissolve effect driven by fx_progress.
 
+
+=====================================
+FILE: ./shaders/entity/red_hit_flash_test.gdshader
+=====================================
+// shaders/entity/red_hit_flash_test.gdshader
+shader_type canvas_item;
+
+uniform vec4 tint_color : source_color = vec4(1.0, 0.0, 0.0, 1.0);
+uniform float intensity : hint_range(0.0, 1.0);
+
+void fragment() {
+    // Get the base color from the ColorRect
+    vec4 original_color = COLOR;
+    
+    // Mix the original color with the tint color
+    vec3 mixed_rgb = mix(original_color.rgb, tint_color.rgb, intensity);
+    
+    // Apply the mixed color, preserving the original alpha
+    COLOR = vec4(mixed_rgb, original_color.a);
+}
 
 =====================================
 FILE: ./shaders/fullscreen/shockwave.gdshader
@@ -25359,86 +25366,6 @@ extends Node
 
 
 =====================================
-FILE: ./src/core/systems/fx_bindings/entity_shader_binding.gd
-=====================================
-# src/core/systems/fx_bindings/entity_shader_binding.gd
-## Manages the lifecycle of a temporary shader effect on a single entity.
-## It safely applies a shader, animates its uniforms via a Tween, and ensures
-## the entity's original material is restored when the effect is finished or
-## the entity is destroyed. This node frees itself upon completion.
-class_name EntityShaderBinding
-extends Node
-
-# --- Member Variables ---
-var _target_node: CanvasItem
-var _original_material: Material
-var _shader_material: ShaderMaterial
-var _tween: Tween
-
-# A proxy property that we will tween instead of the shader uniform directly.
-var _current_intensity: float = 0.0:
-	set(value):
-		_current_intensity = value
-		if is_instance_valid(_shader_material):
-			_shader_material.set_shader_parameter("intensity", _current_intensity)
-
-# --- Public Methods ---
-
-## Applies the shader effect to the target node and starts the animation.
-func apply_effect(p_target: CanvasItem, p_effect: ShaderEffect) -> void:
-	self._target_node = p_target
-	if not is_instance_valid(_target_node):
-		queue_free()
-		return
-
-	_original_material = _target_node.material
-	
-	# We must duplicate the material to avoid modifying the shared resource.
-	if p_effect.shader:
-		_shader_material = ShaderMaterial.new()
-		_shader_material.shader = p_effect.shader
-	else:
-		push_error("ShaderEffect resource is missing its shader.")
-		queue_free()
-		return
-
-	_target_node.material = _shader_material
-
-	for param_name in p_effect.params:
-		if param_name == "intensity":
-			self._current_intensity = p_effect.params[param_name]
-		else:
-			_shader_material.set_shader_parameter(param_name, p_effect.params[param_name])
-
-	_target_node.tree_exiting.connect(_on_target_tree_exiting)
-
-	_tween = create_tween().set_parallel(true)
-	_tween.tween_property(self, "_current_intensity", 0.0, p_effect.duration)
-	_tween.finished.connect(_on_tween_finished)
-
-# --- Private Methods ---
-
-func _cleanup() -> void:
-	if is_instance_valid(_target_node):
-		if _target_node.material == _shader_material:
-			_target_node.material = _original_material
-		if _target_node.tree_exiting.is_connected(_on_target_tree_exiting):
-			_target_node.tree_exiting.disconnect(_on_target_tree_exiting)
-	
-	if is_instance_valid(_tween):
-		_tween.kill()
-
-	queue_free()
-
-# --- Signal Handlers ---
-
-func _on_tween_finished() -> void:
-	_cleanup()
-
-func _on_target_tree_exiting() -> void:
-	_cleanup()
-
-=====================================
 FILE: ./src/core/systems/camera_shaker.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://camera_shaker_scene_id"]
@@ -25551,12 +25478,8 @@ func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary =
 
 	match effect.target_scope:
 		ShaderEffect.TargetScope.ENTITY:
-			if target_node is CanvasItem:
-				var binding = EntityShaderBinding.new()
-				add_child(binding)
-				binding.apply_effect(target_node, effect)
-			else:
-				push_warning("FXManager: ENTITY scope requires a CanvasItem target.")
+			# This is now handled by FXComponent, so this can be a no-op or a warning.
+			push_warning("FXManager.play_shader for ENTITY scope is deprecated. Use FXComponent.")
 		ShaderEffect.TargetScope.UI:
 			print("FXManager: Playing UI shader on ", target_node.name)
 			# TODO: Implement UIShaderBinding logic
@@ -27623,25 +27546,6 @@ extends Resource
 @export var minion_spawns: Dictionary = {}
 
 =====================================
-FILE: ./src/data/effects/shaders/hit_flash_effect.tres
-=====================================
-[gd_resource type="Resource" script_class="ShaderEffect" load_steps=3 format=3 uid="uid://hit_flash_shader_effect"]
-
-[ext_resource type="Script" path="res://src/core/data/effects/shader_effect.gd" id="1_shader_effect"]
-[ext_resource type="Shader" path="res://assets/shaders/hit_flash.gdshader" id="2_hit_flash_shader"]
-
-[resource]
-script = ExtResource("1_shader_effect")
-shader = ExtResource("2_hit_flash_shader")
-duration = 0.12
-priority = 0
-target_scope = 0 # ENTITY
-params = {
-"intensity": 1.0,
-"tint_color": Color(1, 0, 0, 1)
-}
-
-=====================================
 FILE: ./src/entities/base_entity.gd
 =====================================
 # src/entities/base_entity.gd
@@ -28052,7 +27956,7 @@ var facing_direction: float = -1.0
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=16 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=14 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
@@ -28065,16 +27969,7 @@ FILE: ./src/entities/boss/base_boss.tscn
 [ext_resource type="Resource" uid="uid://boss_phase_change_shake_tres" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="9_phase_shake"]
 [ext_resource type="Resource" uid="uid://boss_death_shake_tres" path="res://src/core/data/effects/boss_death_shake.tres" id="10_death_shake"]
 [ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="11_hit_spark_effect"]
-[ext_resource type="Resource" uid="uid://hit_flash_shader_effect" path="res://src/data/effects/shaders/hit_flash_effect.tres" id="12_hit_flash_effect"]
 [ext_resource type="PackedScene" uid="uid://g7h8i9j0k1l2" path="res://src/entities/components/fx_component.tscn" id="13_t3jae"]
-
-[sub_resource type="Resource" id="Resource_sjg2a"]
-script = ExtResource("2_30ufx")
-telegraph_duration = 0.5
-attack_duration = 0.1
-cooldown = 1.5
-projectile_count = 1
-volley_delay = 0.2
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -28086,11 +27981,9 @@ script = ExtResource("1_26qjf")
 phase_1_patterns = Array[ExtResource("2_30ufx")]([ExtResource("5_pattern_single")])
 phase_2_patterns = Array[ExtResource("2_30ufx")]([ExtResource("6_pattern_volley"), ExtResource("7_pattern_lunge")])
 phase_3_patterns = Array[ExtResource("2_30ufx")]([ExtResource("8_pattern_volley_p3"), ExtResource("7_pattern_lunge")])
-intro_shake_effect = SubResource("Resource_sjg2a")
 phase_change_shake_effect = ExtResource("9_phase_shake")
 death_shake_effect = ExtResource("10_death_shake")
 hit_spark_effect = ExtResource("11_hit_spark_effect")
-hit_flash_effect = ExtResource("12_hit_flash_effect")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -30.0
@@ -28299,7 +28192,6 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
-@export var hit_flash_effect: ShaderEffect
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -28420,7 +28312,6 @@ func _initialize_components() -> void:
 	var fx_dependencies = {
 		"health_component": health_component,
 		"visual_node": visual_sprite,
-		"hit_flash_effect": hit_flash_effect
 	}
 	fx_component.setup(self, fx_dependencies)
 
@@ -29063,14 +28954,25 @@ FILE: ./src/entities/components/fx_component.gd
 # src/entities/components/fx_component.gd
 @tool
 ## A dedicated component for managing all entity-specific visual effects.
-## It acts as a decoupled bridge to the global FXManager.
 class_name FXComponent
 extends IComponent
+
+# --- Constants ---
+const HIT_FLASH_SHADER = preload("res://shaders/entity/red_hit_flash_test.gdshader")
 
 # --- Member Variables ---
 var _owner: Node
 var _visual_node: CanvasItem
-var _hit_flash_effect: ShaderEffect
+var _original_material: Material
+var _hit_flash_material: ShaderMaterial
+var _active_tween: Tween
+
+# A proxy property for the tween to animate.
+var _intensity: float = 0.0:
+	set(value):
+		_intensity = value
+		if is_instance_valid(_hit_flash_material):
+			_hit_flash_material.set_shader_parameter("intensity", _intensity)
 
 # --- Godot Lifecycle Methods ---
 func _notification(what: int) -> void:
@@ -29080,18 +28982,23 @@ func _notification(what: int) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
 	self._visual_node = p_dependencies.get("visual_node")
-	self._hit_flash_effect = p_dependencies.get("hit_flash_effect")
 	var health_comp: HealthComponent = p_dependencies.get("health_component")
 
 	if not is_instance_valid(_visual_node):
 		push_warning("FXComponent on '%s' is missing its visual_node dependency." % get_parent().name)
+		return
+
+	# Create and configure the material once at setup.
+	_hit_flash_material = ShaderMaterial.new()
+	_hit_flash_material.shader = HIT_FLASH_SHADER
 
 	if is_instance_valid(health_comp):
-		var cb = Callable(self, "_on_health_component_took_damage")
-		if not health_comp.took_damage.is_connected(cb):
-			health_comp.took_damage.connect(cb)
+		health_comp.took_damage.connect(_on_health_component_took_damage)
 
 func teardown() -> void:
+	if is_instance_valid(_active_tween):
+		_active_tween.kill()
+
 	var health_comp: HealthComponent = _owner.get("health_component") if is_instance_valid(_owner) else null
 	if is_instance_valid(health_comp) and health_comp.took_damage.is_connected(_on_health_component_took_damage):
 		health_comp.took_damage.disconnect(_on_health_component_took_damage)
@@ -29099,12 +29006,37 @@ func teardown() -> void:
 	_visual_node = null
 	_owner = null
 
+# --- Private Methods ---
+func _play_hit_flash() -> void:
+	if not is_instance_valid(_visual_node) or not is_instance_valid(_hit_flash_material):
+		return
+		
+	if is_instance_valid(_active_tween):
+		_active_tween.kill()
+
+	_original_material = _visual_node.material
+	
+	# We must duplicate the material to get a unique instance for this effect.
+	var material_instance = _hit_flash_material.duplicate()
+	_visual_node.material = material_instance
+	
+	# Set the proxy property directly to start the tween from full intensity.
+	self._intensity = 1.0
+	material_instance.set_shader_parameter("intensity", 1.0)
+	
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "_intensity", 0.0, 0.12)
+	_active_tween.finished.connect(_on_flash_finished)
+
+func _on_flash_finished() -> void:
+	if is_instance_valid(_visual_node):
+		_visual_node.material = _original_material
+	_active_tween = null
+
 # --- Signal Handlers ---
 
 func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	if is_instance_valid(_hit_flash_effect):
-		FXManager.play_shader(_hit_flash_effect, _visual_node)
-
+	_play_hit_flash()
 
 =====================================
 FILE: ./src/entities/minions/turret.gd
@@ -29359,18 +29291,14 @@ collision_mask = 1
 =====================================
 FILE: ./src/entities/player/player.tscn
 =====================================
-[gd_scene load_steps=8 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=6 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" path="res://src/entities/player/player.gd" id="1_4d1td"]
 [ext_resource type="Resource" uid="uid://player_archetype_resource" path="res://src/entities/archetypes/player_archetype.tres" id="2_archetype"]
 [ext_resource type="Resource" uid="uid://player_damage_shake_tres" path="res://src/core/data/effects/player_damage_shake.tres" id="3_shake_effect"]
 [ext_resource type="Resource" uid="uid://player_hit_spark_tres" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="4_hit_spark_effect"]
-[ext_resource type="Resource" uid="uid://hit_flash_shader_effect" path="res://src/data/effects/shaders/hit_flash_effect.tres" id="5_hit_flash_effect"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
-size = Vector2(40, 40)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurtbox"]
 size = Vector2(40, 40)
 
 [node name="Player" type="CharacterBody2D"]
@@ -29380,7 +29308,6 @@ script = ExtResource("1_4d1td")
 archetype = ExtResource("2_archetype")
 damage_shake_effect = ExtResource("3_shake_effect")
 hit_spark_effect = ExtResource("4_hit_spark_effect")
-hit_flash_effect = ExtResource("5_hit_flash_effect")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 offset_left = -20.0
@@ -29414,7 +29341,7 @@ collision_layer = 64
 collision_mask = 28
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
-shape = SubResource("RectangleShape2D_hurtbox")
+shape = SubResource("RectangleShape2D_playerbody")
 
 [node name="HealingTimer" type="Timer" parent="."]
 one_shot = true
@@ -29444,7 +29371,6 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 # --- Editor Properties ---
 @export var damage_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
-@export var hit_flash_effect: ShaderEffect
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -29535,7 +29461,7 @@ func _initialize_and_setup_components() -> void:
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
-		fx_component: {"visual_node": visual_sprite, "hit_flash_effect": hit_flash_effect}
+		fx_component: {"visual_node": visual_sprite}
 	}
 	
 	setup_components(shared_deps, per_component_deps)

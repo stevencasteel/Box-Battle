@@ -1,14 +1,25 @@
 # src/entities/components/fx_component.gd
 @tool
 ## A dedicated component for managing all entity-specific visual effects.
-## It acts as a decoupled bridge to the global FXManager.
 class_name FXComponent
 extends IComponent
+
+# --- Constants ---
+const HIT_FLASH_SHADER = preload("res://shaders/entity/red_hit_flash_test.gdshader")
 
 # --- Member Variables ---
 var _owner: Node
 var _visual_node: CanvasItem
-var _hit_flash_effect: ShaderEffect
+var _original_material: Material
+var _hit_flash_material: ShaderMaterial
+var _active_tween: Tween
+
+# A proxy property for the tween to animate.
+var _intensity: float = 0.0:
+	set(value):
+		_intensity = value
+		if is_instance_valid(_hit_flash_material):
+			_hit_flash_material.set_shader_parameter("intensity", _intensity)
 
 # --- Godot Lifecycle Methods ---
 func _notification(what: int) -> void:
@@ -18,18 +29,23 @@ func _notification(what: int) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
 	self._visual_node = p_dependencies.get("visual_node")
-	self._hit_flash_effect = p_dependencies.get("hit_flash_effect")
 	var health_comp: HealthComponent = p_dependencies.get("health_component")
 
 	if not is_instance_valid(_visual_node):
 		push_warning("FXComponent on '%s' is missing its visual_node dependency." % get_parent().name)
+		return
+
+	# Create and configure the material once at setup.
+	_hit_flash_material = ShaderMaterial.new()
+	_hit_flash_material.shader = HIT_FLASH_SHADER
 
 	if is_instance_valid(health_comp):
-		var cb = Callable(self, "_on_health_component_took_damage")
-		if not health_comp.took_damage.is_connected(cb):
-			health_comp.took_damage.connect(cb)
+		health_comp.took_damage.connect(_on_health_component_took_damage)
 
 func teardown() -> void:
+	if is_instance_valid(_active_tween):
+		_active_tween.kill()
+
 	var health_comp: HealthComponent = _owner.get("health_component") if is_instance_valid(_owner) else null
 	if is_instance_valid(health_comp) and health_comp.took_damage.is_connected(_on_health_component_took_damage):
 		health_comp.took_damage.disconnect(_on_health_component_took_damage)
@@ -37,8 +53,34 @@ func teardown() -> void:
 	_visual_node = null
 	_owner = null
 
+# --- Private Methods ---
+func _play_hit_flash() -> void:
+	if not is_instance_valid(_visual_node) or not is_instance_valid(_hit_flash_material):
+		return
+		
+	if is_instance_valid(_active_tween):
+		_active_tween.kill()
+
+	_original_material = _visual_node.material
+	
+	# We must duplicate the material to get a unique instance for this effect.
+	var material_instance = _hit_flash_material.duplicate()
+	_visual_node.material = material_instance
+	
+	# Set the proxy property directly to start the tween from full intensity.
+	self._intensity = 1.0
+	material_instance.set_shader_parameter("intensity", 1.0)
+	
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "_intensity", 0.0, 0.12)
+	_active_tween.finished.connect(_on_flash_finished)
+
+func _on_flash_finished() -> void:
+	if is_instance_valid(_visual_node):
+		_visual_node.material = _original_material
+	_active_tween = null
+
 # --- Signal Handlers ---
 
 func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	if is_instance_valid(_hit_flash_effect):
-		FXManager.play_shader(_hit_flash_effect, _visual_node)
+	_play_hit_flash()

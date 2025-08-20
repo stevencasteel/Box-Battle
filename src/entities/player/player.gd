@@ -18,7 +18,6 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 # --- Editor Properties ---
 @export var damage_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
-@export var hit_flash_effect: ShaderEffect
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -109,7 +108,7 @@ func _initialize_and_setup_components() -> void:
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
-		fx_component: {"visual_node": visual_sprite, "hit_flash_effect": hit_flash_effect}
+		fx_component: {"visual_node": visual_sprite}
 	}
 	
 	setup_components(shared_deps, per_component_deps)

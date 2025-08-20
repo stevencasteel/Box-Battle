@@ -1,0 +1,32 @@
+// shaders/entity/red_hit_flash_test.gdshader
+shader_type canvas_item;
+
+uniform vec4 tint_color : source_color = vec4(1.0, 0.0, 0.0, 1.0);
+uniform float intensity : hint_range(0.0, 1.0);
+
+void fragment() {
+    vec4 original_color = texture(TEXTURE, UV);
+    vec3 mixed_rgb = mix(original_color.rgb, tint_color.rgb, intensity);
+    COLOR = vec4(mixed_rgb, original_color.a);
+}```
+
+Save and exit nano (`Ctrl+X`, `Y`, `Enter`).
+
+### Step 2: Create the New Shader Material
+
+This material resource links the shader code to the engine so it can be used by other resources and nodes.
+
+Run this command:
+
+```bash
+nano materials/red_hit_flash_test_material.tres```
+
+Paste the following into nano:
+
+```gdresource
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://cgt63w7k4w5gq"]
+
+[ext_resource type="Shader" path="res://shaders/entity/red_hit_flash_test.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
