@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://k3dglh3t1b4a"]
-
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
 [ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot_logic.tres" id="2_logic"]
-
 [resource]
 script = ExtResource("1_attack_pattern")
-logic = ExtResource("2_logic")
+; --- Core Timings ---
 telegraph_duration = 0.7
 attack_duration = 0.6
 cooldown = 2.5
+; --- Logic-Specific Data ---
+logic = ExtResource("2_logic")
 projectile_count = 3
 volley_delay = 0.2

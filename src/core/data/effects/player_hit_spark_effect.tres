@@ -5,5 +5,7 @@
 
 [resource]
 script = ExtResource("1_vfx_effect")
+
+; --- Configuration ---
 scene = ExtResource("2_hit_spark_scene")
 pool_key = &"hit_sparks"

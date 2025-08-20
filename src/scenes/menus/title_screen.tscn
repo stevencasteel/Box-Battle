@@ -53,6 +53,7 @@ horizontal_alignment = 1
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 
+; --- Menu Items ---
 [node name="MenuItemsVBox" type="VBoxContainer" parent="MainVBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -85,6 +86,7 @@ font_size = 64
 layout_mode = 2
 size_flags_vertical = 3
 
+; --- Footer Logos ---
 [node name="FooterHBox" type="HBoxContainer" parent="MainVBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -114,6 +116,7 @@ logo_name = "Itch"
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 
+; --- Global UI ---
 [node name="MuteButtonContainer" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15

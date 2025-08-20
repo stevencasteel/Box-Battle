@@ -5,9 +5,13 @@
 
 [resource]
 script = ExtResource("1_attack_pattern")
-logic = ExtResource("2_logic")
+
+; --- Core Timings ---
 telegraph_duration = 1.2
 attack_duration = 1.0
 cooldown = 3.5
+
+; --- Logic-Specific Data ---
+logic = ExtResource("2_logic")
 projectile_count = 12
 volley_delay = 0.0

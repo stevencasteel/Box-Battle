@@ -5,6 +5,8 @@
 
 [resource]
 script = ExtResource("1_encounter")
+
+; --- Test Configuration ---
 level_layout = ExtResource("2_layout")
 player_spawn_marker = "@"
 boss_spawn_marker = "&"
