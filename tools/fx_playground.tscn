@@ -1,8 +1,54 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://dqk48mvhud5cd"]
 
-[ext_resource type="Script" path="res://tools/fx_playground.gd" id="1"]
+[ext_resource type="Script" uid="uid://chl2ii0j6x47a" path="res://tools/fx_playground.gd" id="1_script"]
+[ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_effect"]
 
 [node name="FXPlayground" type="Control"]
-script = ExtResource("1")
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+_hit_flash_effect = ExtResource("2_effect")
 
-# TODO: Build the node structure for the FX testbed scene.
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TestSubject" type="ColorRect" parent="CenterContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+color = Color(0.8, 0.8, 0.8, 1)
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Play Hit-Flash Effect"
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

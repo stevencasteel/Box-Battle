@@ -15,8 +15,8 @@ enum TargetScope {
 }
 
 # --- Editor Properties ---
-## The actual shader code to be applied.
-@export var shader: Shader
+## The actual ShaderMaterial resource to be applied.
+@export var material: ShaderMaterial
 
 ## The duration of the effect in seconds. A value of 0 means it runs indefinitely
 ## until manually stopped.

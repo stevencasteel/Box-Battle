@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://entity_hit_flash_mat"]
+
+[ext_resource type="Shader" path="res://shaders/entity/red_hit_flash_test.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/intensity = 0.0
+shader_parameter/tint_color = Color(1, 0, 0, 1)

@@ -62,6 +62,28 @@
 ║                                                                              ║
 ║                                                                              ║
 
+   DATA-DRIVEN SHADER SYSTEM (FX COOKBOOK)
+   Established the foundational architecture for the "FX Cookbook," a data-
+   driven system for defining and triggering shader-based visual effects.
+   This completes the first phase of the "Juice & Feedback" initiative.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Created a new `ShaderEffect` custom resource. This allows visual
+      ░   effects to be defined as data files (`.tres`), fully decoupling
+      ░   effect configuration from game logic.
+      ░ ■ Established a robust, code-first pattern for loading custom resources
+      ░   that depend on sub-resources, resolving a series of critical engine-
+      ░   level resource caching and loading errors.
+   █  Added
+      ░ ■ Created a new `fx_playground.tscn` scene to serve as a minimal
+      ░   testbed for rapidly prototyping and verifying new shader effects in
+      ░   complete isolation from the main game loop.
+   █  Changed
+      ░ ■ The existing red hit-flash shader has been migrated to the new
+      ░   `ShaderEffect` system, serving as the pilot and proof-of-concept for
+      ░   the new architecture.
+
+
 
    UI ARCHITECTURE REFINEMENT (DECOUPLING)
    Completed a full refactor of all reusable UI components to eliminate

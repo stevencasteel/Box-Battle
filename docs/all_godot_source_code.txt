@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Wed Aug 20 19:35:31 CDT 2025
+Generated on: Thu Aug 21 13:33:03 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -169,6 +169,7 @@ PROJECT DIRECTORY STRUCTURE:
 ├── export_presets.cfg
 ├── icon.svg
 ├── materials
+│   ├── entity_hit_flash_material.tres
 │   ├── sdf_panel_material.tres
 │   └── shockwave_material.tres
 ├── pico.save
@@ -271,6 +272,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── dialogue_data.gd
 │   │   │   └── test_conversation.tres
 │   │   ├── effects
+│   │   │   ├── entity_hit_flash_effect.tres
 │   │   │   └── shaders
 │   │   ├── encounters
 │   │   │   ├── encounter_00.tres
@@ -440,7 +442,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.gd
     └── fx_playground.tscn
 
-78 directories, 354 files
+78 directories, 356 files
 
 
 =====================================
@@ -456,23 +458,109 @@ FILE: ./.gutconfig.json
 =====================================
 FILE: ./tools/fx_playground.tscn
 =====================================
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://dqk48mvhud5cd"]
 
-[ext_resource type="Script" path="res://tools/fx_playground.gd" id="1"]
+[ext_resource type="Script" uid="uid://chl2ii0j6x47a" path="res://tools/fx_playground.gd" id="1_script"]
+[ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_effect"]
 
 [node name="FXPlayground" type="Control"]
-script = ExtResource("1")
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+_hit_flash_effect = ExtResource("2_effect")
 
-# TODO: Build the node structure for the FX testbed scene.
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TestSubject" type="ColorRect" parent="CenterContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+color = Color(0.8, 0.8, 0.8, 1)
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -100.0
+offset_right = 100.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Play Hit-Flash Effect"
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
 
 
 =====================================
 FILE: ./tools/fx_playground.gd
 =====================================
 # tools/fx_playground.gd
+@tool
 extends Control
 
-# TODO: Build a UI to preview and test all ShaderEffect and VFXEffect resources.
+# This is now exported as our custom type. Godot's loader handles everything.
+@export var _hit_flash_effect: ShaderEffect
+
+@onready var test_subject: ColorRect = %TestSubject
+
+var _active_tween: Tween
+
+# A proxy property for the tween to animate.
+var _intensity: float = 0.0:
+	set(value):
+		_intensity = value
+		if is_instance_valid(test_subject) and is_instance_valid(test_subject.material):
+			test_subject.material.set_shader_parameter("intensity", _intensity)
+
+func _on_button_pressed() -> void:
+	if not is_instance_valid(_hit_flash_effect):
+		print("ERROR: No ShaderEffect resource assigned or could not be loaded.")
+		return
+	
+	_play_effect(_hit_flash_effect)
+
+func _play_effect(effect: ShaderEffect) -> void:
+	if not is_instance_valid(effect.material):
+		push_error("Effect is missing a material.")
+		return
+		
+	if is_instance_valid(_active_tween):
+		_active_tween.kill()
+
+	# In a real scenario, FXComponent would manage this. Here, we do it directly.
+	var material_instance = effect.material.duplicate(true)
+	test_subject.material = material_instance
+	
+	self._intensity = 1.0
+	
+	_active_tween = create_tween()
+	_active_tween.tween_property(self, "_intensity", 0.0, effect.duration)
+	_active_tween.finished.connect(func(): test_subject.material = null)
+	
+	print("Played hit-flash effect!") # VERIFICATION
 
 
 =====================================
@@ -482,6 +570,18 @@ FILE: ./materials/sdf_panel_material.tres
 
 # TODO: Link this material to its corresponding .gdshader file.
 
+
+=====================================
+FILE: ./materials/entity_hit_flash_material.tres
+=====================================
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://entity_hit_flash_mat"]
+
+[ext_resource type="Shader" path="res://shaders/entity/red_hit_flash_test.gdshader" id="1_shader"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/intensity = 0.0
+shader_parameter/tint_color = Color(1, 0, 0, 1)
 
 =====================================
 FILE: ./materials/shockwave_material.tres
@@ -20418,6 +20518,28 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 
+   DATA-DRIVEN SHADER SYSTEM (FX COOKBOOK)
+   Established the foundational architecture for the "FX Cookbook," a data-
+   driven system for defining and triggering shader-based visual effects.
+   This completes the first phase of the "Juice & Feedback" initiative.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Created a new `ShaderEffect` custom resource. This allows visual
+      ░   effects to be defined as data files (`.tres`), fully decoupling
+      ░   effect configuration from game logic.
+      ░ ■ Established a robust, code-first pattern for loading custom resources
+      ░   that depend on sub-resources, resolving a series of critical engine-
+      ░   level resource caching and loading errors.
+   █  Added
+      ░ ■ Created a new `fx_playground.tscn` scene to serve as a minimal
+      ░   testbed for rapidly prototyping and verifying new shader effects in
+      ░   complete isolation from the main game loop.
+   █  Changed
+      ░ ■ The existing red hit-flash shader has been migrated to the new
+      ░   `ShaderEffect` system, serving as the pilot and proof-of-concept for
+      ░   the new architecture.
+
+
 
    UI ARCHITECTURE REFINEMENT (DECOUPLING)
    Completed a full refactor of all reusable UI components to eliminate
@@ -26027,8 +26149,8 @@ enum TargetScope {
 }
 
 # --- Editor Properties ---
-## The actual shader code to be applied.
-@export var shader: Shader
+## The actual ShaderMaterial resource to be applied.
+@export var material: ShaderMaterial
 
 ## The duration of the effect in seconds. A value of 0 means it runs indefinitely
 ## until manually stopped.
@@ -27819,6 +27941,7 @@ func _on_lifetime_timer_timeout() -> void:
 	if process_mode == PROCESS_MODE_DISABLED: return
 	_object_pool.return_instance.call_deferred(self)
 
+
 =====================================
 FILE: ./src/data/dialogue/test_conversation.tres
 =====================================
@@ -28031,6 +28154,20 @@ extends Resource
 ## The key is the character marker in the layout file (e.g., "T").
 ## The value is the PackedScene for that minion.
 @export var minion_spawns: Dictionary = {}
+
+=====================================
+FILE: ./src/data/effects/entity_hit_flash_effect.tres
+=====================================
+[gd_resource type="Resource" script_class="ShaderEffect" load_steps=3 format=3 uid="uid://entity_hit_flash_effect"]
+
+[ext_resource type="Script" path="res://src/core/data/effects/shader_effect.gd" id="1_script"]
+[ext_resource type="ShaderMaterial" uid="uid://entity_hit_flash_mat" path="res://materials/entity_hit_flash_material.tres" id="2_material"]
+
+[resource]
+script = ExtResource("1_script")
+material = ExtResource("2_material")
+duration = 0.12
+target_scope = 0
 
 =====================================
 FILE: ./src/entities/base_entity.gd
@@ -30190,6 +30327,7 @@ func _on_pogo_bounce_requested() -> void:
 func _cancel_heal() -> void:
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
+
 
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn

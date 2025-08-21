@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ShaderEffect" load_steps=3 format=3 uid="uid://entity_hit_flash_effect"]
+
+[ext_resource type="Script" path="res://src/core/data/effects/shader_effect.gd" id="1_script"]
+[ext_resource type="ShaderMaterial" uid="uid://entity_hit_flash_mat" path="res://materials/entity_hit_flash_material.tres" id="2_material"]
+
+[resource]
+script = ExtResource("1_script")
+material = ExtResource("2_material")
+duration = 0.12
+target_scope = 0
