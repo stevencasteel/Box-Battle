@@ -5,6 +5,10 @@
 ## focus changes and draws selection cursors next to the focused item.
 extends Node
 
+# --- Signals ---
+## Emitted when the selection changes via keyboard input.
+signal selection_changed
+
 # --- Member Variables ---
 var menu_items: Array[Control] = []
 var current_selection_index: int = 0
@@ -51,7 +55,6 @@ func setup_menu(items: Array[Control]) -> void:
 
 func _change_selection(amount: int) -> void:
 	if menu_items.size() <= 1:
-		AudioManager.play_sfx(AssetPaths.SFX_UI_ERROR)
 		return
 
 	var new_selection = (current_selection_index + amount + menu_items.size()) % menu_items.size()
@@ -83,4 +86,4 @@ func _on_item_focused(focused_item: Control) -> void:
 		current_selection_index = index
 
 	_update_cursors(focused_item)
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
+	selection_changed.emit()

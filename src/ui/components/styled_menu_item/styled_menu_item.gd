@@ -135,14 +135,12 @@ func _animate_selection(p_is_selected: bool) -> void:
 func _on_mouse_entered() -> void:
 	is_hovered = true
 	grab_focus()
-	CursorManager.set_pointer_state(true)
 
 func _on_mouse_exited() -> void:
 	is_hovered = false
 	if is_pressed:
 		is_pressed = false
 		queue_redraw()
-	CursorManager.set_pointer_state(false)
 
 func _on_focus_entered() -> void:
 	is_selected = true

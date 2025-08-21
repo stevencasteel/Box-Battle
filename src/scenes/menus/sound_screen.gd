@@ -10,6 +10,7 @@ const CustomSliderScript = preload(AssetPaths.SCRIPT_CUSTOM_SLIDER)
 # --- Node References ---
 @onready var menu_items_vbox: VBoxContainer = %MenuItemsVBox
 @onready var back_button: StyledMenuItem = %BackButton
+@onready var mute_button: MuteButton = $MuteButtonContainer/MuteButton
 
 # --- Private Member Variables ---
 var _master_volume_label: Label
@@ -35,10 +36,23 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		back_button.pressed.connect(_on_back_button_pressed)
 		Settings.audio_settings_changed.connect(_update_ui_from_settings)
-
+		mute_button.pressed.connect(_on_mute_button_pressed)
+		
 		var menu_manager = MenuManagerScript.new()
 		add_child(menu_manager)
 		menu_manager.setup_menu([back_button])
+		
+		# --- Connect Feedback Handlers ---
+		menu_manager.selection_changed.connect(_on_any_item_focused)
+		var interactive_items: Array[Control] = [back_button, mute_button]
+		for item in interactive_items:
+			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		
+		# Connect generic sound only to mute button
+		mute_button.pressed.connect(_on_any_item_pressed)
+		
+		_update_ui_from_settings() # Includes mute button icon
 
 		await get_tree().process_frame
 		back_button.grab_focus()
@@ -57,6 +71,7 @@ func _update_ui_from_settings() -> void:
 	if _master_mute_checkbox: _update_checkbox_texture(_master_mute_checkbox, Settings.master_muted)
 	if _music_mute_checkbox: _update_checkbox_texture(_music_mute_checkbox, Settings.music_muted)
 	if _sfx_mute_checkbox: _update_checkbox_texture(_sfx_mute_checkbox, Settings.sfx_muted)
+	if is_instance_valid(mute_button): mute_button.update_icon(Settings.music_muted)
 
 func _create_volume_row(label_text: String, initial_volume: float, type: String) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
@@ -113,6 +128,15 @@ func _update_checkbox_texture(button_ref: TextureButton, is_muted: bool) -> void
 		button_ref.texture_normal = new_texture
 
 # --- Signal Handlers ---
+func _on_any_item_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
+
+func _on_any_item_focused() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
+
+func _on_mute_button_pressed() -> void:
+	Settings.music_muted = not Settings.music_muted
 
 func _on_back_button_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)

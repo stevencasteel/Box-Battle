@@ -87,8 +87,6 @@ func _animate_hover(p_is_hovered: bool) -> void:
 
 func _on_mouse_entered() -> void:
 	is_hovered = true
-	CursorManager.set_pointer_state(true)
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 	_animate_hover(true)
 
 func _on_mouse_exited() -> void:
@@ -96,5 +94,4 @@ func _on_mouse_exited() -> void:
 	if is_pressed:
 		is_pressed = false
 		queue_redraw()
-	CursorManager.set_pointer_state(false)
 	_animate_hover(false)
