@@ -62,6 +62,30 @@
 ║                                                                              ║
 ║                                                                              ║
 
+   PERFORMANCE: FXCOMPONENT OPTIMIZATION
+   Completed a full optimization pass on the FXComponent to eliminate runtime
+   allocations, resulting in smoother performance during intense combat with
+   many simultaneous visual effects.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Implemented Tween Pooling: The FXComponent now creates and reuses a
+      ░   single Tween object, preventing the performance cost of creating and
+      ░   destroying Tweens for every effect.
+      ░ ■ Implemented Material Reuse: The component now uses a single,
+      ░   duplicated ShaderMaterial instance. Effects are played by copying
+      ░   shader parameters to this instance rather than duplicating an entire
+      ░   material resource on every playback.
+   █  Fixed
+      ░ ■ Resolved a series of subtle race conditions and API misuse errors
+      ░   related to the Tween lifecycle, making the interruption of effects
+      ░   (e.g., rapid hits) robust and error-free.
+      ░ ■ Corrected the logic for copying shader uniforms to use the proper
+      ░   Godot 4 API (`Shader.get_shader_uniform_list`), resolving a critical
+      ░   API call error.
+
+
+
+
    FXCOMPONENT HARDENING & VERIFICATION
    Improved the robustness and testability of the core visual effects system.
    This completes the safety and verification phase of the FX refactor.

@@ -16,15 +16,21 @@ var _owner: Node
 var _visual_node: CanvasItem
 var _health_component: HealthComponent
 var _original_material: Material
-var _active_tween: Tween
 var _current_effect_name: String = "None"
+
+var _active_tween: Tween
+var _material_instance: ShaderMaterial
+
+# --- Private Member Variables ---
+# OPTIMIZATION: Cache uniform lists per shader to avoid re-querying every frame.
+var _shader_uniform_cache: Dictionary = {}
 
 # A proxy property for the tween to animate.
 var _progress: float = 0.0:
 	set(value):
 		_progress = value
-		if is_instance_valid(_visual_node) and is_instance_valid(_visual_node.material):
-			(_visual_node.material as ShaderMaterial).set_shader_parameter("fx_progress", _progress)
+		if is_instance_valid(_material_instance):
+			_material_instance.set_shader_parameter("fx_progress", _progress)
 
 # --- Godot Lifecycle Methods ---
 func _notification(what: int) -> void:
@@ -48,9 +54,16 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	if is_instance_valid(injected_effect):
 		default_hit_effect = injected_effect
 
+	# OPTIMIZATION: Create one reusable material instance.
+	if is_instance_valid(_original_material) and _original_material is ShaderMaterial:
+		_material_instance = _original_material.duplicate(true) as ShaderMaterial
+	else:
+		_material_instance = ShaderMaterial.new()
+
 func teardown() -> void:
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
+		_active_tween = null
 
 	if is_instance_valid(_health_component) and _health_component.took_damage.is_connected(_on_owner_took_damage):
 		_health_component.took_damage.disconnect(_on_owner_took_damage)
@@ -61,6 +74,7 @@ func teardown() -> void:
 	_visual_node = null
 	_owner = null
 	_health_component = null
+	_material_instance = null
 
 # --- Public API ---
 
@@ -72,17 +86,41 @@ func play_effect(effect: ShaderEffect) -> void:
 		
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
-		
+		_active_tween = null
+	
 	_current_effect_name = effect.resource_path.get_file()
 
-	var material_instance = effect.material.duplicate(true)
-	_visual_node.material = material_instance
+	var src_material := effect.material as ShaderMaterial
+	if not is_instance_valid(src_material):
+		push_error("FXComponent: effect.material is not a ShaderMaterial.")
+		return
+
+	var shader_res := src_material.shader
+	_material_instance.shader = shader_res
+
+	if is_instance_valid(shader_res):
+		var uniform_list: Array
+		if _shader_uniform_cache.has(shader_res):
+			uniform_list = _shader_uniform_cache[shader_res]
+		else:
+			uniform_list = shader_res.get_shader_uniform_list()
+			_shader_uniform_cache[shader_res] = uniform_list
+
+		for param_info in uniform_list:
+			var param_name: String = param_info.get("name", "")
+			var usage := int(param_info.get("usage", 0))
+			
+			var is_sampler = not (usage & PROPERTY_USAGE_DEFAULT)
+			if not is_sampler and param_name != "fx_progress" and param_name != "":
+				var value = src_material.get_shader_parameter(param_name)
+				_material_instance.set_shader_parameter(param_name, value)
 	
+	_visual_node.material = _material_instance
 	self._progress = 0.0
 	
 	_active_tween = create_tween()
+	_active_tween.finished.connect(_on_effect_finished, CONNECT_ONE_SHOT)
 	_active_tween.tween_property(self, "_progress", 1.0, effect.duration)
-	_active_tween.finished.connect(_on_effect_finished)
 
 ## Returns the filename of the currently playing effect.
 func get_current_effect_name() -> String:
@@ -99,5 +137,5 @@ func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResul
 func _on_effect_finished() -> void:
 	if is_instance_valid(_visual_node):
 		_visual_node.material = _original_material
-	_active_tween = null
 	_current_effect_name = "None"
+	_active_tween = null
