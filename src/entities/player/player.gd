@@ -43,6 +43,7 @@ var entity_data: PlayerStateData
 
 # --- Private Member Variables ---
 var _object_pool: ObjectPool
+var _fx_manager: Node
 
 # --- Godot Lifecycle Methods ---
 
@@ -55,7 +56,6 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
-	# TODO: This is a temporary fix to initialize the UI. Should be event driven.
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
@@ -105,13 +105,15 @@ func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = COMBAT_CONFIG
 	_object_pool = ObjectPool
+	_fx_manager = FXManager
 	
 	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config,
 		"health_component": health_component,
 		"object_pool": _object_pool,
-		"event_bus": EventBus
+		"event_bus": EventBus,
+		"fx_manager": _fx_manager
 	}
 	
 	var states = {
@@ -130,11 +132,11 @@ func _initialize_and_setup_components() -> void:
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
-		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT},
+		health_component: {"hit_spark_effect": hit_spark_effect}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
-
 
 func _connect_signals() -> void:
 	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
@@ -185,7 +187,7 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		if damage_result.was_damaged:
 			resource_component.on_damage_dealt()
 			if is_close_range:
-				FXManager.request_hit_stop(entity_data.config.player_melee_close_range_hit_stop_duration)
+				_fx_manager.request_hit_stop(entity_data.config.player_melee_close_range_hit_stop_duration)
 func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
 func _on_hitbox_area_entered(area: Area2D) -> void:
@@ -213,7 +215,7 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
 		entity_data.health += 1
-		resource_component.consume_healing_charge()
+		resource_component.conbsume_healing_charge()
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
 		state_machine.change_state(State.MOVE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:

@@ -20,6 +20,8 @@ var _knockback_speed: float
 var _hazard_knockback_speed: float
 var _invincibility_tokens: Dictionary = {}
 var _next_token_id: int = 1
+var _fx_manager: Node # Dependency
+var _hit_spark_effect: VFXEffect # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -46,6 +48,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.entity_data = p_dependencies.get("data_resource")
 	var cfg: CombatConfig = p_dependencies.get("config")
+	self._fx_manager = p_dependencies.get("fx_manager")
+	self._hit_spark_effect = p_dependencies.get("hit_spark_effect")
 
 	if not entity_data or not cfg:
 		push_error("HealthComponent.setup: Missing required dependencies.")
@@ -67,6 +71,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 func teardown() -> void:
 	entity_data = null
 	owner_node = null
+	_fx_manager = null
+	_hit_spark_effect = null
 
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	var result = DamageResult.new()
@@ -85,6 +91,10 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 
 	result.was_damaged = true
 	took_damage.emit(damage_info, result)
+
+	# Play hit spark VFX if damage was taken and an effect is configured
+	if result.was_damaged and is_instance_valid(_fx_manager) and is_instance_valid(_hit_spark_effect):
+		_fx_manager.play_vfx(_hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
 
 	if entity_data.health <= 0:
 		died.emit()

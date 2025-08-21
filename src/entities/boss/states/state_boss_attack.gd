@@ -53,7 +53,11 @@ func _start_telegraph_and_attack() -> void:
 	)
 	await telegraph.telegraph_finished
 
-	# THE FIX: Get the command and execute it.
+	# THE FIX: Add a death check after the telegraph. If the boss died during
+	# the await, do not proceed with the attack.
+	if _boss._is_dead:
+		return
+
 	var attack_command: Callable = _current_pattern.logic.execute(_boss, _current_pattern)
 	if attack_command.is_valid():
 		attack_command.call()

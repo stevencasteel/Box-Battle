@@ -25,6 +25,7 @@ var entity_data: TurretStateData
 # --- Private Member Variables ---
 var _player: CharacterBody2D
 var _object_pool: ObjectPool # Dependency
+var _fx_manager: Node # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -82,6 +83,7 @@ func _initialize_data() -> void:
 	entity_data = TurretStateData.new()
 	entity_data.config = COMBAT_CONFIG
 	_object_pool = ObjectPool
+	_fx_manager = FXManager
 
 func _initialize_and_setup_components() -> void:
 	var circle_shape = CircleShape2D.new()
@@ -92,7 +94,8 @@ func _initialize_and_setup_components() -> void:
 
 	var shared_deps := {
 		"data_resource": entity_data,
-		"config": entity_data.config
+		"config": entity_data.config,
+		"fx_manager": _fx_manager
 	}
 	
 	var states = {
@@ -102,7 +105,8 @@ func _initialize_and_setup_components() -> void:
 	
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.IDLE},
-		fx_component: {"visual_node": visual, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
+		fx_component: {"visual_node": visual, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT},
+		health_component: {"hit_spark_effect": hit_spark_effect}
 	}
 
 	setup_components(shared_deps, per_component_deps)

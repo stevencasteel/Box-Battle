@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Thu Aug 21 17:36:22 CDT 2025
+Generated on: Thu Aug 21 18:36:11 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -20542,6 +20542,41 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 
+   VFX & BUG FIXES
+   Restored the missing hit-spark visual effect and resolved a critical bug
+   that allowed the boss to attack after being defeated.
+   ────────────────────────────────────────────────────────────────────────
+   █  Fixed
+      ░ ■ Restored the hit-spark particle effect, which was no longer triggering
+      ░   on successful damage events due to a regression in the component refactor.
+      ░ ■ Resolved a critical race condition where the boss could still execute
+      ░   an attack after dying if it was killed during its attack telegraph.
+   █  Architectural Changes
+      ░ ■ Refactored the `HealthComponent` to be the single source of truth for
+      ░   triggering hit-spark VFX, ensuring visual feedback is reliably coupled
+      ░   to damage application.
+
+
+   UI ARCHITECTURE REFINEMENT (DECOUPLING)
+   Completed a full refactor of all reusable UI components to eliminate
+   hidden dependencies on global singletons, aligning the UI with the
+   project's core architectural patterns.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Refactored `StyledMenuItem`, `MuteButton`, and `LogoDisplay` to be
+      ░   purely presentational. They no longer call `AudioManager` or other
+      ░   singletons directly.
+      ░ ■ UI components now only emit signals (e.g., `pressed`) to announce
+      ░   user interaction.
+      ░ ■ The owner menu scenes (e.g., `TitleScreen`) are now solely
+      ░   responsible for listening to these signals and triggering audio
+      ░   feedback, enforcing the Owner-Driven Dependency Injection pattern.
+   █  Fixed
+      ░ ■ Resolved an issue where "Back" and "Exit" buttons played the generic
+      ░   "select" sound instead of the correct "back" sound effect.
+
+
+
    ARCHITECTURAL HARDENING (DEPENDENCY INJECTION)
    Completed a full-scale refactor to enforce the Owner-Driven Dependency
    Injection pattern across all entities and components, eliminating hidden
@@ -22604,6 +22639,10 @@ FILE: ./src/ui/menu_manager/menu_manager.gd
 ## focus changes and draws selection cursors next to the focused item.
 extends Node
 
+# --- Signals ---
+## Emitted when the selection changes via keyboard input.
+signal selection_changed
+
 # --- Member Variables ---
 var menu_items: Array[Control] = []
 var current_selection_index: int = 0
@@ -22650,7 +22689,6 @@ func setup_menu(items: Array[Control]) -> void:
 
 func _change_selection(amount: int) -> void:
 	if menu_items.size() <= 1:
-		AudioManager.play_sfx(AssetPaths.SFX_UI_ERROR)
 		return
 
 	var new_selection = (current_selection_index + amount + menu_items.size()) % menu_items.size()
@@ -22682,7 +22720,7 @@ func _on_item_focused(focused_item: Control) -> void:
 		current_selection_index = index
 
 	_update_cursors(focused_item)
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
+	selection_changed.emit()
 
 =====================================
 FILE: ./src/ui/dialogue/dialogue_box.gd
@@ -22799,31 +22837,18 @@ const ICON_SOUND_OFF = preload(AssetPaths.ICON_UI_SOUND_OFF)
 
 func _ready() -> void:
 	focus_mode = FOCUS_NONE
-	_update_icon()
-
 	if not Engine.is_editor_hint():
-		self.pressed.connect(_on_pressed)
-		Settings.audio_settings_changed.connect(_update_icon)
-		mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-		mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		# The owner scene is now responsible for handling pressed and hover.
+		pass
 
-func _exit_tree() -> void:
-	if not Engine.is_editor_hint():
-		if Settings.audio_settings_changed.is_connected(_update_icon):
-			Settings.audio_settings_changed.disconnect(_update_icon)
+# --- Public Methods ---
 
-# --- Private Methods ---
-
-func _update_icon() -> void:
-	if Settings.music_muted:
+## Updates the button's icon based on the provided mute state.
+func update_icon(is_muted: bool) -> void:
+	if is_muted:
 		self.texture_normal = ICON_SOUND_OFF
 	else:
 		self.texture_normal = ICON_SOUND_ON
-
-# --- Signal Handlers ---
-
-func _on_pressed() -> void:
-	Settings.music_muted = not Settings.music_muted
 
 =====================================
 FILE: ./src/ui/components/styled_menu_item/styled_menu_item.tscn
@@ -22978,14 +23003,12 @@ func _animate_selection(p_is_selected: bool) -> void:
 func _on_mouse_entered() -> void:
 	is_hovered = true
 	grab_focus()
-	CursorManager.set_pointer_state(true)
 
 func _on_mouse_exited() -> void:
 	is_hovered = false
 	if is_pressed:
 		is_pressed = false
 		queue_redraw()
-	CursorManager.set_pointer_state(false)
 
 func _on_focus_entered() -> void:
 	is_selected = true
@@ -23193,8 +23216,6 @@ func _animate_hover(p_is_hovered: bool) -> void:
 
 func _on_mouse_entered() -> void:
 	is_hovered = true
-	CursorManager.set_pointer_state(true)
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 	_animate_hover(true)
 
 func _on_mouse_exited() -> void:
@@ -23202,7 +23223,6 @@ func _on_mouse_exited() -> void:
 	if is_pressed:
 		is_pressed = false
 		queue_redraw()
-	CursorManager.set_pointer_state(false)
 	_animate_hover(false)
 
 =====================================
@@ -23994,43 +24014,73 @@ func _ready() -> void:
 		# --- Connect Signals ---
 		start_button.pressed.connect(_on_start_button_pressed)
 		options_button.pressed.connect(_on_options_button_pressed)
-		exit_button.pressed.connect(get_tree().quit)
+		exit_button.pressed.connect(_on_exit_button_pressed)
 		newgrounds_logo.pressed.connect(_on_logo_pressed)
 		godot_logo.pressed.connect(_on_logo_pressed)
 		itch_logo.pressed.connect(_on_logo_pressed)
+		mute_button.pressed.connect(_on_mute_button_pressed)
 		
-		# Connect all pressable items to the audio handler
-		start_button.pressed.connect(_on_any_item_pressed)
-		options_button.pressed.connect(_on_any_item_pressed)
-		exit_button.pressed.connect(_on_any_item_pressed)
-		mute_button.pressed.connect(_on_any_item_pressed)
-		newgrounds_logo.pressed.connect(_on_any_item_pressed)
-		godot_logo.pressed.connect(_on_any_item_pressed)
-		itch_logo.pressed.connect(_on_any_item_pressed)
+		# --- Connect All Items to Feedback Handlers ---
+		var generic_items: Array[Control] = [start_button, options_button, newgrounds_logo, godot_logo, itch_logo, mute_button]
+		for item in generic_items:
+			item.pressed.connect(_on_any_item_pressed)
+			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+			if item is StyledMenuItem:
+				item.focus_entered.connect(_on_any_item_focused)
+		
+		# Connect feedback for the exit button separately
+		exit_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		exit_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		exit_button.focus_entered.connect(_on_any_item_focused)
 
+
+		# --- Sync Mute Button ---
+		mute_button.update_icon(Settings.music_muted)
+		Settings.audio_settings_changed.connect(_on_audio_settings_changed)
 
 		# --- Initialize Menu Manager ---
 		var menu_manager = MenuManagerScript.new()
 		add_child(menu_manager)
 		var menu_items: Array[Control] = [start_button, options_button, exit_button]
 		menu_manager.setup_menu(menu_items)
+		menu_manager.selection_changed.connect(_on_any_item_focused)
 
 		await get_tree().process_frame
 		start_button.grab_focus()
+
+func _exit_tree() -> void:
+	if not Engine.is_editor_hint():
+		if Settings.audio_settings_changed.is_connected(_on_audio_settings_changed):
+			Settings.audio_settings_changed.disconnect(_on_audio_settings_changed)
 
 # --- Signal Handlers ---
 
 func _on_any_item_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
+
+func _on_any_item_focused() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 	
 func _on_start_button_pressed() -> void:
 	SceneManager.start_game(AssetPaths.ENCOUNTER_00)
 
 func _on_options_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
+	
+func _on_exit_button_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
+	await get_tree().create_timer(0.2).timeout # Give sound time to play
+	get_tree().quit()
 
 func _on_logo_pressed(logo_name: String) -> void:
 	print("%s Pressed" % logo_name)
+
+func _on_mute_button_pressed() -> void:
+	Settings.music_muted = not Settings.music_muted
+
+func _on_audio_settings_changed() -> void:
+	mute_button.update_icon(Settings.music_muted)
 
 =====================================
 FILE: ./src/scenes/menus/credits_screen.gd
@@ -24083,15 +24133,25 @@ func _ready() -> void:
 		add_child(menu_manager)
 		menu_manager.setup_menu([back_button])
 
+		# --- Connect Feedback Handlers ---
+		menu_manager.selection_changed.connect(_on_any_item_focused)
+		back_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		back_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+
 		await get_tree().process_frame
 		back_button.grab_focus()
 
 # --- Signal Handlers ---
 
+func _on_any_item_focused() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
+	
 func _on_meta_clicked(meta) -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 	OS.shell_open(str(meta))
 
 func _on_back_button_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
 
 =====================================
@@ -24277,7 +24337,6 @@ layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
 
-
 =====================================
 FILE: ./src/scenes/menus/options_screen.gd
 =====================================
@@ -24315,11 +24374,29 @@ func _ready() -> void:
 		add_child(menu_manager)
 		var menu_items: Array[Control] = [sound_button, controls_button, credits_button, back_button]
 		menu_manager.setup_menu(menu_items)
+		
+		# --- Connect Feedback Handlers ---
+		menu_manager.selection_changed.connect(_on_any_item_focused)
+		var generic_menu_items = [sound_button, controls_button, credits_button]
+		for item in generic_menu_items:
+			item.pressed.connect(_on_any_item_pressed)
+			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		
+		# Connect feedback for the back button separately
+		back_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		back_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 
 		await get_tree().process_frame
 		sound_button.grab_focus()
 
 # --- Signal Handlers ---
+
+func _on_any_item_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
+
+func _on_any_item_focused() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 
 func _on_sound_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_SOUND_SCREEN)
@@ -24331,6 +24408,7 @@ func _on_credits_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_CREDITS_SCREEN)
 
 func _on_back_button_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_TITLE_SCREEN)
 
 =====================================
@@ -24348,6 +24426,7 @@ const CustomSliderScript = preload(AssetPaths.SCRIPT_CUSTOM_SLIDER)
 # --- Node References ---
 @onready var menu_items_vbox: VBoxContainer = %MenuItemsVBox
 @onready var back_button: StyledMenuItem = %BackButton
+@onready var mute_button: MuteButton = $MuteButtonContainer/MuteButton
 
 # --- Private Member Variables ---
 var _master_volume_label: Label
@@ -24373,10 +24452,23 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		back_button.pressed.connect(_on_back_button_pressed)
 		Settings.audio_settings_changed.connect(_update_ui_from_settings)
-
+		mute_button.pressed.connect(_on_mute_button_pressed)
+		
 		var menu_manager = MenuManagerScript.new()
 		add_child(menu_manager)
 		menu_manager.setup_menu([back_button])
+		
+		# --- Connect Feedback Handlers ---
+		menu_manager.selection_changed.connect(_on_any_item_focused)
+		var interactive_items: Array[Control] = [back_button, mute_button]
+		for item in interactive_items:
+			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		
+		# Connect generic sound only to mute button
+		mute_button.pressed.connect(_on_any_item_pressed)
+		
+		_update_ui_from_settings() # Includes mute button icon
 
 		await get_tree().process_frame
 		back_button.grab_focus()
@@ -24395,6 +24487,7 @@ func _update_ui_from_settings() -> void:
 	if _master_mute_checkbox: _update_checkbox_texture(_master_mute_checkbox, Settings.master_muted)
 	if _music_mute_checkbox: _update_checkbox_texture(_music_mute_checkbox, Settings.music_muted)
 	if _sfx_mute_checkbox: _update_checkbox_texture(_sfx_mute_checkbox, Settings.sfx_muted)
+	if is_instance_valid(mute_button): mute_button.update_icon(Settings.music_muted)
 
 func _create_volume_row(label_text: String, initial_volume: float, type: String) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
@@ -24451,9 +24544,19 @@ func _update_checkbox_texture(button_ref: TextureButton, is_muted: bool) -> void
 		button_ref.texture_normal = new_texture
 
 # --- Signal Handlers ---
+func _on_any_item_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
+
+func _on_any_item_focused() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
+
+func _on_mute_button_pressed() -> void:
+	Settings.music_muted = not Settings.music_muted
 
 func _on_back_button_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
+
 
 =====================================
 FILE: ./src/scenes/menus/controls_screen.gd
@@ -24494,6 +24597,11 @@ func _ready() -> void:
 		var menu_manager = MenuManagerScript.new()
 		add_child(menu_manager)
 		menu_manager.setup_menu([back_button])
+		
+		# --- Connect Feedback Handlers ---
+		menu_manager.selection_changed.connect(_on_any_item_focused)
+		back_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		back_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 
 		await get_tree().process_frame
 		back_button.grab_focus()
@@ -24524,7 +24632,11 @@ func _create_control_row(data: Dictionary) -> HBoxContainer:
 
 # --- Signal Handlers ---
 
+func _on_any_item_focused() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
+
 func _on_back_button_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
 
 =====================================
@@ -28000,9 +28112,9 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 @export var lifespan: float = 10.0
 
 # --- Node References ---
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var visual: ColorRect = $ColorRect
-@onready var lifetime_timer: Timer = $LifetimeTimer
+@onready var collision_shape: CollisionShape2D = %CollisionShape2D
+@onready var visual: ColorRect = %ColorRect
+@onready var lifetime_timer: Timer = %LifetimeTimer
 
 # --- Private Member Variables ---
 var _player_ref: WeakRef
@@ -28757,7 +28869,7 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 	
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
-		var shot: HomingBossShot = ObjectPool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
+		var shot: HomingBossShot = owner._object_pool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
 		if not is_instance_valid(shot): continue
 		
 		# Configure the projectile from the central config
@@ -28768,7 +28880,7 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 		var angle = i * angle_step
 		shot.rotation = angle
 		shot.global_position = owner.global_position
-		shot.activate({"object_pool": ObjectPool})
+		shot.activate({"object_pool": owner._object_pool})
 
 =====================================
 FILE: ./src/entities/boss/boss_state_data.gd
@@ -28984,7 +29096,11 @@ func _start_telegraph_and_attack() -> void:
 	)
 	await telegraph.telegraph_finished
 
-	# THE FIX: Get the command and execute it.
+	# THE FIX: Add a death check after the telegraph. If the boss died during
+	# the await, do not proceed with the attack.
+	if _boss._is_dead:
+		return
+
 	var attack_command: Callable = _current_pattern.logic.execute(_boss, _current_pattern)
 	if attack_command.is_valid():
 		attack_command.call()
@@ -29057,6 +29173,8 @@ var entity_data: BossStateData
 var _player: CharacterBody2D = null
 var _active_attack_tween: Tween
 var _is_dead: bool = false
+var _object_pool: ObjectPool # Dependency
+var _fx_manager: Node # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -29079,7 +29197,7 @@ func _ready() -> void:
 	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	
 	if is_instance_valid(intro_shake_effect):
-		FXManager.request_screen_shake(intro_shake_effect)
+		_fx_manager.request_screen_shake(intro_shake_effect)
 
 func _exit_tree() -> void:
 	teardown()
@@ -29118,20 +29236,20 @@ func fire_volley(shot_count: int, delay: float) -> void:
 
 func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player): return
-	var shot = ObjectPool.get_instance(Identifiers.Pools.BOSS_SHOTS)
+	var shot = _object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
 	if not shot: return
 	_update_player_tracking()
 	shot.direction = (_player.global_position - global_position).normalized()
 	shot.global_position = global_position
-	shot.activate({"object_pool": ObjectPool})
+	shot.activate({"object_pool": _object_pool})
 
 # --- Private Methods ---
 
 func _die() -> void:
 	if _is_dead: return
 	if is_instance_valid(death_shake_effect):
-		FXManager.request_screen_shake(death_shake_effect)
-	FXManager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
+		_fx_manager.request_screen_shake(death_shake_effect)
+	_fx_manager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
 	_is_dead = true
 	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
 	set_physics_process(false)
@@ -29144,11 +29262,14 @@ func _initialize_data() -> void:
 	current_attack_patterns = phase_1_patterns
 	entity_data = BossStateData.new()
 	entity_data.config = COMBAT_CONFIG
+	_object_pool = ObjectPool
+	_fx_manager = FXManager
 
 func _initialize_and_setup_components() -> void:
 	var shared_deps := {
 		"data_resource": entity_data,
-		"config": entity_data.config
+		"config": entity_data.config,
+		"fx_manager": _fx_manager
 	}
 	
 	var states = {
@@ -29161,7 +29282,8 @@ func _initialize_and_setup_components() -> void:
 	
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.COOLDOWN},
-		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT},
+		health_component: {"hit_spark_effect": hit_spark_effect}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
@@ -29192,8 +29314,8 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 			2: current_attack_patterns = phase_2_patterns
 			1: current_attack_patterns = phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
-			FXManager.request_screen_shake(phase_change_shake_effect)
-		FXManager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
+			_fx_manager.request_screen_shake(phase_change_shake_effect)
+		_fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
 		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout() -> void:
@@ -29466,7 +29588,6 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.p_data = p_dependencies.get("data_resource")
 	self._object_pool = p_dependencies.get("object_pool")
 	assert(is_instance_valid(_object_pool), "CombatComponent requires an ObjectPool dependency.")
-	print("VERIFICATION: CombatComponent received ObjectPool: ", _object_pool)
 
 
 func teardown() -> void:
@@ -29573,6 +29694,8 @@ var _knockback_speed: float
 var _hazard_knockback_speed: float
 var _invincibility_tokens: Dictionary = {}
 var _next_token_id: int = 1
+var _fx_manager: Node # Dependency
+var _hit_spark_effect: VFXEffect # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -29599,6 +29722,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.entity_data = p_dependencies.get("data_resource")
 	var cfg: CombatConfig = p_dependencies.get("config")
+	self._fx_manager = p_dependencies.get("fx_manager")
+	self._hit_spark_effect = p_dependencies.get("hit_spark_effect")
 
 	if not entity_data or not cfg:
 		push_error("HealthComponent.setup: Missing required dependencies.")
@@ -29620,6 +29745,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 func teardown() -> void:
 	entity_data = null
 	owner_node = null
+	_fx_manager = null
+	_hit_spark_effect = null
 
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	var result = DamageResult.new()
@@ -29638,6 +29765,10 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 
 	result.was_damaged = true
 	took_damage.emit(damage_info, result)
+
+	# Play hit spark VFX if damage was taken and an effect is configured
+	if result.was_damaged and is_instance_valid(_fx_manager) and is_instance_valid(_hit_spark_effect):
+		_fx_manager.play_vfx(_hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
 
 	if entity_data.health <= 0:
 		died.emit()
@@ -29809,14 +29940,11 @@ FILE: ./src/entities/components/fx_component.gd
 class_name FXComponent
 extends IComponent
 
-# --- Editor Properties ---
-## An optional, default effect to play on damage. Can be overridden by dependencies.
-@export var default_hit_effect: ShaderEffect
-
 # --- Member Variables ---
 var _owner: Node
 var _visual_node: CanvasItem
 var _health_component: HealthComponent
+var _hit_effect: ShaderEffect # Injected Dependency
 var _original_material: Material
 var _current_effect_name: String = "None"
 
@@ -29849,11 +29977,10 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 
 	_health_component = p_dependencies.get("health_component", null)
 	if is_instance_valid(_health_component):
+		assert(p_dependencies.has("hit_effect"), "FXComponent requires a 'hit_effect' dependency when a HealthComponent is present.")
+		_hit_effect = p_dependencies.get("hit_effect")
+		assert(is_instance_valid(_hit_effect), "Injected 'hit_effect' must be a valid ShaderEffect resource.")
 		_health_component.took_damage.connect(_on_owner_took_damage)
-
-	var injected_effect = p_dependencies.get("hit_effect", null)
-	if is_instance_valid(injected_effect):
-		default_hit_effect = injected_effect
 
 	if is_instance_valid(_original_material) and _original_material is ShaderMaterial:
 		_material_instance = _original_material.duplicate(true) as ShaderMaterial
@@ -29914,7 +30041,7 @@ func play_effect(effect: ShaderEffect, overrides: Dictionary = {}) -> void:
 				var value = src_material.get_shader_parameter(param_name)
 				_material_instance.set_shader_parameter(param_name, value)
 		
-		# TODO: Apply runtime overrides
+		# Apply runtime overrides
 		if not overrides.is_empty():
 			for param_name in overrides:
 				_material_instance.set_shader_parameter(param_name, overrides[param_name])
@@ -29933,9 +30060,9 @@ func get_current_effect_name() -> String:
 # --- Signal Handlers ---
 
 func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	if is_instance_valid(default_hit_effect):
+	if is_instance_valid(_hit_effect):
 		# By default, damage flashes do not have overrides.
-		play_effect(default_hit_effect, {})
+		play_effect(_hit_effect, {})
 	else:
 		push_warning("FXComponent on '%s' received took_damage, but has no default_hit_effect assigned." % [_owner.name])
 
@@ -29975,6 +30102,8 @@ var entity_data: TurretStateData
 
 # --- Private Member Variables ---
 var _player: CharacterBody2D
+var _object_pool: ObjectPool # Dependency
+var _fx_manager: Node # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -30016,12 +30145,12 @@ func deactivate() -> void:
 func _fire_at_player() -> void:
 	if not is_instance_valid(_player): return
 
-	var shot = ObjectPool.get_instance(Identifiers.Pools.TURRET_SHOTS)
+	var shot = _object_pool.get_instance(Identifiers.Pools.TURRET_SHOTS)
 	if not is_instance_valid(shot): return
 
 	shot.direction = (self._player.global_position - self.global_position).normalized()
 	shot.global_position = self.global_position
-	shot.activate({"object_pool": ObjectPool})
+	shot.activate({"object_pool": _object_pool})
 
 func _die() -> void:
 	queue_free()
@@ -30031,6 +30160,8 @@ func _initialize_data() -> void:
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 	entity_data = TurretStateData.new()
 	entity_data.config = COMBAT_CONFIG
+	_object_pool = ObjectPool
+	_fx_manager = FXManager
 
 func _initialize_and_setup_components() -> void:
 	var circle_shape = CircleShape2D.new()
@@ -30041,7 +30172,8 @@ func _initialize_and_setup_components() -> void:
 
 	var shared_deps := {
 		"data_resource": entity_data,
-		"config": entity_data.config
+		"config": entity_data.config,
+		"fx_manager": _fx_manager
 	}
 	
 	var states = {
@@ -30051,7 +30183,8 @@ func _initialize_and_setup_components() -> void:
 	
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.IDLE},
-		fx_component: {"visual_node": visual, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
+		fx_component: {"visual_node": visual, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT},
+		health_component: {"hit_spark_effect": hit_spark_effect}
 	}
 
 	setup_components(shared_deps, per_component_deps)
@@ -30327,6 +30460,7 @@ var entity_data: PlayerStateData
 
 # --- Private Member Variables ---
 var _object_pool: ObjectPool
+var _fx_manager: Node
 
 # --- Godot Lifecycle Methods ---
 
@@ -30339,7 +30473,6 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
-	# TODO: This is a temporary fix to initialize the UI. Should be event driven.
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
@@ -30389,13 +30522,15 @@ func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = COMBAT_CONFIG
 	_object_pool = ObjectPool
+	_fx_manager = FXManager
 	
 	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config,
 		"health_component": health_component,
 		"object_pool": _object_pool,
-		"event_bus": EventBus
+		"event_bus": EventBus,
+		"fx_manager": _fx_manager
 	}
 	
 	var states = {
@@ -30414,11 +30549,11 @@ func _initialize_and_setup_components() -> void:
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
-		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT},
+		health_component: {"hit_spark_effect": hit_spark_effect}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
-
 
 func _connect_signals() -> void:
 	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
@@ -30469,7 +30604,7 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		if damage_result.was_damaged:
 			resource_component.on_damage_dealt()
 			if is_close_range:
-				FXManager.request_hit_stop(entity_data.config.player_melee_close_range_hit_stop_duration)
+				_fx_manager.request_hit_stop(entity_data.config.player_melee_close_range_hit_stop_duration)
 func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
 func _on_hitbox_area_entered(area: Area2D) -> void:
@@ -30497,7 +30632,7 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
 		entity_data.health += 1
-		resource_component.consume_healing_charge()
+		resource_component.conbsume_healing_charge()
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
 		state_machine.change_state(State.MOVE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:

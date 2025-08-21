@@ -45,6 +45,7 @@ var _player: CharacterBody2D = null
 var _active_attack_tween: Tween
 var _is_dead: bool = false
 var _object_pool: ObjectPool # Dependency
+var _fx_manager: Node # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -67,7 +68,7 @@ func _ready() -> void:
 	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	
 	if is_instance_valid(intro_shake_effect):
-		FXManager.request_screen_shake(intro_shake_effect)
+		_fx_manager.request_screen_shake(intro_shake_effect)
 
 func _exit_tree() -> void:
 	teardown()
@@ -118,8 +119,8 @@ func fire_shot_at_player() -> void:
 func _die() -> void:
 	if _is_dead: return
 	if is_instance_valid(death_shake_effect):
-		FXManager.request_screen_shake(death_shake_effect)
-	FXManager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
+		_fx_manager.request_screen_shake(death_shake_effect)
+	_fx_manager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
 	_is_dead = true
 	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
 	set_physics_process(false)
@@ -133,11 +134,13 @@ func _initialize_data() -> void:
 	entity_data = BossStateData.new()
 	entity_data.config = COMBAT_CONFIG
 	_object_pool = ObjectPool
+	_fx_manager = FXManager
 
 func _initialize_and_setup_components() -> void:
 	var shared_deps := {
 		"data_resource": entity_data,
-		"config": entity_data.config
+		"config": entity_data.config,
+		"fx_manager": _fx_manager
 	}
 	
 	var states = {
@@ -150,7 +153,8 @@ func _initialize_and_setup_components() -> void:
 	
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.COOLDOWN},
-		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT},
+		health_component: {"hit_spark_effect": hit_spark_effect}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
@@ -181,8 +185,8 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 			2: current_attack_patterns = phase_2_patterns
 			1: current_attack_patterns = phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
-			FXManager.request_screen_shake(phase_change_shake_effect)
-		FXManager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
+			_fx_manager.request_screen_shake(phase_change_shake_effect)
+		_fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
 		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout() -> void:

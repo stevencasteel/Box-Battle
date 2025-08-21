@@ -62,6 +62,21 @@
 ║                                                                              ║
 ║                                                                              ║
 
+   VFX & BUG FIXES
+   Restored the missing hit-spark visual effect and resolved a critical bug
+   that allowed the boss to attack after being defeated.
+   ────────────────────────────────────────────────────────────────────────
+   █  Fixed
+      ░ ■ Restored the hit-spark particle effect, which was no longer triggering
+      ░   on successful damage events due to a regression in the component refactor.
+      ░ ■ Resolved a critical race condition where the boss could still execute
+      ░   an attack after dying if it was killed during its attack telegraph.
+   █  Architectural Changes
+      ░ ■ Refactored the `HealthComponent` to be the single source of truth for
+      ░   triggering hit-spark VFX, ensuring visual feedback is reliably coupled
+      ░   to damage application.
+
+
    UI ARCHITECTURE REFINEMENT (DECOUPLING)
    Completed a full refactor of all reusable UI components to eliminate
    hidden dependencies on global singletons, aligning the UI with the

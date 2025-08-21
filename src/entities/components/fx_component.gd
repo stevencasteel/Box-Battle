@@ -7,14 +7,11 @@
 class_name FXComponent
 extends IComponent
 
-# --- Editor Properties ---
-## An optional, default effect to play on damage. Can be overridden by dependencies.
-@export var default_hit_effect: ShaderEffect
-
 # --- Member Variables ---
 var _owner: Node
 var _visual_node: CanvasItem
 var _health_component: HealthComponent
+var _hit_effect: ShaderEffect # Injected Dependency
 var _original_material: Material
 var _current_effect_name: String = "None"
 
@@ -47,11 +44,10 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 
 	_health_component = p_dependencies.get("health_component", null)
 	if is_instance_valid(_health_component):
+		assert(p_dependencies.has("hit_effect"), "FXComponent requires a 'hit_effect' dependency when a HealthComponent is present.")
+		_hit_effect = p_dependencies.get("hit_effect")
+		assert(is_instance_valid(_hit_effect), "Injected 'hit_effect' must be a valid ShaderEffect resource.")
 		_health_component.took_damage.connect(_on_owner_took_damage)
-
-	var injected_effect = p_dependencies.get("hit_effect", null)
-	if is_instance_valid(injected_effect):
-		default_hit_effect = injected_effect
 
 	if is_instance_valid(_original_material) and _original_material is ShaderMaterial:
 		_material_instance = _original_material.duplicate(true) as ShaderMaterial
@@ -112,7 +108,7 @@ func play_effect(effect: ShaderEffect, overrides: Dictionary = {}) -> void:
 				var value = src_material.get_shader_parameter(param_name)
 				_material_instance.set_shader_parameter(param_name, value)
 		
-		# TODO: Apply runtime overrides
+		# Apply runtime overrides
 		if not overrides.is_empty():
 			for param_name in overrides:
 				_material_instance.set_shader_parameter(param_name, overrides[param_name])
@@ -131,9 +127,9 @@ func get_current_effect_name() -> String:
 # --- Signal Handlers ---
 
 func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	if is_instance_valid(default_hit_effect):
+	if is_instance_valid(_hit_effect):
 		# By default, damage flashes do not have overrides.
-		play_effect(default_hit_effect, {})
+		play_effect(_hit_effect, {})
 	else:
 		push_warning("FXComponent on '%s' received took_damage, but has no default_hit_effect assigned." % [_owner.name])
 
