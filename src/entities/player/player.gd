@@ -14,6 +14,7 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO}
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Properties ---
 @export_group("Juice & Feedback")
@@ -54,6 +55,7 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
+	# TODO: This is a temporary fix to initialize the UI. Should be event driven.
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
@@ -63,6 +65,7 @@ func _physics_process(delta: float) -> void:
 # --- Public Methods ---
 
 func teardown() -> void:
+	# Disconnect signals that THIS script is listening to.
 	if is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(_on_health_component_health_changed):
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
@@ -127,7 +130,7 @@ func _initialize_and_setup_components() -> void:
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
-		fx_component: {"visual_node": visual_sprite}
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
 	}
 	
 	setup_components(shared_deps, per_component_deps)

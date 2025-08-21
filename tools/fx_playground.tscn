@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://dqk48mvhud5cd"]
+[gd_scene load_steps=4 format=3 uid="uid://qfvxrbic3utx"]
 
 [ext_resource type="Script" uid="uid://chl2ii0j6x47a" path="res://tools/fx_playground.gd" id="1_script"]
 [ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_effect"]
+[ext_resource type="PackedScene" uid="uid://g7h8jaj0k1l2" path="res://src/entities/components/fx_component.tscn" id="3_fx_component"]
 
 [node name="FXPlayground" type="Control"]
 layout_mode = 3
@@ -35,6 +36,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 200)
 layout_mode = 2
 color = Color(0.8, 0.8, 0.8, 1)
+
+[node name="FXComponent" parent="CenterContainer/TestSubject" instance=ExtResource("3_fx_component")]
 
 [node name="Button" type="Button" parent="."]
 layout_mode = 1

@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Thu Aug 21 13:33:03 CDT 2025
+Generated on: Thu Aug 21 14:02:00 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -458,10 +458,11 @@ FILE: ./.gutconfig.json
 =====================================
 FILE: ./tools/fx_playground.tscn
 =====================================
-[gd_scene load_steps=3 format=3 uid="uid://dqk48mvhud5cd"]
+[gd_scene load_steps=4 format=3 uid="uid://qfvxrbic3utx"]
 
 [ext_resource type="Script" uid="uid://chl2ii0j6x47a" path="res://tools/fx_playground.gd" id="1_script"]
 [ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_effect"]
+[ext_resource type="PackedScene" uid="uid://g7h8jaj0k1l2" path="res://src/entities/components/fx_component.tscn" id="3_fx_component"]
 
 [node name="FXPlayground" type="Control"]
 layout_mode = 3
@@ -496,6 +497,8 @@ custom_minimum_size = Vector2(200, 200)
 layout_mode = 2
 color = Color(0.8, 0.8, 0.8, 1)
 
+[node name="FXComponent" parent="CenterContainer/TestSubject" instance=ExtResource("3_fx_component")]
+
 [node name="Button" type="Button" parent="."]
 layout_mode = 1
 anchors_preset = 7
@@ -521,46 +524,25 @@ FILE: ./tools/fx_playground.gd
 @tool
 extends Control
 
-# This is now exported as our custom type. Godot's loader handles everything.
 @export var _hit_flash_effect: ShaderEffect
 
 @onready var test_subject: ColorRect = %TestSubject
+@onready var fx_component: FXComponent = %TestSubject/FXComponent
 
-var _active_tween: Tween
-
-# A proxy property for the tween to animate.
-var _intensity: float = 0.0:
-	set(value):
-		_intensity = value
-		if is_instance_valid(test_subject) and is_instance_valid(test_subject.material):
-			test_subject.material.set_shader_parameter("intensity", _intensity)
+func _ready() -> void:
+	if not Engine.is_editor_hint():
+		# In a real game, the entity owner (Player, Boss) would do this.
+		# Here, the playground itself is the owner.
+		fx_component.setup(test_subject, {"visual_node": test_subject})
 
 func _on_button_pressed() -> void:
 	if not is_instance_valid(_hit_flash_effect):
 		print("ERROR: No ShaderEffect resource assigned or could not be loaded.")
 		return
 	
-	_play_effect(_hit_flash_effect)
-
-func _play_effect(effect: ShaderEffect) -> void:
-	if not is_instance_valid(effect.material):
-		push_error("Effect is missing a material.")
-		return
-		
-	if is_instance_valid(_active_tween):
-		_active_tween.kill()
-
-	# In a real scenario, FXComponent would manage this. Here, we do it directly.
-	var material_instance = effect.material.duplicate(true)
-	test_subject.material = material_instance
-	
-	self._intensity = 1.0
-	
-	_active_tween = create_tween()
-	_active_tween.tween_property(self, "_intensity", 0.0, effect.duration)
-	_active_tween.finished.connect(func(): test_subject.material = null)
-	
-	print("Played hit-flash effect!") # VERIFICATION
+	# The playground's only job is to tell the component to play the effect.
+	fx_component.play_effect(_hit_flash_effect)
+	print("Requested FXComponent to play hit-flash effect!") # VERIFICATION
 
 
 =====================================
@@ -580,7 +562,7 @@ FILE: ./materials/entity_hit_flash_material.tres
 
 [resource]
 shader = ExtResource("1_shader")
-shader_parameter/intensity = 0.0
+shader_parameter/fx_progress = 0.0
 shader_parameter/tint_color = Color(1, 0, 0, 1)
 
 =====================================
@@ -22087,11 +22069,15 @@ FILE: ./shaders/entity/red_hit_flash_test.gdshader
 shader_type canvas_item;
 
 uniform vec4 tint_color : source_color = vec4(1.0, 0.0, 0.0, 1.0);
-uniform float intensity : hint_range(0.0, 1.0);
+// The effect's progress, from 0.0 (start) to 1.0 (end).
+uniform float fx_progress : hint_range(0.0, 1.0);
 
 void fragment() {
     // Get the base color from the ColorRect
     vec4 original_color = COLOR;
+    
+    // As fx_progress goes from 0 to 1, intensity goes from 1 to 0.
+    float intensity = 1.0 - fx_progress;
     
     // Mix the original color with the tint color
     vec3 mixed_rgb = mix(original_color.rgb, tint_color.rgb, intensity);
@@ -29657,26 +29643,22 @@ FILE: ./src/entities/components/fx_component.gd
 ## CONTRACT: This component requires the following dependencies to be passed
 ## into its setup() method:
 ##  - "visual_node": A CanvasItem to which the shader will be applied.
-##  - "health_component": A HealthComponent to connect the `took_damage` signal.
 class_name FXComponent
 extends IComponent
-
-# --- Constants ---
-const HIT_FLASH_SHADER = preload("res://shaders/entity/red_hit_flash_test.gdshader")
 
 # --- Member Variables ---
 var _owner: Node
 var _visual_node: CanvasItem
 var _original_material: Material
-var _hit_flash_material: ShaderMaterial
 var _active_tween: Tween
 
 # A proxy property for the tween to animate.
-var _intensity: float = 0.0:
+var _progress: float = 0.0:
 	set(value):
-		_intensity = value
-		if is_instance_valid(_hit_flash_material):
-			_hit_flash_material.set_shader_parameter("intensity", _intensity)
+		_progress = value
+		if is_instance_valid(_visual_node) and is_instance_valid(_visual_node.material):
+			# This is the standardized uniform name for all our effects.
+			(_visual_node.material as ShaderMaterial).set_shader_parameter("fx_progress", _progress)
 
 # --- Godot Lifecycle Methods ---
 func _notification(what: int) -> void:
@@ -29686,78 +29668,50 @@ func _notification(what: int) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
 	
-	# --- Dependency Validation ---
 	assert(p_dependencies.has("visual_node"), "FXComponent requires a 'visual_node' dependency.")
-	assert(p_dependencies.has("health_component"), "FXComponent requires a 'health_component' dependency.")
 	self._visual_node = p_dependencies.get("visual_node")
-	var health_comp: HealthComponent = p_dependencies.get("health_component")
 	assert(is_instance_valid(_visual_node) and _visual_node is CanvasItem, "'visual_node' must be a valid CanvasItem.")
-	assert(is_instance_valid(health_comp) and health_comp is HealthComponent, "'health_component' must be a valid HealthComponent.")
-
-	# --- Initialization ---
-	_hit_flash_material = ShaderMaterial.new()
-	_hit_flash_material.shader = HIT_FLASH_SHADER
-
-	if is_instance_valid(health_comp):
-		health_comp.took_damage.connect(_on_health_component_took_damage)
+	
+	_original_material = _visual_node.material
 
 func teardown() -> void:
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 
-	var health_comp: HealthComponent = _owner.get("health_component") if is_instance_valid(_owner) else null
-	if is_instance_valid(health_comp) and health_comp.took_damage.is_connected(_on_health_component_took_damage):
-		health_comp.took_damage.disconnect(_on_health_component_took_damage)
+	# Restore the original material on cleanup.
+	if is_instance_valid(_visual_node):
+		_visual_node.material = _original_material
 
 	_visual_node = null
 	_owner = null
 
-# --- Private Methods ---
-func _play_hit_flash() -> void:
-	if not is_instance_valid(_visual_node) or not is_instance_valid(_hit_flash_material):
+# --- Public API ---
+
+## Plays a configured ShaderEffect resource on the visual_node.
+func play_effect(effect: ShaderEffect) -> void:
+	if not is_instance_valid(effect) or not is_instance_valid(effect.material):
+		push_error("FXComponent: play_effect called with an invalid effect or material.")
 		return
 		
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 
-	_original_material = _visual_node.material
+	var material_instance = effect.material.duplicate(true)
+	_visual_node.material = material_instance
 	
-	_visual_node.material = _hit_flash_material
-	
-	self._intensity = 1.0
+	self._progress = 0.0
 	
 	_active_tween = create_tween()
-	_active_tween.tween_property(self, "_intensity", 0.0, 0.12)
-	_active_tween.finished.connect(_on_flash_finished)
+	# Animate the standardized `_progress` property from 0 to 1 over the effect's duration.
+	_active_tween.tween_property(self, "_progress", 1.0, effect.duration)
+	_active_tween.finished.connect(_on_effect_finished)
 
-func _on_flash_finished() -> void:
+# --- Private Methods ---
+
+func _on_effect_finished() -> void:
 	if is_instance_valid(_visual_node):
 		_visual_node.material = _original_material
 	_active_tween = null
-
-# --- Signal Handlers ---
-
-func _on_health_component_took_damage(damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	_play_hit_flash()
-	
-	# The Player and Boss now pass their specific effect resources via their main scripts.
-	var owner_player = _owner as Player
-	if is_instance_valid(owner_player):
-		if is_instance_valid(owner_player.damage_shake_effect):
-			FXManager.request_screen_shake(owner_player.damage_shake_effect)
-		FXManager.request_hit_stop(owner_player.entity_data.config.player_damage_taken_hit_stop_duration)
-		if is_instance_valid(owner_player.hit_spark_effect):
-			FXManager.play_vfx(owner_player.hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
-			
-	var owner_boss = _owner as BaseBoss
-	if is_instance_valid(owner_boss):
-		if is_instance_valid(owner_boss.hit_spark_effect):
-			FXManager.play_vfx(owner_boss.hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
-
-	var owner_turret = _owner as Turret
-	if is_instance_valid(owner_turret):
-		if is_instance_valid(owner_turret.hit_spark_effect):
-			FXManager.play_vfx(owner_turret.hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
 
 =====================================
 FILE: ./src/entities/minions/turret.gd
@@ -29807,7 +29761,6 @@ func _notification(what: int) -> void:
 # --- Public Methods ---
 
 func teardown() -> void:
-	# THE FIX: Standardize teardown to disconnect all signals.
 	if is_instance_valid(health_component):
 		if health_component.died.is_connected(_on_health_component_died):
 			health_component.died.disconnect(_on_health_component_died)
@@ -30151,6 +30104,7 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
+	# TODO: This is a temporary fix to initialize the UI. Should be event driven.
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
@@ -30160,6 +30114,7 @@ func _physics_process(delta: float) -> void:
 # --- Public Methods ---
 
 func teardown() -> void:
+	# Disconnect signals that THIS script is listening to.
 	if is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(_on_health_component_health_changed):
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
@@ -30224,7 +30179,7 @@ func _initialize_and_setup_components() -> void:
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
-		fx_component: {"visual_node": visual_sprite}
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
@@ -30327,7 +30282,6 @@ func _on_pogo_bounce_requested() -> void:
 func _cancel_heal() -> void:
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
-
 
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn

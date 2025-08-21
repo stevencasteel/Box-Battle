@@ -4,5 +4,5 @@
 
 [resource]
 shader = ExtResource("1_shader")
-shader_parameter/intensity = 0.0
+shader_parameter/fx_progress = 0.0
 shader_parameter/tint_color = Color(1, 0, 0, 1)

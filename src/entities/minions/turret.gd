@@ -9,6 +9,7 @@ enum State { IDLE, ATTACK }
 
 # --- Constants ---
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Configuration ---
 @export var hit_spark_effect: VFXEffect
@@ -43,7 +44,6 @@ func _notification(what: int) -> void:
 # --- Public Methods ---
 
 func teardown() -> void:
-	# THE FIX: Standardize teardown to disconnect all signals.
 	if is_instance_valid(health_component):
 		if health_component.died.is_connected(_on_health_component_died):
 			health_component.died.disconnect(_on_health_component_died)
@@ -100,7 +100,7 @@ func _initialize_and_setup_components() -> void:
 	
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.IDLE},
-		fx_component: {"visual_node": visual, "health_component": health_component}
+		fx_component: {"visual_node": visual, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
 	}
 
 	setup_components(shared_deps, per_component_deps)

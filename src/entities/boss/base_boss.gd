@@ -5,6 +5,7 @@ extends BaseEntity
 
 # --- Constants ---
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Enums ---
 enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
@@ -147,7 +148,7 @@ func _initialize_and_setup_components() -> void:
 	
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.COOLDOWN},
-		fx_component: {"visual_node": visual_sprite, "health_component": health_component}
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
