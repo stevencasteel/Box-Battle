@@ -14,6 +14,7 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 @onready var newgrounds_logo: LogoDisplay = %NewgroundsLogo
 @onready var godot_logo: LogoDisplay = %GodotLogo
 @onready var itch_logo: LogoDisplay = %ItchLogo
+@onready var mute_button: MuteButton = $MuteButtonContainer/MuteButton
 
 # --- Godot Lifecycle Methods ---
 
@@ -32,6 +33,16 @@ func _ready() -> void:
 		newgrounds_logo.pressed.connect(_on_logo_pressed)
 		godot_logo.pressed.connect(_on_logo_pressed)
 		itch_logo.pressed.connect(_on_logo_pressed)
+		
+		# Connect all pressable items to the audio handler
+		start_button.pressed.connect(_on_any_item_pressed)
+		options_button.pressed.connect(_on_any_item_pressed)
+		exit_button.pressed.connect(_on_any_item_pressed)
+		mute_button.pressed.connect(_on_any_item_pressed)
+		newgrounds_logo.pressed.connect(_on_any_item_pressed)
+		godot_logo.pressed.connect(_on_any_item_pressed)
+		itch_logo.pressed.connect(_on_any_item_pressed)
+
 
 		# --- Initialize Menu Manager ---
 		var menu_manager = MenuManagerScript.new()
@@ -44,6 +55,9 @@ func _ready() -> void:
 
 # --- Signal Handlers ---
 
+func _on_any_item_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
+	
 func _on_start_button_pressed() -> void:
 	SceneManager.start_game(AssetPaths.ENCOUNTER_00)
 

@@ -48,7 +48,6 @@ func _gui_input(event: InputEvent) -> void:
 			is_pressed = true
 			queue_redraw()
 		elif is_pressed: # On release
-			AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 			emit_signal("pressed", logo_name)
 			is_pressed = false
 			queue_redraw()

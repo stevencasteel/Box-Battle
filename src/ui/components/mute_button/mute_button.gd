@@ -39,4 +39,3 @@ func _update_icon() -> void:
 
 func _on_pressed() -> void:
 	Settings.music_muted = not Settings.music_muted
-	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)

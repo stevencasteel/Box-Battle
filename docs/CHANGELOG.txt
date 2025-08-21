@@ -63,6 +63,21 @@
 ║                                                                              ║
 
 
+   UI ARCHITECTURE REFINEMENT (DECOUPLING)
+   Completed a full refactor of all reusable UI components to eliminate
+   hidden dependencies on global singletons, aligning the UI with the
+   project's core architectural patterns.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Refactored `StyledMenuItem`, `MuteButton`, and `LogoDisplay` to be
+      ░   purely presentational. They no longer call `AudioManager` directly.
+      ░ ■ UI components now only emit signals (e.g., `pressed`) to announce
+      ░   user interaction.
+      ░ ■ The owner menu scenes (e.g., `TitleScreen`) are now solely
+      ░   responsible for listening to these signals and triggering audio
+      ░   feedback, enforcing the Owner-Driven Dependency Injection pattern.
+
+
 
    ARCHITECTURAL HARDENING (DEPENDENCY INJECTION)
    Completed a full-scale refactor to enforce the Owner-Driven Dependency

@@ -42,7 +42,6 @@ func _ready() -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_accept") and has_focus():
 		get_viewport().set_input_as_handled()
-		AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 		emit_signal("pressed")
 		_show_keyboard_press_feedback()
 		return
@@ -52,7 +51,6 @@ func _gui_input(event: InputEvent) -> void:
 			is_pressed = true
 			queue_redraw()
 		elif is_pressed: # On release
-			AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 			emit_signal("pressed")
 			is_pressed = false
 			queue_redraw()
