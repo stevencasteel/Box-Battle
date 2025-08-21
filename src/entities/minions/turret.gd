@@ -24,6 +24,7 @@ var entity_data: TurretStateData
 
 # --- Private Member Variables ---
 var _player: CharacterBody2D
+var _object_pool: ObjectPool # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -65,12 +66,12 @@ func deactivate() -> void:
 func _fire_at_player() -> void:
 	if not is_instance_valid(_player): return
 
-	var shot = ObjectPool.get_instance(Identifiers.Pools.TURRET_SHOTS)
+	var shot = _object_pool.get_instance(Identifiers.Pools.TURRET_SHOTS)
 	if not is_instance_valid(shot): return
 
 	shot.direction = (self._player.global_position - self.global_position).normalized()
 	shot.global_position = self.global_position
-	shot.activate({"object_pool": ObjectPool})
+	shot.activate({"object_pool": _object_pool})
 
 func _die() -> void:
 	queue_free()
@@ -80,6 +81,7 @@ func _initialize_data() -> void:
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 	entity_data = TurretStateData.new()
 	entity_data.config = COMBAT_CONFIG
+	_object_pool = ObjectPool
 
 func _initialize_and_setup_components() -> void:
 	var circle_shape = CircleShape2D.new()

@@ -12,9 +12,9 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 @export var lifespan: float = 10.0
 
 # --- Node References ---
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var visual: ColorRect = $ColorRect
-@onready var lifetime_timer: Timer = $LifetimeTimer
+@onready var collision_shape: CollisionShape2D = %CollisionShape2D
+@onready var visual: ColorRect = %ColorRect
+@onready var lifetime_timer: Timer = %LifetimeTimer
 
 # --- Private Member Variables ---
 var _player_ref: WeakRef

@@ -20,7 +20,7 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 	
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
-		var shot: HomingBossShot = ObjectPool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
+		var shot: HomingBossShot = owner._object_pool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
 		if not is_instance_valid(shot): continue
 		
 		# Configure the projectile from the central config
@@ -31,4 +31,4 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 		var angle = i * angle_step
 		shot.rotation = angle
 		shot.global_position = owner.global_position
-		shot.activate({"object_pool": ObjectPool})
+		shot.activate({"object_pool": owner._object_pool})

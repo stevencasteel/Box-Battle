@@ -44,6 +44,7 @@ var entity_data: BossStateData
 var _player: CharacterBody2D = null
 var _active_attack_tween: Tween
 var _is_dead: bool = false
+var _object_pool: ObjectPool # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -105,12 +106,12 @@ func fire_volley(shot_count: int, delay: float) -> void:
 
 func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player): return
-	var shot = ObjectPool.get_instance(Identifiers.Pools.BOSS_SHOTS)
+	var shot = _object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
 	if not shot: return
 	_update_player_tracking()
 	shot.direction = (_player.global_position - global_position).normalized()
 	shot.global_position = global_position
-	shot.activate({"object_pool": ObjectPool})
+	shot.activate({"object_pool": _object_pool})
 
 # --- Private Methods ---
 
@@ -131,6 +132,7 @@ func _initialize_data() -> void:
 	current_attack_patterns = phase_1_patterns
 	entity_data = BossStateData.new()
 	entity_data.config = COMBAT_CONFIG
+	_object_pool = ObjectPool
 
 func _initialize_and_setup_components() -> void:
 	var shared_deps := {
