@@ -40,6 +40,10 @@ func _notification(what: int) -> void:
 			_music_player.stream = null
 
 func _exit_tree() -> void:
+	# Disconnect from the signal to be a good citizen.
+	if Settings.audio_settings_changed.is_connected(_on_audio_settings_changed):
+		Settings.audio_settings_changed.disconnect(_on_audio_settings_changed)
+
 	# Secondary cleanup method for when the node is removed from the tree.
 	if is_instance_valid(_music_player):
 		_music_player.stop()

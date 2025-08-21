@@ -40,6 +40,9 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 # --- Data ---
 var entity_data: PlayerStateData
 
+# --- Private Member Variables ---
+var _object_pool: ObjectPool
+
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
@@ -100,13 +103,14 @@ func _enable_pogo_hitbox(is_enabled: bool) -> void:
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = COMBAT_CONFIG
-	# THE FIX: Explicitly set the initial air jump count from the config.
-	entity_data.air_jumps_left = entity_data.config.player_max_air_jumps
+	_object_pool = ObjectPool
 	
 	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config,
 		"health_component": health_component,
+		"object_pool": _object_pool,
+		"event_bus": EventBus
 	}
 	
 	var states = {
@@ -189,7 +193,7 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 		if entity_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
 		else:
-			ObjectPool.return_instance.call_deferred(area)
+			_object_pool.return_instance.call_deferred(area)
 func _on_hurtbox_area_entered(area: Area2D) -> void:
 	if health_component.is_invincible(): return
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
@@ -205,7 +209,7 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		if damage_result.was_damaged and entity_data.health > 0:
 			self.velocity = damage_result.knockback_velocity
 			state_machine.change_state(State.HURT)
-		ObjectPool.return_instance.call_deferred(area)
+		_object_pool.return_instance.call_deferred(area)
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
 		entity_data.health += 1

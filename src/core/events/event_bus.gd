@@ -10,6 +10,13 @@ var _subscribers: Dictionary = {}
 var _by_id: Dictionary = {}
 var _next_id: int = 1
 
+# --- Godot Lifecycle Methods ---
+
+func _exit_tree() -> void:
+	# Clear all subscriptions to break potential cyclic references on exit.
+	_subscribers.clear()
+	_by_id.clear()
+
 # --- Public Methods ---
 
 ## Subscribes a callback to a specific event. Returns a token ID for unsubscribing.

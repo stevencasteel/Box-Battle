@@ -67,9 +67,8 @@ func _ready() -> void:
 	if is_instance_valid(intro_shake_effect):
 		FXManager.request_screen_shake(intro_shake_effect)
 
-func _notification(what: int) -> void:
-	if what == NOTIFICATION_PREDELETE:
-		teardown()
+func _exit_tree() -> void:
+	teardown()
 
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint(): return
@@ -112,7 +111,7 @@ func fire_shot_at_player() -> void:
 	_update_player_tracking()
 	shot.direction = (_player.global_position - global_position).normalized()
 	shot.global_position = global_position
-	shot.activate()
+	shot.activate({"object_pool": ObjectPool})
 
 # --- Private Methods ---
 

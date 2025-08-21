@@ -13,6 +13,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 var direction: Vector2 = Vector2.LEFT
 var speed: float = 500.0
 var damage: int = 1
+var _object_pool: ObjectPool # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -26,7 +27,10 @@ func _physics_process(delta: float) -> void:
 # --- Public Methods (IPoolable Contract) ---
 
 ## Activates the projectile, making it visible and interactive.
-func activate() -> void:
+func activate(p_dependencies: Dictionary = {}) -> void:
+	self._object_pool = p_dependencies.get("object_pool")
+	assert(is_instance_valid(_object_pool), "TurretShot requires an ObjectPool dependency.")
+	
 	visible = true
 	process_mode = PROCESS_MODE_INHERIT
 	collision_shape.disabled = false
@@ -36,10 +40,13 @@ func deactivate() -> void:
 	visible = false
 	process_mode = PROCESS_MODE_DISABLED
 	collision_shape.disabled = true
+	_object_pool = null
 
 # --- Signal Handlers ---
 
 func _on_body_entered(body: Node) -> void:
+	if process_mode == PROCESS_MODE_DISABLED: return
+
 	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
@@ -49,7 +56,8 @@ func _on_body_entered(body: Node) -> void:
 		damage_info.impact_normal = -direction
 		damageable.apply_damage(damage_info)
 
-	ObjectPool.return_instance.call_deferred(self)
+	_object_pool.return_instance.call_deferred(self)
 
 func _on_screen_exited() -> void:
-	ObjectPool.return_instance.call_deferred(self)
+	if process_mode == PROCESS_MODE_DISABLED: return
+	_object_pool.return_instance.call_deferred(self)

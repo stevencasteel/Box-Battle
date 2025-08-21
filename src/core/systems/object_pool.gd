@@ -5,24 +5,27 @@
 ## instantiation and deletion of nodes like projectiles and visual effects.
 extends Node
 
-# --- Constants ---
-const PlayerShotScene = preload(AssetPaths.SCENE_PLAYER_SHOT)
-const BossShotScene = preload(AssetPaths.SCENE_BOSS_SHOT)
-const TurretShotScene = preload(AssetPaths.SCENE_TURRET_SHOT)
-const HomingBossShotScene = preload(AssetPaths.SCENE_HOMING_BOSS_SHOT)
-const HitSparkScene = preload(AssetPaths.SCENE_HIT_SPARK)
-
 # --- Private Member Variables ---
 var _pools: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
 
 func _ready() -> void:
-	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, PlayerShotScene, 15)
-	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, BossShotScene, 30)
-	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, TurretShotScene, 20)
-	_create_pool_for_scene(Identifiers.Pools.HOMING_BOSS_SHOTS, HomingBossShotScene, 40)
-	_create_pool_for_scene(Identifiers.Pools.HIT_SPARKS, HitSparkScene, 25)
+	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, load(AssetPaths.SCENE_PLAYER_SHOT), 15)
+	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, load(AssetPaths.SCENE_BOSS_SHOT), 30)
+	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, load(AssetPaths.SCENE_TURRET_SHOT), 20)
+	_create_pool_for_scene(Identifiers.Pools.HOMING_BOSS_SHOTS, load(AssetPaths.SCENE_HOMING_BOSS_SHOT), 40)
+	_create_pool_for_scene(Identifiers.Pools.HIT_SPARKS, load(AssetPaths.SCENE_HIT_SPARK), 25)
+
+func _exit_tree() -> void:
+	# When the game quits, forcefully free all pooled objects and their containers
+	# to ensure all associated rendering resources (RIDs) are released.
+	for i in range(get_child_count() - 1, -1, -1):
+		var child = get_child(i)
+		for j in range(child.get_child_count() - 1, -1, -1):
+			child.get_child(j).free()
+		child.free()
+	_pools.clear()
 
 # --- Public Methods ---
 
@@ -49,7 +52,6 @@ func reset() -> void:
 				active_nodes_to_return.append(child)
 		
 		for node in active_nodes_to_return:
-			# THE FIX: Defer the return call to prevent physics race conditions.
 			return_instance.call_deferred(node)
 
 ## Retrieves an inactive instance from the specified pool.

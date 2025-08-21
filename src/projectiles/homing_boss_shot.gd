@@ -19,6 +19,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 # --- Private Member Variables ---
 var _player_ref: WeakRef
 var _active_tween: Tween
+var _object_pool: ObjectPool # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -40,7 +41,10 @@ func _physics_process(delta: float) -> void:
 
 # --- IPoolable Contract ---
 
-func activate() -> void:
+func activate(p_dependencies: Dictionary = {}) -> void:
+	self._object_pool = p_dependencies.get("object_pool")
+	assert(is_instance_valid(_object_pool), "HomingBossShot requires an ObjectPool dependency.")
+
 	visible = true
 	process_mode = PROCESS_MODE_INHERIT
 	collision_shape.disabled = false
@@ -67,13 +71,16 @@ func deactivate() -> void:
 	collision_shape.disabled = true
 	visual.scale = Vector2.ONE
 	collision_shape.scale = Vector2.ONE
+	_object_pool = null
 
 # --- Signal Handlers ---
 
 func _on_body_entered(_body: Node) -> void:
-	ObjectPool.return_instance.call_deferred(self)
+	if process_mode == PROCESS_MODE_DISABLED: return
+	_object_pool.return_instance.call_deferred(self)
 
 func _on_area_entered(area: Area2D) -> void:
+	if process_mode == PROCESS_MODE_DISABLED: return
 	var damageable = CombatUtilsScript.find_damageable(area)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
@@ -83,10 +90,12 @@ func _on_area_entered(area: Area2D) -> void:
 		damage_info.impact_normal = (global_position - area.global_position).normalized()
 		damageable.apply_damage(damage_info)
 	
-	ObjectPool.return_instance.call_deferred(self)
+	_object_pool.return_instance.call_deferred(self)
 
 func _on_screen_exited() -> void:
-	ObjectPool.return_instance.call_deferred(self)
+	if process_mode == PROCESS_MODE_DISABLED: return
+	_object_pool.return_instance.call_deferred(self)
 
 func _on_lifetime_timer_timeout() -> void:
-	ObjectPool.return_instance.call_deferred(self)
+	if process_mode == PROCESS_MODE_DISABLED: return
+	_object_pool.return_instance.call_deferred(self)

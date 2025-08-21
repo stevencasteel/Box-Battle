@@ -21,7 +21,7 @@ extends Resource
 @export_range(0.0, 0.5, 0.01) var player_coyote_time: float = 0.1
 @export_range(0.0, 0.5, 0.01) var player_jump_buffer: float = 0.1
 @export_range(1.0, 3.0, 0.1) var player_fast_fall_gravity_multiplier: float = 1.4
-@export var player_max_air_jumps: int = 0
+@export var player_max_air_jumps: int = 1
 
 @export_group("Player - Wall Interaction")
 @export_range(50, 500, 5) var player_wall_slide_speed: float = 120.0
@@ -42,7 +42,7 @@ extends Resource
 @export_range(100, 5000, 100) var player_attack_friction: float = 2000.0
 @export_range(0.1, 1.0, 0.01) var player_charge_time: float = 0.35
 @export_range(200, 1000, 10) var player_pogo_force: float = 450.0
-@export_range(100, 1500, 25) var player_knockback_speed: float = 700.0
+@export_range(100, 1500, 25) var player_knockback_speed: float = 400.0
 @export_range(0.05, 0.5, 0.01) var player_knockback_duration: float = 0.1
 @export_range(100, 1500, 25) var player_hazard_knockback_speed: float = 400.0
 @export_range(10, 200, 5) var player_close_range_threshold: float = 75.0

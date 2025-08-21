@@ -72,7 +72,7 @@ func _fire_at_player() -> void:
 
 	shot.direction = (self._player.global_position - self.global_position).normalized()
 	shot.global_position = self.global_position
-	shot.activate()
+	shot.activate({"object_pool": ObjectPool})
 
 func _die() -> void:
 	queue_free()

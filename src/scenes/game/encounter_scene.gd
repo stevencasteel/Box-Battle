@@ -60,6 +60,9 @@ func _unhandled_input(_event: InputEvent) -> void:
 			_cycle_debug_target()
 
 func _exit_tree() -> void:
+	# This is the safety net that catches exits not handled by SceneManager.
+	_cleanup_entities()
+
 	EventBus.off(_boss_died_token)
 	FXManager.unregister_camera_shaker()
 	if is_instance_valid(_death_sequence_handle): _death_sequence_handle.cancel()
@@ -69,15 +72,20 @@ func _exit_tree() -> void:
 # --- Public Methods (ISceneController Contract) ---
 
 func scene_exiting() -> void:
-	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
-	if is_instance_valid(player_node):
-		player_node.teardown()
-
-	var boss_node = get_tree().get_first_node_in_group(Identifiers.Groups.ENEMY)
-	if is_instance_valid(boss_node) and boss_node is BaseBoss:
-		boss_node.teardown()
+	_cleanup_entities()
 
 # --- Private Methods ---
+
+func _cleanup_entities() -> void:
+	# This centralized function ensures all entities are properly torn down.
+	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	if is_instance_valid(player_node) and player_node.has_method("teardown"):
+		player_node.teardown()
+
+	var enemy_nodes = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
+	for enemy in enemy_nodes:
+		if is_instance_valid(enemy) and enemy.has_method("teardown"):
+			enemy.teardown()
 
 func _initialize_camera_shaker() -> void:
 	var shaker_scene = load("res://src/core/systems/camera_shaker.tscn")

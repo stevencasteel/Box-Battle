@@ -31,4 +31,4 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 		var angle = i * angle_step
 		shot.rotation = angle
 		shot.global_position = owner.global_position
-		shot.activate()
+		shot.activate({"object_pool": ObjectPool})

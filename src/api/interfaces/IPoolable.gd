@@ -6,7 +6,7 @@ extends Node
 # --- The Contract ---
 
 ## Prepares the node for use after being retrieved from the pool.
-func activate() -> void:
+func activate(_dependencies: Dictionary = {}) -> void:
 	pass
 
 ## Prepares the node to be returned to the pool's inactive list.

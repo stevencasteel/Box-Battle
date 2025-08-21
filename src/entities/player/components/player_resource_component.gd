@@ -5,18 +5,22 @@ class_name PlayerResourceComponent
 extends IComponent
 
 # --- Member Variables ---
-var owner_node: BaseEntity # THE FIX: Use the generic base class to break the cycle.
+var owner_node: BaseEntity
 var p_data: PlayerStateData
+var _event_bus: Node # Dependency
 
 # --- Public Methods ---
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
+	self._event_bus = p_dependencies.get("event_bus")
+	assert(is_instance_valid(_event_bus), "PlayerResourceComponent requires an EventBus dependency.")
 
 func teardown() -> void:
 	owner_node = null
 	p_data = null
+	_event_bus = null
 
 ## Called when the player successfully deals damage to an enemy.
 func on_damage_dealt() -> void:
@@ -39,4 +43,4 @@ func consume_healing_charge() -> void:
 func _emit_healing_charges_changed_event() -> void:
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
-	EventBus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
+	_event_bus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)

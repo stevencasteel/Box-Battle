@@ -16,22 +16,26 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
+var _object_pool: ObjectPool # Dependency
 
 # --- Public Methods ---
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.p_data = p_dependencies.get("data_resource")
+	self._object_pool = p_dependencies.get("object_pool")
+	assert(is_instance_valid(_object_pool), "CombatComponent requires an ObjectPool dependency.")
 
 func teardown() -> void:
 	owner_node = null
 	p_data = null
+	_object_pool = null
 
 ## Fires a player projectile from the object pool.
 func fire_shot() -> void:
 	p_data.attack_cooldown_timer = p_data.config.player_attack_cooldown
 
-	var shot = ObjectPool.get_instance(Identifiers.Pools.PLAYER_SHOTS)
+	var shot = _object_pool.get_instance(Identifiers.Pools.PLAYER_SHOTS)
 	if not shot: return
 
 	var shot_dir = Vector2(p_data.facing_direction, 0)
@@ -40,7 +44,7 @@ func fire_shot() -> void:
 
 	shot.direction = shot_dir
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
-	shot.activate()
+	shot.activate({"object_pool": _object_pool})
 
 ## Attempts to perform a pogo action on a target.
 func trigger_pogo(pogo_target: Node) -> bool:
@@ -51,7 +55,7 @@ func trigger_pogo(pogo_target: Node) -> bool:
 
 	if pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		should_bounce = true
-		ObjectPool.return_instance.call_deferred(pogo_target)
+		_object_pool.return_instance.call_deferred(pogo_target)
 
 	var damageable = CombatUtilsScript.find_damageable(pogo_target)
 	if is_instance_valid(damageable):

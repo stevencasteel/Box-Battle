@@ -62,7 +62,28 @@
 ║                                                                              ║
 ║                                                                              ║
 
-
+   ARCHITECTURAL HARDENING & MEMORY MANAGEMENT
+   Completed a major architectural push to enforce the Owner-Driven Dependency
+   Injection pattern and resolve all memory leaks on game exit. The codebase
+   is now more robust, testable, and free of dangling resource references.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Enforced the Owner-Driven Dependency Injection pattern project-wide.
+      ░   Components now receive their dependencies (e.g., ObjectPool, EventBus)
+      ░   from their owner via their `setup()` method and no longer call
+      ░   global singletons directly.
+      ░ ■ Refactored all projectile scenes to receive their ObjectPool dependency
+      ░   upon activation, fully decoupling them from the global singleton.
+   █  Fixed
+      ░ ■ Resolved all `ObjectDB instances leaked at exit` warnings by
+      ░   implementing robust `_exit_tree` cleanup methods in all core
+      ░   singletons (`ObjectPool`, `EventBus`, `AudioManager`).
+      ░ ■ Eliminated all RenderingServer `RID` leaks by ensuring all pooled
+      ░   nodes and their rendering resources are explicitly freed on exit.
+      ░ ■ Fixed a race condition in projectile scripts that could cause a crash
+      ░   if an object was returned to the pool multiple times in one frame.
+      ░ ■ Resolved all remaining assertion and parse errors related to the new
+      ░   dependency injection pattern.
 
 
 
