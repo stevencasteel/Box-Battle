@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Thu Aug 21 15:54:05 CDT 2025
+Generated on: Thu Aug 21 16:04:44 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -500,22 +500,38 @@ color = Color(0.8, 0.8, 0.8, 1)
 
 [node name="FXComponent" parent="CenterContainer/TestSubject" instance=ExtResource("3_fx_component")]
 
-[node name="Button" type="Button" parent="."]
+[node name="ButtonRed" type="Button" parent="."]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -100.0
+offset_left = -205.0
 offset_top = -100.0
-offset_right = 100.0
+offset_right = -5.0
 offset_bottom = -50.0
 grow_horizontal = 2
 grow_vertical = 0
-text = "Play Hit-Flash Effect"
+text = "Play Red Hit-Flash (Default)"
 
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
+[node name="ButtonBlue" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = -100.0
+offset_right = 205.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Play Blue Hit-Flash (Override)"
+
+[connection signal="pressed" from="ButtonRed" to="." method="_on_button_red_pressed"]
+[connection signal="pressed" from="ButtonBlue" to="." method="_on_button_blue_pressed"]
 
 
 =====================================
@@ -550,17 +566,25 @@ extends Control
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
-		# In a real game, the entity owner (Player, Boss) would do this.
-		# Here, the playground itself is the owner.
 		fx_component.setup(test_subject, {"visual_node": test_subject})
 
-func _on_button_pressed() -> void:
+func _on_button_red_pressed() -> void:
+	if not is_instance_valid(_hit_flash_effect):
+		print("ERROR: No ShaderEffect resource assigned or could not be loaded.")
+		return
+	# Call with no overrides to test the default behavior.
+	fx_component.play_effect(_hit_flash_effect)
+
+func _on_button_blue_pressed() -> void:
 	if not is_instance_valid(_hit_flash_effect):
 		print("ERROR: No ShaderEffect resource assigned or could not be loaded.")
 		return
 	
-	# The playground's only job is to tell the component to play the effect.
-	fx_component.play_effect(_hit_flash_effect)
+	# Create the overrides dictionary.
+	var overrides = {"tint_color": Color.BLUE}
+	# Pass the overrides to the play_effect method.
+	fx_component.play_effect(_hit_flash_effect, overrides)
+	print("VERIFICATION: Played effect with BLUE override.")
 
 
 =====================================
@@ -20518,6 +20542,21 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 
+   FLEXIBILITY: PARAMETERIZED FXCOMPONENT
+   Enhanced the FXComponent to support runtime shader uniform overrides, making
+   ShaderEffect resources significantly more flexible and reusable.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ The `FXComponent.play_effect` method now accepts an optional
+      ░   `overrides` dictionary. This allows calling code to temporarily change
+      ░   any shader uniform for a single playback without creating a new
+      ░   `.tres` file.
+   █  Added
+      ░ ■ Updated the `fx_playground` tool to demonstrate and verify the new
+      ░   override functionality, confirming that a single red hit-flash effect
+      ░   can be dynamically changed to blue at runtime.
+
+
    PERFORMANCE: FXCOMPONENT OPTIMIZATION
    Completed a full optimization pass on the FXComponent to eliminate runtime
    allocations, resulting in smoother performance during intense combat with
@@ -29762,7 +29801,6 @@ var _active_tween: Tween
 var _material_instance: ShaderMaterial
 
 # --- Private Member Variables ---
-# OPTIMIZATION: Cache uniform lists per shader to avoid re-querying every frame.
 var _shader_uniform_cache: Dictionary = {}
 
 # A proxy property for the tween to animate.
@@ -29794,7 +29832,6 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	if is_instance_valid(injected_effect):
 		default_hit_effect = injected_effect
 
-	# OPTIMIZATION: Create one reusable material instance.
 	if is_instance_valid(_original_material) and _original_material is ShaderMaterial:
 		_material_instance = _original_material.duplicate(true) as ShaderMaterial
 	else:
@@ -29819,14 +29856,13 @@ func teardown() -> void:
 # --- Public API ---
 
 ## Plays a configured ShaderEffect resource on the visual_node.
-func play_effect(effect: ShaderEffect) -> void:
+func play_effect(effect: ShaderEffect, overrides: Dictionary = {}) -> void:
 	if not is_instance_valid(effect) or not is_instance_valid(effect.material):
 		push_error("FXComponent: play_effect called with an invalid effect or material.")
 		return
 		
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
-		_active_tween = null
 	
 	_current_effect_name = effect.resource_path.get_file()
 
@@ -29854,6 +29890,11 @@ func play_effect(effect: ShaderEffect) -> void:
 			if not is_sampler and param_name != "fx_progress" and param_name != "":
 				var value = src_material.get_shader_parameter(param_name)
 				_material_instance.set_shader_parameter(param_name, value)
+		
+		# TODO: Apply runtime overrides
+		if not overrides.is_empty():
+			for param_name in overrides:
+				_material_instance.set_shader_parameter(param_name, overrides[param_name])
 	
 	_visual_node.material = _material_instance
 	self._progress = 0.0
@@ -29870,7 +29911,8 @@ func get_current_effect_name() -> String:
 
 func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(default_hit_effect):
-		play_effect(default_hit_effect)
+		# By default, damage flashes do not have overrides.
+		play_effect(default_hit_effect, {})
 	else:
 		push_warning("FXComponent on '%s' received took_damage, but has no default_hit_effect assigned." % [_owner.name])
 

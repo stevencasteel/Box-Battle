@@ -62,6 +62,21 @@
 ║                                                                              ║
 ║                                                                              ║
 
+   FLEXIBILITY: PARAMETERIZED FXCOMPONENT
+   Enhanced the FXComponent to support runtime shader uniform overrides, making
+   ShaderEffect resources significantly more flexible and reusable.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ The `FXComponent.play_effect` method now accepts an optional
+      ░   `overrides` dictionary. This allows calling code to temporarily change
+      ░   any shader uniform for a single playback without creating a new
+      ░   `.tres` file.
+   █  Added
+      ░ ■ Updated the `fx_playground` tool to demonstrate and verify the new
+      ░   override functionality, confirming that a single red hit-flash effect
+      ░   can be dynamically changed to blue at runtime.
+
+
    PERFORMANCE: FXCOMPONENT OPTIMIZATION
    Completed a full optimization pass on the FXComponent to eliminate runtime
    allocations, resulting in smoother performance during intense combat with

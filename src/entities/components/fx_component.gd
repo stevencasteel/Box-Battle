@@ -22,7 +22,6 @@ var _active_tween: Tween
 var _material_instance: ShaderMaterial
 
 # --- Private Member Variables ---
-# OPTIMIZATION: Cache uniform lists per shader to avoid re-querying every frame.
 var _shader_uniform_cache: Dictionary = {}
 
 # A proxy property for the tween to animate.
@@ -54,7 +53,6 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	if is_instance_valid(injected_effect):
 		default_hit_effect = injected_effect
 
-	# OPTIMIZATION: Create one reusable material instance.
 	if is_instance_valid(_original_material) and _original_material is ShaderMaterial:
 		_material_instance = _original_material.duplicate(true) as ShaderMaterial
 	else:
@@ -79,14 +77,13 @@ func teardown() -> void:
 # --- Public API ---
 
 ## Plays a configured ShaderEffect resource on the visual_node.
-func play_effect(effect: ShaderEffect) -> void:
+func play_effect(effect: ShaderEffect, overrides: Dictionary = {}) -> void:
 	if not is_instance_valid(effect) or not is_instance_valid(effect.material):
 		push_error("FXComponent: play_effect called with an invalid effect or material.")
 		return
 		
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
-		_active_tween = null
 	
 	_current_effect_name = effect.resource_path.get_file()
 
@@ -114,6 +111,11 @@ func play_effect(effect: ShaderEffect) -> void:
 			if not is_sampler and param_name != "fx_progress" and param_name != "":
 				var value = src_material.get_shader_parameter(param_name)
 				_material_instance.set_shader_parameter(param_name, value)
+		
+		# TODO: Apply runtime overrides
+		if not overrides.is_empty():
+			for param_name in overrides:
+				_material_instance.set_shader_parameter(param_name, overrides[param_name])
 	
 	_visual_node.material = _material_instance
 	self._progress = 0.0
@@ -130,7 +132,8 @@ func get_current_effect_name() -> String:
 
 func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(default_hit_effect):
-		play_effect(default_hit_effect)
+		# By default, damage flashes do not have overrides.
+		play_effect(default_hit_effect, {})
 	else:
 		push_warning("FXComponent on '%s' received took_damage, but has no default_hit_effect assigned." % [_owner.name])
 

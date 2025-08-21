@@ -39,19 +39,35 @@ color = Color(0.8, 0.8, 0.8, 1)
 
 [node name="FXComponent" parent="CenterContainer/TestSubject" instance=ExtResource("3_fx_component")]
 
-[node name="Button" type="Button" parent="."]
+[node name="ButtonRed" type="Button" parent="."]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -100.0
+offset_left = -205.0
 offset_top = -100.0
-offset_right = 100.0
+offset_right = -5.0
 offset_bottom = -50.0
 grow_horizontal = 2
 grow_vertical = 0
-text = "Play Hit-Flash Effect"
+text = "Play Red Hit-Flash (Default)"
 
-[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
+[node name="ButtonBlue" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = -100.0
+offset_right = 205.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Play Blue Hit-Flash (Override)"
+
+[connection signal="pressed" from="ButtonRed" to="." method="_on_button_red_pressed"]
+[connection signal="pressed" from="ButtonBlue" to="." method="_on_button_blue_pressed"]
