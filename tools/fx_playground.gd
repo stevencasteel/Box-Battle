@@ -20,4 +20,3 @@ func _on_button_pressed() -> void:
 	
 	# The playground's only job is to tell the component to play the effect.
 	fx_component.play_effect(_hit_flash_effect)
-	print("Requested FXComponent to play hit-flash effect!") # VERIFICATION

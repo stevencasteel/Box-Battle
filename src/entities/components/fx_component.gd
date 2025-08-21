@@ -17,6 +17,7 @@ var _visual_node: CanvasItem
 var _health_component: HealthComponent
 var _original_material: Material
 var _active_tween: Tween
+var _current_effect_name: String = "None"
 
 # A proxy property for the tween to animate.
 var _progress: float = 0.0:
@@ -39,12 +40,10 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	
 	_original_material = _visual_node.material
 
-	# THE FIX: Accept and connect to the HealthComponent if it's provided.
 	_health_component = p_dependencies.get("health_component", null)
 	if is_instance_valid(_health_component):
 		_health_component.took_damage.connect(_on_owner_took_damage)
 
-	# Allow the owner to inject a specific hit effect, overriding the exported default.
 	var injected_effect = p_dependencies.get("hit_effect", null)
 	if is_instance_valid(injected_effect):
 		default_hit_effect = injected_effect
@@ -53,7 +52,6 @@ func teardown() -> void:
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 
-	# Disconnect the signal if it was connected.
 	if is_instance_valid(_health_component) and _health_component.took_damage.is_connected(_on_owner_took_damage):
 		_health_component.took_damage.disconnect(_on_owner_took_damage)
 
@@ -74,6 +72,8 @@ func play_effect(effect: ShaderEffect) -> void:
 		
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
+		
+	_current_effect_name = effect.resource_path.get_file()
 
 	var material_instance = effect.material.duplicate(true)
 	_visual_node.material = material_instance
@@ -83,6 +83,10 @@ func play_effect(effect: ShaderEffect) -> void:
 	_active_tween = create_tween()
 	_active_tween.tween_property(self, "_progress", 1.0, effect.duration)
 	_active_tween.finished.connect(_on_effect_finished)
+
+## Returns the filename of the currently playing effect.
+func get_current_effect_name() -> String:
+	return _current_effect_name
 
 # --- Signal Handlers ---
 
@@ -96,3 +100,4 @@ func _on_effect_finished() -> void:
 	if is_instance_valid(_visual_node):
 		_visual_node.material = _original_material
 	_active_tween = null
+	_current_effect_name = "None"

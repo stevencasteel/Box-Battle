@@ -10,6 +10,7 @@ extends CanvasLayer
 @onready var state_history_label: Label = %StateHistoryLabel
 @onready var input_buffer_label: Label = %InputBufferLabel
 @onready var object_pool_label: Label = %ObjectPoolLabel
+@onready var fx_label: Label = %FXLabel
 @onready var panel: Panel = %Panel
 
 # --- Private Member Variables ---
@@ -41,11 +42,12 @@ func _process(_delta: float) -> void:
 		state_history_label.text = ""
 		input_buffer_label.text = ""
 		object_pool_label.text = ""
+		fx_label.text = "FX: N/A"
 		return
 
 	velocity_label.text = "%s | %s" % [_target_entity.name, fps_text]
 
-	var state_machine: BaseStateMachine = _target_entity.state_machine
+	var state_machine: BaseStateMachine = _target_entity.state_machine if "state_machine" in _target_entity else null
 	var current_state_name = "N/A"
 	if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
 		current_state_name = state_machine.current_state.get_script().resource_path.get_file()
@@ -53,12 +55,11 @@ func _process(_delta: float) -> void:
 	state_label.text = "State: %s" % current_state_name
 
 	# --- Flags ---
-	var health_comp: HealthComponent = _target_entity.health_component
+	var health_comp: HealthComponent = _target_entity.health_component if "health_component" in _target_entity else null
 	var is_invincible_str = str(health_comp.is_invincible()) if is_instance_valid(health_comp) else "N/A"
-	var on_floor_str = str(_target_entity.is_on_floor())
+	var on_floor_str = str(_target_entity.is_on_floor()) if _target_entity is CharacterBody2D else "N/A"
 	
 	var flags_text = "Flags: OnFloor(%s) Invincible(%s)" % [on_floor_str, is_invincible_str]
-	# THE FIX: Add player-specific flags only when inspecting the player.
 	if _target_entity is Player:
 		flags_text += " CanDash(%s)" % _target_entity.entity_data.can_dash
 		state_history_label.text = "History: " + ", ".join(state_machine.state_history)
@@ -68,6 +69,13 @@ func _process(_delta: float) -> void:
 		input_buffer_label.text = ""
 
 	flags_label.text = flags_text
+	
+	# --- FX Component ---
+	var fx_comp: FXComponent = _target_entity.fx_component if "fx_component" in _target_entity else null
+	if is_instance_valid(fx_comp):
+		fx_label.text = "FX: %s" % fx_comp.get_current_effect_name()
+	else:
+		fx_label.text = "FX: N/A"
 
 	# --- Object Pool (global) ---
 	var pool_stats: Dictionary = ObjectPool.get_pool_stats()

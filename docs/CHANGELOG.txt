@@ -62,6 +62,26 @@
 ║                                                                              ║
 ║                                                                              ║
 
+   FXCOMPONENT HARDENING & VERIFICATION
+   Improved the robustness and testability of the core visual effects system.
+   This completes the safety and verification phase of the FX refactor.
+   ────────────────────────────────────────────────────────────────────────
+   █  Added
+      ░ ■ Added a `get_current_effect_name()` method to `FXComponent` to allow
+      ░   external systems to query its state for debugging purposes.
+      ░ ■ Created a reusable `MockEntity` script in the `tools/` directory to
+      ░   facilitate isolated component testing in the future.
+   █  Changed
+      ░ ■ Hardened the `DebugOverlay` to safely inspect entities that may not
+      ░   have a full complement of components, preventing potential crashes
+      ░   when debugging new or incomplete entity types.
+   █  Fixed
+      ░ ■ Resolved a critical timing issue in the `DebugOverlay` that prevented
+      ░   it from correctly reading dynamically-added properties from mock
+      ░   entities in a test environment.
+
+
+
 
    DATA-DRIVEN SHADER SYSTEM INTEGRATION
    Completed the full integration of the "FX Cookbook" system, migrating the

@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Thu Aug 21 14:02:00 CDT 2025
+Generated on: Thu Aug 21 15:02:15 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -20500,6 +20500,30 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 
+
+   DATA-DRIVEN SHADER SYSTEM INTEGRATION
+   Completed the full integration of the "FX Cookbook" system, migrating the
+   game's core hit-flash effect to the new data-driven, component-based
+   architecture. This makes all entity visual feedback modular and extensible.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Refactored `FXComponent` into a generic "effect player." It no longer
+      ░   contains hardcoded effect logic and can now play any `ShaderEffect`
+      ░   resource it is given.
+      ░ ■ The `FXComponent` now correctly subscribes to its sibling
+      ░   `HealthComponent`'s `took_damage` signal, fully decoupling the trigger
+      ░   (taking damage) from the visual response (playing a shader effect).
+   █  Changed
+      ░ ■ The Player, BaseBoss, and Turret entities now inject a preloaded
+      ░   `ShaderEffect` resource into their `FXComponent` upon initialization,
+      ░   adhering to the Owner-Driven Dependency Injection pattern.
+   █  Fixed
+      ░ ■ Resolved a critical bug where the hit-flash effect was not playing
+      ░   during gameplay. The issue was traced to a missing signal connection
+      ░   between the `HealthComponent` and the `FXComponent`, which has now
+      ░   been correctly established in the `FXComponent`'s `setup` method.
+
+
    DATA-DRIVEN SHADER SYSTEM (FX COOKBOOK)
    Established the foundational architecture for the "FX Cookbook," a data-
    driven system for defining and triggering shader-based visual effects.
@@ -28857,6 +28881,7 @@ extends BaseEntity
 
 # --- Constants ---
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Enums ---
 enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
@@ -28999,7 +29024,7 @@ func _initialize_and_setup_components() -> void:
 	
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.COOLDOWN},
-		fx_component: {"visual_node": visual_sprite, "health_component": health_component}
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
@@ -29640,15 +29665,19 @@ FILE: ./src/entities/components/fx_component.gd
 @tool
 ## A dedicated component for managing all entity-specific visual effects.
 ##
-## CONTRACT: This component requires the following dependencies to be passed
-## into its setup() method:
-##  - "visual_node": A CanvasItem to which the shader will be applied.
+## CONTRACT: This component requires a "visual_node" dependency and optionally
+## accepts a "health_component" to auto-trigger damage effects.
 class_name FXComponent
 extends IComponent
+
+# --- Editor Properties ---
+## An optional, default effect to play on damage. Can be overridden by dependencies.
+@export var default_hit_effect: ShaderEffect
 
 # --- Member Variables ---
 var _owner: Node
 var _visual_node: CanvasItem
+var _health_component: HealthComponent
 var _original_material: Material
 var _active_tween: Tween
 
@@ -29657,7 +29686,6 @@ var _progress: float = 0.0:
 	set(value):
 		_progress = value
 		if is_instance_valid(_visual_node) and is_instance_valid(_visual_node.material):
-			# This is the standardized uniform name for all our effects.
 			(_visual_node.material as ShaderMaterial).set_shader_parameter("fx_progress", _progress)
 
 # --- Godot Lifecycle Methods ---
@@ -29669,21 +29697,35 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
 	
 	assert(p_dependencies.has("visual_node"), "FXComponent requires a 'visual_node' dependency.")
-	self._visual_node = p_dependencies.get("visual_node")
+	_visual_node = p_dependencies.get("visual_node")
 	assert(is_instance_valid(_visual_node) and _visual_node is CanvasItem, "'visual_node' must be a valid CanvasItem.")
 	
 	_original_material = _visual_node.material
+
+	# THE FIX: Accept and connect to the HealthComponent if it's provided.
+	_health_component = p_dependencies.get("health_component", null)
+	if is_instance_valid(_health_component):
+		_health_component.took_damage.connect(_on_owner_took_damage)
+
+	# Allow the owner to inject a specific hit effect, overriding the exported default.
+	var injected_effect = p_dependencies.get("hit_effect", null)
+	if is_instance_valid(injected_effect):
+		default_hit_effect = injected_effect
 
 func teardown() -> void:
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 
-	# Restore the original material on cleanup.
+	# Disconnect the signal if it was connected.
+	if is_instance_valid(_health_component) and _health_component.took_damage.is_connected(_on_owner_took_damage):
+		_health_component.took_damage.disconnect(_on_owner_took_damage)
+
 	if is_instance_valid(_visual_node):
 		_visual_node.material = _original_material
 
 	_visual_node = null
 	_owner = null
+	_health_component = null
 
 # --- Public API ---
 
@@ -29702,11 +29744,16 @@ func play_effect(effect: ShaderEffect) -> void:
 	self._progress = 0.0
 	
 	_active_tween = create_tween()
-	# Animate the standardized `_progress` property from 0 to 1 over the effect's duration.
 	_active_tween.tween_property(self, "_progress", 1.0, effect.duration)
 	_active_tween.finished.connect(_on_effect_finished)
 
-# --- Private Methods ---
+# --- Signal Handlers ---
+
+func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
+	if is_instance_valid(default_hit_effect):
+		play_effect(default_hit_effect)
+	else:
+		push_warning("FXComponent on '%s' received took_damage, but has no default_hit_effect assigned." % [_owner.name])
 
 func _on_effect_finished() -> void:
 	if is_instance_valid(_visual_node):
@@ -29727,6 +29774,7 @@ enum State { IDLE, ATTACK }
 
 # --- Constants ---
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Configuration ---
 @export var hit_spark_effect: VFXEffect
@@ -29817,7 +29865,7 @@ func _initialize_and_setup_components() -> void:
 	
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.IDLE},
-		fx_component: {"visual_node": visual, "health_component": health_component}
+		fx_component: {"visual_node": visual, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
 	}
 
 	setup_components(shared_deps, per_component_deps)
@@ -30064,6 +30112,7 @@ enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO}
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
+const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Properties ---
 @export_group("Juice & Feedback")
@@ -30179,7 +30228,7 @@ func _initialize_and_setup_components() -> void:
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
-		fx_component: {"visual_node": visual_sprite, "health_component": health_component}
+		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT}
 	}
 	
 	setup_components(shared_deps, per_component_deps)
@@ -30282,6 +30331,7 @@ func _on_pogo_bounce_requested() -> void:
 func _cancel_heal() -> void:
 	if healing_timer.is_stopped(): return
 	healing_timer.stop()
+
 
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn
