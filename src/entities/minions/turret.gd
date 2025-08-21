@@ -47,8 +47,6 @@ func teardown() -> void:
 	if is_instance_valid(health_component):
 		if health_component.died.is_connected(_on_health_component_died):
 			health_component.died.disconnect(_on_health_component_died)
-		if health_component.took_damage.is_connected(_on_health_component_took_damage):
-			health_component.took_damage.disconnect(_on_health_component_took_damage)
 	
 	super.teardown()
 	entity_data = null
@@ -109,7 +107,6 @@ func _initialize_and_setup_components() -> void:
 
 func _connect_signals() -> void:
 	health_component.died.connect(_on_health_component_died)
-	health_component.took_damage.connect(_on_health_component_took_damage)
 
 # --- Signal Handlers ---
 
@@ -125,7 +122,3 @@ func _on_range_detector_body_exited(body: Node) -> void:
 		
 func _on_health_component_died() -> void:
 	_die()
-		
-func _on_health_component_took_damage(damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	if is_instance_valid(hit_spark_effect):
-		FXManager.play_vfx(hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)

@@ -88,8 +88,6 @@ func teardown() -> void:
 			health_component.died.disconnect(_on_health_component_died)
 		if health_component.health_threshold_reached.is_connected(_on_health_threshold_reached):
 			health_component.health_threshold_reached.disconnect(_on_health_threshold_reached)
-		if health_component.took_damage.is_connected(_on_health_component_took_damage):
-			health_component.took_damage.disconnect(_on_health_component_took_damage)
 	
 	super.teardown()
 	entity_data = null
@@ -158,7 +156,6 @@ func _connect_signals() -> void:
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
-	health_component.took_damage.connect(_on_health_component_took_damage)
 
 func _update_player_tracking() -> void:
 	if is_instance_valid(_player):
@@ -198,6 +195,3 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
 func _on_health_component_died() -> void:
 	_die()
-func _on_health_component_took_damage(damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	if is_instance_valid(hit_spark_effect):
-		FXManager.play_vfx(hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)

@@ -70,11 +70,9 @@ func _play_hit_flash() -> void:
 
 	_original_material = _visual_node.material
 	
-	var material_instance = _hit_flash_material.duplicate()
-	_visual_node.material = material_instance
+	_visual_node.material = _hit_flash_material
 	
 	self._intensity = 1.0
-	material_instance.set_shader_parameter("intensity", 1.0)
 	
 	_active_tween = create_tween()
 	_active_tween.tween_property(self, "_intensity", 0.0, 0.12)
@@ -87,5 +85,24 @@ func _on_flash_finished() -> void:
 
 # --- Signal Handlers ---
 
-func _on_health_component_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
+func _on_health_component_took_damage(damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	_play_hit_flash()
+	
+	# The Player and Boss now pass their specific effect resources via their main scripts.
+	var owner_player = _owner as Player
+	if is_instance_valid(owner_player):
+		if is_instance_valid(owner_player.damage_shake_effect):
+			FXManager.request_screen_shake(owner_player.damage_shake_effect)
+		FXManager.request_hit_stop(owner_player.entity_data.config.player_damage_taken_hit_stop_duration)
+		if is_instance_valid(owner_player.hit_spark_effect):
+			FXManager.play_vfx(owner_player.hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
+			
+	var owner_boss = _owner as BaseBoss
+	if is_instance_valid(owner_boss):
+		if is_instance_valid(owner_boss.hit_spark_effect):
+			FXManager.play_vfx(owner_boss.hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
+
+	var owner_turret = _owner as Turret
+	if is_instance_valid(owner_turret):
+		if is_instance_valid(owner_turret.hit_spark_effect):
+			FXManager.play_vfx(owner_turret.hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)

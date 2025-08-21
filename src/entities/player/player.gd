@@ -68,8 +68,6 @@ func teardown() -> void:
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
 		if health_component.died.is_connected(_on_health_component_died):
 			health_component.died.disconnect(_on_health_component_died)
-		if health_component.took_damage.is_connected(_on_health_component_took_damage):
-			health_component.took_damage.disconnect(_on_health_component_took_damage)
 	if is_instance_valid(combat_component):
 		if combat_component.damage_dealt.is_connected(resource_component.on_damage_dealt):
 			combat_component.damage_dealt.disconnect(resource_component.on_damage_dealt)
@@ -143,7 +141,6 @@ func _connect_signals() -> void:
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
-	health_component.took_damage.connect(_on_health_component_took_damage)
 	combat_component.damage_dealt.connect(resource_component.on_damage_dealt)
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 	state_machine.action_requested.connect(_on_state_machine_action_requested)
@@ -224,12 +221,6 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	health_changed.emit(current, max_val)
 func _on_health_component_died() -> void:
 	died.emit()
-func _on_health_component_took_damage(damage_info: DamageInfo, _damage_result: DamageResult) -> void:
-	if is_instance_valid(damage_shake_effect):
-		FXManager.request_screen_shake(damage_shake_effect)
-	FXManager.request_hit_stop(entity_data.config.player_damage_taken_hit_stop_duration)
-	if is_instance_valid(hit_spark_effect):
-		FXManager.play_vfx(hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
 func _on_pogo_bounce_requested() -> void:
 	velocity.y = -entity_data.config.player_pogo_force
 	position.y -= 1
