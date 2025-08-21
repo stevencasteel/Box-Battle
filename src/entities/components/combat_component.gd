@@ -25,6 +25,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.p_data = p_dependencies.get("data_resource")
 	self._object_pool = p_dependencies.get("object_pool")
 	assert(is_instance_valid(_object_pool), "CombatComponent requires an ObjectPool dependency.")
+	print("VERIFICATION: CombatComponent received ObjectPool: ", _object_pool)
+
 
 func teardown() -> void:
 	owner_node = null

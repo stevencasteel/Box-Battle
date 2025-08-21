@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Thu Aug 21 16:04:44 CDT 2025
+Generated on: Thu Aug 21 17:36:22 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -20542,6 +20542,27 @@ FILE: ./docs/CHANGELOG.txt
 ║                                                                              ║
 ║                                                                              ║
 
+   ARCHITECTURAL HARDENING (DEPENDENCY INJECTION)
+   Completed a full-scale refactor to enforce the Owner-Driven Dependency
+   Injection pattern across all entities and components, eliminating hidden
+   dependencies on global singletons and improving architectural clarity.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Refactored all entity components (`CombatComponent`,
+      ░   `PlayerResourceComponent`, `FXComponent`) to receive their singleton
+      ░   dependencies (`ObjectPool`, `EventBus`) via their `setup()` methods.
+      ░ ■ Updated all projectile scripts to receive their `ObjectPool` dependency
+      ░   on activation, making them fully self-contained.
+      ░ ■ Centralized all visual effect logic into the `FXComponent`, which now
+      ░   listens for local signals from `HealthComponent` to trigger effects.
+   █  Removed
+      ░ ■ Removed all direct calls to `FXManager`, `ObjectPool`, and `EventBus`
+      ░   from entity main scripts and components, formalizing their roles as
+      ░   dependency injectors and orchestrators.
+
+
+
+
    FLEXIBILITY: PARAMETERIZED FXCOMPONENT
    Enhanced the FXComponent to support runtime shader uniform overrides, making
    ShaderEffect resources significantly more flexible and reusable.
@@ -29445,6 +29466,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.p_data = p_dependencies.get("data_resource")
 	self._object_pool = p_dependencies.get("object_pool")
 	assert(is_instance_valid(_object_pool), "CombatComponent requires an ObjectPool dependency.")
+	print("VERIFICATION: CombatComponent received ObjectPool: ", _object_pool)
+
 
 func teardown() -> void:
 	owner_node = null
