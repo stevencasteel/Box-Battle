@@ -5,6 +5,7 @@
 ## Using these constants prevents bugs caused by typos in raw strings.
 extends Node
 
+
 ## A container for all physics group names.
 ## Usage: Identifiers.Groups.PLAYER
 class Groups:
@@ -15,6 +16,7 @@ class Groups:
 	const ONEWAY_PLATFORMS = "oneway_platforms"
 	const PLAYER_PROJECTILE = "player_projectile"
 	const ENEMY_PROJECTILE = "enemy_projectile"
+
 
 ## A container for all ObjectPool keys.
 ## Usage: Identifiers.Pools.PLAYER_SHOTS

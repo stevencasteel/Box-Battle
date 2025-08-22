@@ -18,9 +18,10 @@ var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 # THE FIX: Loosen the type hint to a generic Node to allow for fakes during testing.
 # The script relies on the injected object having the correct methods (duck typing).
-var _object_pool: Node # Dependency
+var _object_pool: Node  # Dependency
 
 # --- Public Methods ---
+
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
@@ -34,25 +35,32 @@ func teardown() -> void:
 	p_data = null
 	_object_pool = null
 
+
 ## Fires a player projectile from the object pool.
 func fire_shot() -> void:
 	p_data.attack_cooldown_timer = p_data.config.player_attack_cooldown
 
 	var shot = _object_pool.get_instance(Identifiers.Pools.PLAYER_SHOTS)
-	if not shot: return
+	if not shot:
+		return
 
 	var shot_dir = Vector2(p_data.facing_direction, 0)
-	if Input.is_action_pressed("ui_up"): shot_dir = Vector2.UP
-	elif Input.is_action_pressed("ui_down"): shot_dir = Vector2.DOWN
+	if Input.is_action_pressed("ui_up"):
+		shot_dir = Vector2.UP
+	elif Input.is_action_pressed("ui_down"):
+		shot_dir = Vector2.DOWN
 
 	shot.direction = shot_dir
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
 	shot.activate({"object_pool": _object_pool})
 
+
 ## Attempts to perform a pogo action on a target.
 func trigger_pogo(pogo_target: Node) -> bool:
-	if not p_data.is_pogo_attack: return false
-	if not is_instance_valid(pogo_target): return false
+	if not p_data.is_pogo_attack:
+		return false
+	if not is_instance_valid(pogo_target):
+		return false
 
 	var should_bounce = false
 
@@ -68,7 +76,7 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		damage_info.source_node = owner_node
 		damage_info.bypass_invincibility = true
 		damage_info.impact_position = pogo_target.global_position
-		damage_info.impact_normal = Vector2.UP # Pogo impact is always from above.
+		damage_info.impact_normal = Vector2.UP  # Pogo impact is always from above.
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
 			damage_dealt.emit()

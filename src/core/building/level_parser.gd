@@ -12,6 +12,7 @@ const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
 
 # --- Public Methods ---
 
+
 ## Parses the provided [EncounterData] and returns a populated [LevelBuildData].
 func parse_level_data(encounter_data: EncounterData) -> LevelBuildData:
 	var data = LevelBuildData.new()
@@ -27,7 +28,8 @@ func parse_level_data(encounter_data: EncounterData) -> LevelBuildData:
 	var terrain_data_array: PackedStringArray = layout.terrain_data
 	var grid_height: int = terrain_data_array.size()
 	var grid_width: int = 0
-	if grid_height > 0: grid_width = terrain_data_array[0].length()
+	if grid_height > 0:
+		grid_width = terrain_data_array[0].length()
 	data.dimensions_tiles = Vector2i(grid_width, grid_height)
 
 	var player_marker: String = encounter_data.player_spawn_marker
@@ -42,10 +44,14 @@ func parse_level_data(encounter_data: EncounterData) -> LevelBuildData:
 			var tile_world_pos = GridUtilsScript.grid_to_world(tile_grid_pos)
 
 			match tile_char:
-				"#": data.terrain_tiles.append(tile_world_pos)
-				"-": data.oneway_platforms.append(tile_world_pos)
-				"^": data.hazard_tiles.append(tile_world_pos)
-				".": data.background_tiles.append(tile_grid_pos)
+				"#":
+					data.terrain_tiles.append(tile_world_pos)
+				"-":
+					data.oneway_platforms.append(tile_world_pos)
+				"^":
+					data.hazard_tiles.append(tile_world_pos)
+				".":
+					data.background_tiles.append(tile_grid_pos)
 				_:
 					data.background_tiles.append(tile_grid_pos)
 					if tile_char == player_marker:
@@ -54,6 +60,8 @@ func parse_level_data(encounter_data: EncounterData) -> LevelBuildData:
 						data.boss_spawn_pos = tile_world_pos
 					elif minion_spawn_dict.has(tile_char):
 						var scene_to_spawn: PackedScene = minion_spawn_dict[tile_char]
-						var spawn_data = LevelBuildData.MinionSpawnData.new(scene_to_spawn, tile_world_pos)
+						var spawn_data = LevelBuildData.MinionSpawnData.new(
+							scene_to_spawn, tile_world_pos
+						)
 						data.minion_spawns.append(spawn_data)
 	return data

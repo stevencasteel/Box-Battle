@@ -5,10 +5,13 @@ extends GPUParticles2D
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	self.finished.connect(_on_finished)
 
+
 # --- Public Methods (IPoolable Contract) ---
+
 
 ## Activates the particle effect.
 func activate(direction: Vector2 = Vector2.RIGHT) -> void:
@@ -17,12 +20,15 @@ func activate(direction: Vector2 = Vector2.RIGHT) -> void:
 	self.rotation = direction.angle()
 	restart()
 
+
 ## Deactivates the particle effect.
 func deactivate() -> void:
 	process_mode = PROCESS_MODE_DISABLED
 	visible = false
 
+
 # --- Signal Handlers ---
+
 
 func _on_finished() -> void:
 	ObjectPool.return_instance(self)

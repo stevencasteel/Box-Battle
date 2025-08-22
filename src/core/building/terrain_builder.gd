@@ -12,29 +12,36 @@ const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
 
 # --- Public Methods ---
 
+
 ## Asynchronously creates all terrain nodes defined in the [LevelBuildData].
 func build_terrain_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
 	const BATCH_SIZE = 20
 
 	for i in range(build_data.terrain_tiles.size()):
 		_create_solid_tile(parent_node, build_data.terrain_tiles[i])
-		if i % BATCH_SIZE == 0: await tree.process_frame
+		if i % BATCH_SIZE == 0:
+			await tree.process_frame
 
 	for i in range(build_data.oneway_platforms.size()):
 		_create_oneway_platform(parent_node, build_data.oneway_platforms[i])
-		if i % BATCH_SIZE == 0: await tree.process_frame
+		if i % BATCH_SIZE == 0:
+			await tree.process_frame
 
 	for i in range(build_data.hazard_tiles.size()):
 		_create_hazard_tile(parent_node, build_data.hazard_tiles[i])
-		if i % BATCH_SIZE == 0: await tree.process_frame
+		if i % BATCH_SIZE == 0:
+			await tree.process_frame
 
 	await tree.process_frame
+
 
 ## Procedurally fills the camera's viewport with background grid tiles.
 func fill_viewport(parent_node: Node, build_data: LevelBuildData, camera: Camera2D) -> void:
 	var view_transform = camera.get_viewport().get_canvas_transform().affine_inverse()
 	var world_top_left = view_transform.origin
-	var world_bottom_right = world_top_left + camera.get_viewport_rect().size * view_transform.get_scale()
+	var world_bottom_right = (
+		world_top_left + camera.get_viewport_rect().size * view_transform.get_scale()
+	)
 
 	var grid_top_left: Vector2i = GridUtilsScript.world_to_grid(world_top_left)
 	var grid_bottom_right: Vector2i = GridUtilsScript.world_to_grid(world_bottom_right)
@@ -49,7 +56,9 @@ func fill_viewport(parent_node: Node, build_data: LevelBuildData, camera: Camera
 			if not existing_bg_tiles.has(grid_pos):
 				_create_background_tile(parent_node, grid_pos)
 
+
 # --- Private Methods ---
+
 
 func _create_background_tile(parent_node: Node, grid_pos: Vector2i) -> void:
 	var visual_rect = ColorRect.new()
@@ -58,6 +67,7 @@ func _create_background_tile(parent_node: Node, grid_pos: Vector2i) -> void:
 	visual_rect.position = Vector2(grid_pos) * Constants.TILE_SIZE
 	parent_node.add_child(visual_rect)
 	parent_node.move_child(visual_rect, 0)
+
 
 func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
@@ -73,14 +83,19 @@ func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 
 	var visual_poly := Polygon2D.new()
 	var half_size = Constants.TILE_SIZE / 2.0
-	visual_poly.polygon = PackedVector2Array([
-		Vector2(-half_size, -half_size), Vector2(half_size, -half_size),
-		Vector2(half_size, half_size), Vector2(-half_size, half_size)
-	])
+	visual_poly.polygon = PackedVector2Array(
+		[
+			Vector2(-half_size, -half_size),
+			Vector2(half_size, -half_size),
+			Vector2(half_size, half_size),
+			Vector2(-half_size, half_size)
+		]
+	)
 	visual_poly.color = Palette.COLOR_TERRAIN_PRIMARY
 	static_body.add_child(visual_poly)
 
 	parent_node.add_child(static_body)
+
 
 func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
@@ -102,14 +117,19 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	var half_width = Constants.TILE_SIZE / 2.0
 	var half_height = platform_height / 2.0
 	visual_poly.position = collision_shape.position
-	visual_poly.polygon = PackedVector2Array([
-		Vector2(-half_width, -half_height), Vector2(half_width, -half_height),
-		Vector2(half_width, half_height), Vector2(-half_width, half_height)
-	])
+	visual_poly.polygon = PackedVector2Array(
+		[
+			Vector2(-half_width, -half_height),
+			Vector2(half_width, -half_height),
+			Vector2(half_width, half_height),
+			Vector2(-half_width, half_height)
+		]
+	)
 	visual_poly.color = Palette.COLOR_TERRAIN_SECONDARY
 	static_body.add_child(visual_poly)
 
 	parent_node.add_child(static_body)
+
 
 func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
 	var static_body := StaticBody2D.new()
@@ -126,10 +146,14 @@ func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
 
 	var visual_poly := Polygon2D.new()
 	var half_size = Constants.TILE_SIZE / 2.0
-	visual_poly.polygon = PackedVector2Array([
-		Vector2(-half_size, -half_size), Vector2(half_size, -half_size),
-		Vector2(half_size, half_size), Vector2(-half_size, half_size)
-	])
+	visual_poly.polygon = PackedVector2Array(
+		[
+			Vector2(-half_size, -half_size),
+			Vector2(half_size, -half_size),
+			Vector2(half_size, half_size),
+			Vector2(-half_size, half_size)
+		]
+	)
 	visual_poly.color = Palette.COLOR_HAZARD_PRIMARY
 	static_body.add_child(visual_poly)
 

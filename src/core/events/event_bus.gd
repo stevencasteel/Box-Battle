@@ -12,12 +12,15 @@ var _next_id: int = 1
 
 # --- Godot Lifecycle Methods ---
 
+
 func _exit_tree() -> void:
 	# Clear all subscriptions to break potential cyclic references on exit.
 	_subscribers.clear()
 	_by_id.clear()
 
+
 # --- Public Methods ---
+
 
 ## Subscribes a callback to a specific event. Returns a token ID for unsubscribing.
 func on(event_name: StringName, callback: Callable) -> int:
@@ -28,18 +31,22 @@ func on(event_name: StringName, callback: Callable) -> int:
 	var weak_ref = weakref(owner_node) if owner_node is Node else null
 
 	var entry := {
-		"id": _next_id, "callback": callback, "owner_weak": weak_ref,
+		"id": _next_id,
+		"callback": callback,
+		"owner_weak": weak_ref,
 	}
 	subs.append(entry)
 	_subscribers[event_name] = subs
 
-	_by_id[_next_id] = event_name # Map the token ID back to the event name
+	_by_id[_next_id] = event_name  # Map the token ID back to the event name
 	_next_id += 1
 	return entry.id
 
+
 ## Unsubscribes from an event using the token returned by on().
 func off(token: int) -> void:
-	if not _by_id.has(token): return
+	if not _by_id.has(token):
+		return
 
 	var event_name: StringName = _by_id[token]
 	if _subscribers.has(event_name):
@@ -53,9 +60,11 @@ func off(token: int) -> void:
 
 	_by_id.erase(token)
 
+
 ## Emits an event to all subscribers.
 func emit(event_name: StringName, payload = null) -> void:
-	if not _subscribers.has(event_name): return
+	if not _subscribers.has(event_name):
+		return
 
 	var subs: Array = _subscribers[event_name]
 	# Iterate backwards to safely remove dead references during the loop.

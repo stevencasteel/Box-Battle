@@ -4,6 +4,7 @@ extends Node
 
 # --- Public Methods ---
 
+
 ## Centers the camera on the arena for a pixel-perfect setup.
 func center_camera_on_arena(camera: Camera2D, arena_size_tiles: Vector2i) -> void:
 	if not is_instance_valid(camera):

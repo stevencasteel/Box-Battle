@@ -11,6 +11,7 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	back_button.text = "BACK TO TITLE"
 
@@ -24,7 +25,9 @@ func _ready() -> void:
 		await get_tree().process_frame
 		back_button.grab_focus()
 
+
 # --- Signal Handlers ---
+
 
 func _on_back_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_TITLE_SCREEN)

@@ -15,18 +15,22 @@ var input_component: InputComponent
 
 # --- Godot Lifecycle Methods ---
 
+
 func _physics_process(_delta: float) -> void:
-	if not is_instance_valid(owner_node): return
+	if not is_instance_valid(owner_node):
+		return
 
 	var current_state_key = state_machine.states.find_key(state_machine.current_state)
 
 	# --- Heal Logic (Highest Priority) ---
-	var can_try_heal = owner_node.is_on_floor() and \
-		input_component.buffer.get("down") and \
-		input_component.buffer.get("jump_held") and \
-		p_data.healing_charges > 0 and \
-		is_zero_approx(owner_node.velocity.x)
-	
+	var can_try_heal = (
+		owner_node.is_on_floor()
+		and input_component.buffer.get("down")
+		and input_component.buffer.get("jump_held")
+		and p_data.healing_charges > 0
+		and is_zero_approx(owner_node.velocity.x)
+	)
+
 	if can_try_heal:
 		state_machine.change_state(Player.State.HEAL)
 		return
@@ -51,17 +55,23 @@ func _physics_process(_delta: float) -> void:
 			p_data.is_charging = false
 
 	# --- Dash Logic ---
-	if input_component.buffer.get("dash_pressed") and p_data.can_dash and p_data.dash_cooldown_timer <= 0:
+	if (
+		input_component.buffer.get("dash_pressed")
+		and p_data.can_dash
+		and p_data.dash_cooldown_timer <= 0
+	):
 		state_machine.change_state(Player.State.DASH)
 
 
 # --- Public Methods ---
+
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
 	self.state_machine = p_dependencies.get("state_machine")
 	self.input_component = p_dependencies.get("input_component")
+
 
 func teardown() -> void:
 	set_physics_process(false)

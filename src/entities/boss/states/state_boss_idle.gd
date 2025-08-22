@@ -3,11 +3,14 @@
 class_name BossStateIdle
 extends BaseState
 
+
 func enter(_msg := {}) -> void:
 	owner.velocity.x = 0
 
 	if owner.current_attack_patterns.is_empty():
-		push_warning("BossStateIdle: No attack patterns defined for current phase. Defaulting to Cooldown.")
+		push_warning(
+			"BossStateIdle: No attack patterns defined for current phase. Defaulting to Cooldown."
+		)
 		state_machine.change_state(owner.State.COOLDOWN)
 		return
 

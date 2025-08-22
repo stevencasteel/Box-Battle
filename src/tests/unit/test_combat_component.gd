@@ -19,41 +19,50 @@ var _mock_owner: CharacterBody2D
 
 # --- Test Lifecycle ---
 
+
 func before_each():
 	_pogo_bounce_was_requested = false
 
 	_mock_owner = CharacterBody2D.new()
 	add_child(_mock_owner)
-	
+
 	_player_data = PlayerStateData.new()
 	_player_data.config = CombatConfig
 
 	_fake_object_pool = FakeObjectPool.new()
 	add_child(_fake_object_pool)
-	
+
 	_combat_component = CombatComponent.new()
 	_mock_owner.add_child(_combat_component)
-	
-	var dependencies = {
-		"data_resource": _player_data,
-		"object_pool": _fake_object_pool
-	}
+
+	var dependencies = {"data_resource": _player_data, "object_pool": _fake_object_pool}
 	_combat_component.setup(_mock_owner, dependencies)
 
 	_combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
+
 func after_each():
-	if is_instance_valid(_combat_component) and _combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
+	if (
+		is_instance_valid(_combat_component)
+		and _combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested)
+	):
 		_combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
 
+
 # --- The Tests ---
+
 
 func test_fire_shot_gets_instance_from_pool():
 	var call_count_before = _fake_object_pool.get_call_count(Identifiers.Pools.PLAYER_SHOTS)
 	_combat_component.fire_shot()
 	var call_count_after = _fake_object_pool.get_call_count(Identifiers.Pools.PLAYER_SHOTS)
 
-	assert_eq(call_count_after, call_count_before + 1, "fire_shot() should call get_instance on the pool exactly once.")
+	assert_eq(
+		call_count_after,
+		call_count_before + 1,
+		"fire_shot() should call get_instance on the pool exactly once."
+	)
+
 
 func test_trigger_pogo_on_enemy_emits_bounce_request():
 	var mock_enemy = CharacterBody2D.new()
@@ -62,36 +71,46 @@ func test_trigger_pogo_on_enemy_emits_bounce_request():
 	stub(mock_health, "apply_damage").to_return(DamageResult.new())
 	mock_enemy.add_child(mock_health)
 	add_child(mock_enemy)
-	
+
 	_player_data.is_pogo_attack = true
 
 	var pogo_succeeded = _combat_component.trigger_pogo(mock_enemy)
 
 	assert_true(pogo_succeeded, "trigger_pogo should return true when hitting a valid enemy.")
-	assert_true(_pogo_bounce_was_requested, "pogo_bounce_requested signal should be emitted after a successful pogo.")
+	assert_true(
+		_pogo_bounce_was_requested,
+		"pogo_bounce_requested signal should be emitted after a successful pogo."
+	)
 
 	mock_enemy.free()
 
+
 func test_trigger_pogo_on_projectile_returns_it_to_pool() -> void:
 	# THE FIX: This test must be async to account for call_deferred.
-	var mock_projectile = Node2D.new() # Use Node2D for compatibility
+	var mock_projectile = Node2D.new()  # Use Node2D for compatibility
 	mock_projectile.add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 	mock_projectile.set_meta("pool_name", Identifiers.Pools.TURRET_SHOTS)
-	add_child(mock_projectile) # Add to tree so it's valid for deferred calls
-	
+	add_child(mock_projectile)  # Add to tree so it's valid for deferred calls
+
 	_player_data.is_pogo_attack = true
 
 	var return_count_before = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
 	_combat_component.trigger_pogo(mock_projectile)
-	
+
 	# THE FIX: Wait for one frame to allow the deferred call to execute.
 	await get_tree().physics_frame
-	
+
 	var return_count_after = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
-	
-	assert_eq(return_count_after, return_count_before + 1, "Pogoing a projectile should call return_instance on the pool.")
+
+	assert_eq(
+		return_count_after,
+		return_count_before + 1,
+		"Pogoing a projectile should call return_instance on the pool."
+	)
+
 
 # --- Signal Handlers ---
+
 
 func _on_pogo_bounce_requested():
 	_pogo_bounce_was_requested = true

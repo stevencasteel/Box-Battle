@@ -8,15 +8,19 @@ var _turret: Turret
 
 # --- State Lifecycle ---
 
+
 func enter(_msg := {}) -> void:
 	self._turret = owner as Turret
-	if not is_instance_valid(_turret): return
+	if not is_instance_valid(_turret):
+		return
 
 	_turret._fire_at_player()
 	_turret.attack_timer.start(state_data.config.turret_fire_rate)
 
+
 func process_physics(_delta: float) -> void:
-	if not is_instance_valid(_turret): return
+	if not is_instance_valid(_turret):
+		return
 
 	if not state_data.is_player_in_range:
 		state_machine.change_state(_turret.State.IDLE)

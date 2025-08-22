@@ -3,6 +3,7 @@
 extends BaseState
 class_name BossStateCooldown
 
+
 func enter(_msg := {}) -> void:
 	owner.velocity.x = 0
 	owner.cooldown_timer.start()

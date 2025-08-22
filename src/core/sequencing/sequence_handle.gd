@@ -15,6 +15,7 @@ var is_running: bool = true
 
 # --- Public Methods ---
 
+
 ## Cancels the execution of the associated sequence.
 func cancel() -> void:
 	if is_running:

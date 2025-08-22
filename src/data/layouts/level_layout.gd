@@ -16,6 +16,7 @@ extends Resource
 
 # --- Godot Lifecycle Methods ---
 
+
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
 	if terrain_data.is_empty():
@@ -25,7 +26,7 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var first_row_length = -1
 	if not terrain_data[0].is_empty():
 		first_row_length = terrain_data[0].length()
-	else: # Handle case where the first row is empty
+	else:  # Handle case where the first row is empty
 		warnings.append("The first row of terrain data cannot be empty.")
 		return warnings
 
@@ -33,6 +34,6 @@ func _get_configuration_warnings() -> PackedStringArray:
 		if terrain_data[i].length() != first_row_length:
 			var msg = "Row %d (length %d) has a different length than the first row (length %d)."
 			warnings.append(msg % [i + 1, terrain_data[i].length(), first_row_length])
-			break # Only show the first error found
+			break  # Only show the first error found
 
 	return warnings

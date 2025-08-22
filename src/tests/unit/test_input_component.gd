@@ -12,24 +12,31 @@ var _input_component: InputComponent
 
 # --- Test Lifecycle ---
 
+
 func before_each():
 	_player = Player.instantiate()
 	if _player.has_method("inject_dependencies"):
-		_player.inject_dependencies({
-			"object_pool": get_node("/root/ObjectPool"),
-			"fx_manager": get_node("/root/FXManager"),
-			"event_bus": get_node("/root/EventBus")
-		})
+		_player.inject_dependencies(
+			{
+				"object_pool": get_node("/root/ObjectPool"),
+				"fx_manager": get_node("/root/FXManager"),
+				"event_bus": get_node("/root/EventBus")
+			}
+		)
 	add_child(_player)
 	_input_component = _player.input_component
-	
-	_input_component.setup(_player, {
-		"data_resource": _player.entity_data,
-		"state_machine": _player.state_machine,
-		"config": CombatConfig
-	})
-	
+
+	_input_component.setup(
+		_player,
+		{
+			"data_resource": _player.entity_data,
+			"state_machine": _player.state_machine,
+			"config": CombatConfig
+		}
+	)
+
 	await get_tree().process_frame
+
 
 func after_each():
 	Input.action_release("ui_right")
@@ -38,45 +45,72 @@ func after_each():
 	if is_instance_valid(_player):
 		_player.free()
 
+
 # --- The Tests ---
+
 
 func test_move_axis_is_buffered_correctly():
 	Input.action_press("ui_right")
 	_input_component._physics_process(0.016)
-	
-	assert_eq(_input_component.buffer.get("move_axis"), 1.0, "Move axis should be 1.0 when 'ui_right' is pressed.")
-	
+
+	assert_eq(
+		_input_component.buffer.get("move_axis"),
+		1.0,
+		"Move axis should be 1.0 when 'ui_right' is pressed."
+	)
+
 	Input.action_release("ui_right")
 	_input_component._physics_process(0.016)
-	
-	assert_eq(_input_component.buffer.get("move_axis"), 0.0, "Move axis should be 0.0 when 'ui_right' is released.")
+
+	assert_eq(
+		_input_component.buffer.get("move_axis"),
+		0.0,
+		"Move axis should be 0.0 when 'ui_right' is released."
+	)
+
 
 func test_action_just_pressed_is_buffered_for_one_frame():
 	Input.action_press("ui_attack")
 	_input_component._physics_process(0.016)
-	
-	assert_true(_input_component.buffer.get("attack_just_pressed", false), "attack_just_pressed should be true on the frame it is pressed.")
-	
+
+	assert_true(
+		_input_component.buffer.get("attack_just_pressed", false),
+		"attack_just_pressed should be true on the frame it is pressed."
+	)
+
 	await get_tree().process_frame
 	_input_component._physics_process(0.016)
-	
-	assert_false(_input_component.buffer.get("attack_just_pressed", false), "attack_just_pressed should be false on subsequent frames.")
-	
+
+	assert_false(
+		_input_component.buffer.get("attack_just_pressed", false),
+		"attack_just_pressed should be false on subsequent frames."
+	)
+
 	Input.action_release("ui_attack")
+
 
 func test_action_released_is_buffered_for_one_frame():
 	Input.action_press("ui_attack")
 	_input_component._physics_process(0.016)
 	await get_tree().process_frame
-	
+
 	_input_component._physics_process(0.016)
-	assert_false(_input_component.buffer.get("attack_released", false), "attack_released should be false while the action is held.")
-	
+	assert_false(
+		_input_component.buffer.get("attack_released", false),
+		"attack_released should be false while the action is held."
+	)
+
 	Input.action_release("ui_attack")
 	_input_component._physics_process(0.016)
-	assert_true(_input_component.buffer.get("attack_released", false), "attack_released should be true on the frame it is released.")
-	
+	assert_true(
+		_input_component.buffer.get("attack_released", false),
+		"attack_released should be true on the frame it is released."
+	)
+
 	await get_tree().process_frame
 	_input_component._physics_process(0.016)
-	
-	assert_false(_input_component.buffer.get("attack_released", false), "attack_released should be false on the frame after it is released.")
+
+	assert_false(
+		_input_component.buffer.get("attack_released", false),
+		"attack_released should be false on the frame after it is released."
+	)

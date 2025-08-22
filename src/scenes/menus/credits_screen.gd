@@ -21,8 +21,10 @@ const CREDITS_BBCODE = """
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
-	for c in credits_label_container.get_children(): c.queue_free()
+	for c in credits_label_container.get_children():
+		c.queue_free()
 
 	var credits_label = RichTextLabel.new()
 	credits_label.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -54,14 +56,18 @@ func _ready() -> void:
 		await get_tree().process_frame
 		back_button.grab_focus()
 
+
 # --- Signal Handlers ---
+
 
 func _on_any_item_focused() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
-	
+
+
 func _on_meta_clicked(meta) -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 	OS.shell_open(str(meta))
+
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)

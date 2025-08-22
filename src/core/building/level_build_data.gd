@@ -7,14 +7,18 @@
 class_name LevelBuildData
 extends Resource
 
+
 # --- Inner Classes ---
 ## A simple data container for a single minion spawn.
-class MinionSpawnData extends RefCounted:
+class MinionSpawnData:
+	extends RefCounted
 	var scene: PackedScene
 	var position: Vector2
+
 	func _init(p_scene: PackedScene, p_pos: Vector2) -> void:
 		scene = p_scene
 		position = p_pos
+
 
 # --- Member Variables ---
 var terrain_tiles: Array[Vector2] = []

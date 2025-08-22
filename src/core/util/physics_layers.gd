@@ -6,11 +6,11 @@
 extends Node
 
 # --- Layer Constants ---
-const PLAYER = 1           # Layer 1
-const PLATFORMS = 2        # Layer 2
-const ENEMY = 4            # Layer 3
-const HAZARD = 8           # Layer 4
+const PLAYER = 1  # Layer 1
+const PLATFORMS = 2  # Layer 2
+const ENEMY = 4  # Layer 3
+const HAZARD = 8  # Layer 4
 const ENEMY_PROJECTILE = 16  # Layer 5
-const PLAYER_HITBOX = 32   # Layer 6
+const PLAYER_HITBOX = 32  # Layer 6
 const PLAYER_HURTBOX = 64  # Layer 7
-const SOLID_WORLD = 128    # Layer 8
+const SOLID_WORLD = 128  # Layer 8

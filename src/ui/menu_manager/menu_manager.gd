@@ -18,6 +18,7 @@ var _cursor_right: ColorRect
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	_cursor_left = ColorRect.new()
 	_cursor_left.size = Vector2(20, 20)
@@ -31,8 +32,10 @@ func _ready() -> void:
 	_cursor_right.visible = false
 	add_child(_cursor_right)
 
+
 func _unhandled_input(event: InputEvent) -> void:
-	if menu_items.is_empty(): return
+	if menu_items.is_empty():
+		return
 
 	if event.is_action_pressed("ui_down"):
 		_change_selection(1)
@@ -41,17 +44,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		_change_selection(-1)
 		get_viewport().set_input_as_handled()
 
+
 # --- Public Methods ---
+
 
 ## Initializes the manager with a list of menu items to control.
 func setup_menu(items: Array[Control]) -> void:
-	if items.is_empty(): return
+	if items.is_empty():
+		return
 	self.menu_items = items
 
 	for item in menu_items:
 		item.focus_entered.connect(_on_item_focused.bind(item))
 
+
 # --- Private Methods ---
+
 
 func _change_selection(amount: int) -> void:
 	if menu_items.size() <= 1:
@@ -60,10 +68,12 @@ func _change_selection(amount: int) -> void:
 	var new_selection = (current_selection_index + amount + menu_items.size()) % menu_items.size()
 	menu_items[new_selection].grab_focus()
 
-func _update_cursors(selected_item: Control) -> void:
-	await get_tree().process_frame # Wait for layout to settle
 
-	if not is_instance_valid(selected_item): return
+func _update_cursors(selected_item: Control) -> void:
+	await get_tree().process_frame  # Wait for layout to settle
+
+	if not is_instance_valid(selected_item):
+		return
 
 	var item_pos = selected_item.global_position
 	var item_size = selected_item.size
@@ -78,7 +88,9 @@ func _update_cursors(selected_item: Control) -> void:
 	_cursor_left.visible = true
 	_cursor_right.visible = true
 
+
 # --- Signal Handlers ---
+
 
 func _on_item_focused(focused_item: Control) -> void:
 	var index = menu_items.find(focused_item)

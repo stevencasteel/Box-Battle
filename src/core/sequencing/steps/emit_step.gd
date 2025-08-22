@@ -10,6 +10,7 @@ extends SequenceStep
 
 # --- Virtual Methods ---
 
+
 func execute(_sequencer_node: Node) -> Variant:
 	if event_name == &"":
 		push_warning("EmitStep: 'event_name' is not set.")

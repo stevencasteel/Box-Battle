@@ -5,6 +5,7 @@ extends BaseState
 
 # --- State Lifecycle ---
 
+
 func enter(_msg := {}) -> void:
 	state_data.hit_targets_this_swing.clear()
 	state_data.attack_duration_timer = state_data.config.player_attack_duration
@@ -12,9 +13,11 @@ func enter(_msg := {}) -> void:
 	var is_up_attack = owner.input_component.buffer.get("up", false)
 	owner._enable_melee_hitbox(true, is_up_attack)
 
+
 func exit() -> void:
 	owner.call_deferred("_enable_melee_hitbox", false)
 	state_data.hit_targets_this_swing.clear()
+
 
 func process_physics(delta: float) -> void:
 	var friction = state_data.config.player_attack_friction

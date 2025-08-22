@@ -16,6 +16,7 @@ signal telegraph_finished
 
 # --- Public Methods ---
 
+
 ## Configures and starts the telegraph visual and timer.
 func start_telegraph(duration: float, p_size: Vector2, p_position: Vector2, p_color: Color) -> void:
 	self.global_position = p_position

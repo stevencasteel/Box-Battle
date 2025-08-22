@@ -12,7 +12,7 @@ var target_camera: Camera2D = null
 
 # --- Private Member Variables ---
 var _noise := FastNoiseLite.new()
-var _noise_y_offset: float = 0.0 # Use a different seed for the y-axis
+var _noise_y_offset: float = 0.0  # Use a different seed for the y-axis
 var _shake_duration: float = 0.0
 var _shake_timer: float = 0.0
 var _shake_amplitude: float = 0.0
@@ -20,13 +20,16 @@ var _shake_frequency: float = 0.0
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	_noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	_noise.seed = randi()
 	_noise_y_offset = randf() * 1000.0
 
+
 func _process(delta: float) -> void:
-	if not is_instance_valid(target_camera): return
+	if not is_instance_valid(target_camera):
+		return
 
 	if _shake_timer > 0:
 		_shake_timer -= delta
@@ -45,7 +48,9 @@ func _process(delta: float) -> void:
 	else:
 		target_camera.offset = Vector2.ZERO
 
+
 # --- Public API ---
+
 
 func start_shake(effect: ScreenShakeEffect) -> void:
 	if not is_instance_valid(effect):

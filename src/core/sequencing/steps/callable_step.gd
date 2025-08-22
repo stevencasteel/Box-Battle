@@ -9,6 +9,7 @@ extends SequenceStep
 
 # --- Virtual Methods ---
 
+
 func execute(_sequencer_node: Node) -> Variant:
 	if callable.is_valid():
 		# Await the result of the call. If the function is async, this will

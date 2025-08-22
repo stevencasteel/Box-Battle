@@ -14,6 +14,7 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	sound_button.text = "SOUND"
 	controls_button.text = "CONTROLS"
@@ -30,9 +31,11 @@ func _ready() -> void:
 		# --- Initialize Menu Manager ---
 		var menu_manager = MenuManagerScript.new()
 		add_child(menu_manager)
-		var menu_items: Array[Control] = [sound_button, controls_button, credits_button, back_button]
+		var menu_items: Array[Control] = [
+			sound_button, controls_button, credits_button, back_button
+		]
 		menu_manager.setup_menu(menu_items)
-		
+
 		# --- Connect Feedback Handlers ---
 		menu_manager.selection_changed.connect(_on_any_item_focused)
 		var generic_menu_items = [sound_button, controls_button, credits_button]
@@ -40,7 +43,7 @@ func _ready() -> void:
 			item.pressed.connect(_on_any_item_pressed)
 			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		
+
 		# Connect feedback for the back button separately
 		back_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 		back_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
@@ -48,22 +51,29 @@ func _ready() -> void:
 		await get_tree().process_frame
 		sound_button.grab_focus()
 
+
 # --- Signal Handlers ---
+
 
 func _on_any_item_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 
+
 func _on_any_item_focused() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
+
 
 func _on_sound_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_SOUND_SCREEN)
 
+
 func _on_controls_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_CONTROLS_SCREEN)
 
+
 func _on_credits_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_CREDITS_SCREEN)
+
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)

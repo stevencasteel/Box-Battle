@@ -13,18 +13,22 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 var direction: Vector2 = Vector2.LEFT
 var speed: float = 400.0
 var damage: int = 1
-var _object_pool: ObjectPool # Dependency
+var _object_pool: ObjectPool  # Dependency
 
 # --- Godot Lifecycle Methods ---
+
 
 func _ready() -> void:
 	$ColorRect.color = Palette.COLOR_HAZARD_PRIMARY
 	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 
+
 func _physics_process(delta: float) -> void:
 	global_position += direction * speed * delta
 
+
 # --- Public Methods (IPoolable Contract) ---
+
 
 ## Activates the projectile, making it visible and interactive.
 func activate(p_dependencies: Dictionary = {}) -> void:
@@ -35,6 +39,7 @@ func activate(p_dependencies: Dictionary = {}) -> void:
 	process_mode = PROCESS_MODE_INHERIT
 	collision_shape.disabled = false
 
+
 ## Deactivates the projectile, preparing it to be returned to the ObjectPool.
 func deactivate() -> void:
 	visible = false
@@ -42,15 +47,20 @@ func deactivate() -> void:
 	collision_shape.disabled = true
 	_object_pool = null
 
+
 # --- Signal Handlers ---
 
+
 func _on_body_entered(_body: Node) -> void:
-	if process_mode == PROCESS_MODE_DISABLED: return
+	if process_mode == PROCESS_MODE_DISABLED:
+		return
 	# This handles collision with the solid world.
 	_object_pool.return_instance.call_deferred(self)
 
+
 func _on_area_entered(area: Area2D) -> void:
-	if process_mode == PROCESS_MODE_DISABLED: return
+	if process_mode == PROCESS_MODE_DISABLED:
+		return
 	# This handles collision with the Player's Hurtbox.
 	var damageable = CombatUtilsScript.find_damageable(area)
 	if is_instance_valid(damageable):
@@ -63,6 +73,8 @@ func _on_area_entered(area: Area2D) -> void:
 
 	_object_pool.return_instance.call_deferred(self)
 
+
 func _on_screen_exited() -> void:
-	if process_mode == PROCESS_MODE_DISABLED: return
+	if process_mode == PROCESS_MODE_DISABLED:
+		return
 	_object_pool.return_instance.call_deferred(self)

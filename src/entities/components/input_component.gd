@@ -12,16 +12,18 @@ extends IComponent
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
 var state_machine: BaseStateMachine
-var _config: CombatConfig # Internal reference to the injected config
+var _config: CombatConfig  # Internal reference to the injected config
 
 ## A buffer dictionary populated each frame with the current input state.
 var buffer: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
 
+
 func _physics_process(_delta: float) -> void:
-	if not is_instance_valid(owner_node): return # Guard against post-teardown calls
-	
+	if not is_instance_valid(owner_node):
+		return  # Guard against post-teardown calls
+
 	# 1. Clear the buffer at the start of the frame.
 	buffer.clear()
 
@@ -41,7 +43,9 @@ func _physics_process(_delta: float) -> void:
 
 	buffer["dash_pressed"] = Input.is_action_just_pressed("ui_dash")
 
+
 # --- Public Methods ---
+
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
@@ -53,8 +57,9 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		push_error("InputComponent.setup: Missing one or more required dependencies.")
 		return
 
+
 func teardown() -> void:
-	set_physics_process(false) # Immediately stop processing
+	set_physics_process(false)  # Immediately stop processing
 	owner_node = null
 	p_data = null
 	state_machine = null

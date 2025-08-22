@@ -10,7 +10,8 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Node References ---
 @onready var player_health_value: Label = $PlayerInfo/PlayerHealthHBox/PlayerHealthValue
-@onready var player_heal_charges_value: Label = $PlayerInfo/PlayerHealChargesHBox/PlayerHealChargesValue
+@onready
+var player_heal_charges_value: Label = $PlayerInfo/PlayerHealChargesHBox/PlayerHealChargesValue
 @onready var boss_health_bar: ProgressBar = $BossHealthBar
 @onready var phase_indicators: HBoxContainer = $PhaseIndicators
 
@@ -27,22 +28,29 @@ var _empty_style: StyleBoxFlat
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	_subscribe_to_events()
 	_create_styles()
 	_initialize_ui_state()
 
+
 func _exit_tree() -> void:
 	_unsubscribe_from_events()
 
+
 # --- Private Methods ---
+
 
 func _subscribe_to_events() -> void:
 	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
-	_player_charges_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed)
+	_player_charges_token = EventBus.on(
+		EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, on_player_healing_charges_changed
+	)
 	_boss_health_token = EventBus.on(EventCatalog.BOSS_HEALTH_CHANGED, on_boss_health_changed)
 	_boss_phase_token = EventBus.on(EventCatalog.BOSS_PHASE_CHANGED, on_boss_phase_changed)
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, on_boss_died)
+
 
 func _unsubscribe_from_events() -> void:
 	EventBus.off(_player_health_token)
@@ -50,6 +58,7 @@ func _unsubscribe_from_events() -> void:
 	EventBus.off(_boss_health_token)
 	EventBus.off(_boss_phase_token)
 	EventBus.off(_boss_died_token)
+
 
 func _initialize_ui_state() -> void:
 	var max_health = COMBAT_CONFIG.player_max_health
@@ -66,6 +75,7 @@ func _initialize_ui_state() -> void:
 	phase_indicators.add_theme_constant_override("separation", 5)
 	_create_phase_indicators()
 
+
 func _create_styles() -> void:
 	_filled_style = StyleBoxFlat.new()
 	_filled_style.bg_color = Palette.COLOR_HAZARD_PRIMARY
@@ -78,6 +88,7 @@ func _create_styles() -> void:
 	_empty_style = _filled_style.duplicate()
 	_empty_style.bg_color = Palette.COLOR_BACKGROUND
 
+
 func _create_phase_indicators() -> void:
 	for i in range(_total_phases):
 		var panel = Panel.new()
@@ -85,6 +96,7 @@ func _create_phase_indicators() -> void:
 		phase_indicators.add_child(panel)
 		_phase_squares.append(panel)
 	_update_phase_visuals(_total_phases)
+
 
 func _update_phase_visuals(phases_remaining: int) -> void:
 	for i in range(_phase_squares.size()):
@@ -94,21 +106,27 @@ func _update_phase_visuals(phases_remaining: int) -> void:
 		else:
 			square.add_theme_stylebox_override("panel", _empty_style)
 
+
 # --- EventBus Callbacks ---
+
 
 func on_player_health_changed(payload: PlayerHealthChangedEvent) -> void:
 	player_health_value.text = str(payload.current_health) + " / " + str(payload.max_health)
 
+
 func on_player_healing_charges_changed(payload: PlayerHealingChargesChangedEvent) -> void:
 	player_heal_charges_value.text = str(payload.current_charges)
+
 
 func on_boss_health_changed(payload: BossHealthChangedEvent) -> void:
 	boss_health_bar.max_value = payload.max_health
 	boss_health_bar.value = payload.current_health
 
+
 func on_boss_phase_changed(payload: Dictionary) -> void:
 	var phases_remaining = payload.get("phases_remaining", 1)
 	_update_phase_visuals(phases_remaining)
+
 
 func on_boss_died(_payload) -> void:
 	_update_phase_visuals(0)

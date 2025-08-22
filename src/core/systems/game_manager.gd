@@ -14,10 +14,12 @@ var state: GameStateData = null
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	# Create a new, clean instance of the game state every time the
 	# GameManager is initialized at game startup.
 	state = GameStateDataScript.new()
+
 
 func _exit_tree() -> void:
 	# Manually release our reference to the state resource. This allows

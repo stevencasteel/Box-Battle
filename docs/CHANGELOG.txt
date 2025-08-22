@@ -46,7 +46,20 @@
 
 
 
-
+   CI & TOOLING: AUTOMATED CODE QUALITY & FORMATTING
+   Established a comprehensive code quality pipeline by integrating an
+   automated code formatter and a custom shader linter, ensuring project-wide
+   consistency and adherence to best practices.
+   ────────────────────────────────────────────────────────────────────────
+   █  CI & Tooling
+      ░ ■ Integrated the `gdformat` tool to automatically format all `.gd`
+      ░   scripts according to the official Godot style guide. The entire
+      ░   codebase has been formatted.
+      ░ ■ Configured VS Code to automatically format GDScript files on save,
+      ░   streamlining the development workflow and guaranteeing consistency.
+      ░ ■ Created a new command-line shader linter (`lint_shaders.gd`) to
+      ░   enforce critical rules for mobile renderer stability, such as the
+      ░   presence of `shader_type` and `: source_color` hints.
 
 
 

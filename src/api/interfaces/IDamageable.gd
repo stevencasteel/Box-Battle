@@ -5,6 +5,7 @@ extends Node
 
 # --- The Contract ---
 
+
 ## Applies damage to the object.
 ## [param damage_info]: A [DamageInfo] resource detailing the damage event.
 ## [return]: A [DamageResult] resource indicating the outcome.

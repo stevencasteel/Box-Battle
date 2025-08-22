@@ -23,50 +23,64 @@ var _injected_dependencies: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
-	if Engine.is_editor_hint(): return
+	if Engine.is_editor_hint():
+		return
 	_build_from_archetype()
 
+
 # --- Public Methods ---
+
 
 ## Called by the entity creator (ArenaBuilder) before the entity enters the scene tree.
 func inject_dependencies(p_dependencies: Dictionary) -> void:
 	_injected_dependencies = p_dependencies.duplicate()
 
+
 ## Convenience accessor for child code to fetch injected services.
 func get_injected_dependency(p_key: String):
 	return _injected_dependencies.get(p_key, null)
 
+
 func has_injected_dependencies() -> bool:
 	return _injected_dependencies.size() > 0
-	
+
+
 func teardown() -> void:
 	for child in get_children():
 		if child is IComponent:
 			child.teardown()
 
+
 ## Initializes all attached components after dependencies have been injected.
-func setup_components(shared_dependencies: Dictionary = {}, per_component_dependencies: Dictionary = {}) -> void:
-	if _components_initialized: return
+func setup_components(
+	shared_dependencies: Dictionary = {}, per_component_dependencies: Dictionary = {}
+) -> void:
+	if _components_initialized:
+		return
 
 	for child in get_children():
-		if not (child is IComponent): continue
-		
+		if not (child is IComponent):
+			continue
+
 		var merged_deps := shared_dependencies.duplicate()
 
 		if per_component_dependencies.has(child):
 			merged_deps.merge(per_component_dependencies[child])
-		
+
 		var class_key: String = child.get_script().get_global_name()
 		if per_component_dependencies.has(class_key):
 			merged_deps.merge(per_component_dependencies[class_key])
-		
+
 		if child.has_method("setup"):
 			child.setup(self, merged_deps)
 
 	_components_initialized = true
 
+
 # --- Private Methods ---
+
 
 func _build_from_archetype() -> void:
 	if not is_instance_valid(archetype):
@@ -82,16 +96,27 @@ func _build_from_archetype() -> void:
 
 	_cache_components_by_type()
 
+
 func _cache_components_by_type() -> void:
 	for child in get_children():
-		if not child is IComponent: continue
+		if not child is IComponent:
+			continue
 
-		if child is HealthComponent: health_component = child
-		elif child is CombatComponent: combat_component = child
-		elif child is InputComponent: input_component = child
-		elif child is BaseStateMachine: state_machine = child
-		elif child is PlayerPhysicsComponent: physics_component = child
-		elif child is PlayerAbilityComponent: ability_component = child
-		elif child is PlayerResourceComponent: resource_component = child
-		elif child is FXComponent: fx_component = child
-		else: push_warning("Unbound component on '%s': %s" % [name, child.get_class()])
+		if child is HealthComponent:
+			health_component = child
+		elif child is CombatComponent:
+			combat_component = child
+		elif child is InputComponent:
+			input_component = child
+		elif child is BaseStateMachine:
+			state_machine = child
+		elif child is PlayerPhysicsComponent:
+			physics_component = child
+		elif child is PlayerAbilityComponent:
+			ability_component = child
+		elif child is PlayerResourceComponent:
+			resource_component = child
+		elif child is FXComponent:
+			fx_component = child
+		else:
+			push_warning("Unbound component on '%s': %s" % [name, child.get_class()])

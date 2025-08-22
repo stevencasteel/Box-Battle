@@ -2,6 +2,7 @@
 ## The main entry point for the entire application.
 extends Node
 
+
 func _ready() -> void:
 	if OS.is_debug_build():
 		AssetPaths.validate_all_paths()

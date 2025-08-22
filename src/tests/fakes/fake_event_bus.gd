@@ -9,22 +9,27 @@ extends Node
 
 var _emitted_events: Array[Dictionary] = []
 
+
 ## Records an emitted event for later inspection.
 func emit(event_name: StringName, payload = null) -> void:
 	_emitted_events.append({"name": event_name, "payload": payload})
-	print("FakeEventBus: Emitted '%s'" % event_name) # TODO: Remove this print after verification
+	print("FakeEventBus: Emitted '%s'" % event_name)  # TODO: Remove this print after verification
+
 
 ## A no-op implementation for the 'on' method.
 func on(_event_name: StringName, _callback: Callable) -> int:
-	return 1 # Return a dummy token
+	return 1  # Return a dummy token
+
 
 ## A no-op implementation for the 'off' method.
 func off(_token: int) -> void:
 	pass
 
+
 ## Clears all recorded events. Should be called in a test's `before_each`.
 func clear() -> void:
 	_emitted_events.clear()
+
 
 ## Checks if a specific event was emitted.
 func was_event_emitted(event_name: StringName) -> bool:
@@ -32,6 +37,7 @@ func was_event_emitted(event_name: StringName) -> bool:
 		if event.name == event_name:
 			return true
 	return false
+
 
 ## Returns the payload of the first event found with the given name.
 func get_payload_for_event(event_name: StringName) -> Variant:

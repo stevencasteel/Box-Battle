@@ -14,6 +14,7 @@ var _cursor_sprite: TextureRect
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	# A high layer number ensures the cursor renders above everything else.
 	layer = 10
@@ -26,11 +27,14 @@ func _ready() -> void:
 	_cursor_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_cursor_sprite)
 
+
 func _process(_delta: float) -> void:
 	# Sync the custom cursor's position to the real mouse position every frame.
 	_cursor_sprite.position = get_viewport().get_mouse_position()
 
+
 # --- Public Methods ---
+
 
 ## Sets the cursor's appearance (e.g., when hovering a button).
 func set_pointer_state(is_pointing: bool) -> void:

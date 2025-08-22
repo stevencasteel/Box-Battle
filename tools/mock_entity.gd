@@ -9,6 +9,7 @@ extends Node
 @export var state_machine: BaseStateMachine
 @export var health_component: HealthComponent
 
+
 # Mimic CharacterBody2D methods for the overlay's checks to prevent errors.
 func is_on_floor() -> bool:
 	return true

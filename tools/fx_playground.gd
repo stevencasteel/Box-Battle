@@ -8,10 +8,12 @@ extends Control
 @onready var test_subject: ColorRect = %TestSubject
 @onready var fx_component: FXComponent = %TestSubject/FXComponent
 
+
 func _ready() -> void:
 	if not Engine.is_editor_hint():
 		fx_component.setup(test_subject, {"visual_node": test_subject})
 		test_subject.visible = true
+
 
 func _on_button_red_pressed() -> void:
 	if not is_instance_valid(_hit_flash_effect):
@@ -20,14 +22,16 @@ func _on_button_red_pressed() -> void:
 	test_subject.visible = true
 	fx_component.play_effect(_hit_flash_effect)
 
+
 func _on_button_blue_pressed() -> void:
 	if not is_instance_valid(_hit_flash_effect):
 		print("ERROR: No Hit Flash ShaderEffect resource assigned.")
 		return
-	
+
 	test_subject.visible = true
 	var overrides = {"tint_color": Color.BLUE}
 	fx_component.play_effect(_hit_flash_effect, overrides)
+
 
 func _on_button_dissolve_pressed() -> void:
 	if not is_instance_valid(_dissolve_effect):

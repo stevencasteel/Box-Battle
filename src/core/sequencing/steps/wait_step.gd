@@ -9,6 +9,7 @@ extends SequenceStep
 
 # --- Virtual Methods ---
 
+
 func execute(sequencer_node: Node) -> Variant:
 	if duration > 0.0:
 		# Return the timer's 'timeout' signal for the sequencer to await.

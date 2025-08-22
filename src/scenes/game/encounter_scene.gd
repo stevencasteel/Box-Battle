@@ -24,6 +24,7 @@ var _current_inspect_index: int = 0
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
 
@@ -51,11 +52,12 @@ func _ready() -> void:
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
 
+
 func _unhandled_input(_event: InputEvent) -> void:
 	if Input.is_action_just_pressed("debug_toggle_overlay"):
 		if is_instance_valid(_debug_overlay):
 			_debug_overlay.visible = not _debug_overlay.visible
-			
+
 	if Input.is_action_just_pressed("debug_dialogue"):
 		# THE FIX: Toggle the dialogue on/off.
 		if DialogueManager.is_conversation_active():
@@ -68,22 +70,29 @@ func _unhandled_input(_event: InputEvent) -> void:
 		if is_instance_valid(_debug_overlay) and _debug_overlay.visible:
 			_cycle_debug_target()
 
+
 func _exit_tree() -> void:
 	# This is the safety net that catches exits not handled by SceneManager.
 	_cleanup_entities()
 
 	EventBus.off(_boss_died_token)
 	FXManager.unregister_camera_shaker()
-	if is_instance_valid(_death_sequence_handle): _death_sequence_handle.cancel()
-	if is_instance_valid(camera): camera.offset = Vector2.ZERO
+	if is_instance_valid(_death_sequence_handle):
+		_death_sequence_handle.cancel()
+	if is_instance_valid(camera):
+		camera.offset = Vector2.ZERO
 	get_tree().paused = false
 
+
 # --- Public Methods (ISceneController Contract) ---
+
 
 func scene_exiting() -> void:
 	_cleanup_entities()
 
+
 # --- Private Methods ---
+
 
 func _cleanup_entities() -> void:
 	# This centralized function ensures all entities are properly torn down.
@@ -96,6 +105,7 @@ func _cleanup_entities() -> void:
 		if is_instance_valid(enemy) and enemy.has_method("teardown"):
 			enemy.teardown()
 
+
 func _initialize_camera_shaker() -> void:
 	var shaker_scene = load("res://src/core/systems/camera_shaker.tscn")
 	if shaker_scene:
@@ -104,16 +114,18 @@ func _initialize_camera_shaker() -> void:
 		_camera_shaker.target_camera = camera
 		FXManager.register_camera_shaker(_camera_shaker)
 
+
 func _initialize_debug_inspector() -> void:
 	_debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
 	add_child(_debug_overlay)
 	_debug_overlay.visible = false
-	
+
 	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.PLAYER))
 	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
-	
+
 	if not _inspectable_entities.is_empty():
 		_debug_overlay.set_target(_inspectable_entities[0])
+
 
 func _cycle_debug_target() -> void:
 	_inspectable_entities = _inspectable_entities.filter(func(e): return is_instance_valid(e))
@@ -126,25 +138,31 @@ func _cycle_debug_target() -> void:
 	var new_target = _inspectable_entities[_current_inspect_index]
 	_debug_overlay.set_target(new_target)
 
+
 func _deactivate_all_minions() -> void:
 	var minions = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
 	for minion in minions:
 		if minion.has_method("deactivate"):
 			minion.deactivate()
 
+
 # --- Signal Handlers ---
+
 
 func _on_player_died() -> void:
 	SceneManager.go_to_game_over()
 
+
 func _on_boss_died(payload: Dictionary) -> void:
 	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
-	if is_instance_valid(player_node): player_node.set_physics_process(false)
+	if is_instance_valid(player_node):
+		player_node.set_physics_process(false)
 	var boss_node = payload.get("boss_node")
 
 	_deactivate_all_minions()
-	
-	var wait_step = WaitStep.new(); wait_step.duration = 2.0
+
+	var wait_step = WaitStep.new()
+	wait_step.duration = 2.0
 	var death_sequence: Array[SequenceStep] = [wait_step]
 
 	_death_sequence_handle = Sequencer.run_sequence(death_sequence)
@@ -152,6 +170,6 @@ func _on_boss_died(payload: Dictionary) -> void:
 
 	if is_instance_valid(boss_node):
 		boss_node.queue_free()
-		
+
 	if is_instance_valid(_death_sequence_handle):
 		SceneManager.go_to_victory()

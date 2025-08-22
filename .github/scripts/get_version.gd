@@ -3,7 +3,8 @@
 # from project.godot and print it to the command line.
 extends SceneTree
 
+
 func _init():
-    var version = ProjectSettings.get_setting("application/config/version")
-    print(version)
-    quit()
+	var version = ProjectSettings.get_setting("application/config/version")
+	print(version)
+	quit()

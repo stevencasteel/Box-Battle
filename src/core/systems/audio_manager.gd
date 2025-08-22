@@ -13,6 +13,7 @@ var _music_player: AudioStreamPlayer
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	# --- Create SFX Players ---
 	for i in range(Constants.NUM_SFX_PLAYERS):
@@ -30,7 +31,8 @@ func _ready() -> void:
 
 	# --- Connect to Settings ---
 	Settings.audio_settings_changed.connect(_on_audio_settings_changed)
-	_on_audio_settings_changed() # Apply initial settings
+	_on_audio_settings_changed()  # Apply initial settings
+
 
 func _notification(what: int) -> void:
 	# A robust, system-level notification for cleaning up before the app quits.
@@ -38,6 +40,7 @@ func _notification(what: int) -> void:
 		if is_instance_valid(_music_player):
 			_music_player.stop()
 			_music_player.stream = null
+
 
 func _exit_tree() -> void:
 	# Disconnect from the signal to be a good citizen.
@@ -49,7 +52,9 @@ func _exit_tree() -> void:
 		_music_player.stop()
 		_music_player.stream = null
 
+
 # --- Public Methods ---
+
 
 ## Plays a one-shot sound effect.
 func play_sfx(sound_path: String) -> void:
@@ -58,26 +63,40 @@ func play_sfx(sound_path: String) -> void:
 	player.play()
 	_sfx_player_index = (_sfx_player_index + 1) % Constants.NUM_SFX_PLAYERS
 
+
 ## Plays a looping music track.
 func play_music(music_path: String) -> void:
-	if _music_player.stream and _music_player.stream.resource_path == music_path and _music_player.playing:
+	if (
+		_music_player.stream
+		and _music_player.stream.resource_path == music_path
+		and _music_player.playing
+	):
 		return
 
 	_music_player.stream = load(music_path)
 	_music_player.play()
 
+
 ## Stops the current music track.
 func stop_music() -> void:
 	_music_player.stop()
 
+
 # --- Signal Handlers ---
 
+
 func _on_audio_settings_changed() -> void:
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(Settings.master_volume))
+	AudioServer.set_bus_volume_db(
+		AudioServer.get_bus_index("Master"), linear_to_db(Settings.master_volume)
+	)
 	AudioServer.set_bus_mute(AudioServer.get_bus_index("Master"), Settings.master_muted)
 
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Music"), linear_to_db(Settings.music_volume))
+	AudioServer.set_bus_volume_db(
+		AudioServer.get_bus_index("Music"), linear_to_db(Settings.music_volume)
+	)
 	AudioServer.set_bus_mute(AudioServer.get_bus_index("Music"), Settings.music_muted)
 
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("SFX"), linear_to_db(Settings.sfx_volume))
+	AudioServer.set_bus_volume_db(
+		AudioServer.get_bus_index("SFX"), linear_to_db(Settings.sfx_volume)
+	)
 	AudioServer.set_bus_mute(AudioServer.get_bus_index("SFX"), Settings.sfx_muted)

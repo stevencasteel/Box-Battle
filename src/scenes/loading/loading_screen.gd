@@ -21,6 +21,7 @@ const SHADER_PREWARM_SCENES = [
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	if GameManager.state.current_encounter_path.is_empty():
 		print("ERROR: No encounter script specified in GameManager. Returning to title.")
@@ -29,11 +30,13 @@ func _ready() -> void:
 
 	_load_level()
 
+
 # --- Private Methods ---
+
 
 ## The main loading and pre-warming sequence.
 func _load_level() -> void:
-	await get_tree().process_frame # Wait one frame for UI to draw "Loading..."
+	await get_tree().process_frame  # Wait one frame for UI to draw "Loading..."
 
 	await _prewarm_shaders()
 
@@ -44,21 +47,22 @@ func _load_level() -> void:
 	]
 	await FXManager.prewarm_shaders_async(effects_to_prewarm, prewarm_viewport)
 
-
 	# Build the level and store the resulting node in the GameManager state.
 	GameManager.state.prebuilt_level = await ArenaBuilder.build_level_async()
 
-	await get_tree().process_frame # Wait one more frame for safety.
+	await get_tree().process_frame  # Wait one more frame for safety.
 
 	SceneManager.go_to_scene(AssetPaths.SCENE_ENCOUNTER)
+
 
 ## Instantiates scenes off-screen to compile their shaders.
 func _prewarm_shaders() -> void:
 	print("Starting shader pre-warming...")
 	for scene_path in SHADER_PREWARM_SCENES:
-		if not FileAccess.file_exists(scene_path): continue
+		if not FileAccess.file_exists(scene_path):
+			continue
 		var instance = load(scene_path).instantiate()
-		
+
 		if instance.has_method("inject_dependencies"):
 			var deps = {
 				"object_pool": ObjectPool,
@@ -66,13 +70,16 @@ func _prewarm_shaders() -> void:
 				"event_bus": EventBus,
 			}
 			instance.inject_dependencies(deps)
-		
+
 		prewarm_viewport.add_child(instance)
-		
+
 		# --- Trigger Actions to Compile More Shaders ---
 		if instance is Player:
 			instance.velocity.x = 100
-			if is_instance_valid(instance.state_machine) and instance.state_machine.has_method("change_state"):
+			if (
+				is_instance_valid(instance.state_machine)
+				and instance.state_machine.has_method("change_state")
+			):
 				instance.state_machine.change_state(instance.State.ATTACK)
 		elif instance is BaseBoss:
 			instance.velocity.x = 100

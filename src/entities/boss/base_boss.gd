@@ -45,11 +45,12 @@ var entity_data: BossStateData
 var _player: CharacterBody2D = null
 var _active_attack_tween: Tween
 var _is_dead: bool = false
-var _object_pool: ObjectPool # Dependency
-var _fx_manager: Node # Dependency
-var _event_bus: Node # Dependency
+var _object_pool: ObjectPool  # Dependency
+var _fx_manager: Node  # Dependency
+var _event_bus: Node  # Dependency
 
 # --- Godot Lifecycle Methods ---
+
 
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
@@ -60,29 +61,42 @@ func _get_configuration_warnings() -> PackedStringArray:
 		warnings.append("Phase 1 has no attack patterns assigned.")
 	return warnings
 
+
 func _ready() -> void:
 	super._ready()
-	if Engine.is_editor_hint(): return
-	
+	if Engine.is_editor_hint():
+		return
+
 	_initialize_data()
 	_initialize_and_setup_components()
 	_connect_signals()
 	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
-	
-	if is_instance_valid(intro_shake_effect) and is_instance_valid(_fx_manager) and _fx_manager.has_method("is_camera_shaker_registered") and _fx_manager.is_camera_shaker_registered():
+
+	if (
+		is_instance_valid(intro_shake_effect)
+		and is_instance_valid(_fx_manager)
+		and _fx_manager.has_method("is_camera_shaker_registered")
+		and _fx_manager.is_camera_shaker_registered()
+	):
 		_fx_manager.request_screen_shake(intro_shake_effect)
+
 
 func _exit_tree() -> void:
 	teardown()
 
+
 func _physics_process(delta: float) -> void:
-	if Engine.is_editor_hint(): return
-	if not is_on_floor(): velocity.y += entity_data.config.gravity * delta
+	if Engine.is_editor_hint():
+		return
+	if not is_on_floor():
+		velocity.y += entity_data.config.gravity * delta
 	move_and_slide()
 	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
 		entity_data.facing_direction *= -1.0
 
+
 # --- Public Methods ---
+
 
 func teardown() -> void:
 	set_physics_process(false)
@@ -93,47 +107,58 @@ func teardown() -> void:
 			health_component.died.disconnect(_on_health_component_died)
 		if health_component.health_threshold_reached.is_connected(_on_health_threshold_reached):
 			health_component.health_threshold_reached.disconnect(_on_health_threshold_reached)
-	
+
 	super.teardown()
 	entity_data = null
+
 
 func get_health_thresholds() -> Array[float]:
 	return [phase_2_threshold, phase_3_threshold]
 
+
 func fire_volley(shot_count: int, delay: float) -> void:
-	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
+	if is_instance_valid(_active_attack_tween):
+		_active_attack_tween.kill()
 	_active_attack_tween = get_tree().create_tween()
 	for i in range(shot_count):
 		_active_attack_tween.tween_callback(fire_shot_at_player)
-		if i < shot_count - 1: _active_attack_tween.tween_interval(delay)
+		if i < shot_count - 1:
+			_active_attack_tween.tween_interval(delay)
+
 
 func fire_shot_at_player() -> void:
-	if _is_dead or not is_instance_valid(_player): return
+	if _is_dead or not is_instance_valid(_player):
+		return
 	var shot = _object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
-	if not shot: return
+	if not shot:
+		return
 	_update_player_tracking()
 	shot.direction = (_player.global_position - global_position).normalized()
 	shot.global_position = global_position
 	shot.activate({"object_pool": _object_pool})
 
+
 # --- Private Methods ---
 
+
 func _die() -> void:
-	if _is_dead: return
+	if _is_dead:
+		return
 	_is_dead = true
-	
+
 	if is_instance_valid(state_machine):
 		state_machine.teardown()
-	
+
 	cooldown_timer.stop()
 	patrol_timer.stop()
-	
+
 	collision_layer = 0
 	collision_mask = 0
 	set_physics_process(false)
-	
-	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
-	
+
+	if is_instance_valid(_active_attack_tween):
+		_active_attack_tween.kill()
+
 	if is_instance_valid(death_shake_effect):
 		_fx_manager.request_screen_shake(death_shake_effect)
 	_fx_manager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
@@ -141,7 +166,7 @@ func _die() -> void:
 	if is_instance_valid(dissolve_effect):
 		# THE FIX: Tell the FXComponent to preserve the final shader state.
 		fx_component.play_effect(dissolve_effect, {}, {"preserve_final_state": true})
-	
+
 	_event_bus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
 
 
@@ -151,7 +176,7 @@ func _initialize_data() -> void:
 	current_attack_patterns = phase_1_patterns
 	entity_data = BossStateData.new()
 	entity_data.config = COMBAT_CONFIG
-	
+
 	_object_pool = get_injected_dependency("object_pool")
 	_fx_manager = get_injected_dependency("fx_manager")
 	_event_bus = get_injected_dependency("event_bus")
@@ -159,13 +184,12 @@ func _initialize_data() -> void:
 	assert(is_instance_valid(_fx_manager), "BaseBoss requires 'fx_manager' injected.")
 	assert(is_instance_valid(_event_bus), "BaseBoss requires 'event_bus' injected.")
 
+
 func _initialize_and_setup_components() -> void:
 	var shared_deps := {
-		"data_resource": entity_data,
-		"config": entity_data.config,
-		"fx_manager": _fx_manager
+		"data_resource": entity_data, "config": entity_data.config, "fx_manager": _fx_manager
 	}
-	
+
 	var states = {
 		State.IDLE: state_idle_script.new(self, state_machine, entity_data),
 		State.ATTACK: state_attack_script.new(self, state_machine, entity_data),
@@ -173,19 +197,26 @@ func _initialize_and_setup_components() -> void:
 		State.PATROL: state_patrol_script.new(self, state_machine, entity_data),
 		State.LUNGE: state_lunge_script.new(self, state_machine, entity_data),
 	}
-	
+
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.COOLDOWN},
-		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT},
+		fx_component:
+		{
+			"visual_node": visual_sprite,
+			"health_component": health_component,
+			"hit_effect": HIT_FLASH_EFFECT
+		},
 		health_component: {"hit_spark_effect": hit_spark_effect}
 	}
-	
+
 	setup_components(shared_deps, per_component_deps)
+
 
 func _connect_signals() -> void:
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
+
 
 func _update_player_tracking() -> void:
 	if is_instance_valid(_player):
@@ -194,7 +225,9 @@ func _update_player_tracking() -> void:
 			entity_data.facing_direction = sign(dir_to_player)
 	self.scale.x = entity_data.facing_direction
 
+
 # --- Signal Handlers ---
+
 
 func _on_health_threshold_reached(health_percentage: float) -> void:
 	var new_phases_remaining = phases_remaining
@@ -205,23 +238,38 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 	if new_phases_remaining != phases_remaining:
 		phases_remaining = new_phases_remaining
 		match phases_remaining:
-			2: current_attack_patterns = phase_2_patterns
-			1: current_attack_patterns = phase_3_patterns
+			2:
+				current_attack_patterns = phase_2_patterns
+			1:
+				current_attack_patterns = phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
 			_fx_manager.request_screen_shake(phase_change_shake_effect)
 		_fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
 		_event_bus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
+
 func _on_cooldown_timer_timeout() -> void:
-	if is_instance_valid(state_machine) and state_machine.current_state == state_machine.states[State.COOLDOWN]:
+	if (
+		is_instance_valid(state_machine)
+		and state_machine.current_state == state_machine.states[State.COOLDOWN]
+	):
 		state_machine.change_state(State.PATROL)
+
+
 func _on_patrol_timer_timeout() -> void:
-	if is_instance_valid(state_machine) and state_machine.current_state == state_machine.states[State.PATROL]:
+	if (
+		is_instance_valid(state_machine)
+		and state_machine.current_state == state_machine.states[State.PATROL]
+	):
 		state_machine.change_state(State.IDLE)
+
+
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
 	_event_bus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
+
+
 func _on_health_component_died() -> void:
 	_die()

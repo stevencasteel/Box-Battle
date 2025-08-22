@@ -8,6 +8,7 @@ extends Node
 
 # --- Virtual Methods ---
 
+
 ## Called by the SceneManager immediately before it changes the scene.
 ## This function can be async to allow for cleanup animations or sequences.
 func scene_exiting() -> void:

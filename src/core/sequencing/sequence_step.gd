@@ -8,6 +8,7 @@ extends Resource
 
 # --- Virtual Methods ---
 
+
 ## This method is implemented by all concrete step classes. It contains the
 ## logic for what the step does. It can return a [Signal] or [Coroutine]
 ## to make the [Sequencer] pause execution.

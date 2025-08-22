@@ -10,12 +10,16 @@ var _pools: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, load(AssetPaths.SCENE_PLAYER_SHOT), 15)
 	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, load(AssetPaths.SCENE_BOSS_SHOT), 30)
 	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, load(AssetPaths.SCENE_TURRET_SHOT), 20)
-	_create_pool_for_scene(Identifiers.Pools.HOMING_BOSS_SHOTS, load(AssetPaths.SCENE_HOMING_BOSS_SHOT), 40)
+	_create_pool_for_scene(
+		Identifiers.Pools.HOMING_BOSS_SHOTS, load(AssetPaths.SCENE_HOMING_BOSS_SHOT), 40
+	)
 	_create_pool_for_scene(Identifiers.Pools.HIT_SPARKS, load(AssetPaths.SCENE_HIT_SPARK), 25)
+
 
 func _exit_tree() -> void:
 	# When the game quits, forcefully free all pooled objects and their containers
@@ -27,7 +31,9 @@ func _exit_tree() -> void:
 		child.free()
 	_pools.clear()
 
+
 # --- Public Methods ---
+
 
 ## Returns a dictionary containing the active/total counts for each pool.
 func get_pool_stats() -> Dictionary:
@@ -36,11 +42,9 @@ func get_pool_stats() -> Dictionary:
 		var pool = _pools[pool_name]
 		var total_count = pool.container.get_child_count()
 		var inactive_count = pool.inactive.size()
-		stats[pool_name] = {
-			"active": total_count - inactive_count,
-			"total": total_count
-		}
+		stats[pool_name] = {"active": total_count - inactive_count, "total": total_count}
 	return stats
+
 
 ## Returns all active instances in all pools to their inactive state.
 func reset() -> void:
@@ -50,9 +54,10 @@ func reset() -> void:
 		for child in pool.container.get_children():
 			if not pool.inactive.has(child):
 				active_nodes_to_return.append(child)
-		
+
 		for node in active_nodes_to_return:
 			return_instance.call_deferred(node)
+
 
 ## Retrieves an inactive instance from the specified pool.
 func get_instance(p_pool_name: StringName) -> Node:
@@ -72,9 +77,11 @@ func get_instance(p_pool_name: StringName) -> Node:
 
 	return instance
 
+
 ## Returns an active instance to its pool.
 func return_instance(p_instance: Node) -> void:
-	if not is_instance_valid(p_instance): return
+	if not is_instance_valid(p_instance):
+		return
 
 	var pool_name = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
@@ -88,20 +95,21 @@ func return_instance(p_instance: Node) -> void:
 	if p_instance.has_method("deactivate"):
 		p_instance.deactivate()
 
+
 # --- Private Methods ---
 
-func _create_pool_for_scene(p_pool_name: StringName, p_scene: PackedScene, p_initial_size: int) -> void:
-	if _pools.has(p_pool_name): return
+
+func _create_pool_for_scene(
+	p_pool_name: StringName, p_scene: PackedScene, p_initial_size: int
+) -> void:
+	if _pools.has(p_pool_name):
+		return
 
 	var pool_container = Node.new()
 	pool_container.name = p_pool_name
 	add_child(pool_container)
 
-	_pools[p_pool_name] = {
-		"scene": p_scene,
-		"inactive": [],
-		"container": pool_container
-	}
+	_pools[p_pool_name] = {"scene": p_scene, "inactive": [], "container": pool_container}
 
 	for i in range(p_initial_size):
 		var instance = p_scene.instantiate()

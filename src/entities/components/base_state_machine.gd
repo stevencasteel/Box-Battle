@@ -17,43 +17,54 @@ var current_state: BaseState
 var owner_node: Node
 var state_history: Array[String] = []
 
+
 func _ready() -> void:
 	owner_node = get_parent()
+
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		teardown()
 
+
 func _unhandled_input(event: InputEvent) -> void:
 	if current_state:
 		current_state.process_input(event)
+
 
 func _physics_process(delta: float) -> void:
 	if current_state:
 		current_state.process_physics(delta)
 
+
 func _exit_tree() -> void:
 	teardown()
 
+
 func setup(_p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	assert(p_dependencies.has("states"), "StateMachine setup requires a 'states' dictionary.")
-	assert(p_dependencies.has("initial_state_key"), "StateMachine setup requires an 'initial_state_key'.")
+	assert(
+		p_dependencies.has("initial_state_key"),
+		"StateMachine setup requires an 'initial_state_key'."
+	)
 	self.states = p_dependencies["states"]
 	var initial_state_key = p_dependencies["initial_state_key"]
 	change_state(initial_state_key)
 
+
 func teardown() -> void:
 	if current_state:
 		current_state.exit()
-	
+
 	for state in states.values():
 		if is_instance_valid(state):
 			state.teardown()
 			state.free()
-			
+
 	states.clear()
 	state_history.clear()
 	current_state = null
+
 
 func change_state(new_state_key, msg := {}) -> void:
 	if not states.has(new_state_key):

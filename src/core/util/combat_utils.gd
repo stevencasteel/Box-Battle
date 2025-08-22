@@ -4,6 +4,7 @@ extends Node
 
 # --- Static Functions ---
 
+
 ## Traverses up the scene tree from a given node to find the first node that
 ## implements the IDamageable interface (i.e., has an `apply_damage` method).
 ## This is the canonical way to find a valid damage target from a collision.

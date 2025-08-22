@@ -8,7 +8,7 @@ signal health_changed(current_health, max_health)
 signal died
 
 # --- Enums ---
-enum State {MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO}
+enum State { MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO }
 
 # --- Constants ---
 const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
@@ -50,9 +50,11 @@ var _is_dead: bool = false
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	super._ready()
-	if Engine.is_editor_hint(): return
+	if Engine.is_editor_hint():
+		return
 
 	add_to_group(Identifiers.Groups.PLAYER)
 	_initialize_and_setup_components()
@@ -62,11 +64,15 @@ func _ready() -> void:
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
+
 func _physics_process(delta: float) -> void:
-	if _is_dead: return
+	if _is_dead:
+		return
 	_update_timers(delta)
 
+
 # --- Public Methods ---
+
 
 func teardown() -> void:
 	# Disconnect signals that THIS script is listening to.
@@ -87,24 +93,29 @@ func teardown() -> void:
 	super.teardown()
 	entity_data = null
 
+
 # --- Private Methods ---
 
+
 func _die() -> void:
-	if _is_dead: return
+	if _is_dead:
+		return
 	_is_dead = true
-	
+
 	collision_layer = 0
 	collision_mask = 0
 	set_physics_process(false)
-	
+
 	if is_instance_valid(state_machine):
 		state_machine.teardown()
-	
+
 	if is_instance_valid(dissolve_effect):
-		var tween: Tween = fx_component.play_effect(dissolve_effect, {}, {"preserve_final_state": false})
+		var tween: Tween = fx_component.play_effect(
+			dissolve_effect, {}, {"preserve_final_state": false}
+		)
 		if is_instance_valid(tween):
 			await tween.finished
-	
+
 	died.emit()
 
 
@@ -119,22 +130,24 @@ func _enable_melee_hitbox(is_enabled: bool, is_up_attack: bool = false) -> void:
 			shape_node.position = Vector2(entity_data.facing_direction * 60, 0)
 	shape_node.disabled = not is_enabled
 
+
 func _enable_pogo_hitbox(is_enabled: bool) -> void:
 	var shape_node: CollisionShape2D = pogo_hitbox.get_node("CollisionShape2D")
 	shape_node.position = Vector2(0, 40)
 	shape_node.disabled = not is_enabled
 
+
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = COMBAT_CONFIG
-	
+
 	_object_pool = get_injected_dependency("object_pool")
 	_fx_manager = get_injected_dependency("fx_manager")
 	_event_bus = get_injected_dependency("event_bus")
 	assert(is_instance_valid(_object_pool), "Player requires 'object_pool' injected.")
 	assert(is_instance_valid(_fx_manager), "Player requires 'fx_manager' injected.")
 	assert(is_instance_valid(_event_bus), "Player requires 'event_bus' injected.")
-	
+
 	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config,
@@ -143,7 +156,7 @@ func _initialize_and_setup_components() -> void:
 		"event_bus": _event_bus,
 		"fx_manager": _fx_manager
 	}
-	
+
 	var states = {
 		State.MOVE: state_move_script.new(self, state_machine, entity_data),
 		State.FALL: state_fall_script.new(self, state_machine, entity_data),
@@ -155,15 +168,20 @@ func _initialize_and_setup_components() -> void:
 		State.HEAL: state_heal_script.new(self, state_machine, entity_data),
 		State.POGO: state_pogo_script.new(self, state_machine, entity_data),
 	}
-	
+
 	var per_component_deps := {
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
-		fx_component: {"visual_node": visual_sprite, "health_component": health_component, "hit_effect": HIT_FLASH_EFFECT},
+		fx_component:
+		{
+			"visual_node": visual_sprite,
+			"health_component": health_component,
+			"hit_effect": HIT_FLASH_EFFECT
+		},
 		health_component: {"hit_spark_effect": hit_spark_effect}
 	}
-	
+
 	setup_components(shared_deps, per_component_deps)
 
 
@@ -179,8 +197,10 @@ func _connect_signals() -> void:
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 	state_machine.action_requested.connect(_on_state_machine_action_requested)
 
+
 func _update_timers(delta: float) -> void:
-	if not is_instance_valid(entity_data): return
+	if not is_instance_valid(entity_data):
+		return
 
 	entity_data.coyote_timer = max(0.0, entity_data.coyote_timer - delta)
 	entity_data.wall_coyote_timer = max(0.0, entity_data.wall_coyote_timer - delta)
@@ -189,19 +209,25 @@ func _update_timers(delta: float) -> void:
 	entity_data.attack_duration_timer = max(0.0, entity_data.attack_duration_timer - delta)
 	entity_data.attack_cooldown_timer = max(0.0, entity_data.attack_cooldown_timer - delta)
 	entity_data.knockback_timer = max(0.0, entity_data.knockback_timer - delta)
-	entity_data.pogo_fall_prevention_timer = max(0.0, entity_data.pogo_fall_prevention_timer - delta)
+	entity_data.pogo_fall_prevention_timer = max(
+		0.0, entity_data.pogo_fall_prevention_timer - delta
+	)
 	if entity_data.is_charging and input_component.buffer.get("attack_pressed"):
 		entity_data.charge_timer += delta
 
+
 # --- Signal Handlers ---
+
 
 func _on_state_machine_action_requested(command: Callable) -> void:
 	if command.is_valid():
 		command.call()
 
+
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	var target_id = body.get_instance_id()
-	if entity_data.hit_targets_this_swing.has(target_id): return
+	if entity_data.hit_targets_this_swing.has(target_id):
+		return
 	entity_data.hit_targets_this_swing[target_id] = true
 	var damageable = CombatUtilsScript.find_damageable(body)
 	if is_instance_valid(damageable):
@@ -216,17 +242,26 @@ func _on_melee_hitbox_body_entered(body: Node) -> void:
 		if damage_result.was_damaged:
 			resource_component.on_damage_dealt()
 			if is_close_range:
-				_fx_manager.request_hit_stop(entity_data.config.player_melee_close_range_hit_stop_duration)
+				_fx_manager.request_hit_stop(
+					entity_data.config.player_melee_close_range_hit_stop_duration
+				)
+
+
 func _on_pogo_hitbox_body_entered(body: Node) -> void:
 	combat_component.trigger_pogo(body)
+
+
 func _on_hitbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		if entity_data.is_pogo_attack:
 			combat_component.trigger_pogo(area)
 		else:
 			_object_pool.return_instance.call_deferred(area)
+
+
 func _on_hurtbox_area_entered(area: Area2D) -> void:
-	if health_component.is_invincible(): return
+	if health_component.is_invincible():
+		return
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		var damage_info = DamageInfo.new()
 		damage_info.amount = 1
@@ -234,33 +269,45 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		damage_info.impact_position = global_position
 		damage_info.impact_normal = (global_position - area.global_position).normalized()
 		var damage_result = health_component.apply_damage(damage_info)
-		
-		if not is_instance_valid(entity_data): return
-		
+
+		if not is_instance_valid(entity_data):
+			return
+
 		if damage_result.was_damaged and entity_data.health > 0:
 			self.velocity = damage_result.knockback_velocity
 			state_machine.change_state(State.HURT)
 		_object_pool.return_instance.call_deferred(area)
+
+
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
 		entity_data.health += 1
 		resource_component.consume_healing_charge()
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
 		state_machine.change_state(State.MOVE)
+
+
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
 	_event_bus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
+
+
 func _on_health_component_died() -> void:
 	_die()
+
+
 func _on_pogo_bounce_requested() -> void:
 	velocity.y = -entity_data.config.player_pogo_force
 	position.y -= 1
 	entity_data.can_dash = true
 	entity_data.air_jumps_left = entity_data.config.player_max_air_jumps
 	state_machine.change_state(State.FALL)
+
+
 func _cancel_heal() -> void:
-	if healing_timer.is_stopped(): return
+	if healing_timer.is_stopped():
+		return
 	healing_timer.stop()

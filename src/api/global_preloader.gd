@@ -5,6 +5,7 @@
 ## resolving parse order errors.
 extends Node
 
+
 func _ready() -> void:
 	# Preload all interfaces and critical base classes to register them globally.
 	preload("res://src/api/interfaces/IComponent.gd")

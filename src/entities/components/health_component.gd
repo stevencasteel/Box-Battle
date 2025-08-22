@@ -20,19 +20,23 @@ var _knockback_speed: float
 var _hazard_knockback_speed: float
 var _invincibility_tokens: Dictionary = {}
 var _next_token_id: int = 1
-var _fx_manager: Node # Dependency
-var _hit_spark_effect: VFXEffect # Dependency
+var _fx_manager: Node  # Dependency
+var _hit_spark_effect: VFXEffect  # Dependency
 
 # --- Godot Lifecycle Methods ---
+
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		teardown()
 
+
 # --- Public Methods ---
+
 
 func is_invincible() -> bool:
 	return not _invincibility_tokens.is_empty()
+
 
 func grant_invincibility(requester: Object) -> int:
 	var token_id = _next_token_id
@@ -40,9 +44,11 @@ func grant_invincibility(requester: Object) -> int:
 	_invincibility_tokens[token_id] = requester.get_instance_id()
 	return token_id
 
+
 func release_invincibility(token: int) -> void:
 	if _invincibility_tokens.has(token):
 		_invincibility_tokens.erase(token)
+
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
@@ -60,7 +66,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		_invincibility_duration = cfg.player_invincibility_duration
 		_knockback_speed = cfg.player_knockback_speed
 		_hazard_knockback_speed = cfg.player_hazard_knockback_speed
-	else: # Assumes Enemy/Boss
+	else:  # Assumes Enemy/Boss
 		_invincibility_duration = cfg.boss_invincibility_duration
 		_knockback_speed = 0
 		_hazard_knockback_speed = 0
@@ -68,11 +74,13 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	entity_data.health = _max_health
 	health_changed.emit(entity_data.health, _max_health)
 
+
 func teardown() -> void:
 	entity_data = null
 	owner_node = null
 	_fx_manager = null
 	_hit_spark_effect = null
+
 
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	var result = DamageResult.new()
@@ -84,7 +92,9 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	health_changed.emit(entity_data.health, _max_health)
 
 	var post_hit_token = grant_invincibility(self)
-	get_tree().create_timer(_invincibility_duration).timeout.connect(release_invincibility.bind(post_hit_token))
+	get_tree().create_timer(_invincibility_duration).timeout.connect(
+		release_invincibility.bind(post_hit_token)
+	)
 
 	result.knockback_velocity = _calculate_knockback(damage_info.source_node)
 	_check_for_threshold_crossing(health_before_damage, entity_data.health)
@@ -93,25 +103,36 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	took_damage.emit(damage_info, result)
 
 	# Play hit spark VFX if damage was taken and an effect is configured
-	if result.was_damaged and is_instance_valid(_fx_manager) and is_instance_valid(_hit_spark_effect):
-		_fx_manager.play_vfx(_hit_spark_effect, damage_info.impact_position, damage_info.impact_normal)
+	if (
+		result.was_damaged
+		and is_instance_valid(_fx_manager)
+		and is_instance_valid(_hit_spark_effect)
+	):
+		_fx_manager.play_vfx(
+			_hit_spark_effect, damage_info.impact_position, damage_info.impact_normal
+		)
 
 	if entity_data.health <= 0:
 		died.emit()
 
 	return result
 
+
 # --- Private Methods ---
 func _check_for_threshold_crossing(health_before: int, health_after: int) -> void:
-	if not owner_node.has_method("get_health_thresholds"): return
+	if not owner_node.has_method("get_health_thresholds"):
+		return
 	var thresholds: Array[float] = owner_node.get_health_thresholds()
 	var old_percent = float(health_before) / _max_health
 	var new_percent = float(health_after) / _max_health
 	for threshold in thresholds:
 		if old_percent > threshold and new_percent <= threshold:
 			health_threshold_reached.emit(threshold)
+
+
 func _calculate_knockback(source: Node) -> Vector2:
-	if _knockback_speed == 0 or not is_instance_valid(source): return Vector2.ZERO
+	if _knockback_speed == 0 or not is_instance_valid(source):
+		return Vector2.ZERO
 	var knockback_dir = (owner_node.global_position - source.global_position).normalized()
 	var speed = _knockback_speed
 	if source.is_in_group(Identifiers.Groups.HAZARD):

@@ -8,7 +8,7 @@ class_name AttackPattern
 extends Resource
 
 # --- Editor Properties ---
-@export var logic: AttackLogic ## The script that defines HOW this attack behaves.
+@export var logic: AttackLogic  ## The script that defines HOW this attack behaves.
 @export var telegraph_duration: float = 0.5
 @export var attack_duration: float = 0.1
 @export var cooldown: float = 1.5

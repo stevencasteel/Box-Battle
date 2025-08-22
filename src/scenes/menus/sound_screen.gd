@@ -22,6 +22,7 @@ var _sfx_mute_checkbox: TextureButton
 
 # --- Godot Lifecycle Methods ---
 
+
 func _ready() -> void:
 	# --- Procedurally build the UI rows ---
 	for c in menu_items_vbox.get_children():
@@ -37,41 +38,52 @@ func _ready() -> void:
 		back_button.pressed.connect(_on_back_button_pressed)
 		Settings.audio_settings_changed.connect(_update_ui_from_settings)
 		mute_button.pressed.connect(_on_mute_button_pressed)
-		
+
 		var menu_manager = MenuManagerScript.new()
 		add_child(menu_manager)
 		menu_manager.setup_menu([back_button])
-		
+
 		# --- Connect Feedback Handlers ---
 		menu_manager.selection_changed.connect(_on_any_item_focused)
 		var interactive_items: Array[Control] = [back_button, mute_button]
 		for item in interactive_items:
 			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		
+
 		# Connect generic sound only to mute button
 		mute_button.pressed.connect(_on_any_item_pressed)
-		
-		_update_ui_from_settings() # Includes mute button icon
+
+		_update_ui_from_settings()  # Includes mute button icon
 
 		await get_tree().process_frame
 		back_button.grab_focus()
+
 
 func _exit_tree() -> void:
 	if not Engine.is_editor_hint():
 		if Settings.audio_settings_changed.is_connected(_update_ui_from_settings):
 			Settings.audio_settings_changed.disconnect(_update_ui_from_settings)
 
+
 # --- Private Methods ---
 
+
 func _update_ui_from_settings() -> void:
-	if _master_volume_label: _master_volume_label.text = str(int(Settings.master_volume * 100))
-	if _music_volume_label: _music_volume_label.text = str(int(Settings.music_volume * 100))
-	if _sfx_volume_label: _sfx_volume_label.text = str(int(Settings.sfx_volume * 100))
-	if _master_mute_checkbox: _update_checkbox_texture(_master_mute_checkbox, Settings.master_muted)
-	if _music_mute_checkbox: _update_checkbox_texture(_music_mute_checkbox, Settings.music_muted)
-	if _sfx_mute_checkbox: _update_checkbox_texture(_sfx_mute_checkbox, Settings.sfx_muted)
-	if is_instance_valid(mute_button): mute_button.update_icon(Settings.music_muted)
+	if _master_volume_label:
+		_master_volume_label.text = str(int(Settings.master_volume * 100))
+	if _music_volume_label:
+		_music_volume_label.text = str(int(Settings.music_volume * 100))
+	if _sfx_volume_label:
+		_sfx_volume_label.text = str(int(Settings.sfx_volume * 100))
+	if _master_mute_checkbox:
+		_update_checkbox_texture(_master_mute_checkbox, Settings.master_muted)
+	if _music_mute_checkbox:
+		_update_checkbox_texture(_music_mute_checkbox, Settings.music_muted)
+	if _sfx_mute_checkbox:
+		_update_checkbox_texture(_sfx_mute_checkbox, Settings.sfx_muted)
+	if is_instance_valid(mute_button):
+		mute_button.update_icon(Settings.music_muted)
+
 
 func _create_volume_row(label_text: String, initial_volume: float, type: String) -> HBoxContainer:
 	var hbox = HBoxContainer.new()
@@ -105,37 +117,49 @@ func _create_volume_row(label_text: String, initial_volume: float, type: String)
 
 	match type:
 		"master":
-			_master_volume_label = volume_label; _master_mute_checkbox = checkbox
+			_master_volume_label = volume_label
+			_master_mute_checkbox = checkbox
 			if not Engine.is_editor_hint():
 				slider.value_changed.connect(func(val): Settings.master_volume = val)
 				checkbox.pressed.connect(func(): Settings.master_muted = not Settings.master_muted)
 		"music":
-			_music_volume_label = volume_label; _music_mute_checkbox = checkbox
+			_music_volume_label = volume_label
+			_music_mute_checkbox = checkbox
 			if not Engine.is_editor_hint():
 				slider.value_changed.connect(func(val): Settings.music_volume = val)
 				checkbox.pressed.connect(func(): Settings.music_muted = not Settings.music_muted)
 		"sfx":
-			_sfx_volume_label = volume_label; _sfx_mute_checkbox = checkbox
+			_sfx_volume_label = volume_label
+			_sfx_mute_checkbox = checkbox
 			if not Engine.is_editor_hint():
 				slider.value_changed.connect(func(val): Settings.sfx_volume = val)
 				checkbox.pressed.connect(func(): Settings.sfx_muted = not Settings.sfx_muted)
 
 	return hbox
 
+
 func _update_checkbox_texture(button_ref: TextureButton, is_muted: bool) -> void:
-	var new_texture = load(AssetPaths.SPRITE_CHECKBOX_UNCHECKED) if not is_muted else load(AssetPaths.SPRITE_CHECKBOX_CHECKED)
+	var new_texture = (
+		load(AssetPaths.SPRITE_CHECKBOX_UNCHECKED)
+		if not is_muted
+		else load(AssetPaths.SPRITE_CHECKBOX_CHECKED)
+	)
 	if button_ref.texture_normal != new_texture:
 		button_ref.texture_normal = new_texture
+
 
 # --- Signal Handlers ---
 func _on_any_item_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 
+
 func _on_any_item_focused() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 
+
 func _on_mute_button_pressed() -> void:
 	Settings.music_muted = not Settings.music_muted
+
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)

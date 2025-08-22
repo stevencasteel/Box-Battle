@@ -85,7 +85,9 @@ func validate_all_paths() -> void:
 		var value = constants[key]
 		if value is String and value.begins_with("res://"):
 			if not FileAccess.file_exists(value):
-				push_error("Asset path validation failed! File not found for '%s': %s" % [key, value])
+				push_error(
+					"Asset path validation failed! File not found for '%s': %s" % [key, value]
+				)
 				missing_assets = true
 
 	if not missing_assets:
