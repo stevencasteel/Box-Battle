@@ -16,7 +16,9 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
-var _object_pool: ObjectPool # Dependency
+# THE FIX: Loosen the type hint to a generic Node to allow for fakes during testing.
+# The script relies on the injected object having the correct methods (duck typing).
+var _object_pool: Node # Dependency
 
 # --- Public Methods ---
 

@@ -52,7 +52,31 @@
 
 
 
-
+   TESTING & ARCHITECTURE: PURE UNIT TESTS
+   Completed a major refactor of the unit test suite to enable true "pure"
+   unit testing, fully decoupling components from global singletons. This
+   enhances test reliability, speed, and architectural clarity.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Implemented the "Fake Object" pattern by creating lightweight,
+      ░   test-double implementations for core singletons (`FakeEventBus`,
+      ░   `FakeObjectPool`, `FakeFXManager`) in a new `src/tests/fakes` directory.
+      ░ ■ The `CombatComponent` was refactored to use duck typing for its
+      ░   `_object_pool` dependency, removing a hard static type requirement
+      ░   that created cyclic dependencies during testing.
+   █  Testing
+      ░ ■ Refactored all relevant unit tests (`test_health_component`,
+      ░   `test_combat_component`, `test_player_resource_component`) to inject
+      ░   these fake singletons instead of using the real autoloads.
+      ░ ■ The tests now verify behavior (e.g., "was a method called?", "was an
+      ░   event emitted?") by inspecting the state of the fakes, not by checking
+      ░   the global state of the game.
+   █  Fixed
+      ░ ■ Resolved a series of complex script errors, including cyclic
+      ░   dependencies and static type mismatches, that were preventing the
+      ░   test suite from running cleanly.
+      ░ ■ Fixed a timing-related bug in a `CombatComponent` test by making it
+      ░   `async` to correctly handle a `call_deferred` operation.
 
 
 

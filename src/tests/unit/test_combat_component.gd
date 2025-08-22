@@ -2,67 +2,58 @@
 extends GutTest
 
 # --- Constants ---
-const Player = preload("res://src/entities/player/player.tscn")
 const CombatComponent = preload("res://src/entities/components/combat_component.gd")
 const HealthComponent = preload("res://src/entities/components/health_component.gd")
+const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
 const DamageResult = preload("res://src/api/combat/damage_result.gd")
 const CombatConfig = preload("res://src/data/combat_config.tres")
 const Identifiers = preload("res://src/core/util/identifiers.gd")
+const FakeObjectPool = preload("res://src/tests/fakes/fake_object_pool.gd")
 
 # --- Test Internals ---
-var _player: Player
 var _combat_component: CombatComponent
-var _object_pool: ObjectPool
+var _player_data: PlayerStateData
+var _fake_object_pool: FakeObjectPool
 var _pogo_bounce_was_requested: bool = false
+var _mock_owner: CharacterBody2D
 
 # --- Test Lifecycle ---
 
 func before_each():
 	_pogo_bounce_was_requested = false
 
-	_object_pool = get_node("/root/ObjectPool")
-	_object_pool.reset()
+	_mock_owner = CharacterBody2D.new()
+	add_child(_mock_owner)
+	
+	_player_data = PlayerStateData.new()
+	_player_data.config = CombatConfig
 
-	_player = partial_double(Player).instantiate()
-	if _player.has_method("inject_dependencies"):
-		_player.inject_dependencies({
-			"object_pool": _object_pool,
-			"fx_manager": get_node("/root/FXManager"),
-			"event_bus": get_node("/root/EventBus")
-		})
-	add_child(_player)
-
-	_combat_component = _player.get_node("CombatComponent")
+	_fake_object_pool = FakeObjectPool.new()
+	add_child(_fake_object_pool)
+	
+	_combat_component = CombatComponent.new()
+	_mock_owner.add_child(_combat_component)
+	
 	var dependencies = {
-		"data_resource": _player.entity_data,
-		"object_pool": _object_pool
+		"data_resource": _player_data,
+		"object_pool": _fake_object_pool
 	}
-	_combat_component.setup(_player, dependencies)
+	_combat_component.setup(_mock_owner, dependencies)
 
 	_combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
-	
-	await get_tree().process_frame
 
 func after_each():
 	if is_instance_valid(_combat_component) and _combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
 		_combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
 
-	if is_instance_valid(_player):
-		_player.free()
-
 # --- The Tests ---
 
 func test_fire_shot_gets_instance_from_pool():
-	var stats_before = _object_pool.get_pool_stats()
-	var initial_active_count = stats_before[Identifiers.Pools.PLAYER_SHOTS].active
-
+	var call_count_before = _fake_object_pool.get_call_count(Identifiers.Pools.PLAYER_SHOTS)
 	_combat_component.fire_shot()
-	await get_tree().process_frame
+	var call_count_after = _fake_object_pool.get_call_count(Identifiers.Pools.PLAYER_SHOTS)
 
-	var stats_after = _object_pool.get_pool_stats()
-	var final_active_count = stats_after[Identifiers.Pools.PLAYER_SHOTS].active
-
-	assert_eq(final_active_count, initial_active_count + 1, "fire_shot() should make one more projectile active in the pool.")
+	assert_eq(call_count_after, call_count_before + 1, "fire_shot() should call get_instance on the pool exactly once.")
 
 func test_trigger_pogo_on_enemy_emits_bounce_request():
 	var mock_enemy = CharacterBody2D.new()
@@ -72,33 +63,33 @@ func test_trigger_pogo_on_enemy_emits_bounce_request():
 	mock_enemy.add_child(mock_health)
 	add_child(mock_enemy)
 	
-	_player.entity_data.is_pogo_attack = true
+	_player_data.is_pogo_attack = true
 
 	var pogo_succeeded = _combat_component.trigger_pogo(mock_enemy)
-	await get_tree().process_frame
 
 	assert_true(pogo_succeeded, "trigger_pogo should return true when hitting a valid enemy.")
 	assert_true(_pogo_bounce_was_requested, "pogo_bounce_requested signal should be emitted after a successful pogo.")
 
-	mock_health.free()
 	mock_enemy.free()
 
-func test_trigger_pogo_on_projectile_returns_it_to_pool():
-	var mock_projectile = _object_pool.get_instance(Identifiers.Pools.TURRET_SHOTS)
+func test_trigger_pogo_on_projectile_returns_it_to_pool() -> void:
+	# THE FIX: This test must be async to account for call_deferred.
+	var mock_projectile = Node2D.new() # Use Node2D for compatibility
 	mock_projectile.add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
-	_player.entity_data.is_pogo_attack = true
-
-	var stats_before = _object_pool.get_pool_stats()
-	var initial_active_count = stats_before[Identifiers.Pools.TURRET_SHOTS].active
-	assert_eq(initial_active_count, 1, "There should be 1 active turret shot before the test.")
-
-	_combat_component.trigger_pogo(mock_projectile)
-	await get_tree().process_frame
-
-	var stats_after = _object_pool.get_pool_stats()
-	var final_active_count = stats_after[Identifiers.Pools.TURRET_SHOTS].active
+	mock_projectile.set_meta("pool_name", Identifiers.Pools.TURRET_SHOTS)
+	add_child(mock_projectile) # Add to tree so it's valid for deferred calls
 	
-	assert_eq(final_active_count, 0, "Pogoing a projectile should return it to the pool, making 0 active.")
+	_player_data.is_pogo_attack = true
+
+	var return_count_before = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
+	_combat_component.trigger_pogo(mock_projectile)
+	
+	# THE FIX: Wait for one frame to allow the deferred call to execute.
+	await get_tree().physics_frame
+	
+	var return_count_after = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
+	
+	assert_eq(return_count_after, return_count_before + 1, "Pogoing a projectile should call return_instance on the pool.")
 
 # --- Signal Handlers ---
 

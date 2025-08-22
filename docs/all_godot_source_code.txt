@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Fri Aug 22 14:36:12 CDT 2025
+Generated on: Fri Aug 22 14:58:51 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -398,6 +398,11 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── data
 │   │   │   ├── test_encounter.tres
 │   │   │   └── test_layout.tres
+│   │   ├── fakes
+│   │   │   ├── fake_event_bus.gd
+│   │   │   ├── fake_fx_manager.gd
+│   │   │   ├── fake_object_pool.gd
+│   │   │   └── fake_projectile.gd
 │   │   ├── integration
 │   │   │   └── test_integration_combat_loop.gd
 │   │   ├── isolation
@@ -443,7 +448,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-78 directories, 357 files
+79 directories, 361 files
 
 
 =====================================
@@ -20290,27 +20295,58 @@ FILE: ./docs/CHANGELOG.txt
 
 
 
-
-
-
-
-   PERFORMANCE: FX COALESCING & BUDGETING
-   Implemented a system to prevent rapid, repetitive visual effects from
-   overwhelming the engine, improving performance and visual clarity during
-   intense combat.
+   TESTING & ARCHITECTURE: PURE UNIT TESTS
+   Completed a major refactor of the unit test suite to enable true "pure"
+   unit testing, fully decoupling components from global singletons. This
+   enhances test reliability, speed, and architectural clarity.
    ────────────────────────────────────────────────────────────────────────
    █  Architectural Changes
-      ░ ■ Upgraded `FXManager` to include "effect coalescing" logic. It can now
-      ░   intelligently ignore duplicate effect requests on the same target if
-      ░   they occur within a configurable time window.
+      ░ ■ Implemented the "Fake Object" pattern by creating lightweight,
+      ░   test-double implementations for core singletons (`FakeEventBus`,
+      ░   `FakeObjectPool`, `FakeFXManager`) in a new `src/tests/fakes` directory.
+      ░ ■ The `CombatComponent` was refactored to use duck typing for its
+      ░   `_object_pool` dependency, removing a hard static type requirement
+      ░   that created cyclic dependencies during testing.
+   █  Testing
+      ░ ■ Refactored all relevant unit tests (`test_health_component`,
+      ░   `test_combat_component`, `test_player_resource_component`) to inject
+      ░   these fake singletons instead of using the real autoloads.
+      ░ ■ The tests now verify behavior (e.g., "was a method called?", "was an
+      ░   event emitted?") by inspecting the state of the fakes, not by checking
+      ░   the global state of the game.
+   █  Fixed
+      ░ ■ Resolved a series of complex script errors, including cyclic
+      ░   dependencies and static type mismatches, that were preventing the
+      ░   test suite from running cleanly.
+      ░ ■ Fixed a timing-related bug in a `CombatComponent` test by making it
+      ░   `async` to correctly handle a `call_deferred` operation.
+
+
+
+   FX SYSTEM HARDENING & OPTIMIZATION
+   Completed a major overhaul of the visual effects pipeline to improve
+   robustness, stability, and performance, completing Phases 1 and 2 of the
+   FX & Shader Refactor plan.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Hardened the `FXComponent` to be architecturally sound. It now always
+      ░   creates a unique, duplicated material instance for every effect it
+      ░   plays, programmatically eliminating shared-state visual bugs.
+      ░ ■ Implemented a new shader pre-warming system. The `FXManager` now has a
+      ░   `prewarm_shaders_async` method, which is called by the `LoadingScreen`
+      ░   to compile critical shaders at startup, eliminating first-use stutter.
+      ░ ■ Upgraded `FXManager` to include an "effect coalescing" system. It can
+      ░   now intelligently ignore duplicate effect requests on the same target
+      ░   if they occur within a configurable time window, preventing "event storms."
       ░ ■ The `ShaderEffect` resource was enhanced with a new `coalesce_window`
       ░   property, making this performance-tuning behavior fully data-driven.
+   █  Fixed
+      ░ ■ Resolved a critical GDScript type-checking error in `LoadingScreen`
+      ░   that occurred when using `const` arrays with typed resources.
    █  Changed
       ░ ■ The primary entity hit-flash effect has been updated to use the new
-      ░   coalescing system, preventing visual noise from rapid, successive
-      ░   damage ticks.
-
-
+      ░   coalescing system, preventing visual noise from rapid, successive hits.
+      
 
    SYSTEMS & NARRATIVE: DIALOGUE SYSTEM FOUNDATION
    Implemented the foundational, data-driven dialogue system, establishing the
@@ -26803,82 +26839,79 @@ FILE: ./src/tests/unit/test_player_resource_component.gd
 extends GutTest
 
 # --- Constants ---
-const Player = preload("res://src/entities/player/player.tscn")
 const PlayerResourceComponent = preload("res://src/entities/player/components/player_resource_component.gd")
+const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
 const CombatConfig = preload("res://src/data/combat_config.tres")
 const EventCatalog = preload("res://src/core/events/event_catalog.gd")
+const FakeEventBus = preload("res://src/tests/fakes/fake_event_bus.gd")
 
 # --- Test Internals ---
-var _player: Player
 var _resource_component: PlayerResourceComponent
-var _healing_charge_event_fired: bool = false
-var _event_token: int
+var _player_data: PlayerStateData
+var _fake_event_bus: FakeEventBus
 
 # --- Test Lifecycle ---
 
 func before_each():
-	_healing_charge_event_fired = false
-	_player = partial_double(Player).instantiate()
-	if _player.has_method("inject_dependencies"):
-		_player.inject_dependencies({
-			"object_pool": get_node("/root/ObjectPool"),
-			"fx_manager": get_node("/root/FXManager"),
-			"event_bus": get_node("/root/EventBus")
-		})
-	add_child(_player)
+	# Create a fake owner and the data resource.
+	var mock_owner = Node.new()
+	add_child(mock_owner)
+	_player_data = PlayerStateData.new()
+	_player_data.config = CombatConfig
 
-	_resource_component = _player.get_node("PlayerResourceComponent")
+	# Instantiate the fake and the component under test.
+	_fake_event_bus = FakeEventBus.new()
+	add_child(_fake_event_bus)
+	_resource_component = PlayerResourceComponent.new()
+	mock_owner.add_child(_resource_component)
+
+	# Inject the fakes and dependencies.
 	var dependencies = {
-		"data_resource": _player.entity_data,
-		"event_bus": get_node("/root/EventBus")
+		"data_resource": _player_data,
+		"event_bus": _fake_event_bus
 	}
-	_resource_component.setup(_player, dependencies)
-
-	_event_token = EventBus.on(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, Callable(self, "_on_healing_charges_changed"))
+	_resource_component.setup(mock_owner, dependencies)
 
 func after_each():
-	EventBus.off(_event_token)
-	_player.queue_free()
+	# The test runner will free the mock_owner, which frees its children.
+	pass
 
 # --- The Tests ---
 
 func test_on_damage_dealt_increments_determination():
-	var initial_determination = _player.entity_data.determination_counter
+	var initial_determination = _player_data.determination_counter
 	_resource_component.on_damage_dealt()
-	assert_eq(_player.entity_data.determination_counter, initial_determination + 1, "Determination should increment by 1.")
+	assert_eq(_player_data.determination_counter, initial_determination + 1, "Determination should increment by 1.")
 
 func test_healing_charge_gained_at_threshold():
-	_player.entity_data.healing_charges = 0
-	_player.entity_data.determination_counter = CombatConfig.player_determination_per_charge - 1
+	_player_data.healing_charges = 0
+	_player_data.determination_counter = CombatConfig.player_determination_per_charge - 1
 
 	_resource_component.on_damage_dealt()
 
-	assert_eq(_player.entity_data.healing_charges, 1, "Should gain 1 healing charge at the threshold.")
-	assert_eq(_player.entity_data.determination_counter, 0, "Determination should reset to 0 after gaining a charge.")
+	assert_eq(_player_data.healing_charges, 1, "Should gain 1 healing charge at the threshold.")
+	assert_eq(_player_data.determination_counter, 0, "Determination should reset to 0 after gaining a charge.")
 
 func test_healing_charges_are_capped():
-	_player.entity_data.healing_charges = CombatConfig.player_max_healing_charges
-	_player.entity_data.determination_counter = CombatConfig.player_determination_per_charge - 1
+	_player_data.healing_charges = CombatConfig.player_max_healing_charges
+	_player_data.determination_counter = CombatConfig.player_determination_per_charge - 1
 
 	_resource_component.on_damage_dealt()
 
-	assert_eq(_player.entity_data.healing_charges, CombatConfig.player_max_healing_charges, "Healing charges should not exceed the max.")
-	assert_eq(_player.entity_data.determination_counter, CombatConfig.player_determination_per_charge - 1, "Determination should not increment if charges are already at max.")
+	assert_eq(_player_data.healing_charges, CombatConfig.player_max_healing_charges, "Healing charges should not exceed the max.")
+	assert_eq(_player_data.determination_counter, CombatConfig.player_determination_per_charge - 1, "Determination should not increment if charges are already at max.")
 
 func test_event_emitted_when_charge_gained():
-	_player.entity_data.healing_charges = 0
-	_player.entity_data.determination_counter = CombatConfig.player_determination_per_charge - 1
+	_player_data.healing_charges = 0
+	_player_data.determination_counter = CombatConfig.player_determination_per_charge - 1
 
 	_resource_component.on_damage_dealt()
 	
-	await get_tree().process_frame
-
-	assert_true(_healing_charge_event_fired, "Should emit PLAYER_HEALING_CHARGES_CHANGED event.")
-
-# --- Signal Handlers ---
-
-func _on_healing_charges_changed(_payload):
-	_healing_charge_event_fired = true
+	assert_true(_fake_event_bus.was_event_emitted(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED), "Should emit PLAYER_HEALING_CHARGES_CHANGED event.")
+	
+	var payload: PlayerHealingChargesChangedEvent = _fake_event_bus.get_payload_for_event(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED)
+	assert_not_null(payload, "Event payload should not be null.")
+	assert_eq(payload.current_charges, 1, "Event payload should contain the correct new charge count.")
 
 =====================================
 FILE: ./src/tests/unit/test_health_component.gd
@@ -26888,39 +26921,43 @@ extends GutTest
 
 # --- Constants ---
 const HealthComponent = preload("res://src/entities/components/health_component.gd")
-const Player = preload("res://src/entities/player/player.tscn")
+const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
 const DamageInfo = preload("res://src/api/combat/damage_info.gd")
 const CombatConfig = preload("res://src/data/combat_config.tres")
 const Identifiers = preload("res://src/core/util/identifiers.gd")
+const FakeFXManager = preload("res://src/tests/fakes/fake_fx_manager.gd")
 
 # --- Test Internals ---
-var _player: Player
 var _health_component: HealthComponent
+var _player_data: PlayerStateData
 var _damage_source: Node2D
 var _died_signal_was_emitted: bool = false
+var _mock_owner: CharacterBody2D
 
 # --- Test Lifecycle ---
 
 func before_each():
 	_died_signal_was_emitted = false
-	_player = partial_double(Player).instantiate()
-	if _player.has_method("inject_dependencies"):
-		_player.inject_dependencies({
-			"object_pool": get_node("/root/ObjectPool"),
-			"fx_manager": get_node("/root/FXManager"),
-			"event_bus": get_node("/root/EventBus")
-		})
-	_player.name = "TestPlayer"
-	_player.add_to_group(Identifiers.Groups.PLAYER)
-	add_child(_player)
 
-	_health_component = _player.health_component
+	_mock_owner = CharacterBody2D.new()
+	_mock_owner.name = "TestPlayer"
+	_mock_owner.add_to_group(Identifiers.Groups.PLAYER)
+	add_child(_mock_owner)
+
+	_player_data = PlayerStateData.new()
+	_player_data.config = CombatConfig
+	_player_data.max_health = 10 # Use a known value for tests
+	_player_data.health = 10
+	
+	_health_component = HealthComponent.new()
+	_mock_owner.add_child(_health_component)
 
 	var dependencies = {
-		"data_resource": _player.entity_data,
-		"config": CombatConfig
+		"data_resource": _player_data,
+		"config": CombatConfig,
+		"fx_manager": FakeFXManager.new() # Inject the fake
 	}
-	_health_component.setup(_player, dependencies)
+	_health_component.setup(_mock_owner, dependencies)
 
 	_damage_source = Node2D.new()
 	add_child(_damage_source)
@@ -26929,18 +26966,13 @@ func after_each():
 	if is_instance_valid(_health_component) and _health_component.died.is_connected(_on_health_component_died):
 		_health_component.died.disconnect(_on_health_component_died)
 
-	if is_instance_valid(_player):
-		_player.free()
-	if is_instance_valid(_damage_source):
-		_damage_source.free()
-
 # --- The Tests ---
 
 func test_initial_health_is_max_health():
-	assert_eq(_player.entity_data.health, _player.entity_data.max_health, "Health should be max at start.")
+	assert_eq(_player_data.health, _player_data.max_health, "Health should be max at start.")
 
 func test_apply_damage_reduces_health():
-	var initial_health = _player.entity_data.health
+	var initial_health = _player_data.health
 	var damage_info = DamageInfo.new()
 	damage_info.amount = 2
 	damage_info.source_node = _damage_source
@@ -26948,7 +26980,7 @@ func test_apply_damage_reduces_health():
 	var result = _health_component.apply_damage(damage_info)
 	
 	assert_true(result.was_damaged, "The apply_damage result should indicate damage was taken.")
-	assert_eq(_player.entity_data.health, initial_health - 2, "Health should be reduced by 2.")
+	assert_eq(_player_data.health, initial_health - 2, "Health should be reduced by 2.")
 
 func test_cannot_damage_when_invincible():
 	var damage_info = DamageInfo.new()
@@ -26960,19 +26992,19 @@ func test_cannot_damage_when_invincible():
 	
 	var result = _health_component.apply_damage(damage_info)
 	assert_false(result.was_damaged, "Should not be able to take damage while invincible.")
-	assert_eq(_player.entity_data.health, _player.entity_data.max_health - 1, "Health should not have changed on second hit.")
+	assert_eq(_player_data.health, _player_data.max_health - 1, "Health should not have changed on second hit.")
 
 func test_died_signal_emitted_when_health_is_zero():
 	var damage_info = DamageInfo.new()
-	damage_info.amount = _player.entity_data.max_health
+	damage_info.amount = _player_data.max_health
 	damage_info.source_node = _damage_source
 
 	_health_component.died.connect(_on_health_component_died)
 	_health_component.apply_damage(damage_info)
-	await get_tree().physics_frame
+	await get_tree().process_frame
 
 	assert_true(_died_signal_was_emitted, "The 'died' signal should have been emitted.")
-	assert_eq(_player.entity_data.health, 0, "Health should be 0 after lethal damage.")
+	assert_eq(_player_data.health, 0, "Health should be 0 after lethal damage.")
 
 # --- Signal Handlers ---
 
@@ -27173,67 +27205,58 @@ FILE: ./src/tests/unit/test_combat_component.gd
 extends GutTest
 
 # --- Constants ---
-const Player = preload("res://src/entities/player/player.tscn")
 const CombatComponent = preload("res://src/entities/components/combat_component.gd")
 const HealthComponent = preload("res://src/entities/components/health_component.gd")
+const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
 const DamageResult = preload("res://src/api/combat/damage_result.gd")
 const CombatConfig = preload("res://src/data/combat_config.tres")
 const Identifiers = preload("res://src/core/util/identifiers.gd")
+const FakeObjectPool = preload("res://src/tests/fakes/fake_object_pool.gd")
 
 # --- Test Internals ---
-var _player: Player
 var _combat_component: CombatComponent
-var _object_pool: ObjectPool
+var _player_data: PlayerStateData
+var _fake_object_pool: FakeObjectPool
 var _pogo_bounce_was_requested: bool = false
+var _mock_owner: CharacterBody2D
 
 # --- Test Lifecycle ---
 
 func before_each():
 	_pogo_bounce_was_requested = false
 
-	_object_pool = get_node("/root/ObjectPool")
-	_object_pool.reset()
+	_mock_owner = CharacterBody2D.new()
+	add_child(_mock_owner)
+	
+	_player_data = PlayerStateData.new()
+	_player_data.config = CombatConfig
 
-	_player = partial_double(Player).instantiate()
-	if _player.has_method("inject_dependencies"):
-		_player.inject_dependencies({
-			"object_pool": _object_pool,
-			"fx_manager": get_node("/root/FXManager"),
-			"event_bus": get_node("/root/EventBus")
-		})
-	add_child(_player)
-
-	_combat_component = _player.get_node("CombatComponent")
+	_fake_object_pool = FakeObjectPool.new()
+	add_child(_fake_object_pool)
+	
+	_combat_component = CombatComponent.new()
+	_mock_owner.add_child(_combat_component)
+	
 	var dependencies = {
-		"data_resource": _player.entity_data,
-		"object_pool": _object_pool
+		"data_resource": _player_data,
+		"object_pool": _fake_object_pool
 	}
-	_combat_component.setup(_player, dependencies)
+	_combat_component.setup(_mock_owner, dependencies)
 
 	_combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
-	
-	await get_tree().process_frame
 
 func after_each():
 	if is_instance_valid(_combat_component) and _combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
 		_combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
 
-	if is_instance_valid(_player):
-		_player.free()
-
 # --- The Tests ---
 
 func test_fire_shot_gets_instance_from_pool():
-	var stats_before = _object_pool.get_pool_stats()
-	var initial_active_count = stats_before[Identifiers.Pools.PLAYER_SHOTS].active
-
+	var call_count_before = _fake_object_pool.get_call_count(Identifiers.Pools.PLAYER_SHOTS)
 	_combat_component.fire_shot()
-	await get_tree().process_frame
+	var call_count_after = _fake_object_pool.get_call_count(Identifiers.Pools.PLAYER_SHOTS)
 
-	var stats_after = _object_pool.get_pool_stats()
-	var final_active_count = stats_after[Identifiers.Pools.PLAYER_SHOTS].active
-
-	assert_eq(final_active_count, initial_active_count + 1, "fire_shot() should make one more projectile active in the pool.")
+	assert_eq(call_count_after, call_count_before + 1, "fire_shot() should call get_instance on the pool exactly once.")
 
 func test_trigger_pogo_on_enemy_emits_bounce_request():
 	var mock_enemy = CharacterBody2D.new()
@@ -27243,33 +27266,33 @@ func test_trigger_pogo_on_enemy_emits_bounce_request():
 	mock_enemy.add_child(mock_health)
 	add_child(mock_enemy)
 	
-	_player.entity_data.is_pogo_attack = true
+	_player_data.is_pogo_attack = true
 
 	var pogo_succeeded = _combat_component.trigger_pogo(mock_enemy)
-	await get_tree().process_frame
 
 	assert_true(pogo_succeeded, "trigger_pogo should return true when hitting a valid enemy.")
 	assert_true(_pogo_bounce_was_requested, "pogo_bounce_requested signal should be emitted after a successful pogo.")
 
-	mock_health.free()
 	mock_enemy.free()
 
-func test_trigger_pogo_on_projectile_returns_it_to_pool():
-	var mock_projectile = _object_pool.get_instance(Identifiers.Pools.TURRET_SHOTS)
+func test_trigger_pogo_on_projectile_returns_it_to_pool() -> void:
+	# THE FIX: This test must be async to account for call_deferred.
+	var mock_projectile = Node2D.new() # Use Node2D for compatibility
 	mock_projectile.add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
-	_player.entity_data.is_pogo_attack = true
-
-	var stats_before = _object_pool.get_pool_stats()
-	var initial_active_count = stats_before[Identifiers.Pools.TURRET_SHOTS].active
-	assert_eq(initial_active_count, 1, "There should be 1 active turret shot before the test.")
-
-	_combat_component.trigger_pogo(mock_projectile)
-	await get_tree().process_frame
-
-	var stats_after = _object_pool.get_pool_stats()
-	var final_active_count = stats_after[Identifiers.Pools.TURRET_SHOTS].active
+	mock_projectile.set_meta("pool_name", Identifiers.Pools.TURRET_SHOTS)
+	add_child(mock_projectile) # Add to tree so it's valid for deferred calls
 	
-	assert_eq(final_active_count, 0, "Pogoing a projectile should return it to the pool, making 0 active.")
+	_player_data.is_pogo_attack = true
+
+	var return_count_before = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
+	_combat_component.trigger_pogo(mock_projectile)
+	
+	# THE FIX: Wait for one frame to allow the deferred call to execute.
+	await get_tree().physics_frame
+	
+	var return_count_after = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
+	
+	assert_eq(return_count_after, return_count_before + 1, "Pogoing a projectile should call return_instance on the pool.")
 
 # --- Signal Handlers ---
 
@@ -27362,6 +27385,137 @@ func test_player_attack_damages_boss_and_fires_event():
 
 func _on_boss_health_changed(_payload):
 	_boss_health_changed_event_fired = true
+
+=====================================
+FILE: ./src/tests/fakes/fake_event_bus.gd
+=====================================
+# src/tests/fakes/fake_event_bus.gd
+## A test-double (fake) implementation of the EventBus for use in unit tests.
+##
+## This fake mimics the public API of the real EventBus but does not dispatch
+## events globally. Instead, it records all emitted events, allowing tests
+## to assert that specific events were fired with specific payloads.
+class_name FakeEventBus
+extends Node
+
+var _emitted_events: Array[Dictionary] = []
+
+## Records an emitted event for later inspection.
+func emit(event_name: StringName, payload = null) -> void:
+	_emitted_events.append({"name": event_name, "payload": payload})
+	print("FakeEventBus: Emitted '%s'" % event_name) # TODO: Remove this print after verification
+
+## A no-op implementation for the 'on' method.
+func on(_event_name: StringName, _callback: Callable) -> int:
+	return 1 # Return a dummy token
+
+## A no-op implementation for the 'off' method.
+func off(_token: int) -> void:
+	pass
+
+## Clears all recorded events. Should be called in a test's `before_each`.
+func clear() -> void:
+	_emitted_events.clear()
+
+## Checks if a specific event was emitted.
+func was_event_emitted(event_name: StringName) -> bool:
+	for event in _emitted_events:
+		if event.name == event_name:
+			return true
+	return false
+
+## Returns the payload of the first event found with the given name.
+func get_payload_for_event(event_name: StringName) -> Variant:
+	for event in _emitted_events:
+		if event.name == event_name:
+			return event.payload
+	return null
+
+
+=====================================
+FILE: ./src/tests/fakes/fake_object_pool.gd
+=====================================
+# src/tests/fakes/fake_object_pool.gd
+## A test-double (fake) implementation of the ObjectPool for use in unit tests.
+class_name FakeObjectPool
+extends Node
+
+# --- Constants ---
+const FakeProjectile = preload("res://src/tests/fakes/fake_projectile.gd")
+
+# --- Private Member Variables ---
+var _get_counts: Dictionary = {}
+var _return_counts: Dictionary = {}
+
+func get_instance(p_pool_name: StringName) -> Node:
+	_get_counts[p_pool_name] = _get_counts.get(p_pool_name, 0) + 1
+	
+	# THE FIX: Return an instance of FakeProjectile to satisfy the API contract.
+	var fake_instance = FakeProjectile.new()
+	fake_instance.name = "FakePooledInstance"
+	fake_instance.set_meta("pool_name", p_pool_name)
+	add_child(fake_instance)
+	return fake_instance
+
+func return_instance(p_instance: Node) -> void:
+	if not is_instance_valid(p_instance): return
+	
+	var pool_name = p_instance.get_meta("pool_name", &"unknown")
+	_return_counts[pool_name] = _return_counts.get(pool_name, 0) + 1
+	p_instance.queue_free()
+
+## Clears all recorded call counts.
+func clear() -> void:
+	_get_counts.clear()
+	_return_counts.clear()
+
+## Returns the number of times get_instance was called for a specific pool.
+func get_call_count(pool_name: StringName) -> int:
+	return _get_counts.get(pool_name, 0)
+
+## Returns the number of times return_instance was called for a specific pool.
+func get_return_count(pool_name: StringName) -> int:
+	return _return_counts.get(pool_name, 0)
+
+=====================================
+FILE: ./src/tests/fakes/fake_projectile.gd
+=====================================
+# src/tests/fakes/fake_projectile.gd
+## A lightweight fake projectile for use in unit tests.
+## Mimics the necessary API of real projectiles for the ObjectPool.
+class_name FakeProjectile
+extends Node2D # THE FIX: Extend Node2D to get transform properties like global_position.
+
+var direction: Vector2
+var _object_pool: Node
+
+func activate(p_dependencies: Dictionary = {}) -> void:
+	self._object_pool = p_dependencies.get("object_pool")
+
+func deactivate() -> void:
+	self._object_pool = null
+
+=====================================
+FILE: ./src/tests/fakes/fake_fx_manager.gd
+=====================================
+# src/tests/fakes/fake_fx_manager.gd
+## A test-double (fake) implementation of the FXManager for use in unit tests.
+## This is a "stub" that provides no-op implementations of the real methods.
+class_name FakeFXManager
+extends Node
+
+func request_screen_shake(_shake_effect: ScreenShakeEffect) -> void:
+	pass # No-op
+
+func play_vfx(_effect: VFXEffect, _global_position: Vector2, _direction: Vector2 = Vector2.ZERO) -> void:
+	pass # No-op
+
+func play_shader(_effect: ShaderEffect, _target_node: Node, _options: Dictionary = {}) -> void:
+	pass # No-op
+
+func request_hit_stop(_duration: float) -> void:
+	pass # No-op
+
 
 =====================================
 FILE: ./src/tests/isolation/test_player_lifecycle.gd
@@ -29569,7 +29723,9 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
-var _object_pool: ObjectPool # Dependency
+# THE FIX: Loosen the type hint to a generic Node to allow for fakes during testing.
+# The script relies on the injected object having the correct methods (duck typing).
+var _object_pool: Node # Dependency
 
 # --- Public Methods ---
 
