@@ -132,17 +132,7 @@
 ║      ░   (Technique: Child `Control` nodes, `Input.get_local_mouse_position()` + `lerp`)║
 ║      ░ ■ Energy Bursts on Click: A small burst of particles on button press. ║
 ║      ░   (Technique: `GPUParticles2D` with a low-count, short-lived emission)║
-║                                                                              ║
-║   █  Shape & Form (Procedural Drawing)                                       ║
-║      ░ ■ Animated Rounded Corners: Tween the corner radius of a procedurally ║
-║      ░   drawn shape on hover for a fluid morphing effect.                   ║
-║      ░   (Technique: `_draw()` with `draw_circle` + `draw_rect`, property tween)║
-║      ░ ■ Inset / Layered Borders: Use multiple `draw_rect` calls with        ║
-║      ░   different palette colors and slight offsets to create a 2.5D bevel. ║
-║      ░ ■ Chamfered Corners: Use `draw_polygon()` to create geometric cutouts.║
-║      ░ ■ Dynamic Clipping Mask: Reveal content by animating the size of a    ║
-║      ░   parent `Control` node with `clip_contents` enabled.                 ║
-║                                                                              ║
+║                                                                              ║║                                                                              ║
 ║   █  Interactivity & Feedback                                                ║
 ║      ░ ■ Click Ripple: A circular ripple animates outwards from the click point.║
 ║      ░   (Technique: `_input()` + tweened properties + `draw_circle()`)      ║

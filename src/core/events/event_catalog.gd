@@ -15,6 +15,9 @@ const BOSS_HEALTH_CHANGED = "boss.health_changed"
 const BOSS_DIED = "boss.died"
 const BOSS_PHASE_CHANGED = "boss.phase_changed"
 
+# --- Game State Events ---
+const SCENE_TRANSITION_STARTED = "scene.transition_started"
+
 # --- UI State Events ---
 const MENU_OPENED = "ui.menu_opened"
 const MENU_CLOSED = "ui.menu_closed"

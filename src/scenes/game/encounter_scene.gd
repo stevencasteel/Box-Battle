@@ -16,6 +16,7 @@ var _debug_overlay: DebugOverlay = null
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
 var _camera_shaker: CameraShaker = null
+const TestConversation = preload("res://src/data/dialogue/test_conversation.tres")
 
 # --- Debug Inspector ---
 var _inspectable_entities: Array[Node] = []
@@ -54,6 +55,14 @@ func _unhandled_input(_event: InputEvent) -> void:
 	if Input.is_action_just_pressed("debug_toggle_overlay"):
 		if is_instance_valid(_debug_overlay):
 			_debug_overlay.visible = not _debug_overlay.visible
+			
+	if Input.is_action_just_pressed("debug_dialogue"):
+		# THE FIX: Toggle the dialogue on/off.
+		if DialogueManager.is_conversation_active():
+			DialogueManager.end_conversation()
+		else:
+			DialogueManager.start_conversation(TestConversation)
+			print("VERIFICATION: Dialogue triggered.")
 
 	if Input.is_action_just_pressed("debug_cycle_target"):
 		if is_instance_valid(_debug_overlay) and _debug_overlay.visible:
@@ -135,18 +144,14 @@ func _on_boss_died(payload: Dictionary) -> void:
 
 	_deactivate_all_minions()
 	
-	# THE FIX: We no longer need to spawn the boss here. The boss already exists
-	# and has played its own dissolve effect. We just need to wait and then clean up.
-	var wait_step = WaitStep.new(); wait_step.duration = 2.0 # Give dissolve plenty of time
+	var wait_step = WaitStep.new(); wait_step.duration = 2.0
 	var death_sequence: Array[SequenceStep] = [wait_step]
 
 	_death_sequence_handle = Sequencer.run_sequence(death_sequence)
 	await _death_sequence_handle.finished
 
-	# THE FIX: Ensure the boss node is valid before queue_free.
 	if is_instance_valid(boss_node):
 		boss_node.queue_free()
 		
-	# THE FIX: Ensure the sequence handle is still valid before transitioning.
 	if is_instance_valid(_death_sequence_handle):
 		SceneManager.go_to_victory()

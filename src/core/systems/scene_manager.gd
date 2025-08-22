@@ -32,7 +32,9 @@ func go_to_victory() -> void:
 
 ## The core scene-switching logic.
 func _switch_to_scene(path: String) -> void:
-	# --- Perform Pre-Transition Cleanup ---
+	# --- Announce Pre-Transition Cleanup ---
+	EventBus.emit(EventCatalog.SCENE_TRANSITION_STARTED)
+
 	# 1. Call the formal teardown method on the current scene controller if it exists.
 	var current_scene = get_tree().current_scene
 	if is_instance_valid(current_scene) and current_scene.has_method("scene_exiting"):

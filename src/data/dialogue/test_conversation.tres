@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="DialogueData" load_steps=3 format=3 uid="uid://dialogue_test_tres"]
+[gd_resource type="Resource" script_class="DialogueData" load_steps=4 format=3 uid="uid://ce4ka1q3xh4bd"]
 
-[ext_resource type="Script" path="res://src/data/dialogue/dialogue_data.gd" id="1_dialogue_data"]
+[ext_resource type="Script" uid="uid://duqmqwi2qjc7y" path="res://src/data/dialogue/dialogue_data.gd" id="1_dialogue_data"]
+[ext_resource type="Script" uid="uid://cxxrvo55hssvv" path="res://src/data/dialogue/dialogue_line.gd" id="2_dialogue_line"]
 
-[sub_resource type="Resource" id="DialogueLine_1" script_class="DialogueLine"]
-script = ExtResource("1_dialogue_data")
-character_name = "Narrator"
+[sub_resource type="Resource" id="DialogueLine_1"]
+script = ExtResource("2_dialogue_line")
+speaker = "BOX BATTLE"
 text = "This is the first line of a test conversation."
+wait_after = 0.2
 
 [resource]
 script = ExtResource("1_dialogue_data")
-conversation = Array[ExtResource("1_dialogue_data")]([SubResource("DialogueLine_1")])
+lines = Array[ExtResource("2_dialogue_line")]([SubResource("DialogueLine_1")])

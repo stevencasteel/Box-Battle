@@ -66,7 +66,6 @@
 ║   ░ □ Implement the Full Shader Strategy:                                    ║
 ║   ░   - Develop an "FX Cookbook" registry in FXManager.                      ║
 ║   ░   - Implement entity shaders (Hit-Flash, Dissolve).                      ║
-║   ░   - Implement UI shaders (SDF Panels for menus).                         ║
 ║   ░   - Implement fullscreen shaders (Shockwave).                            ║
 ║                                                                              ║
 ║   █ Systems & Narrative                                                      ║

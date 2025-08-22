@@ -60,7 +60,27 @@
 
 
 
-
+   SYSTEMS & NARRATIVE: DIALOGUE SYSTEM FOUNDATION
+   Implemented the foundational, data-driven dialogue system, establishing the
+   core architecture for all future narrative content.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Created a new `DialogueManager` autoload singleton to act as the central
+      ░   controller for all conversation logic, state, and UI lifecycle.
+      ░ ■ Implemented a data-driven model using `DialogueData` and `DialogueLine`
+      ░   custom resources, allowing for conversations to be authored entirely
+      ░   in the Godot Inspector.
+   █  Added
+      ░ ■ Created a reusable `DialogueBox.tscn` UI scene responsible for the
+      ░   visual presentation of dialogue text.
+      ░ ■ Implemented a "typewriter" text reveal effect in the `DialogueBox`
+      ░   using a Tween to animate the `visible_ratio` of a RichTextLabel.
+      ░ ■ Added a temporary debug key (`I`) to the encounter scene to trigger
+      ░   a test conversation for rapid iteration and verification.
+   █  Fixed
+      ░ ■ Hardened the `DialogueManager` to be lifecycle-aware; it now
+      ░   automatically closes any active conversation when a scene transition
+      ░   is initiated, preventing UI from persisting across scenes.
 
 
 
