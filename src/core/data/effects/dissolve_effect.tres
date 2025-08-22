@@ -1,3 +1,15 @@
-[gd_resource type="Resource" script_class="ShaderEffect" format=3]
+[gd_resource type="Resource" script_class="ShaderEffect" load_steps=3 format=3 uid="uid://bps1fb52qcel8"]
 
-# TODO: Configure this resource to define the dissolve effect.
+[ext_resource type="Script" uid="uid://dci8r65dt2cj0" path="res://src/core/data/effects/shader_effect.gd" id="1_script"]
+[ext_resource type="Material" uid="uid://bkiertsatpb34" path="res://materials/dissolve_material.tres" id="2_material"]
+
+[resource]
+script = ExtResource("1_script")
+material = ExtResource("2_material")
+duration = 0.7
+priority = 10
+target_scope = 0
+params = {
+"border_color": Color(1, 1, 1, 1),
+"border_width": 0.02
+}

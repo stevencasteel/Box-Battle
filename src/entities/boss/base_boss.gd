@@ -23,6 +23,7 @@ enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
+@export var dissolve_effect: ShaderEffect
 @export_group("State Scripts")
 @export var state_idle_script: Script
 @export var state_attack_script: Script
@@ -68,7 +69,7 @@ func _ready() -> void:
 	_connect_signals()
 	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	
-	if is_instance_valid(intro_shake_effect):
+	if is_instance_valid(intro_shake_effect) and is_instance_valid(_fx_manager) and _fx_manager.has_method("is_camera_shaker_registered") and _fx_manager.is_camera_shaker_registered():
 		_fx_manager.request_screen_shake(intro_shake_effect)
 
 func _exit_tree() -> void:
@@ -119,14 +120,30 @@ func fire_shot_at_player() -> void:
 
 func _die() -> void:
 	if _is_dead: return
+	_is_dead = true
+	
+	if is_instance_valid(state_machine):
+		state_machine.teardown()
+	
+	cooldown_timer.stop()
+	patrol_timer.stop()
+	
+	collision_layer = 0
+	collision_mask = 0
+	set_physics_process(false)
+	
+	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
+	
 	if is_instance_valid(death_shake_effect):
 		_fx_manager.request_screen_shake(death_shake_effect)
 	_fx_manager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
-	_is_dead = true
-	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
-	set_physics_process(false)
-	hide()
+
+	if is_instance_valid(dissolve_effect):
+		# THE FIX: Tell the FXComponent to preserve the final shader state.
+		fx_component.play_effect(dissolve_effect, {}, {"preserve_final_state": true})
+	
 	_event_bus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
+
 
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
@@ -196,10 +213,10 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 		_event_bus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout() -> void:
-	if state_machine.current_state == state_machine.states[State.COOLDOWN]:
+	if is_instance_valid(state_machine) and state_machine.current_state == state_machine.states[State.COOLDOWN]:
 		state_machine.change_state(State.PATROL)
 func _on_patrol_timer_timeout() -> void:
-	if state_machine.current_state == state_machine.states[State.PATROL]:
+	if is_instance_valid(state_machine) and state_machine.current_state == state_machine.states[State.PATROL]:
 		state_machine.change_state(State.IDLE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = BossHealthChangedEvent.new()

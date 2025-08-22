@@ -3,6 +3,7 @@
 extends Control
 
 @export var _hit_flash_effect: ShaderEffect
+@export var _dissolve_effect: ShaderEffect
 
 @onready var test_subject: ColorRect = %TestSubject
 @onready var fx_component: FXComponent = %TestSubject/FXComponent
@@ -10,21 +11,35 @@ extends Control
 func _ready() -> void:
 	if not Engine.is_editor_hint():
 		fx_component.setup(test_subject, {"visual_node": test_subject})
+		test_subject.visible = true
 
 func _on_button_red_pressed() -> void:
 	if not is_instance_valid(_hit_flash_effect):
-		print("ERROR: No ShaderEffect resource assigned or could not be loaded.")
+		print("ERROR: No Hit Flash ShaderEffect resource assigned.")
 		return
-	# Call with no overrides to test the default behavior.
+	test_subject.visible = true
 	fx_component.play_effect(_hit_flash_effect)
 
 func _on_button_blue_pressed() -> void:
 	if not is_instance_valid(_hit_flash_effect):
-		print("ERROR: No ShaderEffect resource assigned or could not be loaded.")
+		print("ERROR: No Hit Flash ShaderEffect resource assigned.")
 		return
 	
-	# Create the overrides dictionary.
+	test_subject.visible = true
 	var overrides = {"tint_color": Color.BLUE}
-	# Pass the overrides to the play_effect method.
 	fx_component.play_effect(_hit_flash_effect, overrides)
-	print("VERIFICATION: Played effect with BLUE override.")
+
+func _on_button_dissolve_pressed() -> void:
+	if not is_instance_valid(_dissolve_effect):
+		print("ERROR: No Dissolve ShaderEffect resource assigned.")
+		return
+
+	test_subject.visible = true
+	if test_subject.material:
+		test_subject.material = null
+
+	var effect_tween: Tween = fx_component.play_effect(_dissolve_effect)
+	if is_instance_valid(effect_tween):
+		await effect_tween.finished
+		# After dissolving, make the subject invisible but still present.
+		test_subject.visible = false

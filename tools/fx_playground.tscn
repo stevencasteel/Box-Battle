@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://qfvxrbic3utx"]
+[gd_scene load_steps=5 format=3 uid="uid://qfvxrbic3utx"]
 
 [ext_resource type="Script" uid="uid://chl2ii0j6x47a" path="res://tools/fx_playground.gd" id="1_script"]
 [ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_effect"]
 [ext_resource type="PackedScene" uid="uid://g7h8jaj0k1l2" path="res://src/entities/components/fx_component.tscn" id="3_fx_component"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="4_dissolve_effect"]
 
 [node name="FXPlayground" type="Control"]
 layout_mode = 3
@@ -13,6 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 _hit_flash_effect = ExtResource("2_effect")
+_dissolve_effect = ExtResource("4_dissolve_effect")
 
 [node name="BackgroundColor" type="ColorRect" parent="."]
 layout_mode = 1
@@ -39,35 +41,42 @@ color = Color(0.8, 0.8, 0.8, 1)
 
 [node name="FXComponent" parent="CenterContainer/TestSubject" instance=ExtResource("3_fx_component")]
 
-[node name="ButtonRed" type="Button" parent="."]
+[node name="ButtonGrid" type="GridContainer" parent="."]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -205.0
-offset_top = -100.0
-offset_right = -5.0
-offset_bottom = -50.0
+offset_left = -225.0
+offset_top = -125.0
+offset_right = 225.0
+offset_bottom = -25.0
 grow_horizontal = 2
 grow_vertical = 0
-text = "Play Red Hit-Flash (Default)"
+columns = 2
 
-[node name="ButtonBlue" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = 5.0
-offset_top = -100.0
-offset_right = 205.0
-offset_bottom = -50.0
-grow_horizontal = 2
-grow_vertical = 0
-text = "Play Blue Hit-Flash (Override)"
+[node name="ButtonRed" type="Button" parent="ButtonGrid"]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+text = "Play Hit-Flash (Red)"
 
-[connection signal="pressed" from="ButtonRed" to="." method="_on_button_red_pressed"]
-[connection signal="pressed" from="ButtonBlue" to="." method="_on_button_blue_pressed"]
+[node name="ButtonBlue" type="Button" parent="ButtonGrid"]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+text = "Play Hit-Flash (Blue)"
+
+[node name="ButtonDissolve" type="Button" parent="ButtonGrid"]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+text = "Play Dissolve"
+
+[node name="ButtonPlaceholder" type="Button" parent="ButtonGrid"]
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+disabled = true
+text = "(Future Effect)"
+
+[connection signal="pressed" from="ButtonGrid/ButtonRed" to="." method="_on_button_red_pressed"]
+[connection signal="pressed" from="ButtonGrid/ButtonBlue" to="." method="_on_button_blue_pressed"]
+[connection signal="pressed" from="ButtonGrid/ButtonDissolve" to="." method="_on_button_dissolve_pressed"]

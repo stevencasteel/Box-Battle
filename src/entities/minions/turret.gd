@@ -13,6 +13,7 @@ const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect
 
 # --- Editor Configuration ---
 @export var hit_spark_effect: VFXEffect
+@export var dissolve_effect: ShaderEffect
 
 # --- Node References ---
 @onready var visual: Polygon2D = $Visual
@@ -26,6 +27,7 @@ var entity_data: TurretStateData
 var _player: CharacterBody2D
 var _object_pool: ObjectPool # Dependency
 var _fx_manager: Node # Dependency
+var _is_dead: bool = false
 
 # --- Godot Lifecycle Methods ---
 
@@ -75,7 +77,20 @@ func _fire_at_player() -> void:
 	shot.activate({"object_pool": _object_pool})
 
 func _die() -> void:
-	queue_free()
+	if _is_dead: return
+	_is_dead = true
+	
+	# THE FIX: Immediately remove from physics and stop all logic.
+	collision_layer = 0
+	collision_mask = 0
+	deactivate()
+	
+	var death_tween: Tween = fx_component.play_effect(dissolve_effect)
+	if is_instance_valid(death_tween):
+		await death_tween.finished
+	
+	if is_instance_valid(self):
+		queue_free()
 
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)

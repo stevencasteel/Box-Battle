@@ -20,6 +20,7 @@ var _material_instance: ShaderMaterial
 
 # --- Private Member Variables ---
 var _shader_uniform_cache: Dictionary = {}
+var _preserve_material_on_finish: bool = false
 
 # A proxy property for the tween to animate.
 var _progress: float = 0.0:
@@ -63,30 +64,35 @@ func teardown() -> void:
 		_health_component.took_damage.disconnect(_on_owner_took_damage)
 
 	if is_instance_valid(_visual_node):
-		_visual_node.material = _original_material
+		var owner_allows_restore := true
+		if is_instance_valid(_owner) and _owner.has_method("is_queued_for_deletion") and _owner.is_queued_for_deletion():
+			owner_allows_restore = false
+		if owner_allows_restore and not _preserve_material_on_finish:
+			_visual_node.material = _original_material
 
 	_visual_node = null
 	_owner = null
 	_health_component = null
 	_material_instance = null
+	_preserve_material_on_finish = false
 
 # --- Public API ---
 
-## Plays a configured ShaderEffect resource on the visual_node.
-func play_effect(effect: ShaderEffect, overrides: Dictionary = {}) -> void:
+func play_effect(effect: ShaderEffect, overrides: Dictionary = {}, opts: Dictionary = {}) -> Tween:
 	if not is_instance_valid(effect) or not is_instance_valid(effect.material):
 		push_error("FXComponent: play_effect called with an invalid effect or material.")
-		return
+		return null
 		
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 	
 	_current_effect_name = effect.resource_path.get_file()
+	_preserve_material_on_finish = opts.get("preserve_final_state", false)
 
 	var src_material := effect.material as ShaderMaterial
 	if not is_instance_valid(src_material):
 		push_error("FXComponent: effect.material is not a ShaderMaterial.")
-		return
+		return null
 
 	var shader_res := src_material.shader
 	_material_instance.shader = shader_res
@@ -108,7 +114,6 @@ func play_effect(effect: ShaderEffect, overrides: Dictionary = {}) -> void:
 				var value = src_material.get_shader_parameter(param_name)
 				_material_instance.set_shader_parameter(param_name, value)
 		
-		# Apply runtime overrides
 		if not overrides.is_empty():
 			for param_name in overrides:
 				_material_instance.set_shader_parameter(param_name, overrides[param_name])
@@ -119,6 +124,7 @@ func play_effect(effect: ShaderEffect, overrides: Dictionary = {}) -> void:
 	_active_tween = create_tween()
 	_active_tween.finished.connect(_on_effect_finished, CONNECT_ONE_SHOT)
 	_active_tween.tween_property(self, "_progress", 1.0, effect.duration)
+	return _active_tween
 
 ## Returns the filename of the currently playing effect.
 func get_current_effect_name() -> String:
@@ -128,13 +134,20 @@ func get_current_effect_name() -> String:
 
 func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(_hit_effect):
-		# By default, damage flashes do not have overrides.
 		play_effect(_hit_effect, {})
 	else:
 		push_warning("FXComponent on '%s' received took_damage, but has no default_hit_effect assigned." % [_owner.name])
 
 func _on_effect_finished() -> void:
-	if is_instance_valid(_visual_node):
+	var do_restore := true
+	if is_instance_valid(_owner) and _owner.has_method("is_queued_for_deletion") and _owner.is_queued_for_deletion():
+		do_restore = false
+	if _preserve_material_on_finish:
+		do_restore = false
+
+	if is_instance_valid(_visual_node) and do_restore:
 		_visual_node.material = _original_material
+
 	_current_effect_name = "None"
 	_active_tween = null
+	_preserve_material_on_finish = false

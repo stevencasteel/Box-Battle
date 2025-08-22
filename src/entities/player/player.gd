@@ -20,6 +20,7 @@ const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect
 @export_group("Juice & Feedback")
 @export var damage_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
+@export var dissolve_effect: ShaderEffect
 @export_group("State Scripts")
 @export var state_move_script: Script
 @export var state_jump_script: Script
@@ -45,6 +46,7 @@ var entity_data: PlayerStateData
 var _object_pool: ObjectPool
 var _fx_manager: Node
 var _event_bus: Node
+var _is_dead: bool = false
 
 # --- Godot Lifecycle Methods ---
 
@@ -61,6 +63,7 @@ func _ready() -> void:
 	entity_data.determination_counter = 0
 
 func _physics_process(delta: float) -> void:
+	if _is_dead: return
 	_update_timers(delta)
 
 # --- Public Methods ---
@@ -85,6 +88,25 @@ func teardown() -> void:
 	entity_data = null
 
 # --- Private Methods ---
+
+func _die() -> void:
+	if _is_dead: return
+	_is_dead = true
+	
+	collision_layer = 0
+	collision_mask = 0
+	set_physics_process(false)
+	
+	if is_instance_valid(state_machine):
+		state_machine.teardown()
+	
+	if is_instance_valid(dissolve_effect):
+		var tween: Tween = fx_component.play_effect(dissolve_effect, {}, {"preserve_final_state": false})
+		if is_instance_valid(tween):
+			await tween.finished
+	
+	died.emit()
+
 
 func _enable_melee_hitbox(is_enabled: bool, is_up_attack: bool = false) -> void:
 	var shape_node: CollisionShape2D = melee_hitbox.get_node("CollisionShape2D")
@@ -232,7 +254,7 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	_event_bus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 func _on_health_component_died() -> void:
-	died.emit()
+	_die()
 func _on_pogo_bounce_requested() -> void:
 	velocity.y = -entity_data.config.player_pogo_force
 	position.y -= 1

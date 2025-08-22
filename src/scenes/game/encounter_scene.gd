@@ -135,13 +135,18 @@ func _on_boss_died(payload: Dictionary) -> void:
 
 	_deactivate_all_minions()
 	
-	var wait_step_1 = WaitStep.new(); wait_step_1.duration = 1.0
-	var wait_step_2 = WaitStep.new(); wait_step_2.duration = 1.5
-	var death_sequence: Array[SequenceStep] = [wait_step_1, wait_step_2]
+	# THE FIX: We no longer need to spawn the boss here. The boss already exists
+	# and has played its own dissolve effect. We just need to wait and then clean up.
+	var wait_step = WaitStep.new(); wait_step.duration = 2.0 # Give dissolve plenty of time
+	var death_sequence: Array[SequenceStep] = [wait_step]
 
 	_death_sequence_handle = Sequencer.run_sequence(death_sequence)
 	await _death_sequence_handle.finished
 
-	if is_instance_valid(boss_node): boss_node.queue_free()
+	# THE FIX: Ensure the boss node is valid before queue_free.
+	if is_instance_valid(boss_node):
+		boss_node.queue_free()
+		
+	# THE FIX: Ensure the sequence handle is still valid before transitioning.
 	if is_instance_valid(_death_sequence_handle):
 		SceneManager.go_to_victory()

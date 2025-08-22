@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://bkiertsatpb34"]
+
+[ext_resource type="Shader" uid="uid://bjx4w0wd5cbl" path="res://shaders/entity/dissolve.gdshader" id="1_shader"]
+[ext_resource type="Texture2D" uid="uid://07p7ttqtioqu" path="res://assets/textures/noise_texture.tres" id="2_noise"]
+
+[resource]
+shader = ExtResource("1_shader")
+shader_parameter/noise_texture = ExtResource("2_noise")
+shader_parameter/fx_progress = 0.0
+shader_parameter/border_color = Color(1, 1, 1, 1)
+shader_parameter/border_width = 0.02

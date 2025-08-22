@@ -19,6 +19,10 @@ func register_camera_shaker(shaker: CameraShaker) -> void:
 func unregister_camera_shaker() -> void:
 	_camera_shaker = null
 
+## Checks if a valid CameraShaker is currently registered.
+func is_camera_shaker_registered() -> bool:
+	return is_instance_valid(_camera_shaker)
+
 ## The main public API for triggering a screen shake effect.
 func request_screen_shake(shake_effect: ScreenShakeEffect) -> void:
 	if is_instance_valid(_camera_shaker):
