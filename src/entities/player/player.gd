@@ -44,6 +44,7 @@ var entity_data: PlayerStateData
 # --- Private Member Variables ---
 var _object_pool: ObjectPool
 var _fx_manager: Node
+var _event_bus: Node
 
 # --- Godot Lifecycle Methods ---
 
@@ -104,15 +105,20 @@ func _enable_pogo_hitbox(is_enabled: bool) -> void:
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = COMBAT_CONFIG
-	_object_pool = ObjectPool
-	_fx_manager = FXManager
+	
+	_object_pool = get_injected_dependency("object_pool")
+	_fx_manager = get_injected_dependency("fx_manager")
+	_event_bus = get_injected_dependency("event_bus")
+	assert(is_instance_valid(_object_pool), "Player requires 'object_pool' injected.")
+	assert(is_instance_valid(_fx_manager), "Player requires 'fx_manager' injected.")
+	assert(is_instance_valid(_event_bus), "Player requires 'event_bus' injected.")
 	
 	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config,
 		"health_component": health_component,
 		"object_pool": _object_pool,
-		"event_bus": EventBus,
+		"event_bus": _event_bus,
 		"fx_manager": _fx_manager
 	}
 	
@@ -137,6 +143,7 @@ func _initialize_and_setup_components() -> void:
 	}
 	
 	setup_components(shared_deps, per_component_deps)
+
 
 func _connect_signals() -> void:
 	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
@@ -215,14 +222,14 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 func _on_healing_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.HEAL]:
 		entity_data.health += 1
-		resource_component.conbsume_healing_charge()
+		resource_component.consume_healing_charge()
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
 		state_machine.change_state(State.MOVE)
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	EventBus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
+	_event_bus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 func _on_health_component_died() -> void:
 	died.emit()

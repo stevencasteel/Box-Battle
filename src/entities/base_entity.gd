@@ -19,6 +19,7 @@ var fx_component: FXComponent
 
 # --- Private Member Variables ---
 var _components_initialized: bool = false
+var _injected_dependencies: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
 
@@ -28,6 +29,17 @@ func _ready() -> void:
 
 # --- Public Methods ---
 
+## Called by the entity creator (ArenaBuilder) before the entity enters the scene tree.
+func inject_dependencies(p_dependencies: Dictionary) -> void:
+	_injected_dependencies = p_dependencies.duplicate()
+
+## Convenience accessor for child code to fetch injected services.
+func get_injected_dependency(p_key: String):
+	return _injected_dependencies.get(p_key, null)
+
+func has_injected_dependencies() -> bool:
+	return _injected_dependencies.size() > 0
+	
 func teardown() -> void:
 	for child in get_children():
 		if child is IComponent:

@@ -17,7 +17,7 @@ var _minion_spawn_counts: Dictionary = {}
 func build_level_async() -> Node:
 	if is_instance_valid(_intro_sequence_handle): _intro_sequence_handle.cancel()
 	_intro_sequence_handle = null
-	_minion_spawn_counts.clear() # THE FIX: Reset counts for each new build.
+	_minion_spawn_counts.clear()
 
 	_current_level_container = Node.new(); _current_level_container.name = "LevelContainer"
 
@@ -53,9 +53,19 @@ func build_level_async() -> Node:
 
 # --- Private Methods ---
 
+func _inject_entity_services(instance: Node) -> void:
+	if not is_instance_valid(instance): return
+	if instance.has_method("inject_dependencies"):
+		instance.inject_dependencies({
+			"object_pool": ObjectPool,
+			"fx_manager": FXManager,
+			"event_bus": EventBus
+		})
+
 func _spawn_player_async() -> void:
 	var instance = load(AssetPaths.SCENE_PLAYER).instantiate()
 	instance.global_position = _current_build_data.player_spawn_pos
+	_inject_entity_services(instance)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 
@@ -64,6 +74,7 @@ func _spawn_boss_async() -> Node:
 	if not boss_scene: return null
 	var instance = boss_scene.instantiate()
 	instance.global_position = _current_build_data.boss_spawn_pos
+	_inject_entity_services(instance)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 	return instance
@@ -77,13 +88,13 @@ func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
 		var instance = spawn_data.scene.instantiate()
 		
-		# THE FIX: Programmatically assign a unique, sequential name.
 		var base_name = instance.name
 		var current_count = _minion_spawn_counts.get(base_name, 0) + 1
 		_minion_spawn_counts[base_name] = current_count
 		instance.name = "%s_%d" % [base_name, current_count]
 		
 		instance.global_position = spawn_data.position
+		_inject_entity_services(instance)
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame
 

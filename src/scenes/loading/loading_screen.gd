@@ -41,7 +41,7 @@ func _load_level() -> void:
 
 	await get_tree().process_frame # Wait one more frame for safety.
 
-	SceneManager.go_to_scene(AssetPaths.SCENE_ENCOUNTER) # UPDATED
+	SceneManager.go_to_scene(AssetPaths.SCENE_ENCOUNTER)
 
 ## Instantiates scenes off-screen to compile their shaders.
 func _prewarm_shaders() -> void:
@@ -49,6 +49,14 @@ func _prewarm_shaders() -> void:
 	for scene_path in SHADER_PREWARM_SCENES:
 		if not FileAccess.file_exists(scene_path): continue
 		var instance = load(scene_path).instantiate()
+		
+		if instance.has_method("inject_dependencies"):
+			instance.inject_dependencies({
+				"object_pool": ObjectPool,
+				"fx_manager": FXManager,
+				"event_bus": EventBus
+			})
+		
 		prewarm_viewport.add_child(instance)
 		
 		# --- Trigger Actions to Compile More Shaders ---

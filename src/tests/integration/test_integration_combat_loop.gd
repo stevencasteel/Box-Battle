@@ -1,6 +1,13 @@
 # src/tests/integration/test_integration_combat_loop.gd
 extends GutTest
 
+const AssetPaths = preload("res://src/core/util/asset_paths.gd")
+const EventCatalog = preload("res://src/core/events/event_catalog.gd")
+const Identifiers = preload("res://src/core/util/identifiers.gd")
+const Player = preload("res://src/entities/player/player.tscn")
+const BaseBoss = preload("res://src/entities/boss/base_boss.tscn")
+const HealthComponent = preload("res://src/entities/components/health_component.gd")
+
 # --- Test Internals ---
 var _level_container: Node
 var _player: Player
@@ -26,8 +33,6 @@ func before_each():
 func after_each():
 	EventBus.off(_event_token)
 	if is_instance_valid(_level_container):
-		# Explicitly call teardown on both actors before freeing the container.
-		# This is the correct pattern to prevent our known memory leak issues.
 		if is_instance_valid(_player):
 			_player.teardown()
 		if is_instance_valid(_boss):
@@ -40,15 +45,15 @@ func test_player_attack_damages_boss_and_fires_event():
 	# 1. VERIFY SETUP
 	assert_not_null(_player, "Player should be instanced in the scene.")
 	assert_not_null(_boss, "Boss should be instanced in the scene.")
-	var boss_health_comp: HealthComponent = _boss.get_node("HealthComponent")
+	var boss_health_comp: HealthComponent = _boss.health_component
 	var initial_boss_health = boss_health_comp.entity_data.health
 	
 	# 2. POSITION ACTORS & WAIT FOR STABLE STATE
 	_player.global_position = _boss.global_position + Vector2(-60, 0)
-	_player.p_data.facing_direction = 1
+	_player.entity_data.facing_direction = 1
 	
 	var wait_frames = 10
-	for i in wait_frames:
+	for i in range(wait_frames):
 		if _player.state_machine.current_state == _player.state_machine.states[_player.State.MOVE]:
 			break
 		await get_tree().physics_frame
@@ -56,13 +61,12 @@ func test_player_attack_damages_boss_and_fires_event():
 	assert_eq(_player.state_machine.current_state, _player.state_machine.states[_player.State.MOVE], "Player must be in MOVE state before attacking.")
 	
 	# 3. SIMULATE INPUT & TIME
-	# A melee attack requires a press and a quick release.
 	Input.action_press("ui_attack")
-	await get_tree().physics_frame # Wait one frame for the press to register
+	await get_tree().physics_frame
 	Input.action_release("ui_attack")
 	
 	var simulation_frames = 30
-	for i in simulation_frames:
+	for i in range(simulation_frames):
 		await get_tree().physics_frame
 	
 	# 4. ASSERT THE OUTCOME
@@ -71,7 +75,7 @@ func test_player_attack_damages_boss_and_fires_event():
 	assert_lt(final_boss_health, initial_boss_health, "Boss health should be lower after being hit by a player melee attack.")
 	assert_true(_boss_health_changed_event_fired, "A BOSS_HEALTH_CHANGED event should be emitted on the global EventBus.")
 	
-	assert_gt(_player.p_data.determination_counter, 0, "Player determination should increase after dealing damage.")
+	assert_gt(_player.entity_data.determination_counter, 0, "Player determination should increase after dealing damage.")
 
 # --- EventBus Signal Handler ---
 

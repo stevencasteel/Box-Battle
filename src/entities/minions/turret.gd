@@ -82,8 +82,11 @@ func _initialize_data() -> void:
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 	entity_data = TurretStateData.new()
 	entity_data.config = COMBAT_CONFIG
-	_object_pool = ObjectPool
-	_fx_manager = FXManager
+	
+	_object_pool = get_injected_dependency("object_pool")
+	_fx_manager = get_injected_dependency("fx_manager")
+	assert(is_instance_valid(_object_pool), "Turret requires 'object_pool' injected.")
+	assert(is_instance_valid(_fx_manager), "Turret requires 'fx_manager' injected.")
 
 func _initialize_and_setup_components() -> void:
 	var circle_shape = CircleShape2D.new()

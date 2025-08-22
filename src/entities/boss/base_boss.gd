@@ -46,6 +46,7 @@ var _active_attack_tween: Tween
 var _is_dead: bool = false
 var _object_pool: ObjectPool # Dependency
 var _fx_manager: Node # Dependency
+var _event_bus: Node # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -125,7 +126,7 @@ func _die() -> void:
 	if is_instance_valid(_active_attack_tween): _active_attack_tween.kill()
 	set_physics_process(false)
 	hide()
-	EventBus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
+	_event_bus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
 
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
@@ -133,8 +134,13 @@ func _initialize_data() -> void:
 	current_attack_patterns = phase_1_patterns
 	entity_data = BossStateData.new()
 	entity_data.config = COMBAT_CONFIG
-	_object_pool = ObjectPool
-	_fx_manager = FXManager
+	
+	_object_pool = get_injected_dependency("object_pool")
+	_fx_manager = get_injected_dependency("fx_manager")
+	_event_bus = get_injected_dependency("event_bus")
+	assert(is_instance_valid(_object_pool), "BaseBoss requires 'object_pool' injected.")
+	assert(is_instance_valid(_fx_manager), "BaseBoss requires 'fx_manager' injected.")
+	assert(is_instance_valid(_event_bus), "BaseBoss requires 'event_bus' injected.")
 
 func _initialize_and_setup_components() -> void:
 	var shared_deps := {
@@ -187,7 +193,7 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 		if is_instance_valid(phase_change_shake_effect):
 			_fx_manager.request_screen_shake(phase_change_shake_effect)
 		_fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
-		EventBus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
+		_event_bus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 func _on_cooldown_timer_timeout() -> void:
 	if state_machine.current_state == state_machine.states[State.COOLDOWN]:
@@ -199,6 +205,6 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	EventBus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
+	_event_bus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
 func _on_health_component_died() -> void:
 	_die()
