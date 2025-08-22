@@ -12,7 +12,8 @@ const SHADER_PREWARM_SCENES = [
 	AssetPaths.SCENE_BASE_BOSS,
 	AssetPaths.SCENE_PLAYER_SHOT,
 	AssetPaths.SCENE_BOSS_SHOT,
-	AssetPaths.SCENE_TURRET_SHOT
+	AssetPaths.SCENE_TURRET_SHOT,
+	AssetPaths.SCENE_HOMING_BOSS_SHOT,
 ]
 
 # --- Node References ---
@@ -36,6 +37,14 @@ func _load_level() -> void:
 
 	await _prewarm_shaders()
 
+	# THE FIX: Create the typed array locally using load() to ensure correct type resolution.
+	var effects_to_prewarm: Array[ShaderEffect] = [
+		load("res://src/data/effects/entity_hit_flash_effect.tres"),
+		load("res://src/core/data/effects/dissolve_effect.tres"),
+	]
+	await FXManager.prewarm_shaders_async(effects_to_prewarm, prewarm_viewport)
+
+
 	# Build the level and store the resulting node in the GameManager state.
 	GameManager.state.prebuilt_level = await ArenaBuilder.build_level_async()
 
@@ -51,18 +60,20 @@ func _prewarm_shaders() -> void:
 		var instance = load(scene_path).instantiate()
 		
 		if instance.has_method("inject_dependencies"):
-			instance.inject_dependencies({
+			var deps = {
 				"object_pool": ObjectPool,
 				"fx_manager": FXManager,
-				"event_bus": EventBus
-			})
+				"event_bus": EventBus,
+			}
+			instance.inject_dependencies(deps)
 		
 		prewarm_viewport.add_child(instance)
 		
 		# --- Trigger Actions to Compile More Shaders ---
 		if instance is Player:
 			instance.velocity.x = 100
-			instance.state_machine.change_state(instance.State.ATTACK)
+			if is_instance_valid(instance.state_machine) and instance.state_machine.has_method("change_state"):
+				instance.state_machine.change_state(instance.State.ATTACK)
 		elif instance is BaseBoss:
 			instance.velocity.x = 100
 

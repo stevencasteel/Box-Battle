@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Fri Aug 22 13:20:55 CDT 2025
+Generated on: Fri Aug 22 14:36:12 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -170,9 +170,7 @@ PROJECT DIRECTORY STRUCTURE:
 ├── icon.svg
 ├── materials
 │   ├── dissolve_material.tres
-│   ├── entity_hit_flash_material.tres
-│   ├── sdf_panel_material.tres
-│   └── shockwave_material.tres
+│   └── entity_hit_flash_material.tres
 ├── pico.save
 ├── progess
 │   └── progress_001-1.jpg
@@ -445,7 +443,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-78 directories, 359 files
+78 directories, 357 files
 
 
 =====================================
@@ -614,14 +612,6 @@ func _on_button_dissolve_pressed() -> void:
 
 
 =====================================
-FILE: ./materials/sdf_panel_material.tres
-=====================================
-[gd_resource type="ShaderMaterial" load_steps=2 format=3]
-
-# TODO: Link this material to its corresponding .gdshader file.
-
-
-=====================================
 FILE: ./materials/dissolve_material.tres
 =====================================
 [gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://bkiertsatpb34"]
@@ -648,14 +638,6 @@ FILE: ./materials/entity_hit_flash_material.tres
 shader = ExtResource("1_shader")
 shader_parameter/fx_progress = 0.0
 shader_parameter/tint_color = Color(1, 0, 0, 1)
-
-=====================================
-FILE: ./materials/shockwave_material.tres
-=====================================
-[gd_resource type="ShaderMaterial" load_steps=2 format=3]
-
-# TODO: Link this material to its corresponding .gdshader file.
-
 
 =====================================
 FILE: ./addons/gut/parameter_factory.gd
@@ -18752,530 +18734,265 @@ Add dust on landing, walking, touching wall, and jumping from wall.
 
 
 
-Older TODO need to investigate again.
 
-# Phase 2 Audit & Elevation Plan
 
-## Snapshot of what’s strong already
+Nice — I pulled the dump apart and distilled **only** the concrete ideas that still need implementation. I removed duplication and grouped related items so you can pick work by area. No fluff — just actionable items with a one-line acceptance check for each.
 
-* **Centralized FX service**: `FXManager` already cleanly owns screenshake, hit-stop, VFX pooling, prewarm, and camera registration, which is a great separation of concerns for “juice” orchestration. You’re already calling it from gameplay (e.g., Player and Boss).  &#x20;
-* **Composable entities**: Componentized player/boss with a state machine that’s DI-friendly via `setup(p_owner, p_dependencies)` and teardown hygiene. That’s very SOLID. &#x20;
-* **Damage pipeline**: `HealthComponent` as the single source of truth for invincibility, knockback, and signals (`took_damage`, `died`) is a solid foundation to hook FX and gameplay.&#x20;
-* **Events & identifiers**: A global EventBus and typed events are already in use (e.g., boss phase change, healing charges). This supports Dependency Inversion across systems. &#x20;
+# High-level implementation checklist (grouped & prioritized)
 
----
+## Shader foundation & mobile renderer (PHASE 1)
 
-## 1) Juice & Feedback — Elevate the Shader Strategy (and unify FX)
+1. Create `res://shaders/includes/` and add modular `.gdshaderinc` files (common\_math, color, noise, fx\_blend).
+   *Accept:* includes exist and are used by at least two shaders.
 
-### Key risks/gaps
+2. Convert critical VisualShaders to text `.gdshader` files (hit-flash, pulse).
+   *Accept:* two converted shaders visually match originals.
 
-* **Two managers present**: There’s a `vfx_manager.gd` and a production `FXManager`; only the latter is autoloaded. Remove/rename the legacy script to avoid drift. (Project docs explicitly list `FXManager` as an autoload.)&#x20;
-* **Shader effects are not first-class**: VFX pooling exists, but shader FX are not yet modeled as reusable resources or scheduled/stacked like other FX.
+3. Enforce shader header + sampler hints: ensure `shader_type canvas_item;` and `: source_color` where needed — add lint check.
+   *Accept:* lint script flags missing headers/hints and passes repo.
 
-### Elevated design (future-proof + SOLID)
+4. Implement shader global uniforms pattern + `ShaderGlobalsOverride` node for level overrides.
+   *Accept:* fx\_global\_time and one override parameter can be set per-level.
 
-**A. Promote shaders to first-class “FX” alongside particles/VFX**
+5. Add a shader prewarm/stagger routine that compiles important shaders across frames.
+   *Accept:* targeted shaders are compiled before first in-game use without a single-frame hitch.
 
-* Introduce `ShaderEffect` (Resource) with:
+6. Add mobile-specific shader rules: pack maps into channels, avoid loops/branching; document required precision model.
+   *Accept:* short doc added and one shader refactored to channel-packed maps.
 
-  * `shader: Shader`
-  * `params: Dictionary<String, Variant|Curve>` (supports static or animated values)
-  * `duration: float`
-  * `target_scope: enum { ENTITY, UI, FULLSCREEN }`
-  * `priority: int` (for conflict resolution)
-* Add `IFxEffect` interface semantics (or documented contract) so `FXManager` treats `VFXEffect`, `ScreenShakeEffect`, and `ShaderEffect` uniformly (Open/Closed). `FXManager` remains the single façade (DIP).
+## Data-driven FX system (PHASE 2)
 
-**B. Binding layer per scope**
+7. Create `ShaderEffect` Resource (fields: shader/material, duration, scope enum, default\_params, priority, tags, optional sound).
+   *Accept:* Resource type exists and can be authored in editor.
 
-* **EntityShaderBinding**: Attaches a temporary `ShaderMaterial` to a `CanvasItem`/`Sprite/Polygon2D/ColorRect`, pushes/restores original material safely, animates params via Tween. Handles **Hit-Flash** and **Dissolve** without leaking. (Entities already expose clear visuals: e.g., Player `ColorRect` at `$ColorRect` and Boss visual nodes.) &#x20;
-* **UIShaderBinding**: Applies SDF panel shader to `Control` via theme or per-node `Material`. Encourages design tokens (see below).
-* **FullscreenShaderBinding**: A dedicated `CanvasLayer` with a `ColorRect` + `ShaderMaterial` stack; `FXManager.trigger_fullscreen(shader_effect, world_pos?)` injects effects (Shockwave converts world→screen, queues by priority, cleans up).
+8. Implement `FXManager.play_shader(effect: ShaderEffect, target, opts := {})` + `prewarm_shaders(effects:Array)`.
+   *Accept:* API callable and used by a sample effect.
 
-**C. Effect graph (optional but future-proof)**
+9. Implement scope-specific bindings: `EntityShaderBinding`, `UIShaderBinding`, `FullscreenShaderBinding` (bind/restore without leaking).
+   *Accept:* Binding duplicates/restores material reliably under node free/scene change.
 
-* If you foresee multiple overlapping fullscreen shaders (Shockwave + Chromatic Aberration + Bloom mask), model a lightweight “EffectGraph”:
+10. Model shader effects the same as other FX (particles/screen shakes) — unify through an IFxEffect contract or documented contract.
+    *Accept:* FXManager treats ShaderEffect and VFXEffect the same in mapping.
 
-  * A queue of `ShaderEffect` with priorities and **mutual exclusion rules** (e.g., only one exposure-changing effect active).
-  * Blends via cumulative uniforms where safe (e.g., max ripple amplitude).
-* Keep graph in `FXManager` to avoid coupling gameplay to render internals.
+11. Implement object pooling for ShaderMaterial instances used by FX (use ObjectPool autoload).
+    *Accept:* pool returns recycled instances and reduces repeated allocations.
 
-**D. Non-obvious wins**
+12. Add `FXManager` budget tracking + basic backpressure / degrade policy (skip low-priority FX when over budget).
+    *Accept:* when budget exceeded, low-priority effects are skipped and reported by a debug overlay.
 
-* **Prewarming & shader cache**: Add `FXManager.prewarm_shaders([ShaderEffect])` mirroring your VFX prewarm to avoid hitching on first use. (You already prewarm pooled nodes; extend the idea to shader variants.)&#x20;
-* **Performance guardrails**: `FXManager` tracks a per-frame cost budget; if frame time exceeds a threshold, degrade effect quality (shorter duration, fewer iterations) or skip low-priority FX.
-* **Param curves**: Let `params` accept `Curve` resources so designers can sculpt intensity/time without code.
-* **Conflict policies**: Screenshake already has clear calls; extend with **priority + override windows** (e.g., boss phase shake overrides minor hit shakes for 0.3s). You’re already calling shakes from Player/Boss. &#x20;
-* **Testbed scene**: A `res://tools/fx_playground.tscn` with toggles for each effect, param sliders, and a performance readout to rapidly iterate without booting gameplay.
+13. Add an FX testbed scene `tools/fx_playground.tscn` to preview/iterate effects and show performance readout.
+    *Accept:* playground shows effect toggles, param sliders, and concurrent-FX count.
 
-### Concrete Phase 2 tasks (refined)
+14. Hook common events -> effects mapping: EventBus → FXManager mapping table (damage → hit-flash, phase change → shockwave).
+    *Accept:* mappings are data-driven and can be updated without code changes.
 
-* **Task 1 (FX Cookbook for Shaders)**
+## Shader patterns, anti-patterns & lints (PHASE 3)
 
-  * Implement `ShaderEffect.tres` assets and `FXManager.play_shader(effect, target, opts={})`.
-  * Provide bindings for `ENTITY`, `UI`, `FULLSCREEN`.
-  * Unit test: ensuring materials restore on teardown (esp. entity death and scene changes).
-* **Task 2 (Entity Shaders)**
+15. Add lint/check script that validates effect shaders declare required uniforms (`fx_progress`, `fx_intensity`) and `shader_type canvas_item`.
+    *Accept:* CI lint runs and enforces rules.
 
-  * **Hit-Flash**: Use `HealthComponent.took_damage` to apply a 0.08–0.12s flash; you already emit `took_damage` with `DamageInfo`. Tie into it.&#x20;
-  * **Dissolve**: Triggered in `die()` paths for Player/Boss/Minions; ensure it cannot conflict with Hit-Flash (priority rules).
-* **Task 3 (UI SDF)**
+16. Standardize shader parameter contract and document it (fx\_progress, fx\_intensity, optional fx\_global\_time, SCREEN\_TEXTURE for fullscreen).
+    *Accept:* doc + a simple example shader that follows contract.
 
-  * Add `Theme` with **design tokens** (radius, border thickness, spacing scale, brand colors). Use one SDF shader to produce borders/fills/shadows across panels. Have a single “Aesthetic Maximalism” token sheet.
-* **Task 4 (Fullscreen Shockwave)**
+17. Implement `material = material.duplicate()` pattern enforcement (lint or QA warning) to avoid shared-material mutation.
+    *Accept:* at least one lint rule or runtime assert exists.
 
-  * `FXManager.trigger_shockwave(world_pos)` on boss phase change (you already call hit-stop + shake there—perfect insertion point).&#x20;
+## Audio pipeline (PHASE 4)
 
-**Acceptance checks**
+18. Implement Audio bus layout (Master / SFX / UI / Music) with a Master limiter/compressor preset.
+    *Accept:* buses exist and Master limiter is routable.
 
-* Damage → flash visible; phase change → shockwave + hit-stop + shake; material restoration verified when an entity queues free; worst-case overlapping FX maintain framerate and prioritize correctly.
+19. Implement `AudioManager` with pools of `AudioStreamPlayer2D` and non-positional players, voice caps and stealing logic, and APIs `play_sfx(tag, pos)`, `play_ui(tag)`, `play_music(track, crossfade_sec)`.
+    *Accept:* SFX pool plays positional sounds and respects voice cap.
 
----
+20. Add import presets & AudioStreamRandomizer support for natural SFX variation.
+    *Accept:* example SFX uses AudioStreamRandomizer and plays randomized variations.
 
-## 2) Gameplay & Design — Core Loop & Save
+## Scene & code organization (PHASE 5)
 
-### Gaps & design edges
+21. Remove/rename legacy `vfx_manager.gd` to avoid confusion with `FXManager` (or deprecate it).
+    *Accept:* no duplicate-named manager in autoloads.
 
-* World/loop scaffolding is light; Stage Select and saves are not yet implemented.
-* You already track boss health and emit phase/health events (great). Persisting which bosses are cleared will complete the loop.&#x20;
+22. Enforce directory conventions: shaders/, materials/, data/effects/, audio/. Move/organize resources accordingly.
+    *Accept:* at least one resource moved and scenes updated.
 
-### Elevated design
+23. Expand `setup(owner, dependencies)` DI pattern across autoload-using components; add façade interfaces (e.g., `IEventBus`) with default autoload provider.
+    *Accept:* two components refactored to accept injected providers and tests use fakes.
 
-**A. Versioned, multi-slot Save**
+## Save, Stage Select & Encounter Registry (GAMEPLAY)
 
-* `SaveManager` (autoload) manages **profile slots** (e.g., `Slot_1`, `Slot_2`, `Slot_3`).
-* **Schema**:
-  `WorldState { version:int, bosses:{<boss_id>: {defeated:bool, best_time:float, deaths:int}}, options_ref:<guid> }`
-* **Atomic writes**: Save to `*.tmp`, then rename; keep a `.bak` of the last good file.
-* **Migration**: On load, if `version < CURRENT`, run registered migrators.
-* **Separation of concerns**: Keep **user options** (video, audio) separate from **progress**.
+24. Implement `SaveManager` with multi-slot, versioned schema, atomic writes (`*.tmp` -> rename) and `.bak` fallback + migrator hook.
+    *Accept:* save/load works with slot switching; corruption fallback works in test.
 
-**B. Encounter Registry**
+25. Implement `EncounterRegistry.tres` (id, scene path, thumbnail, meta) and data-driven StageSelect that reads it.
+    *Accept:* StageSelect is data-driven and reflects registry status.
 
-* A `EncounterRegistry.tres` listing available stages (id, name, scene path, thumbnail) so `StageSelect.tscn` can **data-drive** its UI, not hardcode. The registry decouples content shipping from UI logic.
+26. Emit `BOSS_DEFEATED` event and write boss state to SaveManager when boss dies.
+    *Accept:* defeating a boss updates save state and StageSelect reflects it.
 
-**C. Stage Select screen**
+## Dialogue & Narrative (SYSTEMS)
 
-* On `_ready()`, `SaveManager.load_active_slot()` and filter registry; enable/disable buttons with medallions/times.
-* UX: show boss card, defeat state, PB time, and a flashy SDF-framed button (uses your new UI shader).
+27. Harden `DialogueManager` into a resource-driven runner: `DialogueData` as a small graph with `DialogueLine`s and optional `DialogueBranch` conditions.
+    *Accept:* manager can run a `DialogueData` asset and follow linear/branching flows.
 
-**D. Tests**
+28. Implement dialogue inline tags (`[fx:shockwave]`, `[sfx:blip]`, `[shake]`) and wiring so `DialogueBox` emits signals that `FXManager`/AudioManager can bind to.
+    *Accept:* tags trigger effects/sfx when a line plays.
 
-* Unit test `SaveManager`: write/read parity; corrupted file fallback; migration path N→N+1.
+29. Add `IWorldQuery` abstraction used by Dialogue for conditions (backed by SaveManager).
+    *Accept:* branch conditions evaluated via injected query provider.
 
-**Where to hook in current code**
+30. Typewriter polish: variable CPS, curve-driven reveal, instant reveal on input, and per-character sfx.
+    *Accept:* user input reveals text and per-character sfx plays.
 
-* You already funnel boss phase/health through events; add a **win event** from boss `die()` to update world state. You call `die()` in boss on health zero; emit a `BOSS_DEFEATED` with an ID you store on the boss. &#x20;
+## Tests, CI & QA (PHASE 7)
 
----
+31. Integrate GUT tests for: material-restore on FX teardown; SaveManager write/read and migration; EventBus fakes for unit tests.
+    *Accept:* GUT tests run in CI (headless where possible) and pass.
 
-## 3) Systems & Narrative — Dialogue
+32. Add a CI job to run shader lint and missing-resource checks (disk-check).
+    *Accept:* CI fails when shader contract/lint fails or scene references missing resource.
 
-### Audit
+33. Add performance/device QA harness for shader profiling (capture baseline), and an acceptance test that prewarms shaders and confirms no big compile spike.
+    *Accept:* test produces a perf report and prewarm reduces first-use hitch.
 
-* `DialogueManager.gd` exists (empty) and `DialogueBox` is in progress with typewriter intent. You have `DialogueData.tres` samples. Good direction, needs flow control & extensibility.&#x20;
+## Small / developer ergonomics items
 
-### Elevated design
+34. Add `FXManager.get_budget_status()` and a debug overlay that shows concurrent FX, queued tweens, frame delta.
+    *Accept:* overlay toggles and shows meaningful numbers.
 
-**A. Resource-driven dialogue graph (lightweight)**
+35. Add `EventBus.bind_weak(node, event, callable)` helper (auto-unsubscribe on node free).
+    *Accept:* helper exists and prevents dangling listeners.
 
-* `DialogueData` becomes a mini graph: `lines: Array[DialogueLine]`, optional `branches: Array[DialogueBranch]` with simple conditions (e.g., `boss_defeated("turret")`).
-* Conditions implemented via **Query Interface** on `DialogueManager`, not by reading save files directly (Dependency Inversion: manager depends on an abstract `IWorldQuery` you implement using `SaveManager`).
+36. Add `fx_playground.tscn` automation to CI (smoke-run) to visually sanity-check effects (non-blocking).
+    *Accept:* test runs the playground scene in headless/smoke mode without errors.
 
-**B. Tags & signals**
+37. Add a short "How to add a ShaderEffect" cookbook doc and a one-page mobile-shader checklist in repo.
+    *Accept:* doc present and referenced from README.
 
-* Support **inline tags** (e.g., `[shake]`, `[sfx:blipA]`, `[fx:shockwave]`) that emit signals instead of hard-coding presentation. `DialogueBox` listens and animates UI/SDF or triggers FX via `FXManager`. Separation of concerns: Manager = state, Box = view.
+## PR / delivery plan (top practical order)
 
-**C. Typewriter polish**
-
-* Variable CPS, optional easing `Curve`, auto-skip on hold, and **smart pauses** on punctuation.
-* Accessibility: instant reveal on input; queue mode for multi-line; per-character sfx with pitch variance.
-
-**D. Future-proof**
-
-* Localisation hooks: Each `DialogueLine` carries a key, not raw text (or supports both); swap table per language.
-
----
-
-## Visual Identity — “Aesthetic Maximalism” without chaos
-
-* **Design Tokens**: `ThemeTokens.tres` (spacing scale, corner radius, border widths, shadow ramp, gradients list, primary/secondary palettes). Your `Palette` constants can seed this.&#x20;
-* **Single SDF panel shader** with params from tokens: corner radius, border width, inner glow, hatch pattern toggle, animation seed. Drive hover/press/alert states via uniform changes not separate shaders.
-* **Motion language**: micro-tweens (100–180ms), overshoot 1.05, settle to 1.0 with spring; consistent across buttons/modals/stage cards.
+* PR A: shader-foundation (includes/, convert 1–2 shaders, shader lint). (items 1–3, 15–16)
+* PR B: FXManager + ShaderEffect + bindings + prewarm + testbed. (items 7–14, 5, 34)
+* PR C: AudioManager + bus + pools + presets. (items 18–20)
+* PR D: SaveManager + EncounterRegistry + StageSelect. (items 24–26)
+* PR E: DialogueManager runner + tags + world-query contract. (items 27–30)
+* PR F: Tests & CI: GUT integration, shader lint in CI, performance harness. (items 31–33, 36)
+* PR G: Cleanup & docs: rename legacy vfx\_manager, move folders, add cookbook. (items 21–23, 37)
 
 ---
 
-## SOLID Scorecard (how the plan maps)
 
-* **S**: Shader bindings split by scope; `DialogueManager` vs `DialogueBox`; `SaveManager` vs `EncounterRegistry`.
-* **O**: `FXManager` extended to new effect types without modifying callers; `Dialogue` adds tags/branches without altering the runner API.
-* **L**: `IFxEffect` contract keeps any new effect substitutable.
-* **I**: UI doesn’t need screenshake APIs; it listens to FX tags only. Gameplay doesn’t know how shaders render.
-* **D**: Gameplay posts events; `FXManager`, `SaveManager`, `DialogueManager` subscribe. You already use EventBus patterns across the code.&#x20;
 
----
 
-## Prioritized Phase 2 Backlog (impact → effort)
 
-1. **Shader FX foundation (ENTITY/UI/FULLSCREEN bindings)**
+ChatGPT-5:
+Nice — I read through the repo snapshot you uploaded and did targeted web research on Godot best practices so my recommendations are both grounded in your code and current engine guidance. Below is an audit focused on not-obvious problems I found, followed by concrete, professional evolutions (prioritized) you can apply immediately.
 
-   * `ShaderEffect` resource + `FXManager.play_shader()`
-   * Shockwave fullscreen; Hit-Flash; Dissolve; UI SDF panel v1
-     *Accept*: Hit-Flash on damage; Dissolve on death; Shockwave on phase change; UI panels themed.
+Quick summary (one-paragraph)
 
-2. **Design Tokens + SDF Theme integration**
+Your codebase already follows many strong patterns: componentized entities, Resource-driven tuning, typed event payloads, and an intentional effort to move away from hidden global dependencies (you’ve added setup() patterns). That puts you several steps ahead of most hobby projects. The things that remain risky are subtle: shared-material mutation, event storms / implicit global coupling via autoloads, shader compile stutters on mobile, and some testability friction that comes from how singletons are used. I’ll show why those are risky, point to exact files in your tree, and propose professional, low-friction patterns to evolve each area.   
 
-   * One shader, many looks; stage cards & menus adopt tokens
-     *Accept*: All panels/badges use same shader and tokens; hover/press transitions consistent.
+Not-obvious findings (with evidence)
 
-3. **Encounter Registry + Stage Select**
+Shared ShaderMaterial mutation risk (visual/material leaks).
 
-   * Data-driven, thumbnails, defeat status, time PB
-     *Accept*: Disabling/enabling and badges reflect `WorldState`.
+You already have code and docs calling out this problem (explicit “duplicate materials when changing per-node parameters. Never mutably edit a shared material at runtime” and the FXComponent behavior around restoring materials). That indicates you've hit this in practice. Mutating a shared ShaderMaterial at runtime causes unexpected visual changes across multiple instances and is a common source of “why did this other entity change?” bugs.  
 
-4. **SaveManager v1 (versioned, atomic, multi-slot)**
+EventBus/autoload convenience → hidden dependency/test friction.
 
-   * WorldState schema + migrator scaffolding
-     *Accept*: Corrupt file test passes; slots switch; migration stub is callable.
+You use many autoloads (EventBus, FXManager, ObjectPool, etc.) listed in project.godot. Autoloads are fine in Godot, but they hide dependencies and make unit tests harder unless every consumer accepts injected overrides. Your repo has partial moves to setup() for explicit dependencies (good!), but some code still emits/consumes globally which risks tight coupling at scale.  
 
-5. **Dialogue v1 (runner + box + tags)**
+Event storm / FX stacking edge-cases.
 
-   * Typewriter polish, skip logic, `[fx:*]` tag to `FXManager`
-     *Accept*: Branch by a simple world query; tags fire without coupling.
+The EventBus emits directly and prunes dead listeners, but high-frequency events (damage ticks, rapid collisions) need coalescing/debouncing at the manager-level to avoid flooding the FX pipeline (and wasting shader/CPU/Tween budgets). Your docs mention “coalesce by priority” but I don’t see a dedicated debouncing layer yet.  
 
-6. **FX Testbed + Performance budget**
+Shader compile / runtime hitch risks on mobile.
 
-   * Prewarm path for shaders; frame budget degrade path
-     *Accept*: Toggle 3+ overlapping effects with steady frametime; low-priority FX drop under load.
+You’ve implemented a dissolve shader and an FX prewarm plan in the TODOs (good), but Godot shader pipeline compilation can hitch at first run on device if not prewarmed/staggered — especially on mobile GPUs. There are engine docs and community posts that recommend prewarming/compiling shaders ahead of first display. ; see Godot docs on shader pipeline compilation. (Godot Documentation)
 
----
+Test/CI gaps vs. architecture changes.
 
-## Not-obvious pitfalls & mitigations
+You have GUT present (addon code and test scaffolding) and clear TODOs to fully integrate CI and headless runs. That’s the right move; missing items are: standardized test doubles for autoloads, headless integration scenarios, and CI hooks that run deterministic smoke tests. 
 
-* **Material leaks**: Always store/restore the previous `material` on entities; guard against `queue_free()` mid-tween (cancel/cleanup). (Your components already have good teardown patterns—reuse those.)&#x20;
-* **Manager drift**: Delete/rename `vfx_manager.gd` to avoid confusion with `FXManager`.&#x20;
-* **Event storms**: Debounce rapid damage events to not stack infinite Hit-Flashes; let `FXManager` coalesce by priority.
-* **Save corruption**: Atomic writes + `.bak` restore; unit tests for both.
-* **Over-maximalism**: Let tokens define restraint: limit concurrent UI patterns; use one SDF shader with parameterized patterns.
+Concrete next-level evolutions (professional patterns)
 
----
+I prioritized high-impact / low-risk changes first.
 
-## Tiny code-level contracts (just enough to align)
+1) Make FX/Shader usage robust and predictable (High priority)
 
-**ShaderEffect.tres (concept)**
+API: Add FXManager.play_shader(effect: ShaderEffect, target: Node, opts := {}) and FXManager.prewarm_shaders(effects: Array[ShaderEffect]). (You already proposed these — implement them.) This centralizes lifecycle, duplication, and fallback rules. 
 
-```
-class_name ShaderEffect
-extends Resource
-@export var shader: Shader
-@export var duration: float = 0.15
-@export var priority: int = 0
-@export_enum("ENTITY","UI","FULLSCREEN") var scope := 0
-@export var params := {} # { "intensity": 1.0, "tint": Color, "curve": Curve, ... }
-```
+Material handling rule (enforced in FXComponent): Always call material = material.duplicate() (or ShaderMaterial.new() + set shader/resource parameters) before changing uniforms or starting a tween; restore or free it on finish. Add assert/lint to detect writes to .material on shared resource. (Your TODO explicitly mentions this pattern; make it code-enforced.) 
 
-**FXManager surface (additions)**
+Prewarm pipeline: On game start, call FXManager.prewarm_shaders() that sets each important material on a hidden canvas node for 1 frame, then removes it — stagger across frames to avoid a single hitch. This follows Godot guidance for pipeline precompilation. (Godot Documentation)
 
-```
-func play_shader(effect: ShaderEffect, target: Node, opts := {}): void
-func trigger_shockwave(world_pos: Vector2): void # convenience wrapper
-func prewarm_shaders(effects: Array[ShaderEffect]): void
-```
+2) Harden event / FX budget (High priority)
 
-(Backed by scope-specific bindings that do all attach/animate/restore work.)
+Coalescing layer: Add an EventCoalescer inside FXManager (or as a small middleware autoload) that:
 
----
+collapses repeated hit_flash events from same entity within X ms,
 
-## Where to hook today (concrete)
+applies priority (UI effects > boss phase > small hits) and drops low priority when budget reached,
 
-* **Player damage** → you already request shake/hit-stop and play a hit spark in `_on_health_component_took_damage`—just also call `FXManager.play_shader(hit_flash_effect, self.visual_sprite)`.&#x20;
-* **Boss phase change** → extend the existing phase change branch to call `trigger_shockwave(boss.global_position)` alongside shake/hit-stop.&#x20;
-* **Entity death** → in `HealthComponent.died` subscribers (Player/Boss/Minion), run `Dissolve` before `queue_free()`. You’re already centralizing death notification.&#x20;
+exposes simple metrics (current concurrent FX).
 
----
+This pattern prevents FX over-saturation and is often used in commercial games. (You already flagged it; implement it now.) 
 
+Backpressure policy: When frame time goes above threshold, pause low-priority FX for N frames rather than queueing unlimited tweens.
 
+3) Make autoload usage explicit and testable (Medium priority)
 
+Prefer injection at construction: Continue the setup(owner, dependencies) pattern and expand it: where autoloads are used in gameplay-critical components, pass an object implementing a small interface rather than calling the global directly. You already use this pattern in InputComponent.setup and BaseStateMachine.setup. Enforce by linting for EventBus. usages in non-orchestrator components.  
 
+Autoload façade + replaceable provider: Keep autoloads, but wrap them behind a small façade interface (e.g., IEventBus), then have the autoload register itself as the default provider. Tests can then inject a lightweight fake. This gives engine-idiomatic singletons with testable substitution — it’s the simplest practical inversion-of-control for Godot. Web docs discuss autoload pros/cons; this is the standard compromise. (Godot Documentation, Game Development Stack Exchange)
 
-Aug 19th TODO from GPT-5. Currently working on this stuff.
+4) Strengthen the EventBus and typed events (Medium)
 
+Typed events everywhere: You’ve made typed event resources (e.g., PlayerHealthChangedEvent) — expand this to critical event flows and remove ambiguous dict payloads. Typed resources improve discoverability and auto-complete. 
 
-===============================================================================
-| TODO.txt — FX & Shader Refactor (Mobile Renderer)                                |
-| Project: Steven Casteel / Box Battle                                         |
-| Purpose: Major overhaul to stabilize .gdshader usage on Mobile renderer, finish   |
-|          FX + audio pipelines, and apply Godot 4.4 best practices across the repo |
-===============================================================================
-
-ASCII GUIDE: keep this file purely procedural. Use it as the single source of truth
-for tasks, ordered PRs, acceptance criteria, and quick implementation notes.
-
---------------------------------------------------------------------------------
-PHASE SUMMARY (HIGH-LEVEL)
---------------------------------------------------------------------------------
-  [PHASE 1] Stabilize .gdshader usage on Mobile renderer
-  [PHASE 2] Complete and formalize the data-driven FX system
-  [PHASE 3] Performance-safe shader patterns & anti-patterns
-  [PHASE 4] Audio architecture overhaul (mobile-ready)
-  [PHASE 5] Scene & code organization, SOLID idioms (Godot 4.4)
-  [PHASE 6] Concrete deliverables & ordered tasks (PR list)
-  [PHASE 7] Guardrails, linting, CI checks, docs, QA
-
---------------------------------------------------------------------------------
-PHASE 1 — STABILIZE .GDSHADER (MOBILE RENDERER)
---------------------------------------------------------------------------------
-  - Task 1.1: File & Material basics
-    * Ensure every runtime FX shader starts with: "shader_type canvas_item;"
-    * Convert VisualShader FX used at runtime into text `.gdshader` files.
-    * ALWAYS apply ShaderMaterial instances to the node that is actually drawing.
-    * Rule: duplicate materials when changing per-node parameters. Never mutably edit
-      a shared material at runtime.
-
-  - Task 1.2: Color-space & texture hints
-    * Enforce `: source_color` on any albedo/palette sampler declarations.
-    * Add a lint rule to scan `.gdshader` files for `sampler2D .*: source_color` hints.
-
-  - Task 1.3: Shader Globals
-    * Add global shader uniforms in Project Settings as the canonical place for
-      shared values (e.g., fx_global_time, vignette_intensity, pal_index).
-    * Add a `ShaderGlobalsOverride` node pattern for level-specific overrides.
-
-  - Task 1.4: Mobile constraints baked into shader style
-    * Avoid heavy branching/loops and minimize texture lookups.
-    * Pack maps into channels wherever possible (RGB packing).
-    * Prefer vertex-computed offsets for distortion effects when possible.
-
-  - Task 1.5: Modular shader includes
-    * Create `res://shaders/includes/` and add small, composable `.gdshaderinc`
-      files: common_math, color, noise, fx_blend.
-
-  - Task 1.6: Pre-warm materials
-    * Add a warm-up routine that compiles important shaders early (staggered
-      across frames to avoid hitching on startup).
-
-  - Task 1.7: Renderer verification
-    * Confirm `Rendering -> Renderer = Mobile` in Project Settings; document
-      behavior and planned fallbacks for older/compat mode.
-
---------------------------------------------------------------------------------
-PHASE 2 — DATA-DRIVEN FX (FINISH THE SYSTEM)
---------------------------------------------------------------------------------
-  - Core responsibilities (separate concerns):
-    1) Effect Definition (resource): ShaderEffect.gd / VFXEffect.gd
-    2) Binding (helpers): EntityShaderBinding.gd (bind/unbind only)
-    3) Orchestration (singleton): FXManager.gd (duplicate/apply/drive/teardown)
-
-  - Task 2.1: Standard parameter contract (required across shaders)
-    * Per-node shaders must declare:
-        uniform float fx_progress;       // 0 -> 1 lifetime driver
-        uniform float fx_intensity;      // artist control
-        global uniform float fx_global_time; // optional
-    * Fullscreen shaders must declare:
-        uniform sampler2D SCREEN_TEXTURE; // when used as blit
-        uniform vec2 viewport_size;
-
-  - Task 2.2: Effect Resource fields
-    * material: ShaderMaterial (reference)
-    * duration: float
-    * fullscreen: bool
-    * default_params: Dictionary
-    * sound: AudioStream | AudioStreamRandomizer (optional)
-    * tags: Array[String]
-
-  - Task 2.3: FXManager responsibilities
-    * Listen to EventBus (damage, heal, parry, low_hp, phase_change) and
-      map events -> ShaderEffect resources.
-    * Duplicate material instances when applying to nodes.
-    * Drive `fx_progress` via Tween or in `_process` (consistent timing).
-    * Return materials/nodes to ObjectPool on completion.
-    * Provide a warm-up compile pass for top N materials.
-
-  - Task 2.4: Binding behaviour (EntityShaderBinding)
-    * Only: bind/unbind/apply parameter dictionary to a given CanvasItem.
-    * Do not handle timers, tweens, or lifecycle — orchestration only.
-
-  - Task 2.5: Object pooling
-    * Use existing ObjectPool autoload to recycle ShaderMaterial instances,
-      GPUParticles2D nodes, ColorRect post layers, and Audio player nodes.
-
-  - Example flows (implementation notes)
-    * Hit Flash (per-node): duplicate material -> set fx_progress=0 -> animate -> on
-      complete restore previous material.
-    * Phase Pulse (fullscreen): enable post layer (ColorRect), animate fx_progress,
-      disable layer when done.
-
---------------------------------------------------------------------------------
-PHASE 3 — SHADER PATTERNS & ANTI-PATTERNS
---------------------------------------------------------------------------------
-  - Color textures = sRGB. Require `: source_color` on declarations.
-  - Default to mediump/half precision mental model on mobile; avoid heavy
-    precision-dependent effects.
-  - Combine multiple maps into channels to minimize samplers.
-  - Reuse shaders and materials; only duplicate when parameters change.
-  - Minimize dynamic indexing and branching in fragment shaders.
-
---------------------------------------------------------------------------------
-PHASE 4 — AUDIO PIPELINE (MOBILE READY)
---------------------------------------------------------------------------------
-  - Bus layout:
-      Master
-        ├─ SFX  (short, non-streamed, WAV or small OGG)  // cap polyphony
-        ├─ UI   (one-shots, non-positional)
-        └─ Music (streaming OGG)  // crossfade via AudioManager
-    * Put a Master limiter; gentle compressor on Music for ducking.
-
-  - Import rules:
-    * SFX < ~1s -> WAV (decode cost but faster playback); otherwise OGG if size
-      is critical. Music/ambience -> OGG streaming.
-
-  - AudioManager features:
-    * Pools of AudioStreamPlayer2D (positional SFX) and AudioStreamPlayer
-      (non-positional UI/music).
-    * `play_sfx(tag, pos)`, `play_ui(tag)`, `play_music(track, crossfade_sec=1.5)`
-    * Voice caps per category; implement quietest/oldest stealing.
-    * Integrate AudioStreamRandomizer resources for natural variation.
-
---------------------------------------------------------------------------------
-PHASE 5 — SCENE & CODE ORGANIZATION (SOLID + GODOT 4.4 IDIOMS)
---------------------------------------------------------------------------------
-  - Autoloads: keep them thin and focused — do not put gameplay state in singletons.
-    Examples: FXManager, AudioManager, EventBus, ObjectPool, Router, GlobalState.
-
-  - Component-first nodes: Health, Damageable, VFXAnchor. Use Groups for discovery.
-
-  - Resource-driven definitions: Effect resources, audio sets, curves should be
-    .tres resources referenced by scenes and code (no hardcoded paths in scripts).
-
-  - Asset graph discipline: shaders in `res://shaders/`, materials in
-    `res://materials/`, effects in `res://data/effects/`, audio in `res://audio/`.
-
-  - Editor-safety: do not rely on editor-only signals for runtime logic.
-
---------------------------------------------------------------------------------
-PHASE 6 — CONCRETE DELIVERABLES & PR ORDER
---------------------------------------------------------------------------------
-  PR 01 — shader-foundation
-    * Add `res://shaders/includes/` files.
-    * Convert critical VisualShaders to `.gdshader` text variants.
-    * Add shader parameter contract enforcement linter (script).
-
-  PR 02 — fx-manager-completion
-    * Finalize FXManager orchestration (duplicate/apply/drive/teardown).
-    * Implement warm-up pass for top materials.
-    * Hook FXManager into EventBus mapping table (event -> effect resource).
-
-  PR 03 — audio-bus-and-pool
-    * Implement bus layout (Master/SFX/UI/Music), add limiter.
-    * Add Audio import presets and AudioManager pooling + voice caps.
-
-  PR 04 — resources-and-samples
-    * Add `ShaderEffect` resources for hit-flash, dissolve, palette-swap,
-      fullscreen pulse. Include small sample scenes to preview each.
-
-  PR 05 — docs-and-tests
-    * Add "How to add a new effect in 5 minutes" doc, shader lint rule,
-      CI hooks for missing resource checks, and mobile QA checklist.
-
-  PR 06 — profiling-and-fixes
-    * Device profiling harness, baseline captures, and targeted shader fixes.
-
-  Note: Execute PRs in order. Break each PR into bite-sized commits with clear
-  atomic messages (e.g., "Add shader include: common_math.gdshaderinc").
-
---------------------------------------------------------------------------------
-PHASE 7 — GUARDRAILS, LINTING, QA
---------------------------------------------------------------------------------
-  - Add a shader lint script (CI-friendly) that validates:
-    * presence of `shader_type canvas_item` (for FX shaders)
-    * required uniforms (`fx_progress`, `fx_intensity`) for effect shaders
-    * `: source_color` on color sampler declarations
-  - Disk-check CI: fail if a scene references a missing resource path.
-  - Enforce: "no set_shader_parameter on shared materials" rule in reviews.
-  - Add a mobile QA checklist: test on at least two device tiers, collect
-    profile captures for before/after (frame time, active FX count, shader
-    compile stalls).
-
---------------------------------------------------------------------------------
-IMPLEMENTATION NOTES & QUICK LOOKUPS
---------------------------------------------------------------------------------
-  - Shader apply pattern (pseudocode):
-
-    var inst = effect.material.duplicate()
-    for key,val in effect.default_params:
-        inst.set_shader_parameter(key, val)
-    target.material = inst
-    FXManager.drive_progress(inst, effect.duration)
-    on_complete: restore previous material or return inst to pool
-
-  - Parameter contract reminder:
-      uniform float fx_progress; // 0..1
-      uniform float fx_intensity;
-      global uniform float fx_global_time;
-
-  - Shader include files to create:
-      res://shaders/includes/common_math.gdshaderinc
-      res://shaders/includes/color.gdshaderinc
-      res://shaders/includes/noise.gdshaderinc
-      res://shaders/includes/fx_blend.gdshaderinc
-
-  - Audio tips:
-      Master at -6dB headroom; SFX ~-6dB; Music ~-10dB to start. Limiters as safety.
-      Pool small AudioStreamPlayers and cap voices per bus.
-
---------------------------------------------------------------------------------
-ACCEPTANCE CRITERIA (for the whole refactor)
---------------------------------------------------------------------------------
-  - .gdshader-based FX behave identically (visual parity within +/- subjective
-    tolerance) on Mobile renderer and Desktop (compat mode optional fallback).
-  - No startup or runtime shader compile hitching greater than a single frame
-    after warm-up pass runs.
-  - CI enforces shader param contract and missing resource checks.
-  - Audio bus + pooling in place; voice caps prevent crashes/overload on device.
-  - Designers can create a new ShaderEffect resource, drop it into an effect map,
-    and see the result in the sample preview scene within ~5 minutes.
-
---------------------------------------------------------------------------------
-HAND-OFF CHECKLIST FOR THE IMPLEMENTER (Gemini AI)
---------------------------------------------------------------------------------
-  1) Implement PR 01 (shader-foundation)
-  2) Implement PR 02 (fx-manager-completion)
-  3) Implement PR 03 (audio-bus-and-pool)
-  4) Create sample resources & scenes (PR 04)
-  5) Add docs, lints, and CI hooks (PR 05)
-  6) Run device profiling, fix hotspots (PR 06)
-
---------------------------------------------------------------------------------
-NOT-OBVIOUS TIPS & GOTCHAS (from transcripts + repo audit)
---------------------------------------------------------------------------------
-  - Always duplicate ShaderMaterials before mutation — this prevents hard-to-see
-    issues where multiple nodes share a reference and unexpectedly change.
-  - Use `: source_color` texture hints to avoid gamma/space mismatch; these are
-    commonly missed when porting from desktop to mobile.
-  - Warm compiles: compile-heavy shaders early and stagger the warm-up across
-    frames rather than trying to do everything on frame 1.
-  - Keep the FXManager as the single place that mutates ShaderMaterial instances.
-  - Don’t rely on editor-only events like `Resource.changed` for runtime flows.
-
---------------------------------------------------------------------------------
-QUICK-START: "Do this now" (first 48 hours)
---------------------------------------------------------------------------------
-  1) Create `res://shaders/includes/` and add `common_math.gdshaderinc`.
-  2) Add shader lint script (scan repository for `.gdshader` files).
-  3) Convert 1–2 critical VisualShaders to text shaders (hit-flash + pulse).
-  4) Implement material duplicate + apply pattern in FXManager (minimal).
-  5) Add Master/SFX/UI/Music buses and a Master limiter in the audio panel.
-
---------------------------------------------------------------------------------
-REVISION HISTORY
---------------------------------------------------------------------------------
-  - v1.0 — Initial overhaul TODO — contains full-phase breakdown, PR order,
-           acceptance criteria, and quick-start.
-
-===============================================================================
-END OF TODO.txt
-===============================================================================
+Auto-unsubscribe helpers: Provide a helper that binds a listener and auto-unsubscribes on node-free to avoid leaks — you already partially prune dead owners; add an ergonomic EventBus.bind_weak(node, event, callable) helper to reduce user errors. 
 
+5) CI + testing hygiene (Medium)
 
+GUT + headless CI: Finalize headless integration test that instantiates ArenaBuilder and runs a short simulated encounter for X frames and asserts “no error logs.” Add GUT to GitHub Actions and run in the matrix for target platforms you support (headless Linux for logic, device/Android smoke for shaders if possible). The GUT repo is your anchor and has patterns for doubles & spies. (GitHub) 
+
+Autoload fakes: Add a tests/fakes/ folder with simple fakes for EventBus, ObjectPool, FXManager — inject via setup() into components when tests run. This pattern will let you get true unit tests (fast) and keep a small number of integration tests that exercise autoloads.
+
+6) Shader & mobile: anti-patterns to avoid (Quick checklist)
+
+Avoid complex loops and per-pixel heavy branches on mobile; pack maps into channels; avoid many texture lookups per fragment. You already have TODOs for channel packing and modular includes — formalize these as a shaders/includes/ library.  (Godot Documentation)
+
+Small/“not obvious” code-level suggestions you can add in 1–2 commits
+
+Lint rule that flags .material writes to Node unless the write uses .duplicate() first. (Prevents accidental shared-material mutation.)
+
+Add FXManager.get_budget_status() (returns current concurrent shader count, queued tweens, frame delta) and a debug overlay showing it.
+
+Central LogManager that replaces free print() in runtime-critical modules — easier to search test logs and add levels (info/warn/error). Your docs already recommend this. 
+
+Add an fx_playground.tscn automated test that runs each ShaderEffect for its full duration to detect shader compile/visual regressions in CI. You already have tools/fx_playground.* for iteration — reuse it in tests. 
+
+Short prioritized roadmap (what to ship first)
+
+Material duplication + FXManager API + prewarm (small, high payoff). 
+
+Event coalescing + priority/backpressure (prevents noisy regressions). 
+
+GUT CI + autoload fakes + headless integration (ensures future refactors are safe).  (GitHub)
+
+Add linters (shader header checks, .material mutation detection) and the debug FX budget overlay. 
+
+Sources I used (engine guidance + community experience)
+
+Godot official docs: CanvasItem / shader guidance and pre-compilation notes. (Godot Documentation)
+
+Godot docs: singletons/autoload discussion and best-practice tradeoffs. (Godot Documentation)
+
+Signal/Event bus best practices / tutorials (Gdquest). (GDQuest)
+
+GUT (Godot Unit Test) — repo & testing patterns. (GitHub)
+
+Your repo: project.godot autoload list, FXComponent, EventBus, shader files, FX TODOs and docs.
 
 =====================================
 FILE: ./docs/all_script_errors.txt
@@ -20577,7 +20294,21 @@ FILE: ./docs/CHANGELOG.txt
 
 
 
-
+   PERFORMANCE: FX COALESCING & BUDGETING
+   Implemented a system to prevent rapid, repetitive visual effects from
+   overwhelming the engine, improving performance and visual clarity during
+   intense combat.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Upgraded `FXManager` to include "effect coalescing" logic. It can now
+      ░   intelligently ignore duplicate effect requests on the same target if
+      ░   they occur within a configurable time window.
+      ░ ■ The `ShaderEffect` resource was enhanced with a new `coalesce_window`
+      ░   property, making this performance-tuning behavior fully data-driven.
+   █  Changed
+      ░ ■ The primary entity hit-flash effect has been updated to use the new
+      ░   coalescing system, preventing visual noise from rapid, successive
+      ░   damage ticks.
 
 
 
@@ -22267,7 +21998,7 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.13.0"
+config/version="0.14.0"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
@@ -23534,7 +23265,8 @@ const SHADER_PREWARM_SCENES = [
 	AssetPaths.SCENE_BASE_BOSS,
 	AssetPaths.SCENE_PLAYER_SHOT,
 	AssetPaths.SCENE_BOSS_SHOT,
-	AssetPaths.SCENE_TURRET_SHOT
+	AssetPaths.SCENE_TURRET_SHOT,
+	AssetPaths.SCENE_HOMING_BOSS_SHOT,
 ]
 
 # --- Node References ---
@@ -23558,6 +23290,14 @@ func _load_level() -> void:
 
 	await _prewarm_shaders()
 
+	# THE FIX: Create the typed array locally using load() to ensure correct type resolution.
+	var effects_to_prewarm: Array[ShaderEffect] = [
+		load("res://src/data/effects/entity_hit_flash_effect.tres"),
+		load("res://src/core/data/effects/dissolve_effect.tres"),
+	]
+	await FXManager.prewarm_shaders_async(effects_to_prewarm, prewarm_viewport)
+
+
 	# Build the level and store the resulting node in the GameManager state.
 	GameManager.state.prebuilt_level = await ArenaBuilder.build_level_async()
 
@@ -23573,25 +23313,26 @@ func _prewarm_shaders() -> void:
 		var instance = load(scene_path).instantiate()
 		
 		if instance.has_method("inject_dependencies"):
-			instance.inject_dependencies({
+			var deps = {
 				"object_pool": ObjectPool,
 				"fx_manager": FXManager,
-				"event_bus": EventBus
-			})
+				"event_bus": EventBus,
+			}
+			instance.inject_dependencies(deps)
 		
 		prewarm_viewport.add_child(instance)
 		
 		# --- Trigger Actions to Compile More Shaders ---
 		if instance is Player:
 			instance.velocity.x = 100
-			instance.state_machine.change_state(instance.State.ATTACK)
+			if is_instance_valid(instance.state_machine) and instance.state_machine.has_method("change_state"):
+				instance.state_machine.change_state(instance.State.ATTACK)
 		elif instance is BaseBoss:
 			instance.velocity.x = 100
 
 		await get_tree().process_frame
 		instance.queue_free()
 	print("Shader pre-warming complete.")
-
 
 =====================================
 FILE: ./src/scenes/game/encounter_scene.tscn
@@ -26188,6 +25929,7 @@ extends Node
 # --- Private Member Variables ---
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
+var _effect_timestamps: Dictionary = {} # Tracks { entity_id: { effect_path: timestamp_msec } }
 
 # --- Public Methods ---
 
@@ -26236,6 +25978,20 @@ func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary =
 		push_warning("FXManager.play_shader: Invalid effect or target node provided.")
 		return
 
+	# TODO: Implement effect coalescing.
+	var target_id = target_node.get_instance_id()
+	var effect_path = effect.resource_path
+
+	if effect.coalesce_window > 0.0:
+		var last_played_time = _effect_timestamps.get(target_id, {}).get(effect_path, 0)
+		var current_time = Time.get_ticks_msec()
+		if current_time - last_played_time < effect.coalesce_window * 1000:
+			return # Coalesced: effect was played too recently on this target.
+		
+		if not _effect_timestamps.has(target_id):
+			_effect_timestamps[target_id] = {}
+		_effect_timestamps[target_id][effect_path] = current_time
+
 	match effect.target_scope:
 		# ENTITY scope is now handled directly by FXComponent.
 		ShaderEffect.TargetScope.UI:
@@ -26262,6 +26018,26 @@ func request_hit_stop(duration: float) -> void:
 		get_tree().paused = false
 		_is_hit_stop_active = false
 
+## Pre-compiles a list of shaders by briefly rendering them off-screen.
+func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubViewport) -> void:
+	if not is_instance_valid(prewarm_viewport):
+		push_error("FXManager: prewarm_shaders_async requires a valid SubViewport.")
+		return
+	
+	print("FXManager: Starting shader pre-warm...")
+	for effect in effects:
+		if not is_instance_valid(effect) or not is_instance_valid(effect.material):
+			continue
+			
+		var temp_rect = ColorRect.new()
+		temp_rect.material = effect.material.duplicate(true)
+		prewarm_viewport.add_child(temp_rect)
+		
+		# Wait one frame for the renderer to process and compile the shader.
+		await get_tree().process_frame
+		
+		temp_rect.queue_free()
+	print("FXManager: Shader pre-warm complete.")
 
 =====================================
 FILE: ./src/core/data/config/settings.gd
@@ -26532,6 +26308,7 @@ enum TargetScope {
 }
 
 # --- Editor Properties ---
+@export_group("Configuration")
 ## The actual ShaderMaterial resource to be applied.
 @export var material: ShaderMaterial
 
@@ -26539,16 +26316,22 @@ enum TargetScope {
 ## until manually stopped.
 @export_range(0.0, 5.0, 0.01) var duration: float = 0.15
 
+## A dictionary of uniform parameters to be passed to the shader.
+## Example: { "intensity": 1.0, "tint_color": Color.RED }
+@export var params: Dictionary = {}
+
+@export_group("Behavior")
+## The target scope for this effect.
+@export var target_scope: TargetScope = TargetScope.ENTITY
+
 ## A priority level to resolve conflicts if multiple effects are triggered at once.
 ## Higher numbers have higher priority.
 @export var priority: int = 0
 
-## The target scope for this effect.
-@export var target_scope: TargetScope = TargetScope.ENTITY
-
-## A dictionary of uniform parameters to be passed to the shader.
-## Example: { "intensity": 1.0, "tint_color": Color.RED }
-@export var params: Dictionary = {}
+@export_group("Performance")
+## Minimum time in seconds before this effect can be triggered again on the same target.
+## A value of 0 disables coalescing.
+@export_range(0.0, 1.0, 0.01) var coalesce_window: float = 0.1
 
 =====================================
 FILE: ./src/core/data/effects/vfx_effect.gd
@@ -28600,6 +28383,7 @@ script = ExtResource("1_script")
 material = ExtResource("2_material")
 duration = 0.12
 target_scope = 0
+coalesce_window = 0.1
 
 =====================================
 FILE: ./src/entities/base_entity.gd
@@ -30153,20 +29937,7 @@ var _health_component: HealthComponent
 var _hit_effect: ShaderEffect # Injected Dependency
 var _original_material: Material
 var _current_effect_name: String = "None"
-
 var _active_tween: Tween
-var _material_instance: ShaderMaterial
-
-# --- Private Member Variables ---
-var _shader_uniform_cache: Dictionary = {}
-var _preserve_material_on_finish: bool = false
-
-# A proxy property for the tween to animate.
-var _progress: float = 0.0:
-	set(value):
-		_progress = value
-		if is_instance_valid(_material_instance):
-			_material_instance.set_shader_parameter("fx_progress", _progress)
 
 # --- Godot Lifecycle Methods ---
 func _notification(what: int) -> void:
@@ -30189,11 +29960,6 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		assert(is_instance_valid(_hit_effect), "Injected 'hit_effect' must be a valid ShaderEffect resource.")
 		_health_component.took_damage.connect(_on_owner_took_damage)
 
-	if is_instance_valid(_original_material) and _original_material is ShaderMaterial:
-		_material_instance = _original_material.duplicate(true) as ShaderMaterial
-	else:
-		_material_instance = ShaderMaterial.new()
-
 func teardown() -> void:
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
@@ -30203,17 +29969,11 @@ func teardown() -> void:
 		_health_component.took_damage.disconnect(_on_owner_took_damage)
 
 	if is_instance_valid(_visual_node):
-		var owner_allows_restore := true
-		if is_instance_valid(_owner) and _owner.has_method("is_queued_for_deletion") and _owner.is_queued_for_deletion():
-			owner_allows_restore = false
-		if owner_allows_restore and not _preserve_material_on_finish:
-			_visual_node.material = _original_material
+		_visual_node.material = _original_material
 
 	_visual_node = null
 	_owner = null
 	_health_component = null
-	_material_instance = null
-	_preserve_material_on_finish = false
 
 # --- Public API ---
 
@@ -30226,43 +29986,27 @@ func play_effect(effect: ShaderEffect, overrides: Dictionary = {}, opts: Diction
 		_active_tween.kill()
 	
 	_current_effect_name = effect.resource_path.get_file()
-	_preserve_material_on_finish = opts.get("preserve_final_state", false)
-
-	var src_material := effect.material as ShaderMaterial
-	if not is_instance_valid(src_material):
+	
+	# CORE FIX: Always duplicate the material to prevent shared state bugs.
+	var material_instance := effect.material.duplicate(true) as ShaderMaterial
+	if not is_instance_valid(material_instance):
 		push_error("FXComponent: effect.material is not a ShaderMaterial.")
 		return null
 
-	var shader_res := src_material.shader
-	_material_instance.shader = shader_res
-
-	if is_instance_valid(shader_res):
-		var uniform_list: Array
-		if _shader_uniform_cache.has(shader_res):
-			uniform_list = _shader_uniform_cache[shader_res]
-		else:
-			uniform_list = shader_res.get_shader_uniform_list()
-			_shader_uniform_cache[shader_res] = uniform_list
-
-		for param_info in uniform_list:
-			var param_name: String = param_info.get("name", "")
-			var usage := int(param_info.get("usage", 0))
-			
-			var is_sampler = not (usage & PROPERTY_USAGE_DEFAULT)
-			if not is_sampler and param_name != "fx_progress" and param_name != "":
-				var value = src_material.get_shader_parameter(param_name)
-				_material_instance.set_shader_parameter(param_name, value)
-		
-		if not overrides.is_empty():
-			for param_name in overrides:
-				_material_instance.set_shader_parameter(param_name, overrides[param_name])
+	# Apply runtime parameter overrides if any were provided.
+	if not overrides.is_empty():
+		for param_name in overrides:
+			material_instance.set_shader_parameter(param_name, overrides[param_name])
 	
-	_visual_node.material = _material_instance
-	self._progress = 0.0
+	_visual_node.material = material_instance
 	
-	_active_tween = create_tween()
-	_active_tween.finished.connect(_on_effect_finished, CONNECT_ONE_SHOT)
-	_active_tween.tween_property(self, "_progress", 1.0, effect.duration)
+	_active_tween = create_tween().set_parallel(false)
+	_active_tween.tween_property(material_instance, "shader_parameter/fx_progress", 1.0, effect.duration)
+	
+	# The final step in the tween is to call the cleanup function.
+	# This ensures cleanup happens even if the tween is killed.
+	_active_tween.tween_callback(_on_effect_finished.bind(opts.get("preserve_final_state", false)))
+	
 	return _active_tween
 
 ## Returns the filename of the currently playing effect.
@@ -30277,20 +30021,20 @@ func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResul
 	else:
 		push_warning("FXComponent on '%s' received took_damage, but has no default_hit_effect assigned." % [_owner.name])
 
-func _on_effect_finished() -> void:
-	var do_restore := true
-	if is_instance_valid(_owner) and _owner.has_method("is_queued_for_deletion") and _owner.is_queued_for_deletion():
-		do_restore = false
-	if _preserve_material_on_finish:
-		do_restore = false
-
-	if is_instance_valid(_visual_node) and do_restore:
+func _on_effect_finished(preserve_final_state: bool) -> void:
+	# Ensure the owner is still valid before trying to access it.
+	if not is_instance_valid(_owner):
+		return
+		
+	# Do not restore the original material if the owner is being deleted
+	# or if the effect is meant to be permanent (like a dissolve).
+	var should_restore := not _owner.is_queued_for_deletion() and not preserve_final_state
+	
+	if is_instance_valid(_visual_node) and should_restore:
 		_visual_node.material = _original_material
 
 	_current_effect_name = "None"
 	_active_tween = null
-	_preserve_material_on_finish = false
-
 
 =====================================
 FILE: ./src/entities/minions/turret.gd

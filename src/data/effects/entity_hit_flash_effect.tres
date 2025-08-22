@@ -8,3 +8,4 @@ script = ExtResource("1_script")
 material = ExtResource("2_material")
 duration = 0.12
 target_scope = 0
+coalesce_window = 0.1

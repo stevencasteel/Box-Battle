@@ -56,9 +56,30 @@
 
 
 
-
-
-
+   FX SYSTEM HARDENING & OPTIMIZATION
+   Completed a major overhaul of the visual effects pipeline to improve
+   robustness, stability, and performance, completing Phases 1 and 2 of the
+   FX & Shader Refactor plan.
+   ────────────────────────────────────────────────────────────────────────
+   █  Architectural Changes
+      ░ ■ Hardened the `FXComponent` to be architecturally sound. It now always
+      ░   creates a unique, duplicated material instance for every effect it
+      ░   plays, programmatically eliminating shared-state visual bugs.
+      ░ ■ Implemented a new shader pre-warming system. The `FXManager` now has a
+      ░   `prewarm_shaders_async` method, which is called by the `LoadingScreen`
+      ░   to compile critical shaders at startup, eliminating first-use stutter.
+      ░ ■ Upgraded `FXManager` to include an "effect coalescing" system. It can
+      ░   now intelligently ignore duplicate effect requests on the same target
+      ░   if they occur within a configurable time window, preventing "event storms."
+      ░ ■ The `ShaderEffect` resource was enhanced with a new `coalesce_window`
+      ░   property, making this performance-tuning behavior fully data-driven.
+   █  Fixed
+      ░ ■ Resolved a critical GDScript type-checking error in `LoadingScreen`
+      ░   that occurred when using `const` arrays with typed resources.
+   █  Changed
+      ░ ■ The primary entity hit-flash effect has been updated to use the new
+      ░   coalescing system, preventing visual noise from rapid, successive hits.
+      
 
    SYSTEMS & NARRATIVE: DIALOGUE SYSTEM FOUNDATION
    Implemented the foundational, data-driven dialogue system, establishing the
