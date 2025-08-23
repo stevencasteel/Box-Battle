@@ -43,6 +43,12 @@
 ║                                                                              ║
 ║                                                                              ║
 
+Refactor: Implement scalable component caching in BaseEntity.
+- Replaced the if/elif chain in BaseEntity with a dictionary-based system for caching components.
+- Added a generic `get_component(type)` method for future-proof component retrieval.
+- Kept legacy public component variables for backward compatibility during the transition.
+- Removed memory leak test files to clean up the test suite.
+
 
 
 

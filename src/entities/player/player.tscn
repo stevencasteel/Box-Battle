@@ -71,5 +71,3 @@ shape = SubResource("RectangleShape2D_playerbody")
 
 [node name="HealingTimer" type="Timer" parent="."]
 one_shot = true
-
-[connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]

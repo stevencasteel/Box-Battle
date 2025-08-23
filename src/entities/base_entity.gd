@@ -8,6 +8,8 @@ extends CharacterBody2D
 @export var archetype: EntityArchetype
 
 # --- Public Member Variables ---
+# TODO: These direct references will be removed after all entities are
+# refactored to use the new get_component() method.
 var health_component: HealthComponent
 var combat_component: CombatComponent
 var input_component: InputComponent
@@ -20,6 +22,8 @@ var fx_component: FXComponent
 # --- Private Member Variables ---
 var _components_initialized: bool = false
 var _injected_dependencies: Dictionary = {}
+# A dictionary to hold all component references, keyed by their script.
+var _components: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
 
@@ -31,6 +35,12 @@ func _ready() -> void:
 
 
 # --- Public Methods ---
+
+
+## Retrieves a component from this entity by its script type.
+## Example: get_component(HealthComponent)
+func get_component(type: Script) -> IComponent:
+	return _components.get(type)
 
 
 ## Called by the entity creator (ArenaBuilder) before the entity enters the scene tree.
@@ -98,10 +108,17 @@ func _build_from_archetype() -> void:
 
 
 func _cache_components_by_type() -> void:
+	_components.clear()
 	for child in get_children():
 		if not child is IComponent:
 			continue
 
+		# Store component in the dictionary using its script as the key.
+		# This is the new, scalable approach.
+		_components[child.get_script()] = child
+
+		# TODO: This section is for backward compatibility and will be removed.
+		# It populates the old direct-reference variables.
 		if child is HealthComponent:
 			health_component = child
 		elif child is CombatComponent:

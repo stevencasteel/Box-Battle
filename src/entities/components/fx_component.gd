@@ -46,7 +46,9 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 			is_instance_valid(_hit_effect),
 			"Injected 'hit_effect' must be a valid ShaderEffect resource."
 		)
-		_health_component.took_damage.connect(_on_owner_took_damage)
+		# Guard against double-connect
+		if not _health_component.took_damage.is_connected(_on_owner_took_damage):
+			_health_component.took_damage.connect(_on_owner_took_damage)
 
 
 func teardown() -> void:
@@ -54,11 +56,9 @@ func teardown() -> void:
 		_active_tween.kill()
 		_active_tween = null
 
-	if (
-		is_instance_valid(_health_component)
-		and _health_component.took_damage.is_connected(_on_owner_took_damage)
-	):
-		_health_component.took_damage.disconnect(_on_owner_took_damage)
+	if is_instance_valid(_health_component):
+		if _health_component.took_damage.is_connected(_on_owner_took_damage):
+			_health_component.took_damage.disconnect(_on_owner_took_damage)
 
 	if is_instance_valid(_visual_node):
 		_visual_node.material = _original_material

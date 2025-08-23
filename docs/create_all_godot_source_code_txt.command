@@ -54,7 +54,10 @@ find . -type f \( \
 -not -path "./addons/*" \
 -not -path "./.git/*" \
 -not -path "./.godot/*" \
--not -path "./$OUTPUT_FILE" \
+-not -path "./docs/all_godot_source_code.txt" \
+-not -path "./docs/all_godot_source_code_no_docs.txt" \
+-not -name "all_godot_source_code.txt" \
+-not -name "all_godot_source_code_no_docs.txt" \
 -not -name "*.uid" \
 -not -name "*.import" \
 -not -name "LICENSE.txt" \
