@@ -14,11 +14,12 @@ const ICON_SOUND_OFF = preload(AssetPaths.ICON_UI_SOUND_OFF)
 
 
 func _ready() -> void:
-	# This component is now self-managing.
-	# It connects to its own signals and the global Settings singleton.
 	if not Engine.is_editor_hint():
+		# This component is now fully self-managing.
 		self.pressed.connect(_on_pressed)
 		Settings.audio_settings_changed.connect(_on_audio_settings_changed)
+		self.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		self.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 		_on_audio_settings_changed() # Sync icon on ready
 
 
@@ -28,6 +29,10 @@ func _exit_tree() -> void:
 			self.pressed.disconnect(_on_pressed)
 		if Settings.audio_settings_changed.is_connected(_on_audio_settings_changed):
 			Settings.audio_settings_changed.disconnect(_on_audio_settings_changed)
+		if self.mouse_entered.is_connected(CursorManager.set_pointer_state.bind(true)):
+			self.mouse_entered.disconnect(CursorManager.set_pointer_state.bind(true))
+		if self.mouse_exited.is_connected(CursorManager.set_pointer_state.bind(false)):
+			self.mouse_exited.disconnect(CursorManager.set_pointer_state.bind(false))
 
 
 # --- Public Methods ---

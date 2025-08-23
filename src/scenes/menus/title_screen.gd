@@ -52,10 +52,6 @@ func _ready() -> void:
 			item.focus_entered.connect(_on_any_item_focused)
 			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		
-		# THE FIX: MuteButton handles its own cursor state now.
-		mute_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-		mute_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 
 		# --- Initialize Menu Manager ---
 		var menu_manager = MenuManagerScript.new()

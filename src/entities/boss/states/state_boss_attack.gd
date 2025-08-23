@@ -58,7 +58,8 @@ func _start_telegraph_and_attack() -> void:
 	)
 	await telegraph.telegraph_finished
 
-	if _boss._is_dead:
+	# THE FIX: Use a robust check to ensure the owner wasn't freed during the await.
+	if not is_instance_valid(_boss):
 		return
 
 	var attack_command: Callable = _current_pattern.logic.execute(_boss, _current_pattern)
