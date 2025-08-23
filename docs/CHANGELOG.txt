@@ -44,7 +44,13 @@
 
 
 
+Fix(UI): Restore hover sound for title screen logos
 
+A previous refactor to componentize the UI inadvertently broke the hover sound effect for the `LogoDisplay` instances (Newgrounds, Godot, Itch.io logos) on the title screen. The responsibility for connecting hover signals was still in `title_screen.gd`, but should have been moved into the component itself.
+
+This commit fixes the issue by making the `LogoDisplay` component fully self-sufficient. It now connects to its own `mouse_entered` and `mouse_exited` signals to play the hover sound and manage the cursor state. The redundant connection logic has been removed from `title_screen.gd`.
+
+This change not only restores the correct behavior but also improves the component's encapsulation, adhering to the project's component-based design principles.
 
 
 ║                                                                              ║

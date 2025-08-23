@@ -27,31 +27,33 @@ func _ready() -> void:
 	exit_button.text = "EXIT"
 
 	if not Engine.is_editor_hint():
-		# --- Connect Signals ---
+		# --- Connect Action Signals ---
 		start_button.pressed.connect(_on_start_button_pressed)
 		options_button.pressed.connect(_on_options_button_pressed)
 		exit_button.pressed.connect(_on_exit_button_pressed)
 		newgrounds_logo.pressed.connect(_on_logo_pressed)
 		godot_logo.pressed.connect(_on_logo_pressed)
 		itch_logo.pressed.connect(_on_logo_pressed)
-		# THE FIX: Mute button pressed signal is no longer connected here.
 
-		# --- Connect All Items to Feedback Handlers ---
-		# THE FIX: MuteButton now handles its own sound, so remove it from this generic list.
-		var generic_items: Array[Control] = [
-			start_button, options_button, newgrounds_logo, godot_logo, itch_logo
+		# --- Connect All Items to Generic Feedback Handlers ---
+		var all_interactive_items: Array[Control] = [
+			start_button,
+			options_button,
+			exit_button,
+			newgrounds_logo,
+			godot_logo,
+			itch_logo,
 		]
-		for item in generic_items:
+		for item in all_interactive_items:
 			item.pressed.connect(_on_any_item_pressed)
+
+		var focusable_items: Array[StyledMenuItem] = [start_button, options_button, exit_button]
+		for item in focusable_items:
+			item.focus_entered.connect(_on_any_item_focused)
 			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-			if item is StyledMenuItem:
-				item.focus_entered.connect(_on_any_item_focused)
-
-		# Connect feedback for the exit button and mute button separately
-		exit_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-		exit_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		exit_button.focus_entered.connect(_on_any_item_focused)
+		
+		# THE FIX: MuteButton handles its own cursor state now.
 		mute_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 		mute_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 
@@ -65,7 +67,6 @@ func _ready() -> void:
 		await get_tree().process_frame
 		start_button.grab_focus()
 
-# --- THE FIX: No longer need _exit_tree, _on_mute_button_pressed, or _on_audio_settings_changed ---
 
 # --- Signal Handlers ---
 

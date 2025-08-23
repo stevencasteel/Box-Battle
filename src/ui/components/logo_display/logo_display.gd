@@ -112,6 +112,9 @@ func _animate_hover(p_is_hovered: bool) -> void:
 func _on_mouse_entered() -> void:
 	is_hovered = true
 	_animate_hover(true)
+	if not Engine.is_editor_hint():
+		CursorManager.set_pointer_state(true)
+		AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 
 
 func _on_mouse_exited() -> void:
@@ -120,3 +123,5 @@ func _on_mouse_exited() -> void:
 		is_pressed = false
 		queue_redraw()
 	_animate_hover(false)
+	if not Engine.is_editor_hint():
+		CursorManager.set_pointer_state(false)
