@@ -40,7 +40,11 @@
 
 
 
+refactor(components): Decouple PlayerAbilityComponent from direct injection.
 
+- Modified `PlayerAbilityComponent` to fetch its `StateMachine` and `InputComponent` dependencies at runtime using `owner.get_component()`.
+- Removed the direct injection of these components from the `Player` entity's `_initialize_and_setup_components` method.
+- This continues the work of enforcing the canonical component access pattern.
 
 
 

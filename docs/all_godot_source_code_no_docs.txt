@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 17:47:04 CDT 2025
+Generated on: Sat Aug 23 18:11:03 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -566,12 +566,23 @@ FILE: ./tools/mock_entity.gd
 class_name MockEntity
 extends Node
 
-@export var fx_component: FXComponent
-@export var state_machine: BaseStateMachine
-@export var health_component: HealthComponent
+# --- Private Member Variables ---
+var fx_component: FXComponent
+var state_machine: BaseStateMachine
+var health_component: HealthComponent
 
 
-# --- Public Methods (Mimicking BaseEntity) ---
+# --- Public Methods ---
+
+## Instantiates and holds component nodes for testing.
+func initialize_components() -> void:
+	health_component = HealthComponent.new()
+	add_child(health_component)
+	fx_component = FXComponent.new()
+	add_child(fx_component)
+	state_machine = BaseStateMachine.new()
+	add_child(state_machine)
+
 
 ## Mimics the real BaseEntity's get_component method for test compatibility.
 func get_component(type: Script) -> IComponent:
@@ -10475,8 +10486,7 @@ func _initialize_and_setup_components() -> void:
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.PlayerStates.FALL},
 		ic: {"state_machine": sm},
-		get_component(PlayerAbilityComponent): {"state_machine": sm, "input_component": ic},
-		get_component(PlayerPhysicsComponent): {"input_component": ic, "health_component": hc},
+		# THE FIX: PlayerAbilityComponent no longer needs direct component injections.
 		get_component(FXComponent): {"visual_node": visual_sprite, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
@@ -10600,7 +10610,6 @@ func _cancel_heal() -> void:
 		return
 	healing_timer.stop()
 
-
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn
 =====================================
@@ -10626,14 +10635,17 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: BaseEntity
 var p_data: PlayerStateData
-var state_machine: BaseStateMachine
-var input_component: InputComponent
 
 # --- Godot Lifecycle Methods ---
 
 
 func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
+		return
+
+	var state_machine: BaseStateMachine = owner_node.get_component(BaseStateMachine)
+	var input_component: InputComponent = owner_node.get_component(InputComponent)
+	if not is_instance_valid(state_machine) or not is_instance_valid(input_component):
 		return
 
 	var current_state_key = state_machine._current_state_key
@@ -10669,17 +10681,12 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
-	self.state_machine = p_dependencies.get("state_machine")
-	self.input_component = p_dependencies.get("input_component")
 
 
 func teardown() -> void:
 	set_physics_process(false)
 	owner_node = null
 	p_data = null
-	state_machine = null
-	input_component = null
-
 
 =====================================
 FILE: ./src/entities/player/components/player_jump_helper.gd
@@ -10766,8 +10773,6 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: Player
 var p_data: PlayerStateData
-var health_component: HealthComponent
-var input_component: InputComponent
 
 # --- Godot Lifecycle Methods ---
 
@@ -10794,22 +10799,18 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
-	self.health_component = p_dependencies.get("health_component")
-	self.input_component = p_dependencies.get("input_component")
-	assert(is_instance_valid(input_component), "PlayerPhysicsComponent requires an InputComponent.")
-	assert(is_instance_valid(health_component), "PlayerPhysicsComponent requires a HealthComponent.")
 
 
 func teardown() -> void:
 	set_physics_process(false)
 	owner_node = null
 	p_data = null
-	health_component = null
-	input_component = null
 
 
 func apply_horizontal_movement() -> void:
-	var move_axis = owner_node.get_component(InputComponent).buffer.get("move_axis", 0.0)
+	var input_component: InputComponent = owner_node.get_component(InputComponent)
+	if not is_instance_valid(input_component): return
+	var move_axis = input_component.buffer.get("move_axis", 0.0)
 	owner_node.velocity.x = move_axis * p_data.config.player_speed
 	if not is_zero_approx(move_axis):
 		p_data.facing_direction = sign(move_axis)
@@ -10822,6 +10823,7 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 ## Checks if the conditions for performing a wall slide are met.
 func can_wall_slide() -> bool:
 	var ic: InputComponent = owner_node.get_component(InputComponent)
+	if not is_instance_valid(ic): return false
 	var move_axis = ic.buffer.get("move_axis", 0.0)
 	return (
 		p_data.wall_coyote_timer > 0
@@ -10843,7 +10845,8 @@ func perform_wall_jump() -> void:
 
 
 func _check_for_contact_damage() -> void:
-	if health_component.is_invincible():
+	var health_component: HealthComponent = owner_node.get_component(HealthComponent)
+	if not is_instance_valid(health_component) or health_component.is_invincible():
 		return
 
 	for i in range(owner_node.get_slide_collision_count()):

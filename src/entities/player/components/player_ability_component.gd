@@ -10,14 +10,17 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: BaseEntity
 var p_data: PlayerStateData
-var state_machine: BaseStateMachine
-var input_component: InputComponent
 
 # --- Godot Lifecycle Methods ---
 
 
 func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
+		return
+
+	var state_machine: BaseStateMachine = owner_node.get_component(BaseStateMachine)
+	var input_component: InputComponent = owner_node.get_component(InputComponent)
+	if not is_instance_valid(state_machine) or not is_instance_valid(input_component):
 		return
 
 	var current_state_key = state_machine._current_state_key
@@ -53,13 +56,9 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
-	self.state_machine = p_dependencies.get("state_machine")
-	self.input_component = p_dependencies.get("input_component")
 
 
 func teardown() -> void:
 	set_physics_process(false)
 	owner_node = null
 	p_data = null
-	state_machine = null
-	input_component = null
