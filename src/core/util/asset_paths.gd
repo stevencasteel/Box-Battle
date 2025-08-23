@@ -43,7 +43,7 @@ const SCENE_CREDITS_SCREEN = "res://src/scenes/menus/credits_screen.tscn"
 const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
 const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
 const SCENE_MUTE_BUTTON = "res://src/ui/components/mute_button/mute_button.tscn"
-const SCENE_CONTROL_SETTING_ROW = "res://src/ui/components/control_setting_row/control_setting_row.tscn" # New Entry
+const SCENE_CONTROL_SETTING_ROW = "res://src/ui/components/control_setting_row/control_setting_row.tscn"  # New Entry
 
 # --- DEV TOOLS ---
 const SCENE_DEBUG_OVERLAY = "res://src/ui/dev/debug_overlay.tscn"

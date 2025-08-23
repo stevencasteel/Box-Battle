@@ -12,9 +12,11 @@ extends "res://src/projectiles/base_projectile.gd"
 var _player_ref: WeakRef
 var _active_tween: Tween
 
+
 func _ready() -> void:
 	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 	visual.color = Palette.COLOR_HAZARD_PRIMARY
+
 
 # Movement override
 func _move(delta: float) -> void:
@@ -44,6 +46,7 @@ func activate(p_services: ServiceLocator) -> void:
 	_active_tween.tween_property(visual, "scale", Vector2.ZERO, lifespan)
 	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, lifespan)
 
+
 func deactivate() -> void:
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
@@ -53,6 +56,7 @@ func deactivate() -> void:
 	collision_shape.scale = Vector2.ONE
 
 	super.deactivate()
+
 
 func _on_lifetime_timer_timeout() -> void:
 	if not _is_active:

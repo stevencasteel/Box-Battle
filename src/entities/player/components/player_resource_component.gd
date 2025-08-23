@@ -17,7 +17,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.p_data = p_dependencies.get("data_resource")
 	self._services = p_dependencies.get("services")
 	assert(
-		is_instance_valid(_services), "PlayerResourceComponent requires a ServiceLocator dependency."
+		is_instance_valid(_services),
+		"PlayerResourceComponent requires a ServiceLocator dependency."
 	)
 
 

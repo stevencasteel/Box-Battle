@@ -154,10 +154,7 @@ func _initialize_and_setup_components() -> void:
 	var hc: HealthComponent = get_component(HealthComponent)
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 
-	var shared_deps := {
-		"data_resource": entity_data,
-		"config": entity_data.config
-	}
+	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
 	var states = {
 		Identifiers.PlayerStates.MOVE: state_move_script.new(self, sm, entity_data),

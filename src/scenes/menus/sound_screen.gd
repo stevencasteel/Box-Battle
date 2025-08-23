@@ -30,7 +30,7 @@ func _ready() -> void:
 
 		# Connect this screen to the Settings singleton to update visuals
 		Settings.audio_settings_changed.connect(_update_ui_from_settings)
-		_update_ui_from_settings() # Set initial state
+		_update_ui_from_settings()  # Set initial state
 
 		back_button.pressed.connect(_on_back_button_pressed)
 

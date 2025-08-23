@@ -20,7 +20,7 @@ func _ready() -> void:
 		Settings.audio_settings_changed.connect(_on_audio_settings_changed)
 		self.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 		self.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		_on_audio_settings_changed() # Sync icon on ready
+		_on_audio_settings_changed()  # Sync icon on ready
 
 
 func _exit_tree() -> void:

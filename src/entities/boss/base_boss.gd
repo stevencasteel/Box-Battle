@@ -87,7 +87,11 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	if is_instance_valid(sm) and sm.current_state == sm.states[Identifiers.BossStates.PATROL] and is_on_wall():
+	if (
+		is_instance_valid(sm)
+		and sm.current_state == sm.states[Identifiers.BossStates.PATROL]
+		and is_on_wall()
+	):
 		entity_data.facing_direction *= -1.0
 
 
@@ -182,9 +186,7 @@ func _initialize_and_setup_components() -> void:
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	var fc: FXComponent = get_component(FXComponent)
 
-	var shared_deps := {
-		"data_resource": entity_data, "config": entity_data.config
-	}
+	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
 	var states = {
 		Identifiers.BossStates.IDLE: state_idle_script.new(self, sm, entity_data),
@@ -236,8 +238,12 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 				current_attack_patterns = phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
 			_services.fx_manager.request_screen_shake(phase_change_shake_effect)
-		_services.fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
-		_services.event_bus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
+		_services.fx_manager.request_hit_stop(
+			entity_data.config.boss_phase_change_hit_stop_duration
+		)
+		_services.event_bus.emit(
+			EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining}
+		)
 
 
 func _on_cooldown_timer_timeout() -> void:

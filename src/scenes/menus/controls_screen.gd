@@ -9,6 +9,7 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 # --- Node References ---
 @onready var back_button: StyledMenuItem = %BackButton
 
+
 # --- Godot Lifecycle Methods ---
 func _ready() -> void:
 	back_button.text = "BACK"
@@ -28,9 +29,11 @@ func _ready() -> void:
 		await get_tree().process_frame
 		back_button.grab_focus()
 
+
 # --- Signal Handlers ---
 func _on_any_item_focused() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
+
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)

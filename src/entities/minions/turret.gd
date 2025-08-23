@@ -120,17 +120,13 @@ func _initialize_and_setup_components() -> void:
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	var fc: FXComponent = get_component(FXComponent)
 
-	var shared_deps := {
-		"data_resource": entity_data, "config": entity_data.config
-	}
+	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
 	var states = {
-		Identifiers.TurretStates.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(
-			self, sm, entity_data
-		),
-		Identifiers.TurretStates.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(
-			self, sm, entity_data
-		)
+		Identifiers.TurretStates.IDLE:
+		load("res://src/entities/minions/states/state_turret_idle.gd").new(self, sm, entity_data),
+		Identifiers.TurretStates.ATTACK:
+		load("res://src/entities/minions/states/state_turret_attack.gd").new(self, sm, entity_data)
 	}
 
 	var per_component_deps := {

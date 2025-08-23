@@ -15,7 +15,7 @@ const CombatUtilsScript = preload("res://src/core/util/combat_utils.gd")
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
-var _services: ServiceLocator # Dependency
+var _services: ServiceLocator  # Dependency
 
 # --- Public Methods ---
 
@@ -70,7 +70,9 @@ func trigger_melee_attack(target_body: Node) -> void:
 		var is_close_range = distance <= p_data.config.player_close_range_threshold
 		damage_info.amount = 5 if is_close_range else 1
 		damage_info.impact_position = target_body.global_position
-		damage_info.impact_normal = (target_body.global_position - owner_node.global_position).normalized()
+		damage_info.impact_normal = (
+			(target_body.global_position - owner_node.global_position).normalized()
+		)
 
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:

@@ -48,7 +48,7 @@ static func try_platform_drop(owner: Player) -> bool:
 		is_instance_valid(floor_collider)
 		and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS)
 	):
-		owner.position.y += 2 # Nudge the player down to clear the platform
+		owner.position.y += 2  # Nudge the player down to clear the platform
 		owner.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.FALL)
 		return true
 

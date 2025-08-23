@@ -25,9 +25,7 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 	var object_pool: ObjectPool = owner._services.object_pool
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
-		var shot: HomingBossShot = object_pool.get_instance(
-			Identifiers.Pools.HOMING_BOSS_SHOTS
-		)
+		var shot: HomingBossShot = object_pool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
 		if not is_instance_valid(shot):
 			continue
 

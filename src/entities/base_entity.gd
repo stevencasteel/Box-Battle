@@ -54,7 +54,7 @@ func setup_components(
 ) -> void:
 	if _components_initialized:
 		return
-		
+
 	# THE FIX: Add the services locator to the shared dependencies for all components.
 	var base_shared_deps = shared_dependencies.duplicate()
 	base_shared_deps["services"] = _services

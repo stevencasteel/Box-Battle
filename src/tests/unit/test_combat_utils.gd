@@ -8,9 +8,8 @@ const HealthComponent = preload("res://src/entities/components/health_component.
 # --- Test Internals ---
 var _root: Node
 var _parent: Node
-var _damageable_child: HealthComponent # This IS the damageable node now
+var _damageable_child: HealthComponent  # This IS the damageable node now
 var _non_damageable_grandchild: Node
-
 
 # --- Test Lifecycle ---
 
@@ -42,9 +41,7 @@ func test_find_damageable_returns_self_if_damageable():
 func test_find_damageable_returns_ancestor_if_child_is_not_damageable():
 	var result = CombatUtils.find_damageable(_non_damageable_grandchild)
 	assert_same(
-		result,
-		_damageable_child,
-		"Should traverse up and find the ancestor HealthComponent."
+		result, _damageable_child, "Should traverse up and find the ancestor HealthComponent."
 	)
 
 

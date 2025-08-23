@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 18:33:50 CDT 2025
+Generated on: Sat Aug 23 18:44:32 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -1566,7 +1566,7 @@ func _ready() -> void:
 		Settings.audio_settings_changed.connect(_on_audio_settings_changed)
 		self.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 		self.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		_on_audio_settings_changed() # Sync icon on ready
+		_on_audio_settings_changed()  # Sync icon on ready
 
 
 func _exit_tree() -> void:
@@ -1604,6 +1604,7 @@ func _on_pressed() -> void:
 
 func _on_audio_settings_changed() -> void:
 	update_icon()
+
 
 =====================================
 FILE: ./src/ui/components/control_setting_row/control_setting_row.tscn
@@ -1663,6 +1664,7 @@ extends HBoxContainer
 		keys_text = value
 		if is_instance_valid(keys_label):
 			keys_label.text = keys_text
+
 
 # --- Godot Lifecycle Methods ---
 func _ready() -> void:
@@ -1997,6 +1999,7 @@ func _on_mute_button_pressed() -> void:
 	is_muted = not is_muted
 	set_mute_state(is_muted)
 	mute_toggled.emit(is_muted)
+
 
 =====================================
 FILE: ./src/ui/components/custom_slider/custom_slider.tscn
@@ -2481,6 +2484,7 @@ func _update_player_input_buffer() -> void:
 			input_text_parts.append("%s: %s" % [key, value])
 
 	input_buffer_label.text = "Input: " + ", ".join(input_text_parts)
+
 
 =====================================
 FILE: ./src/scenes/loading/loading_screen.tscn
@@ -3564,7 +3568,7 @@ func _ready() -> void:
 
 		# Connect this screen to the Settings singleton to update visuals
 		Settings.audio_settings_changed.connect(_update_ui_from_settings)
-		_update_ui_from_settings() # Set initial state
+		_update_ui_from_settings()  # Set initial state
 
 		back_button.pressed.connect(_on_back_button_pressed)
 
@@ -3633,6 +3637,7 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 # --- Node References ---
 @onready var back_button: StyledMenuItem = %BackButton
 
+
 # --- Godot Lifecycle Methods ---
 func _ready() -> void:
 	back_button.text = "BACK"
@@ -3652,13 +3657,16 @@ func _ready() -> void:
 		await get_tree().process_frame
 		back_button.grab_focus()
 
+
 # --- Signal Handlers ---
 func _on_any_item_focused() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 
+
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
+
 
 =====================================
 FILE: ./src/scenes/menus/controls_screen.tscn
@@ -4256,6 +4264,7 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 # --- Public Properties ---
 var combat_config: CombatConfig = COMBAT_CONFIG
 
+
 =====================================
 FILE: ./src/core/util/grid_utils.gd
 =====================================
@@ -4473,6 +4482,7 @@ class TurretStates:
 	const IDLE = &"idle"
 	const ATTACK = &"attack"
 
+
 =====================================
 FILE: ./src/core/util/asset_paths.gd
 =====================================
@@ -4521,7 +4531,7 @@ const SCENE_CREDITS_SCREEN = "res://src/scenes/menus/credits_screen.tscn"
 const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
 const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
 const SCENE_MUTE_BUTTON = "res://src/ui/components/mute_button/mute_button.tscn"
-const SCENE_CONTROL_SETTING_ROW = "res://src/ui/components/control_setting_row/control_setting_row.tscn" # New Entry
+const SCENE_CONTROL_SETTING_ROW = "res://src/ui/components/control_setting_row/control_setting_row.tscn"  # New Entry
 
 # --- DEV TOOLS ---
 const SCENE_DEBUG_OVERLAY = "res://src/ui/dev/debug_overlay.tscn"
@@ -4571,6 +4581,7 @@ func validate_all_paths() -> void:
 
 	if not missing_assets:
 		print("AssetPaths: All paths validated successfully.")
+
 
 =====================================
 FILE: ./src/core/util/constants.gd
@@ -5546,6 +5557,7 @@ func get_debug_stats() -> Dictionary:
 		"active_shaders": _active_shader_effects,
 	}
 
+
 =====================================
 FILE: ./src/core/data/config/settings.gd
 =====================================
@@ -6390,6 +6402,7 @@ func test_action_released_is_buffered_for_one_frame():
 		"attack_released should be false on the frame after it is released."
 	)
 
+
 =====================================
 FILE: ./src/tests/unit/test_player_resource_component.gd
 =====================================
@@ -6701,9 +6714,8 @@ const HealthComponent = preload("res://src/entities/components/health_component.
 # --- Test Internals ---
 var _root: Node
 var _parent: Node
-var _damageable_child: HealthComponent # This IS the damageable node now
+var _damageable_child: HealthComponent  # This IS the damageable node now
 var _non_damageable_grandchild: Node
-
 
 # --- Test Lifecycle ---
 
@@ -6735,9 +6747,7 @@ func test_find_damageable_returns_self_if_damageable():
 func test_find_damageable_returns_ancestor_if_child_is_not_damageable():
 	var result = CombatUtils.find_damageable(_non_damageable_grandchild)
 	assert_same(
-		result,
-		_damageable_child,
-		"Should traverse up and find the ancestor HealthComponent."
+		result, _damageable_child, "Should traverse up and find the ancestor HealthComponent."
 	)
 
 
@@ -6745,6 +6755,7 @@ func test_find_damageable_returns_null_if_no_damageable_ancestor_exists():
 	var standalone_node = autofree(Node2D.new())
 	var result = CombatUtils.find_damageable(standalone_node)
 	assert_null(result, "Should return null when no damageable parent is found.")
+
 
 =====================================
 FILE: ./src/tests/unit/test_level_parser.gd
@@ -6931,6 +6942,7 @@ func test_trigger_pogo_on_projectile_returns_it_to_pool() -> void:
 func _on_pogo_bounce_requested():
 	_pogo_bounce_was_requested = true
 
+
 =====================================
 FILE: ./src/tests/integration/test_integration_combat_loop.gd
 =====================================
@@ -7041,6 +7053,7 @@ func test_player_attack_damages_boss_and_fires_event():
 
 func _on_boss_health_changed(_payload):
 	_boss_health_changed_event_fired = true
+
 
 =====================================
 FILE: ./src/tests/fakes/fake_event_bus.gd
@@ -7569,6 +7582,7 @@ FILE: ./src/projectiles/turret_shot.gd
 class_name TurretShot
 extends "res://src/projectiles/base_projectile.gd"
 
+
 func _ready() -> void:
 	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 	visual.color = Palette.COLOR_UI_ACCENT_PRIMARY
@@ -7583,6 +7597,7 @@ extends "res://src/projectiles/base_projectile.gd"
 
 # Per-projectile tuneable default (Inspector-friendly).
 @export var default_speed: float = 1000.0
+
 
 func _ready() -> void:
 	# Visual only; movement & collision handled by BaseProjectile.
@@ -7617,11 +7632,14 @@ FILE: ./src/projectiles/boss_shot.gd
 class_name BossShot
 extends "res://src/projectiles/base_projectile.gd"
 
+
 func _ready() -> void:
 	visual.color = Palette.COLOR_HAZARD_PRIMARY
 	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 
+
 # --- Overridden Signal Handlers ---
+
 
 func _on_body_entered(_body: Node) -> void:
 	if not _is_active:
@@ -7630,11 +7648,13 @@ func _on_body_entered(_body: Node) -> void:
 	if is_instance_valid(_services):
 		_services.object_pool.return_instance.call_deferred(self)
 
+
 func _on_area_entered(area: Area2D) -> void:
 	if not _is_active:
 		return
 	# Standard collision for player hurtbox, etc.
 	_handle_collision(area)
+
 
 =====================================
 FILE: ./src/projectiles/homing_boss_shot.tscn
@@ -7691,9 +7711,11 @@ extends "res://src/projectiles/base_projectile.gd"
 var _player_ref: WeakRef
 var _active_tween: Tween
 
+
 func _ready() -> void:
 	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 	visual.color = Palette.COLOR_HAZARD_PRIMARY
+
 
 # Movement override
 func _move(delta: float) -> void:
@@ -7723,6 +7745,7 @@ func activate(p_services: ServiceLocator) -> void:
 	_active_tween.tween_property(visual, "scale", Vector2.ZERO, lifespan)
 	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, lifespan)
 
+
 func deactivate() -> void:
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
@@ -7732,6 +7755,7 @@ func deactivate() -> void:
 	collision_shape.scale = Vector2.ONE
 
 	super.deactivate()
+
 
 func _on_lifetime_timer_timeout() -> void:
 	if not _is_active:
@@ -7785,7 +7809,10 @@ func _move(delta: float) -> void:
 
 func activate(p_services: ServiceLocator) -> void:
 	self._services = p_services
-	assert(is_instance_valid(_services), "%s requires a ServiceLocator dependency." % [self.get_class()])
+	assert(
+		is_instance_valid(_services),
+		"%s requires a ServiceLocator dependency." % [self.get_class()]
+	)
 
 	visible = true
 	_is_active = true
@@ -7814,7 +7841,9 @@ func _handle_collision(target: Node) -> void:
 		damage_info.amount = damage
 		damage_info.source_node = self
 		damage_info.impact_position = global_position
-		damage_info.impact_normal = -direction.normalized() if not direction.is_zero_approx() else Vector2.ZERO
+		damage_info.impact_normal = (
+			-direction.normalized() if not direction.is_zero_approx() else Vector2.ZERO
+		)
 		damageable.apply_damage(damage_info)
 
 	if is_instance_valid(_services):
@@ -8146,7 +8175,7 @@ func setup_components(
 ) -> void:
 	if _components_initialized:
 		return
-		
+
 	# THE FIX: Add the services locator to the shared dependencies for all components.
 	var base_shared_deps = shared_dependencies.duplicate()
 	base_shared_deps["services"] = _services
@@ -8195,6 +8224,7 @@ func _cache_components_by_type() -> void:
 			continue
 
 		_components[child.get_script()] = child
+
 
 =====================================
 FILE: ./src/entities/archetypes/player_archetype.tres
@@ -8298,6 +8328,7 @@ func execute(owner: BaseBoss, pattern: AttackPattern) -> Callable:
 	var lunge_params = {"pattern": pattern}
 	var sm: BaseStateMachine = owner.get_component(BaseStateMachine)
 	return sm.change_state.bind(Identifiers.BossStates.LUNGE, lunge_params)
+
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/lunge_attack.tres
@@ -8556,9 +8587,7 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 	var object_pool: ObjectPool = owner._services.object_pool
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
-		var shot: HomingBossShot = object_pool.get_instance(
-			Identifiers.Pools.HOMING_BOSS_SHOTS
-		)
+		var shot: HomingBossShot = object_pool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
 		if not is_instance_valid(shot):
 			continue
 
@@ -8572,6 +8601,7 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 		shot.global_position = owner.global_position
 		# THE FIX: Pass the ServiceLocator from the owner entity.
 		shot.activate(owner._services)
+
 
 =====================================
 FILE: ./src/entities/boss/boss_state_data.gd
@@ -8683,6 +8713,7 @@ func enter(_msg := {}) -> void:
 	var chosen_pattern: AttackPattern = owner.current_attack_patterns.pick_random()
 	state_machine.change_state(Identifiers.BossStates.ATTACK, {"pattern": chosen_pattern})
 
+
 =====================================
 FILE: ./src/entities/boss/states/state_boss_lunge.gd
 =====================================
@@ -8724,6 +8755,7 @@ func process_physics(delta: float) -> void:
 	if _lunge_duration <= 0:
 		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 
+
 =====================================
 FILE: ./src/entities/boss/states/state_boss_cooldown.gd
 =====================================
@@ -8736,6 +8768,7 @@ class_name BossStateCooldown
 func enter(_msg := {}) -> void:
 	owner.velocity.x = 0
 	owner.cooldown_timer.start()
+
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_attack.gd
@@ -8812,6 +8845,7 @@ func _start_telegraph_and_attack() -> void:
 		_boss.cooldown_timer.wait_time = _current_pattern.cooldown
 		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 
+
 =====================================
 FILE: ./src/entities/boss/states/state_boss_patrol.gd
 =====================================
@@ -8827,6 +8861,7 @@ func enter(_msg := {}) -> void:
 
 func process_physics(_delta: float) -> void:
 	owner.velocity.x = state_data.facing_direction * state_data.config.boss_patrol_speed
+
 
 =====================================
 FILE: ./src/entities/boss/base_boss.gd
@@ -8920,7 +8955,11 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	if is_instance_valid(sm) and sm.current_state == sm.states[Identifiers.BossStates.PATROL] and is_on_wall():
+	if (
+		is_instance_valid(sm)
+		and sm.current_state == sm.states[Identifiers.BossStates.PATROL]
+		and is_on_wall()
+	):
 		entity_data.facing_direction *= -1.0
 
 
@@ -9015,9 +9054,7 @@ func _initialize_and_setup_components() -> void:
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	var fc: FXComponent = get_component(FXComponent)
 
-	var shared_deps := {
-		"data_resource": entity_data, "config": entity_data.config
-	}
+	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
 	var states = {
 		Identifiers.BossStates.IDLE: state_idle_script.new(self, sm, entity_data),
@@ -9069,8 +9106,12 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 				current_attack_patterns = phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
 			_services.fx_manager.request_screen_shake(phase_change_shake_effect)
-		_services.fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
-		_services.event_bus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
+		_services.fx_manager.request_hit_stop(
+			entity_data.config.boss_phase_change_hit_stop_duration
+		)
+		_services.event_bus.emit(
+			EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining}
+		)
 
 
 func _on_cooldown_timer_timeout() -> void:
@@ -9094,6 +9135,7 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 
 func _on_health_component_died() -> void:
 	_die()
+
 
 =====================================
 FILE: ./src/entities/README.md
@@ -9357,7 +9399,7 @@ const CombatUtilsScript = preload("res://src/core/util/combat_utils.gd")
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
-var _services: ServiceLocator # Dependency
+var _services: ServiceLocator  # Dependency
 
 # --- Public Methods ---
 
@@ -9412,7 +9454,9 @@ func trigger_melee_attack(target_body: Node) -> void:
 		var is_close_range = distance <= p_data.config.player_close_range_threshold
 		damage_info.amount = 5 if is_close_range else 1
 		damage_info.impact_position = target_body.global_position
-		damage_info.impact_normal = (target_body.global_position - owner_node.global_position).normalized()
+		damage_info.impact_normal = (
+			(target_body.global_position - owner_node.global_position).normalized()
+		)
 
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
@@ -9593,11 +9637,7 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	result.was_damaged = true
 	took_damage.emit(damage_info, result)
 
-	if (
-		result.was_damaged
-		and is_instance_valid(_services)
-		and is_instance_valid(_hit_spark_effect)
-	):
+	if result.was_damaged and is_instance_valid(_services) and is_instance_valid(_hit_spark_effect):
 		_services.fx_manager.play_vfx(
 			_hit_spark_effect, damage_info.impact_position, damage_info.impact_normal
 		)
@@ -9628,6 +9668,7 @@ func _calculate_knockback(source: Node) -> Vector2:
 	if source.is_in_group(Identifiers.Groups.HAZARD):
 		speed = _hazard_knockback_speed
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
+
 
 =====================================
 FILE: ./src/entities/components/base_state_machine.tscn
@@ -9706,6 +9747,7 @@ func teardown() -> void:
 	p_data = null
 	_config = null
 	buffer.clear()
+
 
 =====================================
 FILE: ./src/entities/components/combat_component.tscn
@@ -9921,7 +9963,7 @@ func _on_effect_finished(preserve_final_state: bool) -> void:
 	# Report the effect end to the central manager.
 	if is_instance_valid(_services):
 		_services.fx_manager.decrement_shader_count()
-	
+
 	# Ensure the owner is still valid before trying to access it.
 	if not is_instance_valid(_owner):
 		return
@@ -9935,6 +9977,7 @@ func _on_effect_finished(preserve_final_state: bool) -> void:
 
 	_current_effect_name = "None"
 	_active_tween = null
+
 
 =====================================
 FILE: ./src/entities/minions/turret.gd
@@ -10061,17 +10104,13 @@ func _initialize_and_setup_components() -> void:
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	var fc: FXComponent = get_component(FXComponent)
 
-	var shared_deps := {
-		"data_resource": entity_data, "config": entity_data.config
-	}
+	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
 	var states = {
-		Identifiers.TurretStates.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(
-			self, sm, entity_data
-		),
-		Identifiers.TurretStates.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(
-			self, sm, entity_data
-		)
+		Identifiers.TurretStates.IDLE:
+		load("res://src/entities/minions/states/state_turret_idle.gd").new(self, sm, entity_data),
+		Identifiers.TurretStates.ATTACK:
+		load("res://src/entities/minions/states/state_turret_attack.gd").new(self, sm, entity_data)
 	}
 
 	var per_component_deps := {
@@ -10107,6 +10146,7 @@ func _on_range_detector_body_exited(body: Node) -> void:
 
 func _on_health_component_died() -> void:
 	_die()
+
 
 =====================================
 FILE: ./src/entities/minions/turret_state_data.gd
@@ -10166,6 +10206,7 @@ func process_physics(_delta: float) -> void:
 		_turret._fire_at_player()
 		_turret.attack_timer.start(state_data.config.turret_fire_rate)
 
+
 =====================================
 FILE: ./src/entities/minions/states/state_turret_idle.gd
 =====================================
@@ -10195,6 +10236,7 @@ func process_physics(_delta: float) -> void:
 
 	if state_data.is_player_in_range:
 		state_machine.change_state(Identifiers.TurretStates.ATTACK)
+
 
 =====================================
 FILE: ./src/entities/minions/turret.tscn
@@ -10477,10 +10519,7 @@ func _initialize_and_setup_components() -> void:
 	var hc: HealthComponent = get_component(HealthComponent)
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 
-	var shared_deps := {
-		"data_resource": entity_data,
-		"config": entity_data.config
-	}
+	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
 	var states = {
 		Identifiers.PlayerStates.MOVE: state_move_script.new(self, sm, entity_data),
@@ -10619,6 +10658,7 @@ func _cancel_heal() -> void:
 		return
 	healing_timer.stop()
 
+
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn
 =====================================
@@ -10697,6 +10737,7 @@ func teardown() -> void:
 	owner_node = null
 	p_data = null
 
+
 =====================================
 FILE: ./src/entities/player/components/player_jump_helper.gd
 =====================================
@@ -10750,11 +10791,12 @@ static func try_platform_drop(owner: Player) -> bool:
 		is_instance_valid(floor_collider)
 		and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS)
 	):
-		owner.position.y += 2 # Nudge the player down to clear the platform
+		owner.position.y += 2  # Nudge the player down to clear the platform
 		owner.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.FALL)
 		return true
 
 	return false
+
 
 =====================================
 FILE: ./src/entities/player/components/player_physics_component.tscn
@@ -10818,7 +10860,8 @@ func teardown() -> void:
 
 func apply_horizontal_movement() -> void:
 	var input_component: InputComponent = owner_node.get_component(InputComponent)
-	if not is_instance_valid(input_component): return
+	if not is_instance_valid(input_component):
+		return
 	var move_axis = input_component.buffer.get("move_axis", 0.0)
 	owner_node.velocity.x = move_axis * p_data.config.player_speed
 	if not is_zero_approx(move_axis):
@@ -10832,7 +10875,8 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 ## Checks if the conditions for performing a wall slide are met.
 func can_wall_slide() -> bool:
 	var ic: InputComponent = owner_node.get_component(InputComponent)
-	if not is_instance_valid(ic): return false
+	if not is_instance_valid(ic):
+		return false
 	var move_axis = ic.buffer.get("move_axis", 0.0)
 	return (
 		p_data.wall_coyote_timer > 0
@@ -10890,6 +10934,7 @@ func _check_for_contact_damage() -> void:
 			owner_node.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.HURT)
 		break
 
+
 =====================================
 FILE: ./src/entities/player/components/player_ability_component.tscn
 =====================================
@@ -10922,7 +10967,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.p_data = p_dependencies.get("data_resource")
 	self._services = p_dependencies.get("services")
 	assert(
-		is_instance_valid(_services), "PlayerResourceComponent requires a ServiceLocator dependency."
+		is_instance_valid(_services),
+		"PlayerResourceComponent requires a ServiceLocator dependency."
 	)
 
 
@@ -10958,6 +11004,7 @@ func _emit_healing_charges_changed_event() -> void:
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
 	_services.event_bus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
+
 
 =====================================
 FILE: ./src/entities/player/states/state_jump.gd
@@ -11012,6 +11059,7 @@ func _perform_air_jump() -> void:
 	state_data.air_jumps_left -= 1
 	owner.velocity.y = -state_data.config.player_jump_force
 
+
 =====================================
 FILE: ./src/entities/player/states/state_dash.gd
 =====================================
@@ -11059,6 +11107,7 @@ func _get_dash_direction():
 		return Vector2.DOWN
 	return Vector2(state_data.facing_direction, 0)
 
+
 =====================================
 FILE: ./src/entities/player/states/state_heal.gd
 =====================================
@@ -11084,6 +11133,7 @@ func process_physics(_delta: float):
 		or not owner.is_on_floor()
 	):
 		state_machine.change_state(Identifiers.PlayerStates.MOVE)
+
 
 =====================================
 FILE: ./src/entities/player/states/state_wall_slide.gd
@@ -11133,6 +11183,7 @@ func process_physics(delta: float):
 		state_machine.change_state(Identifiers.PlayerStates.MOVE)
 		return
 
+
 =====================================
 FILE: ./src/entities/player/states/state_attack.gd
 =====================================
@@ -11166,6 +11217,7 @@ func process_physics(delta: float) -> void:
 
 	if state_data.attack_duration_timer <= 0:
 		state_machine.change_state(Identifiers.PlayerStates.FALL)
+
 
 =====================================
 FILE: ./src/entities/player/states/state_pogo.gd
@@ -11202,6 +11254,7 @@ func process_physics(delta: float) -> void:
 	if state_data.attack_duration_timer <= 0:
 		state_machine.change_state(Identifiers.PlayerStates.FALL)
 
+
 =====================================
 FILE: ./src/entities/player/states/state_hurt.gd
 =====================================
@@ -11225,6 +11278,7 @@ func process_physics(delta: float) -> void:
 
 	if state_data.knockback_timer <= 0:
 		state_machine.change_state(Identifiers.PlayerStates.FALL)
+
 
 =====================================
 FILE: ./src/entities/player/states/state_fall.gd
@@ -11265,6 +11319,7 @@ func _apply_gravity(delta: float) -> void:
 	if _input.buffer.get("down"):
 		gravity_multiplier = state_data.config.player_fast_fall_gravity_multiplier
 	_physics.apply_gravity(delta, gravity_multiplier)
+
 
 =====================================
 FILE: ./src/entities/player/states/state_move.gd
@@ -11312,6 +11367,7 @@ func process_physics(delta: float) -> void:
 	if not owner.is_on_floor():
 		state_machine.change_state(Identifiers.PlayerStates.FALL)
 		return
+
 
 =====================================
 FILE: ./src/entities/player/data/player_state_data.gd

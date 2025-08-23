@@ -22,6 +22,7 @@ extends HBoxContainer
 		if is_instance_valid(keys_label):
 			keys_label.text = keys_text
 
+
 # --- Godot Lifecycle Methods ---
 func _ready() -> void:
 	if is_instance_valid(action_label):

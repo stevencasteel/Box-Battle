@@ -47,7 +47,8 @@ func teardown() -> void:
 
 func apply_horizontal_movement() -> void:
 	var input_component: InputComponent = owner_node.get_component(InputComponent)
-	if not is_instance_valid(input_component): return
+	if not is_instance_valid(input_component):
+		return
 	var move_axis = input_component.buffer.get("move_axis", 0.0)
 	owner_node.velocity.x = move_axis * p_data.config.player_speed
 	if not is_zero_approx(move_axis):
@@ -61,7 +62,8 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 ## Checks if the conditions for performing a wall slide are met.
 func can_wall_slide() -> bool:
 	var ic: InputComponent = owner_node.get_component(InputComponent)
-	if not is_instance_valid(ic): return false
+	if not is_instance_valid(ic):
+		return false
 	var move_axis = ic.buffer.get("move_axis", 0.0)
 	return (
 		p_data.wall_coyote_timer > 0

@@ -36,6 +36,14 @@
 ║                                                                              ║
 
 
+style: Format codebase with gdformat and add CI check.
+
+- Installed and ran `gdformat` across the entire `src/` directory to enforce the official Godot style guide.
+- Added a new CI script (`.github/scripts/format_check.sh`) that runs `gdformat --check` to verify that all committed code is correctly formatted.
+- This change establishes an automated standard for code style, improving readability and consistency.
+
+
+
 refactor(core): Standardize ServiceLocator injection in BaseEntity.
 
 - Removed redundant `ServiceLocator` injection from the setup dictionaries in `Player`, `BaseBoss`, and `Turret`.

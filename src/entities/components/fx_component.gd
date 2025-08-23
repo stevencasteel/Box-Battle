@@ -140,7 +140,7 @@ func _on_effect_finished(preserve_final_state: bool) -> void:
 	# Report the effect end to the central manager.
 	if is_instance_valid(_services):
 		_services.fx_manager.decrement_shader_count()
-	
+
 	# Ensure the owner is still valid before trying to access it.
 	if not is_instance_valid(_owner):
 		return

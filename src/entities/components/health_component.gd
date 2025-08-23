@@ -102,11 +102,7 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	result.was_damaged = true
 	took_damage.emit(damage_info, result)
 
-	if (
-		result.was_damaged
-		and is_instance_valid(_services)
-		and is_instance_valid(_hit_spark_effect)
-	):
+	if result.was_damaged and is_instance_valid(_services) and is_instance_valid(_hit_spark_effect):
 		_services.fx_manager.play_vfx(
 			_hit_spark_effect, damage_info.impact_position, damage_info.impact_normal
 		)
