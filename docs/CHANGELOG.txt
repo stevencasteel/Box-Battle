@@ -36,7 +36,11 @@
 ║                                                                              ║
 
 
+refactor(components): Decouple InputComponent from direct injection.
 
+- Removed an unused `state_machine` dependency from `InputComponent`.
+- Updated the `Player` entity's setup method to no longer pass this unnecessary dependency.
+- This change simplifies the `InputComponent` and continues to enforce the project's component decoupling standards.
 
 
 

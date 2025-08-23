@@ -11,7 +11,6 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
-var state_machine: BaseStateMachine
 var _config: CombatConfig  # Internal reference to the injected config
 
 ## A buffer dictionary populated each frame with the current input state.
@@ -50,7 +49,6 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.p_data = p_dependencies.get("data_resource")
-	self.state_machine = p_dependencies.get("state_machine")
 	self._config = p_dependencies.get("config")
 
 	if not p_data or not _config:
@@ -62,6 +60,5 @@ func teardown() -> void:
 	set_physics_process(false)  # Immediately stop processing
 	owner_node = null
 	p_data = null
-	state_machine = null
 	_config = null
 	buffer.clear()
