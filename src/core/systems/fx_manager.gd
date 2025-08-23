@@ -8,7 +8,6 @@ extends Node
 # --- Private Member Variables ---
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
-var _effect_timestamps: Dictionary = {}  # Tracks { entity_id: { effect_path: timestamp_msec } }
 
 var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
@@ -73,42 +72,6 @@ func play_vfx(
 
 	if vfx_instance.has_method("activate"):
 		vfx_instance.call("activate", direction)
-
-
-## The main public API for triggering a shader-based effect.
-func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary = {}) -> void:
-	if not is_instance_valid(effect) or not is_instance_valid(target_node):
-		push_warning("FXManager.play_shader: Invalid effect or target node provided.")
-		return
-
-	var target_id = target_node.get_instance_id()
-	var effect_path = effect.resource_path
-
-	if effect.coalesce_window > 0.0:
-		var last_played_time = _effect_timestamps.get(target_id, {}).get(effect_path, 0)
-		var current_time = Time.get_ticks_msec()
-		if current_time - last_played_time < effect.coalesce_window * 1000:
-			return  # Coalesced: effect was played too recently on this target.
-
-		if not _effect_timestamps.has(target_id):
-			_effect_timestamps[target_id] = {}
-		_effect_timestamps[target_id][effect_path] = current_time
-
-	increment_shader_count()
-	var tween = get_tree().create_tween()
-	tween.tween_interval(effect.duration)
-	tween.finished.connect(decrement_shader_count, CONNECT_ONE_SHOT)
-
-	match effect.target_scope:
-		# ENTITY scope is now handled directly by FXComponent.
-		ShaderEffect.TargetScope.UI:
-			print("FXManager: Playing UI shader on ", target_node.name)
-			# TODO: Implement UIShaderBinding logic
-		ShaderEffect.TargetScope.FULLSCREEN:
-			print("FXManager: Playing FULLSCREEN shader.")
-			# TODO: Implement FullscreenShaderBinding logic
-		_:
-			push_error("FXManager: Unknown ShaderEffect.TargetScope.")
 
 
 ## Pauses the entire game tree for a short duration to add impact to an event.

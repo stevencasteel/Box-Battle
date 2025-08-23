@@ -7,9 +7,6 @@
 class_name ShaderEffect
 extends Resource
 
-## The scope determines where the shader will be applied.
-enum TargetScope { ENTITY, UI, FULLSCREEN }  # Applied to a single entity's visual node.  # Applied to a single UI control.  # Applied to the entire screen.
-
 # --- Editor Properties ---
 @export_group("Configuration")
 ## The actual ShaderMaterial resource to be applied.
@@ -24,9 +21,6 @@ enum TargetScope { ENTITY, UI, FULLSCREEN }  # Applied to a single entity's visu
 @export var params: Dictionary = {}
 
 @export_group("Behavior")
-## The target scope for this effect.
-@export var target_scope: TargetScope = TargetScope.ENTITY
-
 ## A priority level to resolve conflicts if multiple effects are triggered at once.
 ## Higher numbers have higher priority.
 @export var priority: int = 0
