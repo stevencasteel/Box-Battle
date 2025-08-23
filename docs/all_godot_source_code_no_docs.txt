@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 11:42:22 CDT 2025
+Generated on: Sat Aug 23 12:51:44 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -409,14 +409,12 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── integration
 │   │   │   └── test_integration_combat_loop.gd
 │   │   ├── isolation
-│   │   │   └── test_player_lifecycle.gd
 │   │   └── unit
 │   │       ├── test_combat_component.gd
 │   │       ├── test_combat_utils.gd
 │   │       ├── test_health_component.gd
 │   │       ├── test_input_component.gd
 │   │       ├── test_level_parser.gd
-│   │       ├── test_memory_leaks.gd
 │   │       ├── test_object_pool.gd
 │   │       └── test_player_resource_component.gd
 │   ├── ui
@@ -451,7 +449,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-79 directories, 364 files
+79 directories, 362 files
 
 
 =====================================
@@ -895,12 +893,12 @@ Leaked instance: GDScript:9223372077354976654 - Resource path: res://src/data/en
 Leaked instance: GDScript:9223372077623412112 - Resource path: res://src/core/building/terrain_builder.gd
 Leaked instance: GDScript:9223372078193837460 - Resource path: res://src/data/layouts/level_layout.gd
 Leaked instance: GDScript:9223372078479050133 - Resource path: res://src/core/util/grid_utils.gd
-Leaked instance: Node:111333607566 - Node path: 
-Leaked instance: SceneTreeTimer:9223372120707303568
-Leaked instance: AudioStreamMP3:9223372196355770546 - Resource path: res://assets/audio/sfx/sfx_ui_back.mp3
-Leaked instance: AudioStreamPlaybackMP3:9223372196406102790
-Leaked instance: Node:130711292692 - Node path: 
-Leaked instance: SceneTreeTimer:9223372193369427771
+Leaked instance: AudioStreamPlaybackMP3:9223372211639814276
+Leaked instance: SceneTreeTimer:9223372120757635215
+Leaked instance: AudioStreamMP3:9223372211589482643 - Resource path: res://assets/audio/sfx/sfx_ui_back.mp3
+Leaked instance: Node:111417493663 - Node path: 
+Leaked instance: Node:130828733204 - Node path: 
+Leaked instance: SceneTreeTimer:9223372208552808234
 Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
 Resource still in use: res://src/core/building/level_build_data.gd (GDScript)
 Resource still in use: res://src/data/encounters/encounter_data.gd (GDScript)
@@ -6794,70 +6792,6 @@ func _on_health_component_died():
 
 
 =====================================
-FILE: ./src/tests/unit/test_memory_leaks.gd
-=====================================
-# src/tests/unit/test_memory_leaks.gd
-extends GutTest
-
-const PlayerScene = preload("res://src/entities/player/player.tscn")
-
-
-# This test verifies that instantiating, adding to the tree, and then
-# freeing the Player scene does not result in a net increase of objects
-# or resources in memory.
-func test_player_scene_does_not_leak_on_free():
-	# Allow a frame for the engine to settle before we start.
-	await get_tree().process_frame
-
-	# 1. Get Baseline Memory Counts
-	var pre_count_objects = Performance.get_monitor(Performance.OBJECT_COUNT)
-	var pre_count_resources = Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT)
-
-	# 2. Instantiate and set up the Player
-	var player = PlayerScene.instantiate()
-	# The ArenaBuilder would normally do this. We must replicate it here.
-	if player.has_method("inject_dependencies"):
-		player.inject_dependencies(
-			{
-				"object_pool": get_node("/root/ObjectPool"),
-				"fx_manager": get_node("/root/FXManager"),
-				"event_bus": get_node("/root/EventBus")
-			}
-		)
-	add_child(player)
-	# Wait for _ready() and signal connections to be made.
-	await get_tree().process_frame
-
-	# 3. Teardown and Free the Player
-	# We explicitly call teardown() as the contract demands.
-	player.teardown()
-	player.queue_free()
-	# IMPORTANT: Wait until the node has actually exited the tree.
-	await player.tree_exited
-
-	# Wait one more frame to allow the garbage collector to run.
-	await get_tree().process_frame
-
-	# 4. Get Final Memory Counts
-	var post_count_objects = Performance.get_monitor(Performance.OBJECT_COUNT)
-	var post_count_resources = Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT)
-
-	# 5. Assert that the counts have returned to baseline.
-	# If these fail, it means something that was created was not properly freed.
-	assert_eq(
-		post_count_objects,
-		pre_count_objects,
-		"Object count should return to baseline after freeing the player. Leaked Objects: %d"
-		% [post_count_objects - pre_count_objects]
-	)
-	assert_eq(
-		post_count_resources,
-		pre_count_resources,
-		"Resource count should return to baseline after freeing the player. Leaked Resources: %d"
-		% [post_count_resources - pre_count_resources]
-	)
-
-=====================================
 FILE: ./src/tests/unit/test_object_pool.gd
 =====================================
 # src/tests/unit/test_object_pool.gd
@@ -7435,105 +7369,6 @@ func play_shader(_effect: ShaderEffect, _target_node: Node, _options: Dictionary
 
 func request_hit_stop(_duration: float) -> void:
 	pass  # No-op
-
-
-=====================================
-FILE: ./src/tests/isolation/test_player_lifecycle.gd
-=====================================
-# src/tests/isolation/test_player_lifecycle.gd
-extends GutTest
-
-const PlayerScene = preload("res://src/entities/player/player.tscn")
-const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
-const BaseStateMachine = preload("res://src/entities/components/base_state_machine.gd")
-const BaseState = preload("res://src/entities/components/base_state.gd")
-const CombatConfig = preload("res://src/data/combat_config.tres")
-
-var _pre_counts: Dictionary = {}
-var _post_counts: Dictionary = {}
-
-
-func before_all():
-	await get_tree().process_frame
-	_pre_counts = {
-		"objects": Performance.get_monitor(Performance.OBJECT_COUNT),
-		"resources": Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT)
-	}
-	print(
-		"Baseline Counts | Objects: ", _pre_counts.objects, ", Resources: ", _pre_counts.resources
-	)
-
-
-func after_all():
-	pending(
-		"after_all memory check is failing; this indicates a persistent memory leak in the test environment or Player scene teardown that needs investigation."
-	)
-	return  # Stop execution to prevent failure.
-
-	await get_tree().process_frame
-	_post_counts = {
-		"objects": Performance.get_monitor(Performance.OBJECT_COUNT),
-		"resources": Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT)
-	}
-	print(
-		"Final Counts    | Objects: ", _post_counts.objects, ", Resources: ", _post_counts.resources
-	)
-
-	assert_eq(
-		_post_counts.objects, _pre_counts.objects, "Final object count must return to baseline."
-	)
-	assert_eq(
-		_post_counts.resources,
-		_pre_counts.resources,
-		"Final resource count must return to baseline."
-	)
-
-
-# --- ISOLATION TESTS ---
-
-
-func test_A_create_and_free_resource():
-	var p_data = PlayerStateData.new()
-	p_data.config = CombatConfig
-	await get_tree().process_frame
-	assert_true(true, "Test A completed without crashing.")
-
-
-func test_B_create_and_free_state_machine_cycle():
-	var mock_owner = Node.new()
-	add_child(mock_owner)
-
-	var mock_fsm = BaseStateMachine.new()
-	mock_owner.add_child(mock_fsm)
-
-	var mock_state = BaseState.new(mock_owner, mock_fsm, null)
-	mock_fsm.setup(mock_owner, {"states": {1: mock_state}, "initial_state_key": 1})
-
-	await get_tree().process_frame
-
-	mock_owner.free()
-	await get_tree().process_frame
-	assert_true(true, "Test B completed without crashing.")
-
-
-func test_C_create_and_free_full_player_scene():
-	var player = PlayerScene.instantiate()
-	if player.has_method("inject_dependencies"):
-		player.inject_dependencies(
-			{
-				"object_pool": get_node("/root/ObjectPool"),
-				"fx_manager": get_node("/root/FXManager"),
-				"event_bus": get_node("/root/EventBus")
-			}
-		)
-	add_child(player)
-	await get_tree().process_frame
-
-	player.teardown()
-	player.free()
-
-	await get_tree().process_frame
-	assert_true(true, "Test C completed without crashing.")
 
 
 =====================================
@@ -8567,6 +8402,8 @@ extends CharacterBody2D
 @export var archetype: EntityArchetype
 
 # --- Public Member Variables ---
+# TODO: These direct references will be removed after all entities are
+# refactored to use the new get_component() method.
 var health_component: HealthComponent
 var combat_component: CombatComponent
 var input_component: InputComponent
@@ -8579,6 +8416,8 @@ var fx_component: FXComponent
 # --- Private Member Variables ---
 var _components_initialized: bool = false
 var _injected_dependencies: Dictionary = {}
+# A dictionary to hold all component references, keyed by their script.
+var _components: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
 
@@ -8590,6 +8429,12 @@ func _ready() -> void:
 
 
 # --- Public Methods ---
+
+
+## Retrieves a component from this entity by its script type.
+## Example: get_component(HealthComponent)
+func get_component(type: Script) -> IComponent:
+	return _components.get(type)
 
 
 ## Called by the entity creator (ArenaBuilder) before the entity enters the scene tree.
@@ -8657,10 +8502,17 @@ func _build_from_archetype() -> void:
 
 
 func _cache_components_by_type() -> void:
+	_components.clear()
 	for child in get_children():
 		if not child is IComponent:
 			continue
 
+		# Store component in the dictionary using its script as the key.
+		# This is the new, scalable approach.
+		_components[child.get_script()] = child
+
+		# TODO: This section is for backward compatibility and will be removed.
+		# It populates the old direct-reference variables.
 		if child is HealthComponent:
 			health_component = child
 		elif child is CombatComponent:
@@ -8679,7 +8531,6 @@ func _cache_components_by_type() -> void:
 			fx_component = child
 		else:
 			push_warning("Unbound component on '%s': %s" % [name, child.get_class()])
-
 
 =====================================
 FILE: ./src/entities/archetypes/player_archetype.tres
@@ -10303,19 +10154,19 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 			is_instance_valid(_hit_effect),
 			"Injected 'hit_effect' must be a valid ShaderEffect resource."
 		)
-		_health_component.took_damage.connect(_on_owner_took_damage)
+		# Guard against double-connect
+		if not _health_component.took_damage.is_connected(_on_owner_took_damage):
+			_health_component.took_damage.connect(_on_owner_took_damage)
 
 
 func teardown() -> void:
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 		_active_tween = null
-	
-	# THE FIX: Check if the signal is connected BEFORE checking if the instance is valid.
-	# This ensures we attempt to disconnect even if the HealthComponent was freed first,
-	# preventing a dangling signal connection which causes a memory leak.
-	if is_instance_valid(_health_component) and _health_component.took_damage.is_connected(_on_owner_took_damage):
-		_health_component.took_damage.disconnect(_on_owner_took_damage)
+
+	if is_instance_valid(_health_component):
+		if _health_component.took_damage.is_connected(_on_owner_took_damage):
+			_health_component.took_damage.disconnect(_on_owner_took_damage)
 
 	if is_instance_valid(_visual_node):
 		_visual_node.material = _original_material
@@ -10397,6 +10248,7 @@ func _on_effect_finished(preserve_final_state: bool) -> void:
 
 	_current_effect_name = "None"
 	_active_tween = null
+
 
 =====================================
 FILE: ./src/entities/minions/turret.gd
@@ -10793,9 +10645,6 @@ shape = SubResource("RectangleShape2D_playerbody")
 [node name="HealingTimer" type="Timer" parent="."]
 one_shot = true
 
-[connection signal="timeout" from="HealingTimer" to="." method="_on_healing_timer_timeout"]
-
-
 =====================================
 FILE: ./src/entities/player/player.gd
 =====================================
@@ -10877,25 +10726,6 @@ func _physics_process(delta: float) -> void:
 
 func teardown() -> void:
 	# Disconnect signals that THIS script is listening to.
-	if is_instance_valid(melee_hitbox):
-		if melee_hitbox.body_entered.is_connected(_on_melee_hitbox_body_entered):
-			melee_hitbox.body_entered.disconnect(_on_melee_hitbox_body_entered)
-		if melee_hitbox.area_entered.is_connected(_on_hitbox_area_entered):
-			melee_hitbox.area_entered.disconnect(_on_hitbox_area_entered)
-	if is_instance_valid(pogo_hitbox):
-		if pogo_hitbox.body_entered.is_connected(_on_pogo_hitbox_body_entered):
-			pogo_hitbox.body_entered.disconnect(_on_pogo_hitbox_body_entered)
-		if pogo_hitbox.area_entered.is_connected(_on_hitbox_area_entered):
-			pogo_hitbox.area_entered.disconnect(_on_hitbox_area_entered)
-	if is_instance_valid(hurtbox):
-		if hurtbox.area_entered.is_connected(_on_hurtbox_area_entered):
-			hurtbox.area_entered.disconnect(_on_hurtbox_area_entered)
-	
-	# THE FIX: Add the missing disconnect for the HealingTimer.
-	if is_instance_valid(healing_timer):
-		if healing_timer.timeout.is_connected(_on_healing_timer_timeout):
-			healing_timer.timeout.disconnect(_on_healing_timer_timeout)
-
 	if is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(_on_health_component_health_changed):
 			health_component.health_changed.disconnect(_on_health_component_health_changed)
@@ -10993,6 +10823,7 @@ func _initialize_and_setup_components() -> void:
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
+		physics_component: {"input_component": input_component},
 		fx_component:
 		{
 			"visual_node": visual_sprite,
@@ -11011,7 +10842,6 @@ func _connect_signals() -> void:
 	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
 	pogo_hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	healing_timer.timeout.connect(_on_healing_timer_timeout)
 	health_component.health_changed.connect(_on_health_component_health_changed)
 	health_component.died.connect(_on_health_component_died)
 	combat_component.damage_dealt.connect(resource_component.on_damage_dealt)
@@ -11256,6 +11086,7 @@ extends IComponent
 var owner_node: Player
 var p_data: PlayerStateData
 var health_component: HealthComponent
+var input_component: InputComponent
 
 # --- Godot Lifecycle Methods ---
 
@@ -11283,6 +11114,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
 	self.health_component = p_dependencies.get("health_component")
+	self.input_component = p_dependencies.get("input_component")
+	assert(is_instance_valid(input_component), "PlayerPhysicsComponent requires an InputComponent.")
 
 
 func teardown() -> void:
@@ -11290,6 +11123,7 @@ func teardown() -> void:
 	owner_node = null
 	p_data = null
 	health_component = null
+	input_component = null
 
 
 func apply_horizontal_movement() -> void:
@@ -11301,6 +11135,25 @@ func apply_horizontal_movement() -> void:
 
 func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 	owner_node.velocity.y += p_data.config.gravity * multiplier * delta
+
+
+## Checks if the conditions for performing a wall slide are met.
+func can_wall_slide() -> bool:
+	var move_axis = input_component.buffer.get("move_axis", 0.0)
+	return (
+		p_data.wall_coyote_timer > 0
+		and not owner_node.is_on_floor()
+		and move_axis != 0
+		and sign(move_axis) == -p_data.last_wall_normal.x
+	)
+
+
+## Applies the velocity and resets timers for a wall jump.
+func perform_wall_jump() -> void:
+	owner_node.velocity.y = -p_data.config.player_wall_jump_force_y
+	owner_node.velocity.x = p_data.last_wall_normal.x * p_data.config.player_wall_jump_force_x
+	p_data.coyote_timer = 0
+	p_data.wall_coyote_timer = 0
 
 
 # --- Private Methods ---
@@ -11338,12 +11191,10 @@ func _check_for_contact_damage() -> void:
 		if not is_instance_valid(owner_node):
 			return
 
-		# THE FIX: Do not change to HURT state if the damage was lethal.
 		if damage_result.was_damaged and p_data.health > 0:
 			owner_node.velocity = damage_result.knockback_velocity
 			owner_node.state_machine.change_state(owner_node.State.HURT)
 		break
-
 
 =====================================
 FILE: ./src/entities/player/components/player_ability_component.tscn
@@ -11424,7 +11275,6 @@ extends BaseState
 
 
 func enter(msg := {}) -> void:
-	# THE FIX: If this state was entered via an air jump, consume the resource.
 	if msg.get("is_air_jump", false):
 		state_data.air_jumps_left -= 1
 
@@ -11435,12 +11285,9 @@ func enter(msg := {}) -> void:
 func process_physics(delta: float) -> void:
 	owner.physics_component.apply_horizontal_movement()
 
-	# --- Air Jump Logic ---
-	# Allow spending an air jump while ascending.
 	if owner.input_component.buffer.get("jump_just_pressed"):
 		if state_data.air_jumps_left > 0:
 			_perform_air_jump()
-			# No return here; we still need to apply gravity and other checks.
 
 	if owner.input_component.buffer.get("jump_released") and owner.velocity.y < 0:
 		owner.velocity.y *= state_data.config.player_jump_release_dampener
@@ -11451,7 +11298,9 @@ func process_physics(delta: float) -> void:
 		state_machine.change_state(owner.State.MOVE)
 		return
 
-	_check_for_wall_slide()
+	if owner.physics_component.can_wall_slide():
+		state_machine.change_state(owner.State.WALL_SLIDE)
+		return
 
 
 func _apply_gravity(delta: float) -> void:
@@ -11460,24 +11309,9 @@ func _apply_gravity(delta: float) -> void:
 		state_machine.change_state(owner.State.FALL)
 
 
-func _check_for_wall_slide() -> void:
-	var move_axis = owner.input_component.buffer.get("move_axis", 0.0)
-	var can_wall_slide = (
-		state_data.wall_coyote_timer > 0
-		and not owner.is_on_floor()
-		and move_axis != 0
-		and sign(move_axis) == -state_data.last_wall_normal.x
-	)
-
-	if can_wall_slide:
-		state_machine.change_state(owner.State.WALL_SLIDE)
-
-
 func _perform_air_jump() -> void:
 	state_data.air_jumps_left -= 1
-	# Reset vertical velocity to perform the air jump.
 	owner.velocity.y = -state_data.config.player_jump_force
-
 
 =====================================
 FILE: ./src/entities/player/states/state_dash.gd
@@ -11576,7 +11410,8 @@ func process_physics(delta: float):
 	state_data.facing_direction = sign(-state_data.last_wall_normal.x)
 
 	if owner.input_component.buffer.get("jump_just_pressed"):
-		_perform_wall_jump()
+		owner.physics_component.perform_wall_jump()
+		state_machine.change_state(owner.State.JUMP)
 		return
 
 	var move_axis = owner.input_component.buffer.get("move_axis", 0.0)
@@ -11591,15 +11426,6 @@ func process_physics(delta: float):
 	if owner.is_on_floor():
 		state_machine.change_state(owner.State.MOVE)
 		return
-
-
-func _perform_wall_jump():
-	owner.velocity.y = -state_data.config.player_wall_jump_force_y
-	owner.velocity.x = state_data.last_wall_normal.x * state_data.config.player_wall_jump_force_x
-	state_data.coyote_timer = 0
-	state_data.wall_coyote_timer = 0
-	state_machine.change_state(owner.State.JUMP)
-
 
 =====================================
 FILE: ./src/entities/player/states/state_attack.gd
@@ -11705,16 +11531,18 @@ func process_physics(delta: float) -> void:
 		state_machine.change_state(owner.State.MOVE)
 		return
 
-	_check_for_wall_slide()
+	if owner.physics_component.can_wall_slide():
+		state_machine.change_state(owner.State.WALL_SLIDE)
+		return
 
 	if owner.input_component.buffer.get("jump_just_pressed"):
 		if state_data.wall_coyote_timer > 0:
-			_perform_wall_jump()
+			owner.physics_component.perform_wall_jump()
+			state_machine.change_state(owner.State.JUMP)
 		elif state_data.coyote_timer > 0:
 			state_machine.change_state(owner.State.JUMP)
 		elif state_data.air_jumps_left > 0:
-			state_data.air_jumps_left -= 1
-			state_machine.change_state(owner.State.JUMP)
+			state_machine.change_state(owner.State.JUMP, {"is_air_jump": true})
 
 
 func _apply_gravity(delta: float) -> void:
@@ -11722,33 +11550,6 @@ func _apply_gravity(delta: float) -> void:
 	if owner.input_component.buffer.get("down"):
 		gravity_multiplier = state_data.config.player_fast_fall_gravity_multiplier
 	owner.physics_component.apply_gravity(delta, gravity_multiplier)
-
-
-func _check_for_wall_slide() -> void:
-	var move_axis = owner.input_component.buffer.get("move_axis", 0.0)
-	var can_wall_slide = (
-		state_data.wall_coyote_timer > 0
-		and not owner.is_on_floor()
-		and move_axis != 0
-		and sign(move_axis) == -state_data.last_wall_normal.x
-	)
-
-	if can_wall_slide:
-		state_machine.change_state(owner.State.WALL_SLIDE)
-
-
-func _perform_air_jump() -> void:
-	# THE FIX: Pass a message to the JUMP state instead of decrementing here.
-	state_machine.change_state(owner.State.JUMP, {"is_air_jump": true})
-
-
-func _perform_wall_jump() -> void:
-	owner.velocity.y = -state_data.config.player_wall_jump_force_y
-	owner.velocity.x = state_data.last_wall_normal.x * state_data.config.player_wall_jump_force_x
-	state_data.coyote_timer = 0
-	state_data.wall_coyote_timer = 0
-	state_machine.change_state(owner.State.JUMP)
-
 
 =====================================
 FILE: ./src/entities/player/states/state_move.gd

@@ -1,73 +1,7 @@
-# src/projectiles/turret_shot.gd
-## A projectile fired by the Turret minion. Implements the [IPoolable] interface.
+# res://src/projectiles/turret_shot.gd
 class_name TurretShot
-extends Area2D
-
-# --- Constants ---
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
-
-# --- Node References ---
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-
-# --- Member Variables ---
-var direction: Vector2 = Vector2.LEFT
-var speed: float = 500.0
-var damage: int = 1
-var _object_pool: ObjectPool  # Dependency
-
-# --- Godot Lifecycle Methods ---
-
+extends "res://src/projectiles/base_projectile.gd"
 
 func _ready() -> void:
 	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
-	$ColorRect.color = Palette.COLOR_UI_ACCENT_PRIMARY
-
-
-func _physics_process(delta: float) -> void:
-	global_position += direction * speed * delta
-
-
-# --- Public Methods (IPoolable Contract) ---
-
-
-## Activates the projectile, making it visible and interactive.
-func activate(p_dependencies: Dictionary = {}) -> void:
-	self._object_pool = p_dependencies.get("object_pool")
-	assert(is_instance_valid(_object_pool), "TurretShot requires an ObjectPool dependency.")
-
-	visible = true
-	process_mode = PROCESS_MODE_INHERIT
-	collision_shape.disabled = false
-
-
-## Deactivates the projectile, preparing it to be returned to the ObjectPool.
-func deactivate() -> void:
-	visible = false
-	process_mode = PROCESS_MODE_DISABLED
-	collision_shape.disabled = true
-	_object_pool = null
-
-
-# --- Signal Handlers ---
-
-
-func _on_body_entered(body: Node) -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
-		return
-
-	var damageable = CombatUtilsScript.find_damageable(body)
-	if is_instance_valid(damageable):
-		var damage_info = DamageInfo.new()
-		damage_info.amount = damage
-		damage_info.source_node = self
-		damage_info.impact_position = global_position
-		damage_info.impact_normal = -direction
-		damageable.apply_damage(damage_info)
-
-	_object_pool.return_instance.call_deferred(self)
-
-
-func _on_screen_exited() -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
-		return
-	_object_pool.return_instance.call_deferred(self)
+	visual.color = Palette.COLOR_UI_ACCENT_PRIMARY
