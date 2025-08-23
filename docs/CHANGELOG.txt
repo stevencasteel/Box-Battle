@@ -36,6 +36,13 @@
 ║                                                                              ║
 
 
+refactor(core): Standardize ServiceLocator injection in BaseEntity.
+
+- Removed redundant `ServiceLocator` injection from the setup dictionaries in `Player`, `BaseBoss`, and `Turret`.
+- The `BaseEntity`'s `setup_components` method is now the single source of truth for injecting the `ServiceLocator` into all components.
+- This change reduces boilerplate code in entity scripts and enforces a consistent dependency injection pattern.
+
+
 feat(debug): Implement FXManager debug stats and display on overlay.
 
 - Implemented the `get_debug_stats` method in `FXManager` to return the number of active VFX and shader effects.

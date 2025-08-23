@@ -121,7 +121,7 @@ func _initialize_and_setup_components() -> void:
 	var fc: FXComponent = get_component(FXComponent)
 
 	var shared_deps := {
-		"data_resource": entity_data, "config": entity_data.config, "services": _services
+		"data_resource": entity_data, "config": entity_data.config
 	}
 
 	var states = {
