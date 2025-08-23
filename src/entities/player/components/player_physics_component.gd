@@ -12,6 +12,7 @@ extends IComponent
 var owner_node: Player
 var p_data: PlayerStateData
 var health_component: HealthComponent
+var input_component: InputComponent
 
 # --- Godot Lifecycle Methods ---
 
@@ -39,6 +40,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
 	self.health_component = p_dependencies.get("health_component")
+	self.input_component = p_dependencies.get("input_component")
+	assert(is_instance_valid(input_component), "PlayerPhysicsComponent requires an InputComponent.")
 
 
 func teardown() -> void:
@@ -46,6 +49,7 @@ func teardown() -> void:
 	owner_node = null
 	p_data = null
 	health_component = null
+	input_component = null
 
 
 func apply_horizontal_movement() -> void:
@@ -57,6 +61,25 @@ func apply_horizontal_movement() -> void:
 
 func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 	owner_node.velocity.y += p_data.config.gravity * multiplier * delta
+
+
+## Checks if the conditions for performing a wall slide are met.
+func can_wall_slide() -> bool:
+	var move_axis = input_component.buffer.get("move_axis", 0.0)
+	return (
+		p_data.wall_coyote_timer > 0
+		and not owner_node.is_on_floor()
+		and move_axis != 0
+		and sign(move_axis) == -p_data.last_wall_normal.x
+	)
+
+
+## Applies the velocity and resets timers for a wall jump.
+func perform_wall_jump() -> void:
+	owner_node.velocity.y = -p_data.config.player_wall_jump_force_y
+	owner_node.velocity.x = p_data.last_wall_normal.x * p_data.config.player_wall_jump_force_x
+	p_data.coyote_timer = 0
+	p_data.wall_coyote_timer = 0
 
 
 # --- Private Methods ---
@@ -94,7 +117,6 @@ func _check_for_contact_damage() -> void:
 		if not is_instance_valid(owner_node):
 			return
 
-		# THE FIX: Do not change to HURT state if the damage was lethal.
 		if damage_result.was_damaged and p_data.health > 0:
 			owner_node.velocity = damage_result.knockback_velocity
 			owner_node.state_machine.change_state(owner_node.State.HURT)

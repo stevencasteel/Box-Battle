@@ -173,6 +173,7 @@ func _initialize_and_setup_components() -> void:
 		state_machine: {"states": states, "initial_state_key": State.FALL},
 		input_component: {"state_machine": state_machine},
 		ability_component: {"state_machine": state_machine, "input_component": input_component},
+		physics_component: {"input_component": input_component},
 		fx_component:
 		{
 			"visual_node": visual_sprite,

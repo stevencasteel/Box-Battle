@@ -21,7 +21,8 @@ func process_physics(delta: float):
 	state_data.facing_direction = sign(-state_data.last_wall_normal.x)
 
 	if owner.input_component.buffer.get("jump_just_pressed"):
-		_perform_wall_jump()
+		owner.physics_component.perform_wall_jump()
+		state_machine.change_state(owner.State.JUMP)
 		return
 
 	var move_axis = owner.input_component.buffer.get("move_axis", 0.0)
@@ -36,11 +37,3 @@ func process_physics(delta: float):
 	if owner.is_on_floor():
 		state_machine.change_state(owner.State.MOVE)
 		return
-
-
-func _perform_wall_jump():
-	owner.velocity.y = -state_data.config.player_wall_jump_force_y
-	owner.velocity.x = state_data.last_wall_normal.x * state_data.config.player_wall_jump_force_x
-	state_data.coyote_timer = 0
-	state_data.wall_coyote_timer = 0
-	state_machine.change_state(owner.State.JUMP)
