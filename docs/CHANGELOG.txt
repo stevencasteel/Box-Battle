@@ -40,8 +40,28 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
-║                                                                              ║
-║                                                                              ║
+
+
+fix(player): Resolve player healing and resource accrual bugs
+
+The player healing system was non-functional due to a chain of three distinct issues, which have now been resolved.
+
+- A race condition between the jump and heal actions caused the player to jump instead of healing. This was resolved by moving the heal-check logic from the global `PlayerAbilityComponent` into the `state_move` script, ensuring it has priority over the jump action when grounded.
+
+- The `HealingTimer`'s `timeout` signal was not connected, preventing the heal from finalizing. The connection has been added in `player.gd`.
+
+- Melee attacks did not grant determination for heal charges. The melee damage logic was improperly located in `player.gd`. It has been moved to a new `trigger_melee_attack` method in `CombatComponent`, which now correctly emits the `damage_dealt` signal that the `PlayerResourceComponent` listens for. This centralizes all player-initiated damage logic.
+
+
+
+
+ refactor(projectiles): unify into BaseProjectile, restore player shot speed
+- Added BaseProjectile.gd with shared pooling, movement, and collision logic
+- Updated PlayerShot, BossShot, TurretShot, and HomingBossShot to extend it
+- Fixed parent calls to use `super` and removed duplicate code
+- Restored PlayerShot speed (1000) via default_speed set in activate()
+- Cleaned up HomingBossShot (lifetime timer, tween cleanup)      
+
 
 Refactor: Implement scalable component caching in BaseEntity.
 - Replaced the if/elif chain in BaseEntity with a dictionary-based system for caching components.

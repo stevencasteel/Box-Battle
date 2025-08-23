@@ -55,6 +55,34 @@ func fire_shot() -> void:
 	shot.activate({"object_pool": _object_pool})
 
 
+## THE FIX: New method to contain all melee logic.
+## Handles a melee hitbox collision.
+func trigger_melee_attack(target_body: Node) -> void:
+	var target_id = target_body.get_instance_id()
+	if p_data.hit_targets_this_swing.has(target_id):
+		return  # Already hit this target in the current swing.
+
+	p_data.hit_targets_this_swing[target_id] = true
+	var damageable = CombatUtilsScript.find_damageable(target_body)
+	if is_instance_valid(damageable):
+		var damage_info = DamageInfo.new()
+		damage_info.source_node = owner_node
+		var distance = owner_node.global_position.distance_to(target_body.global_position)
+		var is_close_range = distance <= p_data.config.player_close_range_threshold
+		damage_info.amount = 5 if is_close_range else 1
+		damage_info.impact_position = target_body.global_position
+		damage_info.impact_normal = (target_body.global_position - owner_node.global_position).normalized()
+
+		var damage_result = damageable.apply_damage(damage_info)
+		if damage_result.was_damaged:
+			# THE FIX: Emit the standardized signal.
+			damage_dealt.emit()
+			if is_close_range:
+				owner_node.get_injected_dependency("fx_manager").request_hit_stop(
+					p_data.config.player_melee_close_range_hit_stop_duration
+				)
+
+
 ## Attempts to perform a pogo action on a target.
 func trigger_pogo(pogo_target: Node) -> bool:
 	if not p_data.is_pogo_attack:

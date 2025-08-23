@@ -22,20 +22,8 @@ func _physics_process(_delta: float) -> void:
 
 	var current_state_key = state_machine.states.find_key(state_machine.current_state)
 
-	# --- Heal Logic (Highest Priority) ---
-	var can_try_heal = (
-		owner_node.is_on_floor()
-		and input_component.buffer.get("down")
-		and input_component.buffer.get("jump_held")
-		and p_data.healing_charges > 0
-		and is_zero_approx(owner_node.velocity.x)
-	)
-
-	if can_try_heal:
-		state_machine.change_state(Player.State.HEAL)
-		return
-
 	# --- Action State Logic ---
+	# NOTE: Heal logic has been moved to state_move.gd to prevent race conditions.
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
 

@@ -61,6 +61,8 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
+	# We start with 0 charges and 0 determination.
+	entity_data.healing_charges = 0
 	resource_component.on_damage_dealt()
 	entity_data.determination_counter = 0
 
@@ -89,6 +91,10 @@ func teardown() -> void:
 	if is_instance_valid(state_machine):
 		if state_machine.action_requested.is_connected(_on_state_machine_action_requested):
 			state_machine.action_requested.disconnect(_on_state_machine_action_requested)
+
+	if is_instance_valid(healing_timer):
+		if healing_timer.timeout.is_connected(_on_healing_timer_timeout):
+			healing_timer.timeout.disconnect(_on_healing_timer_timeout)
 
 	super.teardown()
 	entity_data = null
@@ -197,6 +203,7 @@ func _connect_signals() -> void:
 	combat_component.damage_dealt.connect(resource_component.on_damage_dealt)
 	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 	state_machine.action_requested.connect(_on_state_machine_action_requested)
+	healing_timer.timeout.connect(_on_healing_timer_timeout)
 
 
 func _update_timers(delta: float) -> void:
@@ -226,26 +233,7 @@ func _on_state_machine_action_requested(command: Callable) -> void:
 
 
 func _on_melee_hitbox_body_entered(body: Node) -> void:
-	var target_id = body.get_instance_id()
-	if entity_data.hit_targets_this_swing.has(target_id):
-		return
-	entity_data.hit_targets_this_swing[target_id] = true
-	var damageable = CombatUtilsScript.find_damageable(body)
-	if is_instance_valid(damageable):
-		var damage_info = DamageInfo.new()
-		damage_info.source_node = self
-		var distance = self.global_position.distance_to(body.global_position)
-		var is_close_range = distance <= entity_data.config.player_close_range_threshold
-		damage_info.amount = 5 if is_close_range else 1
-		damage_info.impact_position = body.global_position
-		damage_info.impact_normal = (body.global_position - global_position).normalized()
-		var damage_result = damageable.apply_damage(damage_info)
-		if damage_result.was_damaged:
-			resource_component.on_damage_dealt()
-			if is_close_range:
-				_fx_manager.request_hit_stop(
-					entity_data.config.player_melee_close_range_hit_stop_duration
-				)
+	combat_component.trigger_melee_attack(body)
 
 
 func _on_pogo_hitbox_body_entered(body: Node) -> void:

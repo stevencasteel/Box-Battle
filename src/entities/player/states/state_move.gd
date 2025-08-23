@@ -15,9 +15,20 @@ func process_physics(delta: float) -> void:
 	owner.physics_component.apply_horizontal_movement()
 
 	if owner.input_component.buffer.get("jump_just_pressed"):
-		# Check for drop-through platform
-		var is_trying_drop = owner.input_component.buffer.get("down", false)
-		if is_trying_drop:
+		var is_holding_down = owner.input_component.buffer.get("down", false)
+
+		# 1. Check for Heal (Highest priority on jump press)
+		var can_try_heal = (
+			is_holding_down
+			and state_data.healing_charges > 0
+			and is_zero_approx(owner.velocity.x)
+		)
+		if can_try_heal:
+			state_machine.change_state(owner.State.HEAL)
+			return
+
+		# 2. Check for Drop-through Platform
+		if is_holding_down:
 			var floor_col = owner.get_last_slide_collision()
 			if floor_col:
 				var floor_collider = floor_col.get_collider()
@@ -29,7 +40,7 @@ func process_physics(delta: float) -> void:
 					state_machine.change_state(owner.State.FALL)
 					return
 
-		# If not dropping, then it's a ground jump
+		# 3. If neither of the above, it's a regular jump
 		state_machine.change_state(owner.State.JUMP)
 		return
 

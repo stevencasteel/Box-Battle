@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 12:51:44 CDT 2025
+Generated on: Sat Aug 23 13:56:07 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -130,7 +130,6 @@ PROJECT DIRECTORY STRUCTURE:
 │       ├── version_conversion.gd
 │       ├── version_numbers.gd
 │       └── warnings_manager.gd
-├── all_script_errors.txt
 ├── default_bus_layout.tres
 ├── docs
 │   ├── ARCHITECTURE.txt
@@ -184,14 +183,12 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── red_hit_flash_test.gdshader
 │   │   └── red_hit_flash_test.gdshader.save
 │   ├── fullscreen
-│   │   └── shockwave.gdshader
 │   ├── includes
 │   │   ├── color.gdshaderinc
 │   │   ├── common_math.gdshaderinc
 │   │   ├── fx_blend.gdshaderinc
 │   │   └── noise.gdshaderinc
 │   └── ui
-│       └── sdf_panel.gdshader
 ├── src
 │   ├── api
 │   │   ├── combat
@@ -362,6 +359,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │           ├── state_pogo.gd
 │   │           └── state_wall_slide.gd
 │   ├── projectiles
+│   │   ├── base_projectile.gd
 │   │   ├── boss_shot.gd
 │   │   ├── boss_shot.tscn
 │   │   ├── homing_boss_shot.gd
@@ -449,7 +447,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-79 directories, 362 files
+79 directories, 360 files
 
 
 =====================================
@@ -652,369 +650,6 @@ shader_parameter/fx_progress = 0.0
 shader_parameter/tint_color = Color(1, 0, 0, 1)
 
 =====================================
-FILE: ./all_script_errors.txt
-=====================================
-WorkerThreadPool: 8 threads, 2 max low-priority.
-Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
-TextServer: Added interface "Dummy"
-TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
-Devices:
-  #0: Apple Apple M1 (Apple7) - Supported, Integrated
-- Metal multiview supported:
-  max view count: 16
-  max instances: 4294967295
-Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
-Using "default" pen tablet driver...
-Shader 'CanvasSdfShaderRD' (group 0) SHA256: 97dc9fb2f592cd02d8b1f8fd33df8aec73849d2fbafcfeaa6e99b9c3678c221d
-Shader 'SkeletonShaderRD' (group 0) SHA256: a7e5115c09793f8e950720a2ab8906bff195e9b508eec01af7aeb363da2bf75b
-Shader 'SortShaderRD' (group 0) SHA256: e184fb752fd6b1f86c536cb9dff20977fee019403e1025080eca44e6bfa11ef1
-Shader 'ParticlesShaderRD' (group 0) SHA256: 9797916f926fab4024422fe6c75cc0d8d517705d90802882fb9efa6dda0af392
-Shader 'ParticlesCopyShaderRD' (group 0) SHA256: 1a312a6797c1ba217655b41d33ce357ac226cba8d65d4daab9278d88c57d6468
-Shader 'CanvasShaderRD' (group 0) SHA256: 908e609e1337d67f8799155a57f03a3de33fcdba22b574595e90da921079b33d
-Shader 'CanvasOcclusionShaderRD' (group 0) SHA256: f9d6c9d569cf2f40595061ee84efd5fe34d68284e1f7273f62a4ac36de8852ee
-Shader 'SceneForwardMobileShaderRD' (group 0) SHA256: 1c5d16b1f4d38d016026900999bd209a9f901f70f04136d9fdd669f9601e2db3
-Shader 'SkyShaderRD' (group 0) SHA256: 34c03a8e46624b5ab7488ca0527d4f733272c048f0dd61258a69b9bf419225bd
-Shader 'BokehDofRasterShaderRD' (group 0) SHA256: a5ed26e5b86fb1a016f61f719fa3ba45119a0bda505dcc038bfd26e718ef956d
-Shader 'BlurRasterShaderRD' (group 0) SHA256: 193d80f293dc88299ae7ef003640f13fa7cab1fd1a57de366b53029265639146
-Shader 'CopyShaderRD' (group 0) SHA256: aaaaf4bfa2e7bd72bdafaa25005b56152e2e738422178c95ce5ed4976f964862
-Shader 'CopyToFbShaderRD' (group 0) SHA256: f113ba1d923f38bcf263af4dbc168573e755be83c1d3616fc49b7588aa9fffa4
-Shader 'CubeToDpShaderRD' (group 0) SHA256: 37d76ea0432d00e86934ff9eab83ce63c9c7feffafd96809773e109c5a078e17
-Shader 'CubemapDownsamplerRasterShaderRD' (group 0) SHA256: 20c48704e5817755c17d80b22e7c39d99270bd1e95c54446d742753abc03db33
-Shader 'CubemapFilterRasterShaderRD' (group 0) SHA256: de06c7a642b6af01caa44a65e94daa5dfafbdda1a6111bdd975c28e8c1fe4c1a
-Shader 'CubemapRoughnessRasterShaderRD' (group 0) SHA256: 3efae0638df891d7ec5aaa17ead03d3243a3fdc9f5920d95e16f92a0aeccfd04
-Shader 'SpecularMergeShaderRD' (group 0) SHA256: 8d06f9bec87ae4177f0a49133608f41313ebad2d0d81a5c074db1541cd396ddc
-Shader 'ShadowFrustumShaderRD' (group 0) SHA256: b73466659c6c1252aff41d1d117370efac3ed69d2ee89bb6e036036557afb5bd
-Shader 'MotionVectorsShaderRD' (group 0) SHA256: 548f1c61370fbba7d8bacec2827d86adc6984d8874d31cb21b7bb5f78e6d4335
-Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e6003b5a0c97bd615d1990a7012076a61e11cb05df558
-Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
-Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
-CoreAudio: detected 2 channels
-CoreAudio: output sampling rate: 44100 Hz
-CoreAudio: output audio buffer frames: 512 calculated latency: 11ms
-
-TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
-CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
-Loading resource: res://default_bus_layout.tres
-CORE API HASH: 4052744068
-EDITOR API HASH: 910296392
-Loading resource: res://src/core/systems/game_manager.gd
-Loading resource: res://src/core/systems/scene_manager.gd
-Loading resource: res://src/core/systems/audio_manager.gd
-Loading resource: res://src/core/systems/fx_manager.gd
-Loading resource: res://src/core/systems/camera_manager.gd
-Loading resource: res://src/core/systems/cursor_manager.gd
-Loading resource: res://assets/sprites/ui/cursors/sprite_cursor_default.png
-Loading resource: res://.godot/imported/sprite_cursor_default.png-0ae11c7582bcce7f2e16760a505c9927.ctex
-Loading resource: res://assets/sprites/ui/cursors/sprite_cursor_pointer.png
-Loading resource: res://.godot/imported/sprite_cursor_pointer.png-6681326a5b7347271de62dd751fb3b83.ctex
-Loading resource: res://src/core/systems/dialogue_manager.gd
-Loading resource: res://src/ui/dialogue/dialogue_box.tscn
-Loading resource: res://src/ui/dialogue/dialogue_box.gd
-Loading resource: res://src/core/building/arena_builder.gd
-Loading resource: res://src/api/global_preloader.gd
-Loading resource: res://src/data/combat_config.tres
-Loading resource: res://src/entities/player/data/forward_attack_shape.tres
-Loading resource: res://src/entities/player/data/upward_attack_shape.tres
-Loading resource: res://src/data/effects/entity_hit_flash_effect.tres
-Loading resource: res://materials/entity_hit_flash_material.tres
-Loading resource: res://shaders/entity/red_hit_flash_test.gdshader
-Loaded system CA certificates
-Loading resource: res://src/scenes/main/main.tscn
-Loading resource: res://src/scenes/main/main.gd
-Loading resource: res://src/projectiles/player_shot.tscn
-Loading resource: res://src/projectiles/player_shot.gd
-Loading resource: res://src/projectiles/boss_shot.tscn
-Loading resource: res://src/projectiles/boss_shot.gd
-Loading resource: res://src/projectiles/turret_shot.tscn
-Loading resource: res://src/projectiles/turret_shot.gd
-Loading resource: res://src/projectiles/homing_boss_shot.tscn
-Loading resource: res://src/projectiles/homing_boss_shot.gd
-Loading resource: res://src/vfx/hit_spark.tscn
-Loading resource: res://src/vfx/hit_spark.gd
-AssetPaths: Validating all asset paths...
-AssetPaths: All paths validated successfully.
-Loading resource: res://assets/audio/music/music_menu_loop.mp3
-Loading resource: res://.godot/imported/music_menu_loop.mp3-a3f890b5159e51d7cc53cdad36cfcd36.mp3str
-Loading resource: res://src/scenes/menus/title_screen.tscn
-Loading resource: res://src/scenes/menus/title_screen.gd
-Loading resource: res://assets/sprites/ui/icons/icon_ui_sound_on.png
-Loading resource: res://.godot/imported/icon_ui_sound_on.png-c97b0b59545c0dc177b96447a16e0a9f.ctex
-Loading resource: res://assets/sprites/ui/icons/icon_ui_sound_off.png
-Loading resource: res://.godot/imported/icon_ui_sound_off.png-3fb3ac644d936ac41f943fdd25d24217.ctex
-Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
-Loading resource: res://src/ui/components/logo_display/logo_display.tscn
-Loading resource: res://assets/sprites/ui/logos/newgrounds_logo.png
-Loading resource: res://.godot/imported/newgrounds_logo.png-2977cde893870d21b7f84cd17b13c225.ctex
-Loading resource: res://assets/sprites/ui/logos/godot_logo.png
-Loading resource: res://.godot/imported/godot_logo.png-2c4abc4be94a9a8ee3cb014f11b6a489.ctex
-Loading resource: res://assets/sprites/ui/logos/itch_logo.png
-Loading resource: res://.godot/imported/itch_logo.png-55a8cdb2f6f34f33f1968a45adf238ea.ctex
-Loading resource: res://assets/fonts/font_main_black.ttf
-Loading resource: res://.godot/imported/font_main_black.ttf-766d9cc0a208469438ff831535d8483c.fontdata
-Loading resource: res://src/ui/components/mute_button/mute_button.tscn
-Loading resource: res://assets/fonts/font_main_bold.ttf
-Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
-Loading resource: res://assets/audio/sfx/sfx_ui_move.mp3
-Loading resource: res://.godot/imported/sfx_ui_move.mp3-22d501a1c652a7c7f2af3e97d97a2b16.mp3str
-Loading resource: res://assets/audio/sfx/sfx_ui_select.mp3
-Loading resource: res://.godot/imported/sfx_ui_select.mp3-3073366784d3e7caa5d5c9691f71648c.mp3str
-Loading resource: res://src/scenes/loading/loading_screen.tscn
-Loading resource: res://src/scenes/loading/loading_screen.gd
-Starting shader pre-warming...
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/entities/archetypes/player_archetype.tres
-Loading resource: res://src/entities/components/health_component.tscn
-Loading resource: res://src/entities/components/combat_component.tscn
-Loading resource: res://src/entities/components/input_component.tscn
-Loading resource: res://src/entities/components/base_state_machine.tscn
-Loading resource: res://src/entities/player/components/player_physics_component.tscn
-Loading resource: res://src/entities/player/components/player_ability_component.tscn
-Loading resource: res://src/entities/player/components/player_resource_component.tscn
-Loading resource: res://src/entities/components/fx_component.tscn
-Loading resource: res://src/core/data/effects/player_damage_shake.tres
-Loading resource: res://src/core/data/effects/player_hit_spark_effect.tres
-Loading resource: res://src/entities/player/states/state_move.gd
-Loading resource: res://src/entities/player/states/state_jump.gd
-Loading resource: res://src/entities/player/states/state_fall.gd
-Loading resource: res://src/entities/player/states/state_dash.gd
-Loading resource: res://src/entities/player/states/state_wall_slide.gd
-Loading resource: res://src/entities/player/states/state_attack.gd
-Loading resource: res://src/entities/player/states/state_hurt.gd
-Loading resource: res://src/entities/player/states/state_heal.gd
-Loading resource: res://src/entities/player/states/state_pogo.gd
-Loading resource: res://src/core/data/effects/dissolve_effect.tres
-Loading resource: res://materials/dissolve_material.tres
-Loading resource: res://shaders/entity/dissolve.gdshader
-Loading resource: res://assets/textures/noise_texture.tres
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/entities/boss/attack_patterns/single_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/single_shot_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/projectile_logic.gd
-Loading resource: res://src/entities/boss/attack_patterns/volley_3_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_shot_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_attack.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_logic.gd
-Loading resource: res://src/entities/boss/attack_patterns/volley_5_shot.tres
-Loading resource: res://src/core/data/effects/boss_phase_change_shake.tres
-Loading resource: res://src/core/data/effects/boss_death_shake.tres
-Loading resource: res://src/entities/archetypes/boss_archetype.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
-Loading resource: res://src/entities/boss/states/state_boss_idle.gd
-Loading resource: res://src/entities/boss/states/state_boss_attack.gd
-Loading resource: res://src/entities/components/telegraph_component.tscn
-Loading resource: res://src/entities/components/telegraph_component.gd
-Loading resource: res://src/entities/boss/states/state_boss_cooldown.gd
-Loading resource: res://src/entities/boss/states/state_boss_patrol.gd
-Loading resource: res://src/entities/boss/states/state_boss_lunge.gd
-Shader pre-warming complete.
-Loading resource: res://src/core/data/effects/dissolve_effect.tres
-Loading resource: res://materials/dissolve_material.tres
-Loading resource: res://shaders/entity/dissolve.gdshader
-Loading resource: res://assets/textures/noise_texture.tres
-FXManager: Starting shader pre-warm...
-FXManager: Shader pre-warm complete.
-Loading resource: res://src/data/encounters/encounter_00.tres
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/entities/boss/attack_patterns/single_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/single_shot_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_3_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_shot_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_attack.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_5_shot.tres
-Loading resource: res://src/core/data/effects/boss_phase_change_shake.tres
-Loading resource: res://src/core/data/effects/boss_death_shake.tres
-Loading resource: res://src/core/data/effects/player_hit_spark_effect.tres
-Loading resource: res://src/entities/archetypes/boss_archetype.tres
-Loading resource: res://src/entities/components/health_component.tscn
-Loading resource: res://src/entities/components/base_state_machine.tscn
-Loading resource: res://src/entities/components/fx_component.tscn
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_logic.tres
-Loading resource: res://src/data/layouts/layout_00.tres
-Loading resource: res://src/entities/minions/turret.tscn
-Loading resource: res://src/entities/minions/turret.gd
-Loading resource: res://src/entities/archetypes/turret_archetype.tres
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/entities/archetypes/player_archetype.tres
-Loading resource: res://src/entities/components/combat_component.tscn
-Loading resource: res://src/entities/components/input_component.tscn
-Loading resource: res://src/entities/player/components/player_physics_component.tscn
-Loading resource: res://src/entities/player/components/player_ability_component.tscn
-Loading resource: res://src/entities/player/components/player_resource_component.tscn
-Loading resource: res://src/core/data/effects/player_damage_shake.tres
-Loading resource: res://src/ui/game_hud/game_hud.tscn
-Loading resource: res://src/ui/game_hud/game_hud.gd
-Loading resource: res://src/scenes/game/encounter_scene.tscn
-Loading resource: res://src/scenes/game/encounter_scene.gd
-Loading resource: res://src/data/dialogue/test_conversation.tres
-Loading resource: res://src/entities/minions/states/state_turret_idle.gd
-Loading resource: res://src/entities/minions/states/state_turret_attack.gd
-Loading resource: res://src/core/systems/camera_shaker.tscn
-Loading resource: res://src/ui/dev/debug_overlay.tscn
-Loading resource: res://src/scenes/victory/victory_screen.tscn
-Loading resource: res://src/scenes/victory/victory_screen.gd
-Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
-Loading resource: res://assets/fonts/font_main_black.ttf
-Loading resource: res://.godot/imported/font_main_black.ttf-766d9cc0a208469438ff831535d8483c.fontdata
-Loading resource: res://assets/fonts/font_main_bold.ttf
-Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
-Loading resource: res://src/scenes/menus/title_screen.tscn
-Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
-Loading resource: res://src/ui/components/logo_display/logo_display.tscn
-Loading resource: res://assets/sprites/ui/logos/newgrounds_logo.png
-Loading resource: res://.godot/imported/newgrounds_logo.png-2977cde893870d21b7f84cd17b13c225.ctex
-Loading resource: res://assets/sprites/ui/logos/godot_logo.png
-Loading resource: res://.godot/imported/godot_logo.png-2c4abc4be94a9a8ee3cb014f11b6a489.ctex
-Loading resource: res://assets/sprites/ui/logos/itch_logo.png
-Loading resource: res://.godot/imported/itch_logo.png-55a8cdb2f6f34f33f1968a45adf238ea.ctex
-Loading resource: res://src/ui/components/mute_button/mute_button.tscn
-Loading resource: res://assets/fonts/font_main_bold.ttf
-Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
-Loading resource: res://assets/audio/sfx/sfx_ui_back.mp3
-Loading resource: res://.godot/imported/sfx_ui_back.mp3-358be61abf136e7b6152e5b6ad330de8.mp3str
-XR: Clearing primary interface
-XR: Removed interface "Native mobile"
-XR: Removed interface "OpenXR"
-Leaked instance: GDScriptNativeClass:9223372044941394312
-Leaked instance: GDScriptNativeClass:9223372045025280397
-Leaked instance: GDScriptNativeClass:9223372049924227761
-Leaked instance: GDScriptNativeClass:9223372051769721631
-Leaked instance: GDScriptNativeClass:9223372052356924226
-Leaked instance: GDScriptNativeClass:9223372052373701443
-Leaked instance: GDScriptNativeClass:9223372052692468566
-Leaked instance: GDScriptNativeClass:9223372054336635832
-Leaked instance: GDScript:9223372077220758924 - Resource path: res://src/core/building/level_build_data.gd
-Leaked instance: GDScript:9223372077321422221 - Resource path: 
-Leaked instance: GDScript:9223372077354976654 - Resource path: res://src/data/encounters/encounter_data.gd
-Leaked instance: GDScript:9223372077623412112 - Resource path: res://src/core/building/terrain_builder.gd
-Leaked instance: GDScript:9223372078193837460 - Resource path: res://src/data/layouts/level_layout.gd
-Leaked instance: GDScript:9223372078479050133 - Resource path: res://src/core/util/grid_utils.gd
-Leaked instance: AudioStreamPlaybackMP3:9223372211639814276
-Leaked instance: SceneTreeTimer:9223372120757635215
-Leaked instance: AudioStreamMP3:9223372211589482643 - Resource path: res://assets/audio/sfx/sfx_ui_back.mp3
-Leaked instance: Node:111417493663 - Node path: 
-Leaked instance: Node:130828733204 - Node path: 
-Leaked instance: SceneTreeTimer:9223372208552808234
-Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
-Resource still in use: res://src/core/building/level_build_data.gd (GDScript)
-Resource still in use: res://src/data/encounters/encounter_data.gd (GDScript)
-Resource still in use: res://src/core/building/terrain_builder.gd (GDScript)
-Resource still in use: res://src/data/layouts/level_layout.gd (GDScript)
-Resource still in use: res://src/core/util/grid_utils.gd (GDScript)
-Resource still in use: res://assets/audio/sfx/sfx_ui_back.mp3 (AudioStreamMP3)
-Orphan StringName: GridUtils (static: 0, total: 1)
-Orphan StringName: _mix (static: 0, total: 1)
-Orphan StringName: _enter_tree (static: 0, total: 2)
-Orphan StringName: GridUtilsScript (static: 0, total: 2)
-Orphan StringName: scene (static: 0, total: 3)
-Orphan StringName: dimensions_tiles (static: 0, total: 4)
-Orphan StringName: _set_path_cache (static: 0, total: 7)
-Orphan StringName: _reset_state (static: 0, total: 7)
-Orphan StringName: @terrain_data_setter (static: 0, total: 3)
-Orphan StringName: _unhandled_input (static: 0, total: 2)
-Orphan StringName: _ready (static: 0, total: 2)
-Orphan StringName: _exit_tree (static: 0, total: 2)
-Orphan StringName: _create_solid_tile (static: 0, total: 4)
-Orphan StringName: SFX (static: 0, total: 2)
-Orphan StringName: _stop (static: 0, total: 1)
-Orphan StringName: Camera2D (static: 1, total: 3)
-Orphan StringName: StaticBody2D (static: 1, total: 2)
-Orphan StringName: _setup_local_to_scene (static: 0, total: 7)
-Orphan StringName: LevelLayout (static: 0, total: 4)
-Orphan StringName: terrain_data (static: 0, total: 4)
-Orphan StringName: level_layout (static: 0, total: 4)
-Orphan StringName: _get_beat_count (static: 0, total: 1)
-Orphan StringName: color (static: 0, total: 4)
-Orphan StringName: world (static: 0, total: 3)
-Orphan StringName: _mix_resampled (static: 0, total: 1)
-Orphan StringName: res://src/data/encounters/encounter_data.gd (static: 0, total: 1)
-Orphan StringName: _create_hazard_tile (static: 0, total: 4)
-Orphan StringName: polygon (static: 0, total: 3)
-Orphan StringName: ColorRect (static: 1, total: 2)
-Orphan StringName: append (static: 0, total: 1)
-Orphan StringName: _get_stream_sampling_rate (static: 0, total: 1)
-Orphan StringName: _get_playback_position (static: 0, total: 1)
-Orphan StringName: minion_spawns (static: 0, total: 7)
-Orphan StringName: _get_stream_name (static: 0, total: 1)
-Orphan StringName: process_frame (static: 1, total: 2)
-Orphan StringName: one_way_collision (static: 0, total: 1)
-Orphan StringName: MinionSpawnData (static: 0, total: 4)
-Orphan StringName: res://src/core/building/level_build_data.gd (static: 0, total: 3)
-Orphan StringName: _get_parameter (static: 0, total: 1)
-Orphan StringName: encounter_data_resource (static: 0, total: 4)
-Orphan StringName: hazard (static: 0, total: 1)
-Orphan StringName: _start (static: 0, total: 1)
-Orphan StringName: _input (static: 0, total: 2)
-Orphan StringName: oneway_platforms (static: 0, total: 5)
-Orphan StringName: res://src/core/util/grid_utils.gd (static: 0, total: 3)
-Orphan StringName: Resource (static: 2, total: 7)
-Orphan StringName: _has_loop (static: 0, total: 1)
-Orphan StringName: RectangleShape2D (static: 1, total: 2)
-Orphan StringName: boss_scene (static: 0, total: 4)
-Orphan StringName: player_spawn_pos (static: 0, total: 4)
-Orphan StringName: has (static: 0, total: 1)
-Orphan StringName: position (static: 0, total: 7)
-Orphan StringName: _is_playing (static: 0, total: 1)
-Orphan StringName: hazard_tiles (static: 0, total: 4)
-Orphan StringName: _get_bar_beats (static: 0, total: 1)
-Orphan StringName: background_tiles (static: 0, total: 4)
-Orphan StringName: @group_6_Minions (static: 0, total: 2)
-Orphan StringName: @group_3_Boss (static: 0, total: 2)
-Orphan StringName: _shortcut_input (static: 0, total: 2)
-Orphan StringName: timeout (static: 2, total: 4)
-Orphan StringName: _init (static: 0, total: 3)
-Orphan StringName: _is_monophonic (static: 0, total: 1)
-Orphan StringName: res://src/core/building/terrain_builder.gd (static: 0, total: 7)
-Orphan StringName: get_scale (static: 0, total: 1)
-Orphan StringName: Polygon2D (static: 1, total: 2)
-Orphan StringName: EncounterData (static: 0, total: 4)
-Orphan StringName: SceneTree (static: 1, total: 3)
-Orphan StringName: _process (static: 0, total: 2)
-Orphan StringName: LevelBuildData (static: 0, total: 5)
-Orphan StringName: _get_bpm (static: 0, total: 1)
-Orphan StringName: CollisionShape2D (static: 1, total: 2)
-Orphan StringName: _create_oneway_platform (static: 0, total: 4)
-Orphan StringName: terrain_tiles (static: 0, total: 4)
-Orphan StringName: _get_parameter_list (static: 0, total: 1)
-Orphan StringName: _instantiate_playback (static: 0, total: 1)
-Orphan StringName: shape (static: 0, total: 3)
-Orphan StringName: _create_background_tile (static: 0, total: 4)
-Orphan StringName: Node (static: 5, total: 18)
-Orphan StringName: boss_spawn_pos (static: 0, total: 4)
-Orphan StringName: _unhandled_key_input (static: 0, total: 2)
-Orphan StringName: player_spawn_marker (static: 0, total: 5)
-Orphan StringName: boss_spawn_marker (static: 0, total: 5)
-Orphan StringName: build_terrain_async (static: 0, total: 3)
-Orphan StringName: LevelBuildData.MinionSpawnData (static: 0, total: 1)
-Orphan StringName: RefCounted (static: 2, total: 5)
-Orphan StringName: grid_to_world (static: 0, total: 3)
-Orphan StringName: _set_parameter (static: 0, total: 1)
-Orphan StringName: _get_configuration_warnings (static: 0, total: 5)
-Orphan StringName: fill_viewport (static: 0, total: 3)
-Orphan StringName: _tag_used_streams (static: 0, total: 1)
-Orphan StringName: @group_0_Layout (static: 0, total: 2)
-Orphan StringName: _seek (static: 0, total: 1)
-Orphan StringName: floor (static: 0, total: 1)
-Orphan StringName: origin (static: 0, total: 1)
-Orphan StringName: PackedScene (static: 1, total: 7)
-Orphan StringName: @implicit_new (static: 0, total: 6)
-Orphan StringName: _get_rid (static: 0, total: 7)
-Orphan StringName: _get_length (static: 0, total: 1)
-Orphan StringName: size (static: 0, total: 4)
-Orphan StringName: TerrainBuilder (static: 0, total: 3)
-Orphan StringName: _get_loop_count (static: 0, total: 1)
-Orphan StringName: _physics_process (static: 0, total: 2)
-Orphan StringName: world_to_grid (static: 0, total: 4)
-Orphan StringName: res://src/data/layouts/level_layout.gd (static: 0, total: 3)
-Orphan StringName: collision_layer (static: 0, total: 3)
-StringName: 105 unclaimed string names at exit.
-
-
-=====================================
 FILE: ./README.md
 =====================================
 # BOX BATTLE
@@ -1195,15 +830,6 @@ func _report_error(file_path: String, line_num: int, message: String) -> void:
 
 
 =====================================
-FILE: ./shaders/ui/sdf_panel.gdshader
-=====================================
-# shaders/ui/sdf_panel.gdshader
-shader_type canvas_item;
-
-# TODO: Implement SDF for rounded corners, borders, and glow.
-
-
-=====================================
 FILE: ./shaders/entity/dissolve.gdshader
 =====================================
 // shaders/entity/dissolve.gdshader
@@ -1252,15 +878,6 @@ void fragment() {
     // Apply the mixed color, preserving the original alpha
     COLOR = vec4(mixed_rgb, original_color.a);
 }
-
-=====================================
-FILE: ./shaders/fullscreen/shockwave.gdshader
-=====================================
-# shaders/fullscreen/shockwave.gdshader
-shader_type canvas_item;
-
-# TODO: Implement shockwave post-processing effect using SCREEN_TEXTURE.
-
 
 =====================================
 FILE: ./project.godot
@@ -7741,250 +7358,76 @@ rect = Rect2(-30, -30, 60, 60)
 =====================================
 FILE: ./src/projectiles/turret_shot.gd
 =====================================
-# src/projectiles/turret_shot.gd
-## A projectile fired by the Turret minion. Implements the [IPoolable] interface.
+# res://src/projectiles/turret_shot.gd
 class_name TurretShot
-extends Area2D
-
-# --- Constants ---
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
-
-# --- Node References ---
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-
-# --- Member Variables ---
-var direction: Vector2 = Vector2.LEFT
-var speed: float = 500.0
-var damage: int = 1
-var _object_pool: ObjectPool  # Dependency
-
-# --- Godot Lifecycle Methods ---
-
+extends "res://src/projectiles/base_projectile.gd"
 
 func _ready() -> void:
 	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
-	$ColorRect.color = Palette.COLOR_UI_ACCENT_PRIMARY
-
-
-func _physics_process(delta: float) -> void:
-	global_position += direction * speed * delta
-
-
-# --- Public Methods (IPoolable Contract) ---
-
-
-## Activates the projectile, making it visible and interactive.
-func activate(p_dependencies: Dictionary = {}) -> void:
-	self._object_pool = p_dependencies.get("object_pool")
-	assert(is_instance_valid(_object_pool), "TurretShot requires an ObjectPool dependency.")
-
-	visible = true
-	process_mode = PROCESS_MODE_INHERIT
-	collision_shape.disabled = false
-
-
-## Deactivates the projectile, preparing it to be returned to the ObjectPool.
-func deactivate() -> void:
-	visible = false
-	process_mode = PROCESS_MODE_DISABLED
-	collision_shape.disabled = true
-	_object_pool = null
-
-
-# --- Signal Handlers ---
-
-
-func _on_body_entered(body: Node) -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
-		return
-
-	var damageable = CombatUtilsScript.find_damageable(body)
-	if is_instance_valid(damageable):
-		var damage_info = DamageInfo.new()
-		damage_info.amount = damage
-		damage_info.source_node = self
-		damage_info.impact_position = global_position
-		damage_info.impact_normal = -direction
-		damageable.apply_damage(damage_info)
-
-	_object_pool.return_instance.call_deferred(self)
-
-
-func _on_screen_exited() -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
-		return
-	_object_pool.return_instance.call_deferred(self)
+	visual.color = Palette.COLOR_UI_ACCENT_PRIMARY
 
 
 =====================================
 FILE: ./src/projectiles/player_shot.gd
 =====================================
-# src/projectiles/player_shot.gd
-## A projectile fired by the player. Implements the [IPoolable] interface.
+# res://src/projectiles/player_shot.gd
 class_name PlayerShot
-extends Area2D
+extends "res://src/projectiles/base_projectile.gd"
 
-# --- Constants ---
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
-
-# --- Node References ---
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-
-# --- Member Variables ---
-var direction: Vector2 = Vector2.RIGHT
-var speed: float = 1000.0
-var damage: int = 2
-var _object_pool: ObjectPool  # Dependency
-
-# --- Godot Lifecycle Methods ---
-
+# Per-projectile tuneable default (Inspector-friendly).
+@export var default_speed: float = 1000.0
 
 func _ready() -> void:
-	$ColorRect.color = Palette.COLOR_PLAYER_PROJECTILE
+	# Visual only; movement & collision handled by BaseProjectile.
+	if is_instance_valid(visual):
+		visual.color = Palette.COLOR_PLAYER_PROJECTILE
 
 
-func _physics_process(delta: float) -> void:
-	global_position += direction * speed * delta
-
-
-# --- Public Methods (IPoolable Contract) ---
-
-
-## Activates the projectile, making it visible and interactive.
+# Ensure the speed is set every time this instance is (re)activated by the pool.
 func activate(p_dependencies: Dictionary = {}) -> void:
-	self._object_pool = p_dependencies.get("object_pool")
-	assert(is_instance_valid(_object_pool), "PlayerShot requires an ObjectPool dependency.")
-
-	visible = true
-	process_mode = PROCESS_MODE_INHERIT
-	collision_shape.disabled = false
-
-
-## Deactivates the projectile, preparing it to be returned to the ObjectPool.
-func deactivate() -> void:
-	visible = false
-	process_mode = PROCESS_MODE_DISABLED
-	collision_shape.disabled = true
-	_object_pool = null  # Clear reference
-
-
-# --- Signal Handlers ---
-
-
-func _on_body_entered(body: Node) -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
-		return
-
-	var damageable = CombatUtilsScript.find_damageable(body)
-	if is_instance_valid(damageable):
-		var damage_info = DamageInfo.new()
-		damage_info.amount = damage
-		damage_info.source_node = self
-		damage_info.impact_position = global_position
-		damage_info.impact_normal = -direction
-		damageable.apply_damage(damage_info)
-
-	_object_pool.return_instance.call_deferred(self)
+	# First let the base class do its activation (set process, collision, pool ref, etc.)
+	super.activate(p_dependencies)
+	# Then apply player-shot-specific runtime defaults so they apply on reuse.
+	speed = default_speed
 
 
 func _on_area_entered(area: Area2D) -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
+	if not _is_active:
 		return
-
+	# Player shots can destroy enemy projectiles on contact.
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
-		_object_pool.return_instance.call_deferred(area)
-	_object_pool.return_instance.call_deferred(self)
+		if is_instance_valid(_object_pool):
+			_object_pool.return_instance.call_deferred(area)
 
-
-func _on_screen_exited() -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
-		return
-	_object_pool.return_instance.call_deferred(self)
+	# Then proceed with the base collision handling (damage + returning this shot to the pool).
+	super._on_area_entered(area)
 
 
 =====================================
 FILE: ./src/projectiles/boss_shot.gd
 =====================================
-# src/projectiles/boss_shot.gd
-## A projectile fired by the boss. Implements the [IPoolable] interface.
+# res://src/projectiles/boss_shot.gd
 class_name BossShot
-extends Area2D
-
-# --- Constants ---
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
-
-# --- Node References ---
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
-
-# --- Member Variables ---
-var direction: Vector2 = Vector2.LEFT
-var speed: float = 400.0
-var damage: int = 1
-var _object_pool: ObjectPool  # Dependency
-
-# --- Godot Lifecycle Methods ---
-
+extends "res://src/projectiles/base_projectile.gd"
 
 func _ready() -> void:
-	$ColorRect.color = Palette.COLOR_HAZARD_PRIMARY
+	visual.color = Palette.COLOR_HAZARD_PRIMARY
 	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 
-
-func _physics_process(delta: float) -> void:
-	global_position += direction * speed * delta
-
-
-# --- Public Methods (IPoolable Contract) ---
-
-
-## Activates the projectile, making it visible and interactive.
-func activate(p_dependencies: Dictionary = {}) -> void:
-	self._object_pool = p_dependencies.get("object_pool")
-	assert(is_instance_valid(_object_pool), "BossShot requires an ObjectPool dependency.")
-
-	visible = true
-	process_mode = PROCESS_MODE_INHERIT
-	collision_shape.disabled = false
-
-
-## Deactivates the projectile, preparing it to be returned to the ObjectPool.
-func deactivate() -> void:
-	visible = false
-	process_mode = PROCESS_MODE_DISABLED
-	collision_shape.disabled = true
-	_object_pool = null
-
-
-# --- Signal Handlers ---
-
+# --- Overridden Signal Handlers ---
 
 func _on_body_entered(_body: Node) -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
+	if not _is_active:
 		return
-	# This handles collision with the solid world.
-	_object_pool.return_instance.call_deferred(self)
-
+	# This projectile is destroyed by solid world geometry.
+	if is_instance_valid(_object_pool):
+		_object_pool.return_instance.call_deferred(self)
 
 func _on_area_entered(area: Area2D) -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
+	if not _is_active:
 		return
-	# This handles collision with the Player's Hurtbox.
-	var damageable = CombatUtilsScript.find_damageable(area)
-	if is_instance_valid(damageable):
-		var damage_info = DamageInfo.new()
-		damage_info.amount = damage
-		damage_info.source_node = self
-		damage_info.impact_position = global_position
-		damage_info.impact_normal = -direction
-		damageable.apply_damage(damage_info)
-
-	_object_pool.return_instance.call_deferred(self)
-
-
-func _on_screen_exited() -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
-		return
-	_object_pool.return_instance.call_deferred(self)
+	# Standard collision for player hurtbox, etc.
+	_handle_collision(area)
 
 
 =====================================
@@ -8028,65 +7471,48 @@ one_shot = true
 =====================================
 FILE: ./src/projectiles/homing_boss_shot.gd
 =====================================
-# src/projectiles/homing_boss_shot.gd
-## A projectile that seeks the player and shrinks over time.
+# homing_boss_shot.gd
 class_name HomingBossShot
-extends Area2D
-
-# --- Constants ---
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
-
-# --- Editor Properties ---
-@export var speed: float = 250.0
-@export var damage: int = 1
-@export var lifespan: float = 10.0
+extends "res://src/projectiles/base_projectile.gd"
 
 # --- Node References ---
-@onready var collision_shape: CollisionShape2D = %CollisionShape2D
-@onready var visual: ColorRect = %ColorRect
-@onready var lifetime_timer: Timer = %LifetimeTimer
+@onready var lifetime_timer: Timer = $LifetimeTimer
+
+# --- Exposed config (avoid depending on external COMBAT_CONFIG)
+@export var lifespan: float = 3.0
 
 # --- Private Member Variables ---
 var _player_ref: WeakRef
 var _active_tween: Tween
-var _object_pool: ObjectPool  # Dependency
-
-# --- Godot Lifecycle Methods ---
-
 
 func _ready() -> void:
 	add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 	visual.color = Palette.COLOR_HAZARD_PRIMARY
 
-
-func _physics_process(delta: float) -> void:
+# Movement override
+func _move(delta: float) -> void:
+	# If no player, fall back to simple linear motion.
 	if not _player_ref or not _player_ref.get_ref():
 		global_position += transform.x * speed * delta
 		return
 
 	var player_node = _player_ref.get_ref()
 	var direction_to_player = (player_node.global_position - global_position).normalized()
-
 	rotation = lerp_angle(rotation, direction_to_player.angle(), 0.05)
-
 	global_position += transform.x * speed * delta
 
-
-# --- IPoolable Contract ---
-
-
+# IPoolable override (call base via super)
 func activate(p_dependencies: Dictionary = {}) -> void:
-	self._object_pool = p_dependencies.get("object_pool")
-	assert(is_instance_valid(_object_pool), "HomingBossShot requires an ObjectPool dependency.")
+	# Call base activate
+	super.activate(p_dependencies)
 
-	visible = true
-	process_mode = PROCESS_MODE_INHERIT
-	collision_shape.disabled = false
-
+	# Find player once
 	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	_player_ref = weakref(player_node)
 
-	lifetime_timer.start(lifespan)
+	# Configure and start lifespan/tween
+	if is_instance_valid(lifetime_timer):
+		lifetime_timer.start(lifespan)
 
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
@@ -8095,55 +7521,127 @@ func activate(p_dependencies: Dictionary = {}) -> void:
 	_active_tween.tween_property(visual, "scale", Vector2.ZERO, lifespan)
 	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, lifespan)
 
-
 func deactivate() -> void:
+	# kill tweens and reset visuals before base deactivation
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 		_active_tween = null
 
-	visible = false
-	process_mode = PROCESS_MODE_DISABLED
-	collision_shape.disabled = true
 	visual.scale = Vector2.ONE
 	collision_shape.scale = Vector2.ONE
+
+	# Call base deactivate
+	super.deactivate()
+
+# Signal: lifetime expired
+func _on_lifetime_timer_timeout() -> void:
+	if not _is_active:
+		return
+	if is_instance_valid(_object_pool):
+		_object_pool.return_instance.call_deferred(self)
+
+
+=====================================
+FILE: ./src/projectiles/base_projectile.gd
+=====================================
+# src/projectiles/base_projectile.gd
+class_name BaseProjectile
+extends Area2D
+
+# --- Constants ---
+const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
+
+# --- Node References ---
+@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var visual: ColorRect = $ColorRect
+
+# --- Public Properties ---
+@export var speed: float = 400.0
+@export var damage: int = 1
+var direction: Vector2 = Vector2.RIGHT
+
+# --- Private Member Variables ---
+var _object_pool: ObjectPool
+var _is_active: bool = false
+
+# --- Godot Lifecycle ---
+
+
+func _physics_process(delta: float) -> void:
+	if not _is_active:
+		return
+	_move(delta)
+
+
+# --- Virtual Hooks ---
+
+
+## Can be overridden by child classes for custom movement (e.g., homing).
+func _move(delta: float) -> void:
+	global_position += direction * speed * delta
+
+
+# --- IPoolable Contract ---
+
+
+func activate(p_dependencies: Dictionary = {}) -> void:
+	self._object_pool = p_dependencies.get("object_pool")
+	assert(is_instance_valid(_object_pool), "%s requires an ObjectPool dependency." % [self.get_class()])
+
+	visible = true
+	_is_active = true
+	process_mode = PROCESS_MODE_INHERIT
+	if is_instance_valid(collision_shape):
+		collision_shape.disabled = false
+
+
+func deactivate() -> void:
+	visible = false
+	_is_active = false
+	process_mode = PROCESS_MODE_DISABLED
+	if is_instance_valid(collision_shape):
+		collision_shape.disabled = true
 	_object_pool = null
+
+
+# --- Centralized Collision & Cleanup ---
+
+
+func _handle_collision(target: Node) -> void:
+	# Find a damageable target using the utility script.
+	var damageable = CombatUtilsScript.find_damageable(target)
+	if is_instance_valid(damageable):
+		var damage_info := DamageInfo.new()
+		damage_info.amount = damage
+		damage_info.source_node = self
+		damage_info.impact_position = global_position
+		damage_info.impact_normal = -direction.normalized() if not direction.is_zero_approx() else Vector2.ZERO
+		damageable.apply_damage(damage_info)
+
+	if is_instance_valid(_object_pool):
+		_object_pool.return_instance.call_deferred(self)
 
 
 # --- Signal Handlers ---
 
 
-func _on_body_entered(_body: Node) -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
+func _on_body_entered(body: Node) -> void:
+	if not _is_active:
 		return
-	_object_pool.return_instance.call_deferred(self)
+	_handle_collision(body)
 
 
 func _on_area_entered(area: Area2D) -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
+	if not _is_active:
 		return
-	var damageable = CombatUtilsScript.find_damageable(area)
-	if is_instance_valid(damageable):
-		var damage_info = DamageInfo.new()
-		damage_info.amount = damage
-		damage_info.source_node = self
-		damage_info.impact_position = global_position
-		damage_info.impact_normal = (global_position - area.global_position).normalized()
-		damageable.apply_damage(damage_info)
-
-	_object_pool.return_instance.call_deferred(self)
+	_handle_collision(area)
 
 
 func _on_screen_exited() -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
+	if not _is_active:
 		return
-	_object_pool.return_instance.call_deferred(self)
-
-
-func _on_lifetime_timer_timeout() -> void:
-	if process_mode == PROCESS_MODE_DISABLED:
-		return
-	_object_pool.return_instance.call_deferred(self)
-
+	if is_instance_valid(_object_pool):
+		_object_pool.return_instance.call_deferred(self)
 
 =====================================
 FILE: ./src/data/dialogue/dialogue_line.gd
@@ -10962,6 +10460,7 @@ func _cancel_heal() -> void:
 	if healing_timer.is_stopped():
 		return
 	healing_timer.stop()
+
 
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn
