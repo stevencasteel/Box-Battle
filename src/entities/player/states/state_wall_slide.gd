@@ -27,18 +27,18 @@ func process_physics(delta: float):
 
 	if _input.buffer.get("jump_just_pressed"):
 		_physics.perform_wall_jump()
-		state_machine.change_state(owner.State.JUMP)
+		state_machine.change_state(Identifiers.PlayerStates.JUMP)
 		return
 
 	var move_axis = _input.buffer.get("move_axis", 0.0)
 	if move_axis * -state_data.last_wall_normal.x < 0.8:
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 		return
 
 	if state_data.wall_coyote_timer <= 0:
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 		return
 
 	if owner.is_on_floor():
-		state_machine.change_state(owner.State.MOVE)
+		state_machine.change_state(Identifiers.PlayerStates.MOVE)
 		return

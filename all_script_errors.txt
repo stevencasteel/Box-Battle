@@ -201,6 +201,29 @@ Loading resource: res://src/entities/minions/states/state_turret_idle.gd
 Loading resource: res://src/entities/minions/states/state_turret_attack.gd
 Loading resource: res://src/core/systems/camera_shaker.tscn
 Loading resource: res://src/ui/dev/debug_overlay.tscn
+Executing Homing Omni Burst!
+Executing Homing Omni Burst!
+Loading resource: res://src/scenes/victory/victory_screen.tscn
+Loading resource: res://src/scenes/victory/victory_screen.gd
+Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
+Loading resource: res://assets/fonts/font_main_black.ttf
+Loading resource: res://.godot/imported/font_main_black.ttf-766d9cc0a208469438ff831535d8483c.fontdata
+Loading resource: res://assets/fonts/font_main_bold.ttf
+Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
+Loading resource: res://src/scenes/menus/title_screen.tscn
+Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
+Loading resource: res://src/ui/components/logo_display/logo_display.tscn
+Loading resource: res://assets/sprites/ui/logos/newgrounds_logo.png
+Loading resource: res://.godot/imported/newgrounds_logo.png-2977cde893870d21b7f84cd17b13c225.ctex
+Loading resource: res://assets/sprites/ui/logos/godot_logo.png
+Loading resource: res://.godot/imported/godot_logo.png-2c4abc4be94a9a8ee3cb014f11b6a489.ctex
+Loading resource: res://assets/sprites/ui/logos/itch_logo.png
+Loading resource: res://.godot/imported/itch_logo.png-55a8cdb2f6f34f33f1968a45adf238ea.ctex
+Loading resource: res://src/ui/components/mute_button/mute_button.tscn
+Loading resource: res://assets/fonts/font_main_bold.ttf
+Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
+Loading resource: res://assets/audio/sfx/sfx_ui_back.mp3
+Loading resource: res://.godot/imported/sfx_ui_back.mp3-358be61abf136e7b6152e5b6ad330de8.mp3str
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
 XR: Removed interface "OpenXR"
@@ -212,69 +235,91 @@ Leaked instance: GDScriptNativeClass:9223372052356924226
 Leaked instance: GDScriptNativeClass:9223372052373701443
 Leaked instance: GDScriptNativeClass:9223372052692468566
 Leaked instance: GDScriptNativeClass:9223372054336635832
-Leaked instance: GDScript:9223372077220758924 - Resource path: res://src/core/building/level_build_data.gd
-Leaked instance: GDScript:9223372077321422221 - Resource path: 
-Leaked instance: GDScript:9223372077354976654 - Resource path: res://src/data/encounters/encounter_data.gd
-Leaked instance: GDScript:9223372077623412112 - Resource path: res://src/core/building/terrain_builder.gd
-Leaked instance: GDScript:9223372078193837460 - Resource path: res://src/data/layouts/level_layout.gd
-Leaked instance: GDScript:9223372078479050133 - Resource path: res://src/core/util/grid_utils.gd
-Leaked instance: SceneTreeTimer:9223372112805234813
-Leaked instance: Node:112709339305 - Node path: 
-Leaked instance: Node:132590340875 - Node path: 
+Leaked instance: GDScript:9223372077271090575 - Resource path: res://src/core/building/level_build_data.gd
+Leaked instance: GDScript:9223372077371753872 - Resource path: 
+Leaked instance: GDScript:9223372077405308305 - Resource path: res://src/data/encounters/encounter_data.gd
+Leaked instance: GDScript:9223372077673743763 - Resource path: res://src/core/building/terrain_builder.gd
+Leaked instance: GDScript:9223372078244169111 - Resource path: res://src/data/layouts/level_layout.gd
+Leaked instance: GDScript:9223372078529381784 - Resource path: res://src/core/util/grid_utils.gd
+Leaked instance: AudioStreamPlaybackMP3:9223372250529400948
+Leaked instance: AudioStreamMP3:9223372250479069304 - Resource path: res://assets/audio/sfx/sfx_ui_back.mp3
+Leaked instance: SceneTreeTimer:9223372112905898113
+Leaked instance: AudioStreamMP3:9223372112620685442 - Resource path: res://assets/audio/sfx/sfx_ui_move.mp3
+Leaked instance: Node:118413592732 - Node path: 
+Leaked instance: AudioStreamPlaybackMP3:9223372250294519999
+Leaked instance: AudioStreamPlaybackMP3:9223372250344851668
+Leaked instance: Node:138646915854 - Node path: 
+Leaked instance: SceneTreeTimer:9223372247442395020
 Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
 Resource still in use: res://src/core/building/level_build_data.gd (GDScript)
 Resource still in use: res://src/data/encounters/encounter_data.gd (GDScript)
 Resource still in use: res://src/core/building/terrain_builder.gd (GDScript)
 Resource still in use: res://src/data/layouts/level_layout.gd (GDScript)
 Resource still in use: res://src/core/util/grid_utils.gd (GDScript)
+Resource still in use: res://assets/audio/sfx/sfx_ui_move.mp3 (AudioStreamMP3)
+Resource still in use: res://assets/audio/sfx/sfx_ui_back.mp3 (AudioStreamMP3)
 Orphan StringName: GridUtils (static: 0, total: 1)
+Orphan StringName: _mix (static: 0, total: 3)
 Orphan StringName: _enter_tree (static: 0, total: 2)
 Orphan StringName: GridUtilsScript (static: 0, total: 2)
 Orphan StringName: scene (static: 0, total: 3)
 Orphan StringName: dimensions_tiles (static: 0, total: 4)
-Orphan StringName: _set_path_cache (static: 0, total: 6)
-Orphan StringName: _reset_state (static: 0, total: 6)
+Orphan StringName: _set_path_cache (static: 0, total: 8)
+Orphan StringName: _reset_state (static: 0, total: 8)
 Orphan StringName: @terrain_data_setter (static: 0, total: 3)
 Orphan StringName: _unhandled_input (static: 0, total: 2)
 Orphan StringName: _ready (static: 0, total: 2)
 Orphan StringName: _exit_tree (static: 0, total: 2)
 Orphan StringName: _create_solid_tile (static: 0, total: 4)
+Orphan StringName: SFX (static: 0, total: 6)
+Orphan StringName: _stop (static: 0, total: 3)
 Orphan StringName: Camera2D (static: 1, total: 3)
 Orphan StringName: StaticBody2D (static: 1, total: 2)
-Orphan StringName: _setup_local_to_scene (static: 0, total: 6)
+Orphan StringName: _setup_local_to_scene (static: 0, total: 8)
 Orphan StringName: LevelLayout (static: 0, total: 4)
 Orphan StringName: terrain_data (static: 0, total: 4)
 Orphan StringName: level_layout (static: 0, total: 4)
+Orphan StringName: _get_beat_count (static: 0, total: 2)
 Orphan StringName: color (static: 0, total: 4)
 Orphan StringName: world (static: 0, total: 3)
+Orphan StringName: _mix_resampled (static: 0, total: 3)
 Orphan StringName: res://src/data/encounters/encounter_data.gd (static: 0, total: 1)
 Orphan StringName: _create_hazard_tile (static: 0, total: 4)
 Orphan StringName: polygon (static: 0, total: 3)
 Orphan StringName: ColorRect (static: 1, total: 2)
 Orphan StringName: append (static: 0, total: 1)
+Orphan StringName: _get_stream_sampling_rate (static: 0, total: 3)
+Orphan StringName: _get_playback_position (static: 0, total: 3)
 Orphan StringName: minion_spawns (static: 0, total: 7)
+Orphan StringName: _get_stream_name (static: 0, total: 2)
 Orphan StringName: process_frame (static: 1, total: 2)
 Orphan StringName: one_way_collision (static: 0, total: 1)
 Orphan StringName: MinionSpawnData (static: 0, total: 4)
 Orphan StringName: res://src/core/building/level_build_data.gd (static: 0, total: 3)
+Orphan StringName: _get_parameter (static: 0, total: 3)
 Orphan StringName: encounter_data_resource (static: 0, total: 4)
 Orphan StringName: hazard (static: 0, total: 1)
+Orphan StringName: _start (static: 0, total: 3)
 Orphan StringName: _input (static: 0, total: 2)
 Orphan StringName: oneway_platforms (static: 0, total: 5)
 Orphan StringName: res://src/core/util/grid_utils.gd (static: 0, total: 3)
 Orphan StringName: Resource (static: 2, total: 7)
+Orphan StringName: _has_loop (static: 0, total: 2)
 Orphan StringName: RectangleShape2D (static: 1, total: 2)
 Orphan StringName: boss_scene (static: 0, total: 4)
 Orphan StringName: player_spawn_pos (static: 0, total: 4)
 Orphan StringName: has (static: 0, total: 1)
 Orphan StringName: position (static: 0, total: 7)
+Orphan StringName: _is_playing (static: 0, total: 3)
 Orphan StringName: hazard_tiles (static: 0, total: 4)
+Orphan StringName: _get_bar_beats (static: 0, total: 2)
 Orphan StringName: background_tiles (static: 0, total: 4)
 Orphan StringName: @group_6_Minions (static: 0, total: 2)
 Orphan StringName: @group_3_Boss (static: 0, total: 2)
 Orphan StringName: _shortcut_input (static: 0, total: 2)
-Orphan StringName: timeout (static: 2, total: 3)
+Orphan StringName: timeout (static: 2, total: 4)
 Orphan StringName: _init (static: 0, total: 3)
+Orphan StringName: _is_monophonic (static: 0, total: 2)
 Orphan StringName: res://src/core/building/terrain_builder.gd (static: 0, total: 7)
 Orphan StringName: get_scale (static: 0, total: 1)
 Orphan StringName: Polygon2D (static: 1, total: 2)
@@ -282,9 +327,12 @@ Orphan StringName: EncounterData (static: 0, total: 4)
 Orphan StringName: SceneTree (static: 1, total: 3)
 Orphan StringName: _process (static: 0, total: 2)
 Orphan StringName: LevelBuildData (static: 0, total: 5)
+Orphan StringName: _get_bpm (static: 0, total: 2)
 Orphan StringName: CollisionShape2D (static: 1, total: 2)
 Orphan StringName: _create_oneway_platform (static: 0, total: 4)
 Orphan StringName: terrain_tiles (static: 0, total: 4)
+Orphan StringName: _get_parameter_list (static: 0, total: 2)
+Orphan StringName: _instantiate_playback (static: 0, total: 2)
 Orphan StringName: shape (static: 0, total: 3)
 Orphan StringName: _create_background_tile (static: 0, total: 4)
 Orphan StringName: Node (static: 5, total: 18)
@@ -296,18 +344,23 @@ Orphan StringName: build_terrain_async (static: 0, total: 3)
 Orphan StringName: LevelBuildData.MinionSpawnData (static: 0, total: 1)
 Orphan StringName: RefCounted (static: 2, total: 5)
 Orphan StringName: grid_to_world (static: 0, total: 3)
+Orphan StringName: _set_parameter (static: 0, total: 3)
 Orphan StringName: _get_configuration_warnings (static: 0, total: 5)
 Orphan StringName: fill_viewport (static: 0, total: 3)
+Orphan StringName: _tag_used_streams (static: 0, total: 3)
 Orphan StringName: @group_0_Layout (static: 0, total: 2)
+Orphan StringName: _seek (static: 0, total: 3)
 Orphan StringName: floor (static: 0, total: 1)
 Orphan StringName: origin (static: 0, total: 1)
 Orphan StringName: PackedScene (static: 1, total: 7)
 Orphan StringName: @implicit_new (static: 0, total: 6)
-Orphan StringName: _get_rid (static: 0, total: 6)
+Orphan StringName: _get_rid (static: 0, total: 8)
+Orphan StringName: _get_length (static: 0, total: 2)
 Orphan StringName: size (static: 0, total: 4)
 Orphan StringName: TerrainBuilder (static: 0, total: 3)
+Orphan StringName: _get_loop_count (static: 0, total: 3)
 Orphan StringName: _physics_process (static: 0, total: 2)
 Orphan StringName: world_to_grid (static: 0, total: 4)
 Orphan StringName: res://src/data/layouts/level_layout.gd (static: 0, total: 3)
 Orphan StringName: collision_layer (static: 0, total: 3)
-StringName: 83 unclaimed string names at exit.
+StringName: 105 unclaimed string names at exit.

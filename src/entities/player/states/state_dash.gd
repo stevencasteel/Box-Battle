@@ -31,7 +31,7 @@ func exit():
 
 func process_physics(_delta: float):
 	if state_data.dash_duration_timer <= 0:
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 
 
 func _get_dash_direction():

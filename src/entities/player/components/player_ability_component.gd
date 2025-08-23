@@ -20,13 +20,11 @@ func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
 		return
 
-	var current_state_key = state_machine.states.find_key(state_machine.current_state)
+	var current_state_key = state_machine._current_state_key
 
-	# --- Action State Logic ---
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
 
-	# --- Attack / Charge Shot Logic ---
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
 		p_data.is_charging = true
 		p_data.charge_timer = 0.0
@@ -34,21 +32,19 @@ func _physics_process(_delta: float) -> void:
 	if input_component.buffer.get("attack_released"):
 		if p_data.is_charging:
 			if p_data.charge_timer >= p_data.config.player_charge_time:
-				# THE FIX: Use get_component() to access the CombatComponent.
 				owner_node.get_component(CombatComponent).fire_shot()
 			elif input_component.buffer.get("down"):
-				state_machine.change_state(Player.State.POGO)
+				state_machine.change_state(Identifiers.PlayerStates.POGO)
 			else:
-				state_machine.change_state(Player.State.ATTACK)
+				state_machine.change_state(Identifiers.PlayerStates.ATTACK)
 			p_data.is_charging = false
 
-	# --- Dash Logic ---
 	if (
 		input_component.buffer.get("dash_pressed")
 		and p_data.can_dash
 		and p_data.dash_cooldown_timer <= 0
 	):
-		state_machine.change_state(Player.State.DASH)
+		state_machine.change_state(Identifiers.PlayerStates.DASH)
 
 
 # --- Public Methods ---

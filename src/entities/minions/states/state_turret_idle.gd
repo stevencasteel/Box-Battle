@@ -23,4 +23,4 @@ func process_physics(_delta: float) -> void:
 		return
 
 	if state_data.is_player_in_range:
-		state_machine.change_state(_turret.State.ATTACK)
+		state_machine.change_state(Identifiers.TurretStates.ATTACK)

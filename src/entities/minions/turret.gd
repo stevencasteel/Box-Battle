@@ -4,9 +4,6 @@
 class_name Turret
 extends BaseEntity
 
-# --- Enums ---
-enum State { IDLE, ATTACK }
-
 # --- Constants ---
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
@@ -94,7 +91,6 @@ func _die() -> void:
 		return
 	_is_dead = true
 
-	# THE FIX: Immediately remove from physics and stop all logic.
 	collision_layer = 0
 	collision_mask = 0
 	deactivate()
@@ -136,18 +132,16 @@ func _initialize_and_setup_components() -> void:
 	}
 
 	var states = {
-		State.IDLE:
-		load("res://src/entities/minions/states/state_turret_idle.gd").new(
+		Identifiers.TurretStates.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(
 			self, sm, entity_data
 		),
-		State.ATTACK:
-		load("res://src/entities/minions/states/state_turret_attack.gd").new(
+		Identifiers.TurretStates.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(
 			self, sm, entity_data
 		)
 	}
 
 	var per_component_deps := {
-		sm: {"states": states, "initial_state_key": State.IDLE},
+		sm: {"states": states, "initial_state_key": Identifiers.TurretStates.IDLE},
 		fc: {"visual_node": visual, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}

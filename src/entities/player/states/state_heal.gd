@@ -19,4 +19,4 @@ func process_physics(_delta: float):
 		or not is_zero_approx(owner.velocity.x)
 		or not owner.is_on_floor()
 	):
-		state_machine.change_state(owner.State.MOVE)
+		state_machine.change_state(Identifiers.PlayerStates.MOVE)

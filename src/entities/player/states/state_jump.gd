@@ -30,18 +30,18 @@ func process_physics(delta: float) -> void:
 	_apply_gravity(delta)
 
 	if owner.is_on_floor():
-		state_machine.change_state(owner.State.MOVE)
+		state_machine.change_state(Identifiers.PlayerStates.MOVE)
 		return
 
 	if _physics.can_wall_slide():
-		state_machine.change_state(owner.State.WALL_SLIDE)
+		state_machine.change_state(Identifiers.PlayerStates.WALL_SLIDE)
 		return
 
 
 func _apply_gravity(delta: float) -> void:
 	_physics.apply_gravity(delta)
 	if owner.velocity.y > 0.0:
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 
 
 func _perform_air_jump() -> void:

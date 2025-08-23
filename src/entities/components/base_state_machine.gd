@@ -4,12 +4,9 @@
 class_name BaseStateMachine
 extends IComponent
 
-## This signal is used by the Player states to request actions (like enabling
-## a hitbox) from the Player node, decoupling the states from the Player's
-## specific methods. The warning is ignored because the signal is emitted by
-## the state objects, not this script directly.
-@warning_ignore("unused_signal")
-signal action_requested(command: Callable)
+# THE FIX: New, specific signals for state requests.
+signal melee_hitbox_toggled(is_enabled: bool, is_up_attack: bool)
+signal pogo_hitbox_toggled(is_enabled: bool)
 
 const MAX_HISTORY_SIZE = 5
 var states: Dictionary = {}
@@ -76,11 +73,11 @@ func change_state(new_state_key, msg := {}) -> void:
 		return
 	if current_state:
 		current_state.exit()
-	
+
 	_current_state_key = new_state_key
 	current_state = states[new_state_key]
 	current_state.enter(msg)
-	
+
 	var state_name = str(new_state_key)
 	state_history.push_front(state_name)
 	if state_history.size() > MAX_HISTORY_SIZE:

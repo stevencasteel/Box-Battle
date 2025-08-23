@@ -23,7 +23,7 @@ func process_physics(_delta: float) -> void:
 		return
 
 	if not state_data.is_player_in_range:
-		state_machine.change_state(_turret.State.IDLE)
+		state_machine.change_state(Identifiers.TurretStates.IDLE)
 		return
 
 	if _turret.attack_timer.is_stopped():

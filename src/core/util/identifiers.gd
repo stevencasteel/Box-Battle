@@ -26,3 +26,31 @@ class Pools:
 	const TURRET_SHOTS = &"turret_shots"
 	const HOMING_BOSS_SHOTS = &"homing_boss_shots"
 	const HIT_SPARKS = &"hit_sparks"
+
+
+## THE FIX: Container for all Player state keys.
+class PlayerStates:
+	const MOVE = &"move"
+	const JUMP = &"jump"
+	const FALL = &"fall"
+	const DASH = &"dash"
+	const WALL_SLIDE = &"wall_slide"
+	const ATTACK = &"attack"
+	const HURT = &"hurt"
+	const HEAL = &"heal"
+	const POGO = &"pogo"
+
+
+## THE FIX: Container for all Boss state keys.
+class BossStates:
+	const IDLE = &"idle"
+	const ATTACK = &"attack"
+	const COOLDOWN = &"cooldown"
+	const PATROL = &"patrol"
+	const LUNGE = &"lunge"
+
+
+## THE FIX: Container for all Turret state keys.
+class TurretStates:
+	const IDLE = &"idle"
+	const ATTACK = &"attack"

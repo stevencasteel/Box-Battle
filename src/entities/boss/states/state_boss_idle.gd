@@ -11,8 +11,8 @@ func enter(_msg := {}) -> void:
 		push_warning(
 			"BossStateIdle: No attack patterns defined for current phase. Defaulting to Cooldown."
 		)
-		state_machine.change_state(owner.State.COOLDOWN)
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 		return
 
 	var chosen_pattern: AttackPattern = owner.current_attack_patterns.pick_random()
-	state_machine.change_state(owner.State.ATTACK, {"pattern": chosen_pattern})
+	state_machine.change_state(Identifiers.BossStates.ATTACK, {"pattern": chosen_pattern})

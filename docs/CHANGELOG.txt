@@ -42,6 +42,17 @@
 ║                                                                              ║
 
 
+refactor(FSM): Decouple states from owners
+
+Centralized all state machine keys into the global `Identifiers` script. This refactor removes the `enum State` from the Player, Boss, and Turret classes.
+
+- States no longer refer to `owner.State.XXX`, but instead use a global key like `Identifiers.PlayerStates.XXX`.
+- This decouples states from their specific owner class, making them more reusable and the architecture cleaner.
+- The state machine setup in each entity has been updated to use the new `StringName` keys.
+- All state scripts have been updated to use the new global identifiers for changing states.
+
+
+
 refactor(entity): Remove hybrid component access pattern
 
 Replaced all direct component variable access (e.g., `owner.health_component`) with the standardized `get_component(ComponentType)` method across the entire codebase.

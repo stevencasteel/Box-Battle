@@ -17,12 +17,12 @@ func enter(msg := {}) -> void:
 	self._boss = owner as BaseBoss
 	if not _boss:
 		push_error("BossStateAttack: Owner is not a BaseBoss. Aborting.")
-		state_machine.change_state(_boss.State.COOLDOWN)
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 		return
 
 	if not msg.has("pattern") or not msg.pattern is AttackPattern:
 		push_error("BossStateAttack: No valid 'pattern' provided. Aborting.")
-		state_machine.change_state(_boss.State.COOLDOWN)
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 		return
 
 	_current_pattern = msg.get("pattern")
@@ -35,7 +35,7 @@ func enter(msg := {}) -> void:
 func _start_telegraph_and_attack() -> void:
 	if not is_instance_valid(_current_pattern.logic):
 		push_warning("AttackPattern is missing its 'logic' resource.")
-		state_machine.change_state(_boss.State.COOLDOWN)
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 		return
 
 	var telegraph = TelegraphScene.instantiate()
@@ -58,8 +58,6 @@ func _start_telegraph_and_attack() -> void:
 	)
 	await telegraph.telegraph_finished
 
-	# THE FIX: Add a death check after the telegraph. If the boss died during
-	# the await, do not proceed with the attack.
 	if _boss._is_dead:
 		return
 
@@ -69,4 +67,4 @@ func _start_telegraph_and_attack() -> void:
 
 	if state_machine.current_state == self:
 		_boss.cooldown_timer.wait_time = _current_pattern.cooldown
-		state_machine.change_state(_boss.State.COOLDOWN)
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)

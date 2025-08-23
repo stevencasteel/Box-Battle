@@ -16,4 +16,4 @@ func get_telegraph_info(owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
 func execute(owner: BaseBoss, pattern: AttackPattern) -> Callable:
 	var lunge_params = {"pattern": pattern}
 	var sm: BaseStateMachine = owner.get_component(BaseStateMachine)
-	return sm.change_state.bind(owner.State.LUNGE, lunge_params)
+	return sm.change_state.bind(Identifiers.BossStates.LUNGE, lunge_params)

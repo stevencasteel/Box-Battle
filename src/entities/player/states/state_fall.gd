@@ -16,21 +16,21 @@ func process_physics(delta: float) -> void:
 	_apply_gravity(delta)
 
 	if owner.is_on_floor():
-		state_machine.change_state(owner.State.MOVE)
+		state_machine.change_state(Identifiers.PlayerStates.MOVE)
 		return
 
 	if _physics.can_wall_slide():
-		state_machine.change_state(owner.State.WALL_SLIDE)
+		state_machine.change_state(Identifiers.PlayerStates.WALL_SLIDE)
 		return
 
 	if _input.buffer.get("jump_just_pressed"):
 		if state_data.wall_coyote_timer > 0:
 			_physics.perform_wall_jump()
-			state_machine.change_state(owner.State.JUMP)
+			state_machine.change_state(Identifiers.PlayerStates.JUMP)
 		elif state_data.coyote_timer > 0:
-			state_machine.change_state(owner.State.JUMP)
+			state_machine.change_state(Identifiers.PlayerStates.JUMP)
 		elif state_data.air_jumps_left > 0:
-			state_machine.change_state(owner.State.JUMP, {"is_air_jump": true})
+			state_machine.change_state(Identifiers.PlayerStates.JUMP, {"is_air_jump": true})
 
 
 func _apply_gravity(delta: float) -> void:

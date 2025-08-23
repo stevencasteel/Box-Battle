@@ -7,9 +7,6 @@ extends BaseEntity
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
-# --- Enums ---
-enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
-
 # --- Editor Configuration ---
 @export_group("Phase Configuration")
 @export_range(0.0, 1.0, 0.01) var phase_2_threshold: float = 0.7
@@ -93,7 +90,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	if is_instance_valid(sm) and sm.current_state == sm.states[State.PATROL] and is_on_wall():
+	if is_instance_valid(sm) and sm.current_state == sm.states[Identifiers.BossStates.PATROL] and is_on_wall():
 		entity_data.facing_direction *= -1.0
 
 
@@ -199,15 +196,15 @@ func _initialize_and_setup_components() -> void:
 	}
 
 	var states = {
-		State.IDLE: state_idle_script.new(self, sm, entity_data),
-		State.ATTACK: state_attack_script.new(self, sm, entity_data),
-		State.COOLDOWN: state_cooldown_script.new(self, sm, entity_data),
-		State.PATROL: state_patrol_script.new(self, sm, entity_data),
-		State.LUNGE: state_lunge_script.new(self, sm, entity_data),
+		Identifiers.BossStates.IDLE: state_idle_script.new(self, sm, entity_data),
+		Identifiers.BossStates.ATTACK: state_attack_script.new(self, sm, entity_data),
+		Identifiers.BossStates.COOLDOWN: state_cooldown_script.new(self, sm, entity_data),
+		Identifiers.BossStates.PATROL: state_patrol_script.new(self, sm, entity_data),
+		Identifiers.BossStates.LUNGE: state_lunge_script.new(self, sm, entity_data),
 	}
 
 	var per_component_deps := {
-		sm: {"states": states, "initial_state_key": State.COOLDOWN},
+		sm: {"states": states, "initial_state_key": Identifiers.BossStates.COOLDOWN},
 		fc: {"visual_node": visual_sprite, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
@@ -254,14 +251,14 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 
 func _on_cooldown_timer_timeout() -> void:
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	if is_instance_valid(sm) and sm.current_state == sm.states[State.COOLDOWN]:
-		sm.change_state(State.PATROL)
+	if is_instance_valid(sm) and sm.current_state == sm.states[Identifiers.BossStates.COOLDOWN]:
+		sm.change_state(Identifiers.BossStates.PATROL)
 
 
 func _on_patrol_timer_timeout() -> void:
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	if is_instance_valid(sm) and sm.current_state == sm.states[State.PATROL]:
-		sm.change_state(State.IDLE)
+	if is_instance_valid(sm) and sm.current_state == sm.states[Identifiers.BossStates.PATROL]:
+		sm.change_state(Identifiers.BossStates.IDLE)
 
 
 func _on_health_component_health_changed(current: int, max_val: int) -> void:

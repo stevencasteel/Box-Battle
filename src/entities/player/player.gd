@@ -7,11 +7,15 @@ extends BaseEntity
 signal health_changed(current_health, max_health)
 signal died
 
-# --- Enums ---
-enum State { MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO }
+# --- THE FIX: The State enum is no longer needed here. ---
 
 # --- Constants ---
-const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
+const ACTION_ALLOWED_STATES = [
+	Identifiers.PlayerStates.MOVE,
+	Identifiers.PlayerStates.FALL,
+	Identifiers.PlayerStates.JUMP,
+	Identifiers.PlayerStates.WALL_SLIDE
+]
 const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
@@ -61,7 +65,6 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
-	# We start with 0 charges and 0 determination.
 	entity_data.healing_charges = 0
 	get_component(PlayerResourceComponent).on_damage_dealt()
 	entity_data.determination_counter = 0
@@ -77,7 +80,6 @@ func _physics_process(delta: float) -> void:
 
 
 func teardown() -> void:
-	# Disconnect signals that THIS script is listening to.
 	var hc: HealthComponent = get_component(HealthComponent)
 	if is_instance_valid(hc):
 		if hc.health_changed.is_connected(_on_health_component_health_changed):
@@ -95,8 +97,10 @@ func teardown() -> void:
 
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	if is_instance_valid(sm):
-		if sm.action_requested.is_connected(_on_state_machine_action_requested):
-			sm.action_requested.disconnect(_on_state_machine_action_requested)
+		if sm.melee_hitbox_toggled.is_connected(_enable_melee_hitbox):
+			sm.melee_hitbox_toggled.disconnect(_enable_melee_hitbox)
+		if sm.pogo_hitbox_toggled.is_connected(_enable_pogo_hitbox):
+			sm.pogo_hitbox_toggled.disconnect(_enable_pogo_hitbox)
 
 	if is_instance_valid(healing_timer):
 		if healing_timer.timeout.is_connected(_on_healing_timer_timeout):
@@ -140,13 +144,13 @@ func _enable_melee_hitbox(is_enabled: bool, is_up_attack: bool = false) -> void:
 		else:
 			shape_node.shape = entity_data.config.player_forward_attack_shape
 			shape_node.position = Vector2(entity_data.facing_direction * 60, 0)
-	shape_node.disabled = not is_enabled
+	shape_node.set_deferred("disabled", not is_enabled)
 
 
 func _enable_pogo_hitbox(is_enabled: bool) -> void:
 	var shape_node: CollisionShape2D = pogo_hitbox.get_node("CollisionShape2D")
 	shape_node.position = Vector2(0, 40)
-	shape_node.disabled = not is_enabled
+	shape_node.set_deferred("disabled", not is_enabled)
 
 
 func _initialize_and_setup_components() -> void:
@@ -160,7 +164,6 @@ func _initialize_and_setup_components() -> void:
 	assert(is_instance_valid(_fx_manager), "Player requires 'fx_manager' injected.")
 	assert(is_instance_valid(_event_bus), "Player requires 'event_bus' injected.")
 
-	# Get component references *after* they are added by super._ready() -> _build_from_archetype()
 	var hc: HealthComponent = get_component(HealthComponent)
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	var ic: InputComponent = get_component(InputComponent)
@@ -175,22 +178,21 @@ func _initialize_and_setup_components() -> void:
 	}
 
 	var states = {
-		State.MOVE: state_move_script.new(self, sm, entity_data),
-		State.FALL: state_fall_script.new(self, sm, entity_data),
-		State.JUMP: state_jump_script.new(self, sm, entity_data),
-		State.DASH: state_dash_script.new(self, sm, entity_data),
-		State.WALL_SLIDE: state_wall_slide_script.new(self, sm, entity_data),
-		State.ATTACK: state_attack_script.new(self, sm, entity_data),
-		State.HURT: state_hurt_script.new(self, sm, entity_data),
-		State.HEAL: state_heal_script.new(self, sm, entity_data),
-		State.POGO: state_pogo_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.MOVE: state_move_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.FALL: state_fall_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.JUMP: state_jump_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.DASH: state_dash_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.WALL_SLIDE: state_wall_slide_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.ATTACK: state_attack_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.HURT: state_hurt_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.HEAL: state_heal_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.POGO: state_pogo_script.new(self, sm, entity_data),
 	}
 
 	var per_component_deps := {
-		sm: {"states": states, "initial_state_key": State.FALL},
+		sm: {"states": states, "initial_state_key": Identifiers.PlayerStates.FALL},
 		ic: {"state_machine": sm},
 		get_component(PlayerAbilityComponent): {"state_machine": sm, "input_component": ic},
-		# THE FIX: Inject HealthComponent into the PhysicsComponent.
 		get_component(PlayerPhysicsComponent): {"input_component": ic, "health_component": hc},
 		get_component(FXComponent): {"visual_node": visual_sprite, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
 		hc: {"hit_spark_effect": hit_spark_effect}
@@ -216,7 +218,8 @@ func _connect_signals() -> void:
 	cc.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
 
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	sm.action_requested.connect(_on_state_machine_action_requested)
+	sm.melee_hitbox_toggled.connect(_enable_melee_hitbox)
+	sm.pogo_hitbox_toggled.connect(_enable_pogo_hitbox)
 
 	healing_timer.timeout.connect(_on_healing_timer_timeout)
 
@@ -241,11 +244,6 @@ func _update_timers(delta: float) -> void:
 
 
 # --- Signal Handlers ---
-
-
-func _on_state_machine_action_requested(command: Callable) -> void:
-	if command.is_valid():
-		command.call()
 
 
 func _on_melee_hitbox_body_entered(body: Node) -> void:
@@ -281,17 +279,17 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 
 		if damage_result.was_damaged and entity_data.health > 0:
 			self.velocity = damage_result.knockback_velocity
-			get_component(BaseStateMachine).change_state(State.HURT)
+			get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.HURT)
 		_object_pool.return_instance.call_deferred(area)
 
 
 func _on_healing_timer_timeout() -> void:
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	if sm.current_state == sm.states[State.HEAL]:
+	if sm.current_state == sm.states[Identifiers.PlayerStates.HEAL]:
 		entity_data.health += 1
 		get_component(PlayerResourceComponent).consume_healing_charge()
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
-		sm.change_state(State.MOVE)
+		sm.change_state(Identifiers.PlayerStates.MOVE)
 
 
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
@@ -311,7 +309,7 @@ func _on_pogo_bounce_requested() -> void:
 	position.y -= 1
 	entity_data.can_dash = true
 	entity_data.air_jumps_left = entity_data.config.player_max_air_jumps
-	get_component(BaseStateMachine).change_state(State.FALL)
+	get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.FALL)
 
 
 func _cancel_heal() -> void:

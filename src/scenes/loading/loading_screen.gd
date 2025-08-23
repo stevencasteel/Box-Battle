@@ -36,21 +36,19 @@ func _ready() -> void:
 
 ## The main loading and pre-warming sequence.
 func _load_level() -> void:
-	await get_tree().process_frame  # Wait one frame for UI to draw "Loading..."
+	await get_tree().process_frame
 
 	await _prewarm_shaders()
 
-	# THE FIX: Create the typed array locally using load() to ensure correct type resolution.
 	var effects_to_prewarm: Array[ShaderEffect] = [
 		load("res://src/data/effects/entity_hit_flash_effect.tres"),
 		load("res://src/core/data/effects/dissolve_effect.tres"),
 	]
 	await FXManager.prewarm_shaders_async(effects_to_prewarm, prewarm_viewport)
 
-	# Build the level and store the resulting node in the GameManager state.
 	GameManager.state.prebuilt_level = await ArenaBuilder.build_level_async()
 
-	await get_tree().process_frame  # Wait one more frame for safety.
+	await get_tree().process_frame
 
 	SceneManager.go_to_scene(AssetPaths.SCENE_ENCOUNTER)
 
@@ -73,12 +71,11 @@ func _prewarm_shaders() -> void:
 
 		prewarm_viewport.add_child(instance)
 
-		# --- Trigger Actions to Compile More Shaders ---
 		if instance is Player:
 			instance.velocity.x = 100
 			var sm: BaseStateMachine = instance.get_component(BaseStateMachine)
 			if is_instance_valid(sm) and sm.has_method("change_state"):
-				sm.change_state(instance.State.ATTACK)
+				sm.change_state(Identifiers.PlayerStates.ATTACK)
 		elif instance is BaseBoss:
 			instance.velocity.x = 100
 

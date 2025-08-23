@@ -113,14 +113,13 @@ func _check_for_contact_damage() -> void:
 		damage_info.source_node = collider
 		damage_info.impact_position = col.get_position()
 		damage_info.impact_normal = col.get_normal()
-		# THE FIX: Use the local reference, not the owner's (which is gone).
 		var damage_result = health_component.apply_damage(damage_info)
 
-		# GUARD: The owner may have been freed by the apply_damage call.
 		if not is_instance_valid(owner_node):
 			return
 
 		if damage_result.was_damaged and p_data.health > 0:
 			owner_node.velocity = damage_result.knockback_velocity
-			owner_node.get_component(BaseStateMachine).change_state(owner_node.State.HURT)
+			# THE FIX: Use the global identifier for the state key.
+			owner_node.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.HURT)
 		break

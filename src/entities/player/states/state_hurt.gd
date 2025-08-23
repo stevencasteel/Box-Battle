@@ -17,4 +17,4 @@ func process_physics(delta: float) -> void:
 	owner.velocity.x = move_toward(owner.velocity.x, 0, 800 * delta)
 
 	if state_data.knockback_timer <= 0:
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)

@@ -22,15 +22,13 @@ func process_physics(delta: float) -> void:
 	if _input.buffer.get("jump_just_pressed"):
 		var is_holding_down = _input.buffer.get("down", false)
 
-		# 1. Check for Heal (Highest priority on jump press)
 		var can_try_heal = (
 			is_holding_down and state_data.healing_charges > 0 and is_zero_approx(owner.velocity.x)
 		)
 		if can_try_heal:
-			state_machine.change_state(owner.State.HEAL)
+			state_machine.change_state(Identifiers.PlayerStates.HEAL)
 			return
 
-		# 2. Check for Drop-through Platform
 		if is_holding_down:
 			var floor_col = owner.get_last_slide_collision()
 			if floor_col:
@@ -40,13 +38,12 @@ func process_physics(delta: float) -> void:
 					and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS)
 				):
 					owner.position.y += 2
-					state_machine.change_state(owner.State.FALL)
+					state_machine.change_state(Identifiers.PlayerStates.FALL)
 					return
 
-		# 3. If neither of the above, it's a regular jump
-		state_machine.change_state(owner.State.JUMP)
+		state_machine.change_state(Identifiers.PlayerStates.JUMP)
 		return
 
 	if not owner.is_on_floor():
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 		return
