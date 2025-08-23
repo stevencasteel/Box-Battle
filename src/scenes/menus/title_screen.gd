@@ -34,11 +34,12 @@ func _ready() -> void:
 		newgrounds_logo.pressed.connect(_on_logo_pressed)
 		godot_logo.pressed.connect(_on_logo_pressed)
 		itch_logo.pressed.connect(_on_logo_pressed)
-		mute_button.pressed.connect(_on_mute_button_pressed)
+		# THE FIX: Mute button pressed signal is no longer connected here.
 
 		# --- Connect All Items to Feedback Handlers ---
+		# THE FIX: MuteButton now handles its own sound, so remove it from this generic list.
 		var generic_items: Array[Control] = [
-			start_button, options_button, newgrounds_logo, godot_logo, itch_logo, mute_button
+			start_button, options_button, newgrounds_logo, godot_logo, itch_logo
 		]
 		for item in generic_items:
 			item.pressed.connect(_on_any_item_pressed)
@@ -47,14 +48,12 @@ func _ready() -> void:
 			if item is StyledMenuItem:
 				item.focus_entered.connect(_on_any_item_focused)
 
-		# Connect feedback for the exit button separately
+		# Connect feedback for the exit button and mute button separately
 		exit_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 		exit_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 		exit_button.focus_entered.connect(_on_any_item_focused)
-
-		# --- Sync Mute Button ---
-		mute_button.update_icon(Settings.music_muted)
-		Settings.audio_settings_changed.connect(_on_audio_settings_changed)
+		mute_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		mute_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 
 		# --- Initialize Menu Manager ---
 		var menu_manager = MenuManagerScript.new()
@@ -66,12 +65,7 @@ func _ready() -> void:
 		await get_tree().process_frame
 		start_button.grab_focus()
 
-
-func _exit_tree() -> void:
-	if not Engine.is_editor_hint():
-		if Settings.audio_settings_changed.is_connected(_on_audio_settings_changed):
-			Settings.audio_settings_changed.disconnect(_on_audio_settings_changed)
-
+# --- THE FIX: No longer need _exit_tree, _on_mute_button_pressed, or _on_audio_settings_changed ---
 
 # --- Signal Handlers ---
 
@@ -94,17 +88,9 @@ func _on_options_button_pressed() -> void:
 
 func _on_exit_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
-	await get_tree().create_timer(0.2).timeout  # Give sound time to play
+	await get_tree().create_timer(0.2).timeout
 	get_tree().quit()
 
 
 func _on_logo_pressed(logo_name: String) -> void:
 	print("%s Pressed" % logo_name)
-
-
-func _on_mute_button_pressed() -> void:
-	Settings.music_muted = not Settings.music_muted
-
-
-func _on_audio_settings_changed() -> void:
-	mute_button.update_icon(Settings.music_muted)

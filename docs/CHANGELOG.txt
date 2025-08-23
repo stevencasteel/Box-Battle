@@ -41,6 +41,21 @@
 ║                                                                              ║
 ║                                                                              ║
 
+
+
+refactor(player): Centralize jump logic into PlayerJumpHelper
+Created a new static helper class, `PlayerJumpHelper`, to consolidate all jump-related logic (grounded, coyote time, air, and wall jumps) into a single, SRP-compliant location.
+
+- `state_move` and `state_fall` now delegate all jump checks to this new helper, simplifying the state scripts.
+- Fixed an issue where the helper script was not preloaded, causing parse errors.
+
+Additionally, resolved several outstanding engine warnings:
+- Fixed `STATIC_CALLED_ON_INSTANCE` warnings by preloading `CombatUtils.gd` and calling `find_damageable()` statically.
+- Suppressed `UNUSED_SIGNAL` warnings in `BaseStateMachine` for signals that are intentionally emitted by child states.
+
+
+
+
 refactor(DI): Implement ServiceLocator for dependency injection
 
 Replaced the dictionary-based dependency injection system with a formal Service Locator pattern.

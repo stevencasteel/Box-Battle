@@ -24,7 +24,6 @@ var _sfx_mute_checkbox: TextureButton
 
 
 func _ready() -> void:
-	# --- Procedurally build the UI rows ---
 	for c in menu_items_vbox.get_children():
 		c.queue_free()
 	menu_items_vbox.add_child(_create_volume_row("MASTER", Settings.master_volume, "master"))
@@ -37,7 +36,7 @@ func _ready() -> void:
 	if not Engine.is_editor_hint():
 		back_button.pressed.connect(_on_back_button_pressed)
 		Settings.audio_settings_changed.connect(_update_ui_from_settings)
-		mute_button.pressed.connect(_on_mute_button_pressed)
+		# THE FIX: Mute button connections are no longer needed here.
 
 		var menu_manager = MenuManagerScript.new()
 		add_child(menu_manager)
@@ -49,11 +48,8 @@ func _ready() -> void:
 		for item in interactive_items:
 			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-
-		# Connect generic sound only to mute button
-		mute_button.pressed.connect(_on_any_item_pressed)
-
-		_update_ui_from_settings()  # Includes mute button icon
+		
+		# THE FIX: Mute button handles its own select sound now.
 
 		await get_tree().process_frame
 		back_button.grab_focus()
@@ -81,8 +77,7 @@ func _update_ui_from_settings() -> void:
 		_update_checkbox_texture(_music_mute_checkbox, Settings.music_muted)
 	if _sfx_mute_checkbox:
 		_update_checkbox_texture(_sfx_mute_checkbox, Settings.sfx_muted)
-	if is_instance_valid(mute_button):
-		mute_button.update_icon(Settings.music_muted)
+	# THE FIX: Mute button updates itself, so no need to call its update_icon method.
 
 
 func _create_volume_row(label_text: String, initial_volume: float, type: String) -> HBoxContainer:
@@ -149,16 +144,9 @@ func _update_checkbox_texture(button_ref: TextureButton, is_muted: bool) -> void
 
 
 # --- Signal Handlers ---
-func _on_any_item_pressed() -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
-
 
 func _on_any_item_focused() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
-
-
-func _on_mute_button_pressed() -> void:
-	Settings.music_muted = not Settings.music_muted
 
 
 func _on_back_button_pressed() -> void:

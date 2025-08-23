@@ -14,18 +14,42 @@ const ICON_SOUND_OFF = preload(AssetPaths.ICON_UI_SOUND_OFF)
 
 
 func _ready() -> void:
-	focus_mode = FOCUS_NONE
+	# This component is now self-managing.
+	# It connects to its own signals and the global Settings singleton.
 	if not Engine.is_editor_hint():
-		# The owner scene is now responsible for handling pressed and hover.
-		pass
+		self.pressed.connect(_on_pressed)
+		Settings.audio_settings_changed.connect(_on_audio_settings_changed)
+		_on_audio_settings_changed() # Sync icon on ready
+
+
+func _exit_tree() -> void:
+	if not Engine.is_editor_hint():
+		if self.pressed.is_connected(_on_pressed):
+			self.pressed.disconnect(_on_pressed)
+		if Settings.audio_settings_changed.is_connected(_on_audio_settings_changed):
+			Settings.audio_settings_changed.disconnect(_on_audio_settings_changed)
 
 
 # --- Public Methods ---
 
 
-## Updates the button's icon based on the provided mute state.
-func update_icon(is_muted: bool) -> void:
-	if is_muted:
+## Updates the button's icon based on the current global mute state.
+func update_icon() -> void:
+	if Settings.music_muted:
 		self.texture_normal = ICON_SOUND_OFF
 	else:
 		self.texture_normal = ICON_SOUND_ON
+
+
+# --- Signal Handlers ---
+
+
+func _on_pressed() -> void:
+	# When pressed, this button directly modifies the global setting.
+	Settings.music_muted = not Settings.music_muted
+	# Play sound feedback
+	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
+
+
+func _on_audio_settings_changed() -> void:
+	update_icon()
