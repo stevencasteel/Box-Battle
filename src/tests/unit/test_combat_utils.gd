@@ -7,44 +7,45 @@ const HealthComponent = preload("res://src/entities/components/health_component.
 
 # --- Test Internals ---
 var _root: Node
-var _damageable_parent: Node
-var _non_damageable_child: Node
+var _parent: Node
+var _damageable_child: HealthComponent # This IS the damageable node now
+var _non_damageable_grandchild: Node
+
 
 # --- Test Lifecycle ---
 
 
 func before_each():
 	# Create a simple scene tree for testing tree traversal.
-	# Root -> DamageableParent -> NonDamageableChild
+	# Root -> Parent -> DamageableChild (HealthComponent) -> NonDamageableGrandchild
 	_root = Node.new()
-	add_child(_root)  # The test runner will manage this node.
+	add_child(_root)
 
-	_damageable_parent = Node2D.new()
-	_damageable_parent.name = "DamageableParent"
+	_parent = Node2D.new()
+	_parent.name = "Parent"
+	_root.add_child(_parent)
 
-	# THE FIX: Create the component, give it a name, then add it as a child.
-	var health_comp = HealthComponent.new()
-	health_comp.name = "HealthComponent"
-	_damageable_parent.add_child(autofree(health_comp))
+	_damageable_child = HealthComponent.new()
+	_damageable_child.name = "HealthComponent"
+	_parent.add_child(_damageable_child)
 
-	_root.add_child(_damageable_parent)
-
-	_non_damageable_child = Node2D.new()
-	_non_damageable_child.name = "NonDamageableChild"
-	_damageable_parent.add_child(_non_damageable_child)
+	_non_damageable_grandchild = Node2D.new()
+	_non_damageable_grandchild.name = "NonDamageableGrandchild"
+	_damageable_child.add_child(_non_damageable_grandchild)
 
 
 func test_find_damageable_returns_self_if_damageable():
-	# This test is now inverted: the component, not the parent, is the damageable node.
-	var health_comp = _damageable_parent.get_node("HealthComponent")
-	var result = CombatUtils.find_damageable(health_comp)
-	assert_same(result, health_comp, "Should return the component itself if it's damageable.")
+	var result = CombatUtils.find_damageable(_damageable_child)
+	assert_same(result, _damageable_child, "Should return the node itself if it's damageable.")
 
 
-func test_find_damageable_returns_parent_component_if_child_is_not_damageable():
-	var health_comp = _damageable_parent.get_node("HealthComponent")
-	var result = CombatUtils.find_damageable(_non_damageable_child)
-	assert_same(result, health_comp, "Should traverse up and find the parent's HealthComponent.")
+func test_find_damageable_returns_ancestor_if_child_is_not_damageable():
+	var result = CombatUtils.find_damageable(_non_damageable_grandchild)
+	assert_same(
+		result,
+		_damageable_child,
+		"Should traverse up and find the ancestor HealthComponent."
+	)
 
 
 func test_find_damageable_returns_null_if_no_damageable_ancestor_exists():

@@ -2,8 +2,14 @@
 ## Handles the player's upward movement (jump).
 extends BaseState
 
+var _physics: PlayerPhysicsComponent
+var _input: InputComponent
+
 
 func enter(msg := {}) -> void:
+	_physics = owner.get_component(PlayerPhysicsComponent)
+	_input = owner.get_component(InputComponent)
+
 	if msg.get("is_air_jump", false):
 		state_data.air_jumps_left -= 1
 
@@ -12,13 +18,13 @@ func enter(msg := {}) -> void:
 
 
 func process_physics(delta: float) -> void:
-	owner.physics_component.apply_horizontal_movement()
+	_physics.apply_horizontal_movement()
 
-	if owner.input_component.buffer.get("jump_just_pressed"):
+	if _input.buffer.get("jump_just_pressed"):
 		if state_data.air_jumps_left > 0:
 			_perform_air_jump()
 
-	if owner.input_component.buffer.get("jump_released") and owner.velocity.y < 0:
+	if _input.buffer.get("jump_released") and owner.velocity.y < 0:
 		owner.velocity.y *= state_data.config.player_jump_release_dampener
 
 	_apply_gravity(delta)
@@ -27,13 +33,13 @@ func process_physics(delta: float) -> void:
 		state_machine.change_state(owner.State.MOVE)
 		return
 
-	if owner.physics_component.can_wall_slide():
+	if _physics.can_wall_slide():
 		state_machine.change_state(owner.State.WALL_SLIDE)
 		return
 
 
 func _apply_gravity(delta: float) -> void:
-	owner.physics_component.apply_gravity(delta)
+	_physics.apply_gravity(delta)
 	if owner.velocity.y > 0.0:
 		state_machine.change_state(owner.State.FALL)
 

@@ -24,13 +24,13 @@ func before_each():
 			}
 		)
 	add_child(_player)
-	_input_component = _player.input_component
+	_input_component = _player.get_component(InputComponent)
 
 	_input_component.setup(
 		_player,
 		{
 			"data_resource": _player.entity_data,
-			"state_machine": _player.state_machine,
+			"state_machine": _player.get_component(BaseStateMachine),
 			"config": CombatConfig
 		}
 	)

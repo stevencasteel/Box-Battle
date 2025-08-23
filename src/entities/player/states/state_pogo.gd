@@ -3,10 +3,13 @@
 class_name PlayerStatePogo
 extends BaseState
 
+var _physics: PlayerPhysicsComponent
+
 # --- State Lifecycle ---
 
 
 func enter(_msg := {}) -> void:
+	_physics = owner.get_component(PlayerPhysicsComponent)
 	state_data.is_pogo_attack = true
 	# Use the existing attack timer to give the pogo a limited duration.
 	state_data.attack_duration_timer = state_data.config.player_attack_duration
@@ -19,7 +22,7 @@ func exit() -> void:
 
 
 func process_physics(delta: float) -> void:
-	owner.physics_component.apply_gravity(delta)
+	_physics.apply_gravity(delta)
 
 	if owner.is_on_floor():
 		state_machine.change_state(owner.State.MOVE)

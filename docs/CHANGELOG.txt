@@ -42,6 +42,20 @@
 ║                                                                              ║
 
 
+refactor(entity): Remove hybrid component access pattern
+
+Replaced all direct component variable access (e.g., `owner.health_component`) with the standardized `get_component(ComponentType)` method across the entire codebase.
+
+This change fully commits to a scalable, component-based architecture by:
+- Removing direct component variables from `BaseEntity`.
+- Updating all entity classes (`Player`, `BaseBoss`, `Turret`), their states, and their components to use the new access pattern.
+- Modifying the debug overlay, fx playground, and loading screen to conform to the new API.
+- Updating all relevant unit and integration tests to use `get_component`, and adapting the `MockEntity` to maintain test compatibility.
+
+This architectural improvement decouples components from their owners, simplifies adding new components via archetypes, and establishes a single, consistent API for inter-component communication.
+
+
+
 fix(player): Resolve player healing and resource accrual bugs
 
 The player healing system was non-functional due to a chain of three distinct issues, which have now been resolved.

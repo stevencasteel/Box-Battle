@@ -42,6 +42,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.health_component = p_dependencies.get("health_component")
 	self.input_component = p_dependencies.get("input_component")
 	assert(is_instance_valid(input_component), "PlayerPhysicsComponent requires an InputComponent.")
+	assert(is_instance_valid(health_component), "PlayerPhysicsComponent requires a HealthComponent.")
 
 
 func teardown() -> void:
@@ -53,7 +54,7 @@ func teardown() -> void:
 
 
 func apply_horizontal_movement() -> void:
-	var move_axis = owner_node.input_component.buffer.get("move_axis", 0.0)
+	var move_axis = owner_node.get_component(InputComponent).buffer.get("move_axis", 0.0)
 	owner_node.velocity.x = move_axis * p_data.config.player_speed
 	if not is_zero_approx(move_axis):
 		p_data.facing_direction = sign(move_axis)
@@ -65,7 +66,8 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 
 ## Checks if the conditions for performing a wall slide are met.
 func can_wall_slide() -> bool:
-	var move_axis = input_component.buffer.get("move_axis", 0.0)
+	var ic: InputComponent = owner_node.get_component(InputComponent)
+	var move_axis = ic.buffer.get("move_axis", 0.0)
 	return (
 		p_data.wall_coyote_timer > 0
 		and not owner_node.is_on_floor()
@@ -111,7 +113,8 @@ func _check_for_contact_damage() -> void:
 		damage_info.source_node = collider
 		damage_info.impact_position = col.get_position()
 		damage_info.impact_normal = col.get_normal()
-		var damage_result = owner_node.health_component.apply_damage(damage_info)
+		# THE FIX: Use the local reference, not the owner's (which is gone).
+		var damage_result = health_component.apply_damage(damage_info)
 
 		# GUARD: The owner may have been freed by the apply_damage call.
 		if not is_instance_valid(owner_node):
@@ -119,5 +122,5 @@ func _check_for_contact_damage() -> void:
 
 		if damage_result.was_damaged and p_data.health > 0:
 			owner_node.velocity = damage_result.knockback_velocity
-			owner_node.state_machine.change_state(owner_node.State.HURT)
+			owner_node.get_component(BaseStateMachine).change_state(owner_node.State.HURT)
 		break

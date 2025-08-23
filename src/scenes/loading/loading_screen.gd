@@ -76,11 +76,9 @@ func _prewarm_shaders() -> void:
 		# --- Trigger Actions to Compile More Shaders ---
 		if instance is Player:
 			instance.velocity.x = 100
-			if (
-				is_instance_valid(instance.state_machine)
-				and instance.state_machine.has_method("change_state")
-			):
-				instance.state_machine.change_state(instance.State.ATTACK)
+			var sm: BaseStateMachine = instance.get_component(BaseStateMachine)
+			if is_instance_valid(sm) and sm.has_method("change_state"):
+				sm.change_state(instance.State.ATTACK)
 		elif instance is BaseBoss:
 			instance.velocity.x = 100
 

@@ -66,10 +66,14 @@ func test_fire_shot_gets_instance_from_pool():
 
 func test_trigger_pogo_on_enemy_emits_bounce_request():
 	var mock_enemy = CharacterBody2D.new()
+	mock_enemy.add_to_group(Identifiers.Groups.ENEMY)
+
 	var mock_health = double(HealthComponent).new()
+	# THE FIX: Explicitly name the component so `find_damageable` can discover it.
 	mock_health.name = "HealthComponent"
-	stub(mock_health, "apply_damage").to_return(DamageResult.new())
 	mock_enemy.add_child(mock_health)
+	stub(mock_health, "apply_damage").to_return(DamageResult.new())
+
 	add_child(mock_enemy)
 
 	_player_data.is_pogo_attack = true
@@ -86,18 +90,16 @@ func test_trigger_pogo_on_enemy_emits_bounce_request():
 
 
 func test_trigger_pogo_on_projectile_returns_it_to_pool() -> void:
-	# THE FIX: This test must be async to account for call_deferred.
-	var mock_projectile = Node2D.new()  # Use Node2D for compatibility
+	var mock_projectile = Node2D.new()
 	mock_projectile.add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 	mock_projectile.set_meta("pool_name", Identifiers.Pools.TURRET_SHOTS)
-	add_child(mock_projectile)  # Add to tree so it's valid for deferred calls
+	add_child(mock_projectile)
 
 	_player_data.is_pogo_attack = true
 
 	var return_count_before = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
 	_combat_component.trigger_pogo(mock_projectile)
 
-	# THE FIX: Wait for one frame to allow the deferred call to execute.
 	await get_tree().physics_frame
 
 	var return_count_after = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)

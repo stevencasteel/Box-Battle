@@ -10,6 +10,19 @@ extends Node
 @export var health_component: HealthComponent
 
 
+# --- Public Methods (Mimicking BaseEntity) ---
+
+## Mimics the real BaseEntity's get_component method for test compatibility.
+func get_component(type: Script) -> IComponent:
+	if type == HealthComponent:
+		return health_component
+	if type == FXComponent:
+		return fx_component
+	if type == BaseStateMachine:
+		return state_machine
+	return null
+
+
 # Mimic CharacterBody2D methods for the overlay's checks to prevent errors.
 func is_on_floor() -> bool:
 	return true

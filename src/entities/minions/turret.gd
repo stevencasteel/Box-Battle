@@ -53,17 +53,19 @@ func _notification(what: int) -> void:
 
 
 func teardown() -> void:
-	if is_instance_valid(health_component):
-		if health_component.died.is_connected(_on_health_component_died):
-			health_component.died.disconnect(_on_health_component_died)
+	var hc: HealthComponent = get_component(HealthComponent)
+	if is_instance_valid(hc):
+		if hc.died.is_connected(_on_health_component_died):
+			hc.died.disconnect(_on_health_component_died)
 
 	super.teardown()
 	entity_data = null
 
 
 func deactivate() -> void:
-	if is_instance_valid(state_machine):
-		state_machine.teardown()
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm):
+		sm.teardown()
 	if is_instance_valid(attack_timer):
 		attack_timer.stop()
 
@@ -97,7 +99,8 @@ func _die() -> void:
 	collision_mask = 0
 	deactivate()
 
-	var death_tween: Tween = fx_component.play_effect(dissolve_effect)
+	var fc: FXComponent = get_component(FXComponent)
+	var death_tween: Tween = fc.play_effect(dissolve_effect)
 	if is_instance_valid(death_tween):
 		await death_tween.finished
 
@@ -124,6 +127,10 @@ func _initialize_and_setup_components() -> void:
 
 	attack_timer.wait_time = entity_data.config.turret_fire_rate
 
+	var hc: HealthComponent = get_component(HealthComponent)
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	var fc: FXComponent = get_component(FXComponent)
+
 	var shared_deps := {
 		"data_resource": entity_data, "config": entity_data.config, "fx_manager": _fx_manager
 	}
@@ -131,30 +138,26 @@ func _initialize_and_setup_components() -> void:
 	var states = {
 		State.IDLE:
 		load("res://src/entities/minions/states/state_turret_idle.gd").new(
-			self, state_machine, entity_data
+			self, sm, entity_data
 		),
 		State.ATTACK:
 		load("res://src/entities/minions/states/state_turret_attack.gd").new(
-			self, state_machine, entity_data
+			self, sm, entity_data
 		)
 	}
 
 	var per_component_deps := {
-		state_machine: {"states": states, "initial_state_key": State.IDLE},
-		fx_component:
-		{
-			"visual_node": visual,
-			"health_component": health_component,
-			"hit_effect": HIT_FLASH_EFFECT
-		},
-		health_component: {"hit_spark_effect": hit_spark_effect}
+		sm: {"states": states, "initial_state_key": State.IDLE},
+		fc: {"visual_node": visual, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
+		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 
 	setup_components(shared_deps, per_component_deps)
 
 
 func _connect_signals() -> void:
-	health_component.died.connect(_on_health_component_died)
+	var hc: HealthComponent = get_component(HealthComponent)
+	hc.died.connect(_on_health_component_died)
 
 
 # --- Signal Handlers ---

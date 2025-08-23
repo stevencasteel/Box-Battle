@@ -23,7 +23,6 @@ func _physics_process(_delta: float) -> void:
 	var current_state_key = state_machine.states.find_key(state_machine.current_state)
 
 	# --- Action State Logic ---
-	# NOTE: Heal logic has been moved to state_move.gd to prevent race conditions.
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
 
@@ -35,7 +34,8 @@ func _physics_process(_delta: float) -> void:
 	if input_component.buffer.get("attack_released"):
 		if p_data.is_charging:
 			if p_data.charge_timer >= p_data.config.player_charge_time:
-				(owner_node as Player).combat_component.fire_shot()
+				# THE FIX: Use get_component() to access the CombatComponent.
+				owner_node.get_component(CombatComponent).fire_shot()
 			elif input_component.buffer.get("down"):
 				state_machine.change_state(Player.State.POGO)
 			else:

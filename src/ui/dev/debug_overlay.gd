@@ -37,7 +37,7 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	var fps_text = "FPS: %d" % Engine.get_frames_per_second()
 
-	if not is_instance_valid(_target_entity):
+	if not is_instance_valid(_target_entity) or not _target_entity.has_method("get_component"):
 		state_label.text = "NO TARGET SELECTED"
 		velocity_label.text = fps_text
 		flags_label.text = ""
@@ -46,9 +46,7 @@ func _process(_delta: float) -> void:
 	else:
 		velocity_label.text = "%s | %s" % [_target_entity.name, fps_text]
 
-		var state_machine: BaseStateMachine = (
-			_target_entity.state_machine if "state_machine" in _target_entity else null
-		)
+		var state_machine: BaseStateMachine = _target_entity.get_component(BaseStateMachine)
 		var current_state_name = "N/A"
 		if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
 			current_state_name = state_machine.current_state.get_script().resource_path.get_file()
@@ -56,9 +54,7 @@ func _process(_delta: float) -> void:
 		state_label.text = "State: %s" % current_state_name
 
 		# --- Flags ---
-		var health_comp: HealthComponent = (
-			_target_entity.health_component if "health_component" in _target_entity else null
-		)
+		var health_comp: HealthComponent = _target_entity.get_component(HealthComponent)
 		var is_invincible_str = (
 			str(health_comp.is_invincible()) if is_instance_valid(health_comp) else "N/A"
 		)
@@ -69,7 +65,8 @@ func _process(_delta: float) -> void:
 		var flags_text = "Flags: OnFloor(%s) Invincible(%s)" % [on_floor_str, is_invincible_str]
 		if _target_entity is Player:
 			flags_text += " CanDash(%s)" % _target_entity.entity_data.can_dash
-			state_history_label.text = "History: " + ", ".join(state_machine.state_history)
+			if is_instance_valid(state_machine):
+				state_history_label.text = "History: " + ", ".join(state_machine.state_history)
 			_update_player_input_buffer()
 		else:
 			state_history_label.text = ""
@@ -97,7 +94,12 @@ func set_target(entity: Node) -> void:
 
 # --- Private Methods ---
 func _update_player_input_buffer() -> void:
-	var input_buffer: Dictionary = _target_entity.input_component.buffer
+	var input_comp: InputComponent = _target_entity.get_component(InputComponent)
+	if not is_instance_valid(input_comp):
+		input_buffer_label.text = "Input: N/A"
+		return
+
+	var input_buffer: Dictionary = input_comp.buffer
 	var input_text_parts: Array[String] = []
 	for key in input_buffer:
 		var value = input_buffer[key]

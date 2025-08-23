@@ -91,7 +91,9 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y += entity_data.config.gravity * delta
 	move_and_slide()
-	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
+
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm) and sm.current_state == sm.states[State.PATROL] and is_on_wall():
 		entity_data.facing_direction *= -1.0
 
 
@@ -100,13 +102,14 @@ func _physics_process(delta: float) -> void:
 
 func teardown() -> void:
 	set_physics_process(false)
-	if is_instance_valid(health_component):
-		if health_component.health_changed.is_connected(_on_health_component_health_changed):
-			health_component.health_changed.disconnect(_on_health_component_health_changed)
-		if health_component.died.is_connected(_on_health_component_died):
-			health_component.died.disconnect(_on_health_component_died)
-		if health_component.health_threshold_reached.is_connected(_on_health_threshold_reached):
-			health_component.health_threshold_reached.disconnect(_on_health_threshold_reached)
+	var hc: HealthComponent = get_component(HealthComponent)
+	if is_instance_valid(hc):
+		if hc.health_changed.is_connected(_on_health_component_health_changed):
+			hc.health_changed.disconnect(_on_health_component_health_changed)
+		if hc.died.is_connected(_on_health_component_died):
+			hc.died.disconnect(_on_health_component_died)
+		if hc.health_threshold_reached.is_connected(_on_health_threshold_reached):
+			hc.health_threshold_reached.disconnect(_on_health_threshold_reached)
 
 	super.teardown()
 	entity_data = null
@@ -146,8 +149,9 @@ func _die() -> void:
 		return
 	_is_dead = true
 
-	if is_instance_valid(state_machine):
-		state_machine.teardown()
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm):
+		sm.teardown()
 
 	cooldown_timer.stop()
 	patrol_timer.stop()
@@ -163,9 +167,9 @@ func _die() -> void:
 		_fx_manager.request_screen_shake(death_shake_effect)
 	_fx_manager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
 
-	if is_instance_valid(dissolve_effect):
-		# THE FIX: Tell the FXComponent to preserve the final shader state.
-		fx_component.play_effect(dissolve_effect, {}, {"preserve_final_state": true})
+	var fc: FXComponent = get_component(FXComponent)
+	if is_instance_valid(dissolve_effect) and is_instance_valid(fc):
+		fc.play_effect(dissolve_effect, {}, {"preserve_final_state": true})
 
 	_event_bus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
 
@@ -186,36 +190,36 @@ func _initialize_data() -> void:
 
 
 func _initialize_and_setup_components() -> void:
+	var hc: HealthComponent = get_component(HealthComponent)
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	var fc: FXComponent = get_component(FXComponent)
+
 	var shared_deps := {
 		"data_resource": entity_data, "config": entity_data.config, "fx_manager": _fx_manager
 	}
 
 	var states = {
-		State.IDLE: state_idle_script.new(self, state_machine, entity_data),
-		State.ATTACK: state_attack_script.new(self, state_machine, entity_data),
-		State.COOLDOWN: state_cooldown_script.new(self, state_machine, entity_data),
-		State.PATROL: state_patrol_script.new(self, state_machine, entity_data),
-		State.LUNGE: state_lunge_script.new(self, state_machine, entity_data),
+		State.IDLE: state_idle_script.new(self, sm, entity_data),
+		State.ATTACK: state_attack_script.new(self, sm, entity_data),
+		State.COOLDOWN: state_cooldown_script.new(self, sm, entity_data),
+		State.PATROL: state_patrol_script.new(self, sm, entity_data),
+		State.LUNGE: state_lunge_script.new(self, sm, entity_data),
 	}
 
 	var per_component_deps := {
-		state_machine: {"states": states, "initial_state_key": State.COOLDOWN},
-		fx_component:
-		{
-			"visual_node": visual_sprite,
-			"health_component": health_component,
-			"hit_effect": HIT_FLASH_EFFECT
-		},
-		health_component: {"hit_spark_effect": hit_spark_effect}
+		sm: {"states": states, "initial_state_key": State.COOLDOWN},
+		fc: {"visual_node": visual_sprite, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
+		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 
 	setup_components(shared_deps, per_component_deps)
 
 
 func _connect_signals() -> void:
-	health_component.health_changed.connect(_on_health_component_health_changed)
-	health_component.died.connect(_on_health_component_died)
-	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
+	var hc: HealthComponent = get_component(HealthComponent)
+	hc.health_changed.connect(_on_health_component_health_changed)
+	hc.died.connect(_on_health_component_died)
+	hc.health_threshold_reached.connect(_on_health_threshold_reached)
 
 
 func _update_player_tracking() -> void:
@@ -249,19 +253,15 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 
 
 func _on_cooldown_timer_timeout() -> void:
-	if (
-		is_instance_valid(state_machine)
-		and state_machine.current_state == state_machine.states[State.COOLDOWN]
-	):
-		state_machine.change_state(State.PATROL)
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm) and sm.current_state == sm.states[State.COOLDOWN]:
+		sm.change_state(State.PATROL)
 
 
 func _on_patrol_timer_timeout() -> void:
-	if (
-		is_instance_valid(state_machine)
-		and state_machine.current_state == state_machine.states[State.PATROL]
-	):
-		state_machine.change_state(State.IDLE)
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm) and sm.current_state == sm.states[State.PATROL]:
+		sm.change_state(State.IDLE)
 
 
 func _on_health_component_health_changed(current: int, max_val: int) -> void:

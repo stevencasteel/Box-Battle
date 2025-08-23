@@ -11,6 +11,8 @@ extends Control
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
+		# The FXComponent is a direct child in this tool scene, not built from an archetype.
+		# We can set it up directly.
 		fx_component.setup(test_subject, {"visual_node": test_subject})
 		test_subject.visible = true
 

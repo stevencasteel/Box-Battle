@@ -7,18 +7,6 @@ extends CharacterBody2D
 # --- Editor Properties ---
 @export var archetype: EntityArchetype
 
-# --- Public Member Variables ---
-# TODO: These direct references will be removed after all entities are
-# refactored to use the new get_component() method.
-var health_component: HealthComponent
-var combat_component: CombatComponent
-var input_component: InputComponent
-var state_machine: BaseStateMachine
-var physics_component: PlayerPhysicsComponent
-var ability_component: PlayerAbilityComponent
-var resource_component: PlayerResourceComponent
-var fx_component: FXComponent
-
 # --- Private Member Variables ---
 var _components_initialized: bool = false
 var _injected_dependencies: Dictionary = {}
@@ -41,6 +29,14 @@ func _ready() -> void:
 ## Example: get_component(HealthComponent)
 func get_component(type: Script) -> IComponent:
 	return _components.get(type)
+
+
+## Helper that asserts and provides a clear error if a required component is missing.
+func require_component(type: Script) -> IComponent:
+	var c = get_component(type)
+	if not is_instance_valid(c):
+		push_error("Missing required component: %s on entity %s" % [type.resource_path, name])
+	return c
 
 
 ## Called by the entity creator (ArenaBuilder) before the entity enters the scene tree.
@@ -114,26 +110,4 @@ func _cache_components_by_type() -> void:
 			continue
 
 		# Store component in the dictionary using its script as the key.
-		# This is the new, scalable approach.
 		_components[child.get_script()] = child
-
-		# TODO: This section is for backward compatibility and will be removed.
-		# It populates the old direct-reference variables.
-		if child is HealthComponent:
-			health_component = child
-		elif child is CombatComponent:
-			combat_component = child
-		elif child is InputComponent:
-			input_component = child
-		elif child is BaseStateMachine:
-			state_machine = child
-		elif child is PlayerPhysicsComponent:
-			physics_component = child
-		elif child is PlayerAbilityComponent:
-			ability_component = child
-		elif child is PlayerResourceComponent:
-			resource_component = child
-		elif child is FXComponent:
-			fx_component = child
-		else:
-			push_warning("Unbound component on '%s': %s" % [name, child.get_class()])

@@ -51,22 +51,23 @@ func test_player_attack_damages_boss_and_fires_event():
 	# 1. VERIFY SETUP
 	assert_not_null(_player, "Player should be instanced in the scene.")
 	assert_not_null(_boss, "Boss should be instanced in the scene.")
-	var boss_health_comp: HealthComponent = _boss.health_component
+	var boss_health_comp: HealthComponent = _boss.get_component(HealthComponent)
 	var initial_boss_health = boss_health_comp.entity_data.health
 
 	# 2. POSITION ACTORS & WAIT FOR STABLE STATE
 	_player.global_position = _boss.global_position + Vector2(-60, 0)
 	_player.entity_data.facing_direction = 1
 
+	var player_sm: BaseStateMachine = _player.get_component(BaseStateMachine)
 	var wait_frames = 10
 	for i in range(wait_frames):
-		if _player.state_machine.current_state == _player.state_machine.states[_player.State.MOVE]:
+		if player_sm.current_state == player_sm.states[_player.State.MOVE]:
 			break
 		await get_tree().physics_frame
 
 	assert_eq(
-		_player.state_machine.current_state,
-		_player.state_machine.states[_player.State.MOVE],
+		player_sm.current_state,
+		player_sm.states[_player.State.MOVE],
 		"Player must be in MOVE state before attacking."
 	)
 
