@@ -115,264 +115,143 @@
 Add dust on landing, walking, touching wall, and jumping from wall.
 
 
+Understood. I misinterpreted the request. I will now provide the requested audit and plan without implementing any code.
 
+Audit and Assessment
 
+The provided checklist (items 1-37) is comprehensive, well-structured, and remains entirely valid. It addresses the key architectural and systemic needs of a growing Godot project. The items are concrete, have clear acceptance criteria, and align with professional game development practices.
 
+The accompanying "ChatGPT-5" analysis serves as a strong validation of your list. The risks it identifies are already solved by specific items in your plan:
 
-Nice — I pulled the dump apart and distilled **only** the concrete ideas that still need implementation. I removed duplication and grouped related items so you can pick work by area. No fluff — just actionable items with a one-line acceptance check for each.
+Risk: Shared ShaderMaterial mutation.
 
-# High-level implementation checklist (grouped & prioritized)
+Your Solution: Item #17 (material.duplicate() enforcement) and Item #9 (reliable material binding/restoring).
 
-## Shader foundation & mobile renderer (PHASE 1)
+Risk: Shader compile hitches on mobile.
 
-1. Create `res://shaders/includes/` and add modular `.gdshaderinc` files (common\_math, color, noise, fx\_blend).
-   *Accept:* includes exist and are used by at least two shaders.
+Your Solution: Item #5 (shader prewarm/stagger routine) and Item #33 (performance profiling harness).
 
-2. Convert critical VisualShaders to text `.gdshader` files (hit-flash, pulse).
-   *Accept:* two converted shaders visually match originals.
+Risk: Hidden dependencies and testability friction from autoloads.
 
-3. Enforce shader header + sampler hints: ensure `shader_type canvas_item;` and `: source_color` where needed — add lint check.
-   *Accept:* lint script flags missing headers/hints and passes repo.
+Your Solution: Item #23 (dependency injection pattern), Item #31 (GUT tests with fakes), and Item #35 (weak-binding helpers).
 
-4. Implement shader global uniforms pattern + `ShaderGlobalsOverride` node for level overrides.
-   *Accept:* fx\_global\_time and one override parameter can be set per-level.
+Risk: Event storms and lack of FX budgeting.
 
-5. Add a shader prewarm/stagger routine that compiles important shaders across frames.
-   *Accept:* targeted shaders are compiled before first in-game use without a single-frame hitch.
+Your Solution: Item #12 (budget tracking and degrade policy).
 
-6. Add mobile-specific shader rules: pack maps into channels, avoid loops/branching; document required precision model.
-   *Accept:* short doc added and one shader refactored to channel-packed maps.
+The list requires no distillation. It is an actionable, high-quality backlog. The proposed "PR / delivery plan" is also a logical and effective way to sequence the work.
 
-## Data-driven FX system (PHASE 2)
+Phased Implementation Plan
 
-7. Create `ShaderEffect` Resource (fields: shader/material, duration, scope enum, default\_params, priority, tags, optional sound).
-   *Accept:* Resource type exists and can be authored in editor.
+This is the strategic plan to resolve the checklist, following your proposed PR-based phasing. Each phase represents a group of related tasks that can be developed, tested, and merged as a coherent unit.
 
-8. Implement `FXManager.play_shader(effect: ShaderEffect, target, opts := {})` + `prewarm_shaders(effects:Array)`.
-   *Accept:* API callable and used by a sample effect.
+Phase 1: Shader Foundation (PR A)
 
-9. Implement scope-specific bindings: `EntityShaderBinding`, `UIShaderBinding`, `FullscreenShaderBinding` (bind/restore without leaking).
-   *Accept:* Binding duplicates/restores material reliably under node free/scene change.
+Goal: Establish a robust, reusable, and enforceable shader architecture. This is the bedrock for all future visual effects work.
 
-10. Model shader effects the same as other FX (particles/screen shakes) — unify through an IFxEffect contract or documented contract.
-    *Accept:* FXManager treats ShaderEffect and VFXEffect the same in mapping.
+Tasks:
 
-11. Implement object pooling for ShaderMaterial instances used by FX (use ObjectPool autoload).
-    *Accept:* pool returns recycled instances and reduces repeated allocations.
+#1: Create res://shaders/includes/ with .gdshaderinc files.
 
-12. Add `FXManager` budget tracking + basic backpressure / degrade policy (skip low-priority FX when over budget).
-    *Accept:* when budget exceeded, low-priority effects are skipped and reported by a debug overlay.
+#2: Convert hit-flash and pulse VisualShaders to text .gdshader.
 
-13. Add an FX testbed scene `tools/fx_playground.tscn` to preview/iterate effects and show performance readout.
-    *Accept:* playground shows effect toggles, param sliders, and concurrent-FX count.
+#3: Enforce shader header and sampler hints (shader_type, : source_color).
 
-14. Hook common events -> effects mapping: EventBus → FXManager mapping table (damage → hit-flash, phase change → shockwave).
-    *Accept:* mappings are data-driven and can be updated without code changes.
+#15: Add lint script to validate required uniforms (fx_progress, fx_intensity).
 
-## Shader patterns, anti-patterns & lints (PHASE 3)
+#16: Standardize and document the shader parameter contract.
 
-15. Add lint/check script that validates effect shaders declare required uniforms (`fx_progress`, `fx_intensity`) and `shader_type canvas_item`.
-    *Accept:* CI lint runs and enforces rules.
+Phase 2: Data-Driven FX System (PR B)
 
-16. Standardize shader parameter contract and document it (fx\_progress, fx\_intensity, optional fx\_global\_time, SCREEN\_TEXTURE for fullscreen).
-    *Accept:* doc + a simple example shader that follows contract.
+Goal: Build the core runtime system for managing shader effects, decoupling FX logic from game logic.
 
-17. Implement `material = material.duplicate()` pattern enforcement (lint or QA warning) to avoid shared-material mutation.
-    *Accept:* at least one lint rule or runtime assert exists.
+Tasks:
 
-## Audio pipeline (PHASE 4)
+#7: Create the ShaderEffect Resource.
 
-18. Implement Audio bus layout (Master / SFX / UI / Music) with a Master limiter/compressor preset.
-    *Accept:* buses exist and Master limiter is routable.
+#8: Implement FXManager.play_shader() and prewarm_shaders().
 
-19. Implement `AudioManager` with pools of `AudioStreamPlayer2D` and non-positional players, voice caps and stealing logic, and APIs `play_sfx(tag, pos)`, `play_ui(tag)`, `play_music(track, crossfade_sec)`.
-    *Accept:* SFX pool plays positional sounds and respects voice cap.
+#9: Implement scope-specific material bindings (EntityShaderBinding, etc.).
 
-20. Add import presets & AudioStreamRandomizer support for natural SFX variation.
-    *Accept:* example SFX uses AudioStreamRandomizer and plays randomized variations.
+#10: Unify ShaderEffect with other FX contracts.
 
-## Scene & code organization (PHASE 5)
+#11: Implement ObjectPool for ShaderMaterial instances.
 
-21. Remove/rename legacy `vfx_manager.gd` to avoid confusion with `FXManager` (or deprecate it).
-    *Accept:* no duplicate-named manager in autoloads.
+#12: Add FXManager budget tracking and backpressure policy.
 
-22. Enforce directory conventions: shaders/, materials/, data/effects/, audio/. Move/organize resources accordingly.
-    *Accept:* at least one resource moved and scenes updated.
+#13: Create the fx_playground.tscn testbed scene.
 
-23. Expand `setup(owner, dependencies)` DI pattern across autoload-using components; add façade interfaces (e.g., `IEventBus`) with default autoload provider.
-    *Accept:* two components refactored to accept injected providers and tests use fakes.
+#14: Hook EventBus events to the FXManager.
 
-## Save, Stage Select & Encounter Registry (GAMEPLAY)
+#5: Implement the shader prewarm routine using the FXManager.
 
-24. Implement `SaveManager` with multi-slot, versioned schema, atomic writes (`*.tmp` -> rename) and `.bak` fallback + migrator hook.
-    *Accept:* save/load works with slot switching; corruption fallback works in test.
+#34: Add FXManager.get_budget_status() debug overlay.
 
-25. Implement `EncounterRegistry.tres` (id, scene path, thumbnail, meta) and data-driven StageSelect that reads it.
-    *Accept:* StageSelect is data-driven and reflects registry status.
+Phase 3: Audio Pipeline (PR C)
 
-26. Emit `BOSS_DEFEATED` event and write boss state to SaveManager when boss dies.
-    *Accept:* defeating a boss updates save state and StageSelect reflects it.
+Goal: Implement a professional-grade audio system with proper mixing, voice management, and data-driven playback.
 
-## Dialogue & Narrative (SYSTEMS)
+Tasks:
 
-27. Harden `DialogueManager` into a resource-driven runner: `DialogueData` as a small graph with `DialogueLine`s and optional `DialogueBranch` conditions.
-    *Accept:* manager can run a `DialogueData` asset and follow linear/branching flows.
+#18: Implement the audio bus layout (Master, SFX, UI, Music) with a master limiter.
 
-28. Implement dialogue inline tags (`[fx:shockwave]`, `[sfx:blip]`, `[shake]`) and wiring so `DialogueBox` emits signals that `FXManager`/AudioManager can bind to.
-    *Accept:* tags trigger effects/sfx when a line plays.
+#19: Implement the AudioManager with player pools and voice management.
 
-29. Add `IWorldQuery` abstraction used by Dialogue for conditions (backed by SaveManager).
-    *Accept:* branch conditions evaluated via injected query provider.
+#20: Add import presets and AudioStreamRandomizer support.
 
-30. Typewriter polish: variable CPS, curve-driven reveal, instant reveal on input, and per-character sfx.
-    *Accept:* user input reveals text and per-character sfx plays.
+Phase 4: Gameplay Loop - Progression (PR D)
 
-## Tests, CI & QA (PHASE 7)
+Goal: Build the core save/load and stage progression systems.
 
-31. Integrate GUT tests for: material-restore on FX teardown; SaveManager write/read and migration; EventBus fakes for unit tests.
-    *Accept:* GUT tests run in CI (headless where possible) and pass.
+Tasks:
 
-32. Add a CI job to run shader lint and missing-resource checks (disk-check).
-    *Accept:* CI fails when shader contract/lint fails or scene references missing resource.
+#24: Implement the SaveManager with atomic writes and versioning.
 
-33. Add performance/device QA harness for shader profiling (capture baseline), and an acceptance test that prewarms shaders and confirms no big compile spike.
-    *Accept:* test produces a perf report and prewarm reduces first-use hitch.
+#25: Implement the EncounterRegistry.tres and data-driven Stage Select screen.
 
-## Small / developer ergonomics items
+#26: Connect boss defeat events to the SaveManager.
 
-34. Add `FXManager.get_budget_status()` and a debug overlay that shows concurrent FX, queued tweens, frame delta.
-    *Accept:* overlay toggles and shows meaningful numbers.
+Phase 5: Narrative Systems (PR E)
 
-35. Add `EventBus.bind_weak(node, event, callable)` helper (auto-unsubscribe on node free).
-    *Accept:* helper exists and prevents dangling listeners.
+Goal: Harden the dialogue system into a flexible, resource-driven narrative engine.
 
-36. Add `fx_playground.tscn` automation to CI (smoke-run) to visually sanity-check effects (non-blocking).
-    *Accept:* test runs the playground scene in headless/smoke mode without errors.
+Tasks:
 
-37. Add a short "How to add a ShaderEffect" cookbook doc and a one-page mobile-shader checklist in repo.
-    *Accept:* doc present and referenced from README.
+#27: Refactor DialogueManager to run on DialogueData resources.
 
-## PR / delivery plan (top practical order)
+#28: Implement inline tags ([fx], [sfx]) in dialogue.
 
-* PR A: shader-foundation (includes/, convert 1–2 shaders, shader lint). (items 1–3, 15–16)
-* PR B: FXManager + ShaderEffect + bindings + prewarm + testbed. (items 7–14, 5, 34)
-* PR C: AudioManager + bus + pools + presets. (items 18–20)
-* PR D: SaveManager + EncounterRegistry + StageSelect. (items 24–26)
-* PR E: DialogueManager runner + tags + world-query contract. (items 27–30)
-* PR F: Tests & CI: GUT integration, shader lint in CI, performance harness. (items 31–33, 36)
-* PR G: Cleanup & docs: rename legacy vfx\_manager, move folders, add cookbook. (items 21–23, 37)
+#29: Add IWorldQuery abstraction for conditional branching.
 
----
+#30: Polish typewriter effect (variable speed, instant reveal, etc.).
 
+Phase 6: CI & Testing (PR F)
 
+Goal: Automate quality control, ensuring stability and preventing regressions.
 
+Tasks:
 
+#31: Integrate GUT tests for critical systems (FX, Save, Events).
 
-ChatGPT-5:
-Nice — I read through the repo snapshot you uploaded and did targeted web research on Godot best practices so my recommendations are both grounded in your code and current engine guidance. Below is an audit focused on not-obvious problems I found, followed by concrete, professional evolutions (prioritized) you can apply immediately.
+#32: Add a CI job for shader linting and resource checking.
 
-Quick summary (one-paragraph)
+#33: Add performance/QA harness for shader profiling.
 
-Your codebase already follows many strong patterns: componentized entities, Resource-driven tuning, typed event payloads, and an intentional effort to move away from hidden global dependencies (you’ve added setup() patterns). That puts you several steps ahead of most hobby projects. The things that remain risky are subtle: shared-material mutation, event storms / implicit global coupling via autoloads, shader compile stutters on mobile, and some testability friction that comes from how singletons are used. I’ll show why those are risky, point to exact files in your tree, and propose professional, low-friction patterns to evolve each area.   
+#36: Automate fx_playground.tscn as a CI smoke test.
 
-Not-obvious findings (with evidence)
+Phase 7: Refinement & Documentation (PR G)
 
-Shared ShaderMaterial mutation risk (visual/material leaks).
+Goal: Clean up technical debt, enforce conventions, and create developer-facing documentation.
 
-You already have code and docs calling out this problem (explicit “duplicate materials when changing per-node parameters. Never mutably edit a shared material at runtime” and the FXComponent behavior around restoring materials). That indicates you've hit this in practice. Mutating a shared ShaderMaterial at runtime causes unexpected visual changes across multiple instances and is a common source of “why did this other entity change?” bugs.  
+Tasks:
 
-EventBus/autoload convenience → hidden dependency/test friction.
+#21: Rename/deprecate legacy vfx_manager.gd.
 
-You use many autoloads (EventBus, FXManager, ObjectPool, etc.) listed in project.godot. Autoloads are fine in Godot, but they hide dependencies and make unit tests harder unless every consumer accepts injected overrides. Your repo has partial moves to setup() for explicit dependencies (good!), but some code still emits/consumes globally which risks tight coupling at scale.  
+#22: Enforce project directory conventions.
 
-Event storm / FX stacking edge-cases.
+#23: Expand DI patterns across components.
 
-The EventBus emits directly and prunes dead listeners, but high-frequency events (damage ticks, rapid collisions) need coalescing/debouncing at the manager-level to avoid flooding the FX pipeline (and wasting shader/CPU/Tween budgets). Your docs mention “coalesce by priority” but I don’t see a dedicated debouncing layer yet.  
+#35: Add EventBus.bind_weak() helper.
 
-Shader compile / runtime hitch risks on mobile.
+#37: Write "How to add a ShaderEffect" and mobile shader checklist documents.
 
-You’ve implemented a dissolve shader and an FX prewarm plan in the TODOs (good), but Godot shader pipeline compilation can hitch at first run on device if not prewarmed/staggered — especially on mobile GPUs. There are engine docs and community posts that recommend prewarming/compiling shaders ahead of first display. ; see Godot docs on shader pipeline compilation. (Godot Documentation)
-
-Test/CI gaps vs. architecture changes.
-
-You have GUT present (addon code and test scaffolding) and clear TODOs to fully integrate CI and headless runs. That’s the right move; missing items are: standardized test doubles for autoloads, headless integration scenarios, and CI hooks that run deterministic smoke tests. 
-
-Concrete next-level evolutions (professional patterns)
-
-I prioritized high-impact / low-risk changes first.
-
-1) Make FX/Shader usage robust and predictable (High priority)
-
-API: Add FXManager.play_shader(effect: ShaderEffect, target: Node, opts := {}) and FXManager.prewarm_shaders(effects: Array[ShaderEffect]). (You already proposed these — implement them.) This centralizes lifecycle, duplication, and fallback rules. 
-
-Material handling rule (enforced in FXComponent): Always call material = material.duplicate() (or ShaderMaterial.new() + set shader/resource parameters) before changing uniforms or starting a tween; restore or free it on finish. Add assert/lint to detect writes to .material on shared resource. (Your TODO explicitly mentions this pattern; make it code-enforced.) 
-
-Prewarm pipeline: On game start, call FXManager.prewarm_shaders() that sets each important material on a hidden canvas node for 1 frame, then removes it — stagger across frames to avoid a single hitch. This follows Godot guidance for pipeline precompilation. (Godot Documentation)
-
-2) Harden event / FX budget (High priority)
-
-Coalescing layer: Add an EventCoalescer inside FXManager (or as a small middleware autoload) that:
-
-collapses repeated hit_flash events from same entity within X ms,
-
-applies priority (UI effects > boss phase > small hits) and drops low priority when budget reached,
-
-exposes simple metrics (current concurrent FX).
-
-This pattern prevents FX over-saturation and is often used in commercial games. (You already flagged it; implement it now.) 
-
-Backpressure policy: When frame time goes above threshold, pause low-priority FX for N frames rather than queueing unlimited tweens.
-
-3) Make autoload usage explicit and testable (Medium priority)
-
-Prefer injection at construction: Continue the setup(owner, dependencies) pattern and expand it: where autoloads are used in gameplay-critical components, pass an object implementing a small interface rather than calling the global directly. You already use this pattern in InputComponent.setup and BaseStateMachine.setup. Enforce by linting for EventBus. usages in non-orchestrator components.  
-
-Autoload façade + replaceable provider: Keep autoloads, but wrap them behind a small façade interface (e.g., IEventBus), then have the autoload register itself as the default provider. Tests can then inject a lightweight fake. This gives engine-idiomatic singletons with testable substitution — it’s the simplest practical inversion-of-control for Godot. Web docs discuss autoload pros/cons; this is the standard compromise. (Godot Documentation, Game Development Stack Exchange)
-
-4) Strengthen the EventBus and typed events (Medium)
-
-Typed events everywhere: You’ve made typed event resources (e.g., PlayerHealthChangedEvent) — expand this to critical event flows and remove ambiguous dict payloads. Typed resources improve discoverability and auto-complete. 
-
-Auto-unsubscribe helpers: Provide a helper that binds a listener and auto-unsubscribes on node-free to avoid leaks — you already partially prune dead owners; add an ergonomic EventBus.bind_weak(node, event, callable) helper to reduce user errors. 
-
-5) CI + testing hygiene (Medium)
-
-GUT + headless CI: Finalize headless integration test that instantiates ArenaBuilder and runs a short simulated encounter for X frames and asserts “no error logs.” Add GUT to GitHub Actions and run in the matrix for target platforms you support (headless Linux for logic, device/Android smoke for shaders if possible). The GUT repo is your anchor and has patterns for doubles & spies. (GitHub) 
-
-Autoload fakes: Add a tests/fakes/ folder with simple fakes for EventBus, ObjectPool, FXManager — inject via setup() into components when tests run. This pattern will let you get true unit tests (fast) and keep a small number of integration tests that exercise autoloads.
-
-6) Shader & mobile: anti-patterns to avoid (Quick checklist)
-
-Avoid complex loops and per-pixel heavy branches on mobile; pack maps into channels; avoid many texture lookups per fragment. You already have TODOs for channel packing and modular includes — formalize these as a shaders/includes/ library.  (Godot Documentation)
-
-Small/“not obvious” code-level suggestions you can add in 1–2 commits
-
-Lint rule that flags .material writes to Node unless the write uses .duplicate() first. (Prevents accidental shared-material mutation.)
-
-Add FXManager.get_budget_status() (returns current concurrent shader count, queued tweens, frame delta) and a debug overlay showing it.
-
-Central LogManager that replaces free print() in runtime-critical modules — easier to search test logs and add levels (info/warn/error). Your docs already recommend this. 
-
-Add an fx_playground.tscn automated test that runs each ShaderEffect for its full duration to detect shader compile/visual regressions in CI. You already have tools/fx_playground.* for iteration — reuse it in tests. 
-
-Short prioritized roadmap (what to ship first)
-
-Material duplication + FXManager API + prewarm (small, high payoff). 
-
-Event coalescing + priority/backpressure (prevents noisy regressions). 
-
-GUT CI + autoload fakes + headless integration (ensures future refactors are safe).  (GitHub)
-
-Add linters (shader header checks, .material mutation detection) and the debug FX budget overlay. 
-
-Sources I used (engine guidance + community experience)
-
-Godot official docs: CanvasItem / shader guidance and pre-compilation notes. (Godot Documentation)
-
-Godot docs: singletons/autoload discussion and best-practice tradeoffs. (Godot Documentation)
-
-Signal/Event bus best practices / tutorials (Gdquest). (GDQuest)
-
-GUT (Godot Unit Test) — repo & testing patterns. (GitHub)
-
-Your repo: project.godot autoload list, FXComponent, EventBus, shader files, FX TODOs and docs.

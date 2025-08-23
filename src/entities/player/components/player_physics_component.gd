@@ -11,8 +11,6 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: Player
 var p_data: PlayerStateData
-var health_component: HealthComponent
-var input_component: InputComponent
 
 # --- Godot Lifecycle Methods ---
 
@@ -39,22 +37,18 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
-	self.health_component = p_dependencies.get("health_component")
-	self.input_component = p_dependencies.get("input_component")
-	assert(is_instance_valid(input_component), "PlayerPhysicsComponent requires an InputComponent.")
-	assert(is_instance_valid(health_component), "PlayerPhysicsComponent requires a HealthComponent.")
 
 
 func teardown() -> void:
 	set_physics_process(false)
 	owner_node = null
 	p_data = null
-	health_component = null
-	input_component = null
 
 
 func apply_horizontal_movement() -> void:
-	var move_axis = owner_node.get_component(InputComponent).buffer.get("move_axis", 0.0)
+	var input_component: InputComponent = owner_node.get_component(InputComponent)
+	if not is_instance_valid(input_component): return
+	var move_axis = input_component.buffer.get("move_axis", 0.0)
 	owner_node.velocity.x = move_axis * p_data.config.player_speed
 	if not is_zero_approx(move_axis):
 		p_data.facing_direction = sign(move_axis)
@@ -67,6 +61,7 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 ## Checks if the conditions for performing a wall slide are met.
 func can_wall_slide() -> bool:
 	var ic: InputComponent = owner_node.get_component(InputComponent)
+	if not is_instance_valid(ic): return false
 	var move_axis = ic.buffer.get("move_axis", 0.0)
 	return (
 		p_data.wall_coyote_timer > 0
@@ -88,7 +83,8 @@ func perform_wall_jump() -> void:
 
 
 func _check_for_contact_damage() -> void:
-	if health_component.is_invincible():
+	var health_component: HealthComponent = owner_node.get_component(HealthComponent)
+	if not is_instance_valid(health_component) or health_component.is_invincible():
 		return
 
 	for i in range(owner_node.get_slide_collision_count()):

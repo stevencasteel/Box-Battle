@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 17:05:58 CDT 2025
+Generated on: Sat Aug 23 17:47:04 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -1549,11 +1549,12 @@ const ICON_SOUND_OFF = preload(AssetPaths.ICON_UI_SOUND_OFF)
 
 
 func _ready() -> void:
-	# This component is now self-managing.
-	# It connects to its own signals and the global Settings singleton.
 	if not Engine.is_editor_hint():
+		# This component is now fully self-managing.
 		self.pressed.connect(_on_pressed)
 		Settings.audio_settings_changed.connect(_on_audio_settings_changed)
+		self.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		self.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 		_on_audio_settings_changed() # Sync icon on ready
 
 
@@ -1563,6 +1564,10 @@ func _exit_tree() -> void:
 			self.pressed.disconnect(_on_pressed)
 		if Settings.audio_settings_changed.is_connected(_on_audio_settings_changed):
 			Settings.audio_settings_changed.disconnect(_on_audio_settings_changed)
+		if self.mouse_entered.is_connected(CursorManager.set_pointer_state.bind(true)):
+			self.mouse_entered.disconnect(CursorManager.set_pointer_state.bind(true))
+		if self.mouse_exited.is_connected(CursorManager.set_pointer_state.bind(false)):
+			self.mouse_exited.disconnect(CursorManager.set_pointer_state.bind(false))
 
 
 # --- Public Methods ---
@@ -2229,6 +2234,9 @@ func _animate_hover(p_is_hovered: bool) -> void:
 func _on_mouse_entered() -> void:
 	is_hovered = true
 	_animate_hover(true)
+	if not Engine.is_editor_hint():
+		CursorManager.set_pointer_state(true)
+		AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 
 
 func _on_mouse_exited() -> void:
@@ -2237,6 +2245,8 @@ func _on_mouse_exited() -> void:
 		is_pressed = false
 		queue_redraw()
 	_animate_hover(false)
+	if not Engine.is_editor_hint():
+		CursorManager.set_pointer_state(false)
 
 
 =====================================
@@ -3080,33 +3090,31 @@ func _ready() -> void:
 	exit_button.text = "EXIT"
 
 	if not Engine.is_editor_hint():
-		# --- Connect Signals ---
+		# --- Connect Action Signals ---
 		start_button.pressed.connect(_on_start_button_pressed)
 		options_button.pressed.connect(_on_options_button_pressed)
 		exit_button.pressed.connect(_on_exit_button_pressed)
 		newgrounds_logo.pressed.connect(_on_logo_pressed)
 		godot_logo.pressed.connect(_on_logo_pressed)
 		itch_logo.pressed.connect(_on_logo_pressed)
-		# THE FIX: Mute button pressed signal is no longer connected here.
 
-		# --- Connect All Items to Feedback Handlers ---
-		# THE FIX: MuteButton now handles its own sound, so remove it from this generic list.
-		var generic_items: Array[Control] = [
-			start_button, options_button, newgrounds_logo, godot_logo, itch_logo
+		# --- Connect All Items to Generic Feedback Handlers ---
+		var all_interactive_items: Array[Control] = [
+			start_button,
+			options_button,
+			exit_button,
+			newgrounds_logo,
+			godot_logo,
+			itch_logo,
 		]
-		for item in generic_items:
+		for item in all_interactive_items:
 			item.pressed.connect(_on_any_item_pressed)
+
+		var focusable_items: Array[StyledMenuItem] = [start_button, options_button, exit_button]
+		for item in focusable_items:
+			item.focus_entered.connect(_on_any_item_focused)
 			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-			if item is StyledMenuItem:
-				item.focus_entered.connect(_on_any_item_focused)
-
-		# Connect feedback for the exit button and mute button separately
-		exit_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-		exit_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		exit_button.focus_entered.connect(_on_any_item_focused)
-		mute_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-		mute_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
 
 		# --- Initialize Menu Manager ---
 		var menu_manager = MenuManagerScript.new()
@@ -3118,7 +3126,6 @@ func _ready() -> void:
 		await get_tree().process_frame
 		start_button.grab_focus()
 
-# --- THE FIX: No longer need _exit_tree, _on_mute_button_pressed, or _on_audio_settings_changed ---
 
 # --- Signal Handlers ---
 
@@ -4429,7 +4436,7 @@ class Pools:
 	const HIT_SPARKS = &"hit_sparks"
 
 
-## THE FIX: Container for all Player state keys.
+## Container for all Player state keys.
 class PlayerStates:
 	const MOVE = &"move"
 	const JUMP = &"jump"
@@ -4442,7 +4449,7 @@ class PlayerStates:
 	const POGO = &"pogo"
 
 
-## THE FIX: Container for all Boss state keys.
+## Container for all Boss state keys.
 class BossStates:
 	const IDLE = &"idle"
 	const ATTACK = &"attack"
@@ -4451,7 +4458,7 @@ class BossStates:
 	const LUNGE = &"lunge"
 
 
-## THE FIX: Container for all Turret state keys.
+## Container for all Turret state keys.
 class TurretStates:
 	const IDLE = &"idle"
 	const ATTACK = &"attack"
@@ -6973,13 +6980,13 @@ func test_player_attack_damages_boss_and_fires_event():
 	var player_sm: BaseStateMachine = _player.get_component(BaseStateMachine)
 	var wait_frames = 10
 	for i in range(wait_frames):
-		if player_sm.current_state == player_sm.states[_player.State.MOVE]:
+		if player_sm.current_state == player_sm.states[Identifiers.PlayerStates.MOVE]:
 			break
 		await get_tree().physics_frame
 
 	assert_eq(
 		player_sm.current_state,
-		player_sm.states[_player.State.MOVE],
+		player_sm.states[Identifiers.PlayerStates.MOVE],
 		"Player must be in MOVE state before attacking."
 	)
 
@@ -8776,7 +8783,8 @@ func _start_telegraph_and_attack() -> void:
 	)
 	await telegraph.telegraph_finished
 
-	if _boss._is_dead:
+	# THE FIX: Use a robust check to ensure the owner wasn't freed during the await.
+	if not is_instance_valid(_boss):
 		return
 
 	var attack_command: Callable = _current_pattern.logic.execute(_boss, _current_pattern)
@@ -10867,7 +10875,6 @@ func _check_for_contact_damage() -> void:
 
 		if damage_result.was_damaged and p_data.health > 0:
 			owner_node.velocity = damage_result.knockback_velocity
-			# THE FIX: Use the global identifier for the state key.
 			owner_node.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.HURT)
 		break
 
@@ -11214,7 +11221,6 @@ FILE: ./src/entities/player/states/state_fall.gd
 ## Handles the player's falling state (downward vertical movement).
 extends BaseState
 
-# THE FIX: Preload the helper script to make its static methods available.
 const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
 
 var _physics: PlayerPhysicsComponent
@@ -11255,7 +11261,6 @@ FILE: ./src/entities/player/states/state_move.gd
 ## Handles the player's grounded movement state.
 extends BaseState
 
-# THE FIX: Preload the helper script to make its static methods available.
 const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
 
 var _physics: PlayerPhysicsComponent

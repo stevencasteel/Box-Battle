@@ -5,12 +5,23 @@
 class_name MockEntity
 extends Node
 
-@export var fx_component: FXComponent
-@export var state_machine: BaseStateMachine
-@export var health_component: HealthComponent
+# --- Private Member Variables ---
+var fx_component: FXComponent
+var state_machine: BaseStateMachine
+var health_component: HealthComponent
 
 
-# --- Public Methods (Mimicking BaseEntity) ---
+# --- Public Methods ---
+
+## Instantiates and holds component nodes for testing.
+func initialize_components() -> void:
+	health_component = HealthComponent.new()
+	add_child(health_component)
+	fx_component = FXComponent.new()
+	add_child(fx_component)
+	state_machine = BaseStateMachine.new()
+	add_child(state_machine)
+
 
 ## Mimics the real BaseEntity's get_component method for test compatibility.
 func get_component(type: Script) -> IComponent:
