@@ -2,6 +2,9 @@
 ## Handles the player's grounded movement state.
 extends BaseState
 
+# THE FIX: Preload the helper script to make its static methods available.
+const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
+
 var _physics: PlayerPhysicsComponent
 var _input: InputComponent
 
@@ -30,18 +33,10 @@ func process_physics(delta: float) -> void:
 			return
 
 		if is_holding_down:
-			var floor_col = owner.get_last_slide_collision()
-			if floor_col:
-				var floor_collider = floor_col.get_collider()
-				if (
-					is_instance_valid(floor_collider)
-					and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS)
-				):
-					owner.position.y += 2
-					state_machine.change_state(Identifiers.PlayerStates.FALL)
-					return
+			if JumpHelper.try_platform_drop(owner):
+				return
 
-		state_machine.change_state(Identifiers.PlayerStates.JUMP)
+		JumpHelper.try_jump(owner, state_data)
 		return
 
 	if not owner.is_on_floor():

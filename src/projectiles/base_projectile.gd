@@ -2,6 +2,9 @@
 class_name BaseProjectile
 extends Area2D
 
+# THE FIX: Preload the script with the static function.
+const CombatUtilsScript = preload("res://src/core/util/combat_utils.gd")
+
 # --- Node References ---
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var visual: ColorRect = $ColorRect
@@ -36,7 +39,6 @@ func _move(delta: float) -> void:
 
 
 func activate(p_services: ServiceLocator) -> void:
-	# THE FIX: Expect a ServiceLocator, not a dictionary.
 	self._services = p_services
 	assert(is_instance_valid(_services), "%s requires a ServiceLocator dependency." % [self.get_class()])
 
@@ -60,7 +62,8 @@ func deactivate() -> void:
 
 
 func _handle_collision(target: Node) -> void:
-	var damageable = _services.combat_utils.find_damageable(target)
+	# THE FIX: Call the function statically on the preloaded script.
+	var damageable = CombatUtilsScript.find_damageable(target)
 	if is_instance_valid(damageable):
 		var damage_info := DamageInfo.new()
 		damage_info.amount = damage

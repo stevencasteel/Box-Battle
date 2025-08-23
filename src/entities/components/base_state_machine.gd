@@ -4,8 +4,10 @@
 class_name BaseStateMachine
 extends IComponent
 
-# THE FIX: New, specific signals for state requests.
+# THE FIX: Add annotations to ignore the unused signal warnings.
+@warning_ignore("unused_signal")
 signal melee_hitbox_toggled(is_enabled: bool, is_up_attack: bool)
+@warning_ignore("unused_signal")
 signal pogo_hitbox_toggled(is_enabled: bool)
 
 const MAX_HISTORY_SIZE = 5

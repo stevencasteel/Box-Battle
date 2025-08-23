@@ -217,9 +217,9 @@ Leaked instance: GDScript:9223372077170427279 - Resource path: res://src/data/en
 Leaked instance: GDScript:9223372077438862737 - Resource path: res://src/core/building/terrain_builder.gd
 Leaked instance: GDScript:9223372078126728598 - Resource path: res://src/data/layouts/level_layout.gd
 Leaked instance: GDScript:9223372078411941271 - Resource path: res://src/core/util/grid_utils.gd
-Leaked instance: Node:120997283973 - Node path: 
+Leaked instance: Node:122087803013 - Node path: 
 Leaked instance: SceneTreeTimer:9223372115590252679
-Leaked instance: Node:141079612179 - Node path: 
+Leaked instance: Node:142170131220 - Node path: 
 Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
 Resource still in use: res://src/core/building/level_build_data.gd (GDScript)
 Resource still in use: res://src/data/encounters/encounter_data.gd (GDScript)

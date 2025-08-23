@@ -2,6 +2,9 @@
 ## Handles the player's falling state (downward vertical movement).
 extends BaseState
 
+# THE FIX: Preload the helper script to make its static methods available.
+const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
+
 var _physics: PlayerPhysicsComponent
 var _input: InputComponent
 
@@ -24,13 +27,7 @@ func process_physics(delta: float) -> void:
 		return
 
 	if _input.buffer.get("jump_just_pressed"):
-		if state_data.wall_coyote_timer > 0:
-			_physics.perform_wall_jump()
-			state_machine.change_state(Identifiers.PlayerStates.JUMP)
-		elif state_data.coyote_timer > 0:
-			state_machine.change_state(Identifiers.PlayerStates.JUMP)
-		elif state_data.air_jumps_left > 0:
-			state_machine.change_state(Identifiers.PlayerStates.JUMP, {"is_air_jump": true})
+		JumpHelper.try_jump(owner, state_data)
 
 
 func _apply_gravity(delta: float) -> void:
