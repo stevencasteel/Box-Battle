@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 13:56:07 CDT 2025
+Generated on: Sat Aug 23 15:45:06 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -261,7 +261,8 @@ PROJECT DIRECTORY STRUCTURE:
 │   │       ├── identifiers.gd
 │   │       ├── palette.gd
 │   │       ├── physics_layers.gd
-│   │       └── scene_validator.gd
+│   │       ├── scene_validator.gd
+│   │       └── service_locator.gd
 │   ├── data
 │   │   ├── audio
 │   │   │   ├── sfx_player_footsteps.tres
@@ -447,7 +448,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-79 directories, 360 files
+79 directories, 361 files
 
 
 =====================================
@@ -562,10 +563,22 @@ extends Node
 @export var health_component: HealthComponent
 
 
+# --- Public Methods (Mimicking BaseEntity) ---
+
+## Mimics the real BaseEntity's get_component method for test compatibility.
+func get_component(type: Script) -> IComponent:
+	if type == HealthComponent:
+		return health_component
+	if type == FXComponent:
+		return fx_component
+	if type == BaseStateMachine:
+		return state_machine
+	return null
+
+
 # Mimic CharacterBody2D methods for the overlay's checks to prevent errors.
 func is_on_floor() -> bool:
 	return true
-
 
 =====================================
 FILE: ./tools/fx_playground.gd
@@ -583,6 +596,8 @@ extends Control
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
+		# The FXComponent is a direct child in this tool scene, not built from an archetype.
+		# We can set it up directly.
 		fx_component.setup(test_subject, {"visual_node": test_subject})
 		test_subject.visible = true
 
@@ -915,6 +930,7 @@ Sequencer="*res://src/core/sequencing/sequencer.gd"
 ArenaBuilder="*res://src/core/building/arena_builder.gd"
 Settings="*res://src/core/data/config/settings.gd"
 GlobalPreloader="*res://src/api/global_preloader.gd"
+ServiceLocator="*res://src/core/util/service_locator.gd"
 AssetPaths="*res://src/core/util/asset_paths.gd"
 Constants="*res://src/core/util/constants.gd"
 GridUtils="*res://src/core/util/grid_utils.gd"
@@ -1033,7 +1049,6 @@ pal_index={
 "type": "int",
 "value": 0
 }
-
 
 =====================================
 FILE: ./.vscode/settings.json
@@ -2139,7 +2154,7 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	var fps_text = "FPS: %d" % Engine.get_frames_per_second()
 
-	if not is_instance_valid(_target_entity):
+	if not is_instance_valid(_target_entity) or not _target_entity.has_method("get_component"):
 		state_label.text = "NO TARGET SELECTED"
 		velocity_label.text = fps_text
 		flags_label.text = ""
@@ -2148,9 +2163,7 @@ func _process(_delta: float) -> void:
 	else:
 		velocity_label.text = "%s | %s" % [_target_entity.name, fps_text]
 
-		var state_machine: BaseStateMachine = (
-			_target_entity.state_machine if "state_machine" in _target_entity else null
-		)
+		var state_machine: BaseStateMachine = _target_entity.get_component(BaseStateMachine)
 		var current_state_name = "N/A"
 		if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
 			current_state_name = state_machine.current_state.get_script().resource_path.get_file()
@@ -2158,9 +2171,7 @@ func _process(_delta: float) -> void:
 		state_label.text = "State: %s" % current_state_name
 
 		# --- Flags ---
-		var health_comp: HealthComponent = (
-			_target_entity.health_component if "health_component" in _target_entity else null
-		)
+		var health_comp: HealthComponent = _target_entity.get_component(HealthComponent)
 		var is_invincible_str = (
 			str(health_comp.is_invincible()) if is_instance_valid(health_comp) else "N/A"
 		)
@@ -2171,7 +2182,8 @@ func _process(_delta: float) -> void:
 		var flags_text = "Flags: OnFloor(%s) Invincible(%s)" % [on_floor_str, is_invincible_str]
 		if _target_entity is Player:
 			flags_text += " CanDash(%s)" % _target_entity.entity_data.can_dash
-			state_history_label.text = "History: " + ", ".join(state_machine.state_history)
+			if is_instance_valid(state_machine):
+				state_history_label.text = "History: " + ", ".join(state_machine.state_history)
 			_update_player_input_buffer()
 		else:
 			state_history_label.text = ""
@@ -2199,7 +2211,12 @@ func set_target(entity: Node) -> void:
 
 # --- Private Methods ---
 func _update_player_input_buffer() -> void:
-	var input_buffer: Dictionary = _target_entity.input_component.buffer
+	var input_comp: InputComponent = _target_entity.get_component(InputComponent)
+	if not is_instance_valid(input_comp):
+		input_buffer_label.text = "Input: N/A"
+		return
+
+	var input_buffer: Dictionary = input_comp.buffer
 	var input_text_parts: Array[String] = []
 	for key in input_buffer:
 		var value = input_buffer[key]
@@ -2213,7 +2230,6 @@ func _update_player_input_buffer() -> void:
 			input_text_parts.append("%s: %s" % [key, value])
 
 	input_buffer_label.text = "Input: " + ", ".join(input_text_parts)
-
 
 =====================================
 FILE: ./src/scenes/loading/loading_screen.tscn
@@ -2313,21 +2329,19 @@ func _ready() -> void:
 
 ## The main loading and pre-warming sequence.
 func _load_level() -> void:
-	await get_tree().process_frame  # Wait one frame for UI to draw "Loading..."
+	await get_tree().process_frame
 
 	await _prewarm_shaders()
 
-	# THE FIX: Create the typed array locally using load() to ensure correct type resolution.
 	var effects_to_prewarm: Array[ShaderEffect] = [
 		load("res://src/data/effects/entity_hit_flash_effect.tres"),
 		load("res://src/core/data/effects/dissolve_effect.tres"),
 	]
 	await FXManager.prewarm_shaders_async(effects_to_prewarm, prewarm_viewport)
 
-	# Build the level and store the resulting node in the GameManager state.
 	GameManager.state.prebuilt_level = await ArenaBuilder.build_level_async()
 
-	await get_tree().process_frame  # Wait one more frame for safety.
+	await get_tree().process_frame
 
 	SceneManager.go_to_scene(AssetPaths.SCENE_ENCOUNTER)
 
@@ -2341,30 +2355,22 @@ func _prewarm_shaders() -> void:
 		var instance = load(scene_path).instantiate()
 
 		if instance.has_method("inject_dependencies"):
-			var deps = {
-				"object_pool": ObjectPool,
-				"fx_manager": FXManager,
-				"event_bus": EventBus,
-			}
-			instance.inject_dependencies(deps)
+			# THE FIX: Pass the ServiceLocator singleton directly.
+			instance.inject_dependencies(ServiceLocator)
 
 		prewarm_viewport.add_child(instance)
 
-		# --- Trigger Actions to Compile More Shaders ---
 		if instance is Player:
 			instance.velocity.x = 100
-			if (
-				is_instance_valid(instance.state_machine)
-				and instance.state_machine.has_method("change_state")
-			):
-				instance.state_machine.change_state(instance.State.ATTACK)
+			var sm: BaseStateMachine = instance.get_component(BaseStateMachine)
+			if is_instance_valid(sm) and sm.has_method("change_state"):
+				sm.change_state(Identifiers.PlayerStates.ATTACK)
 		elif instance is BaseBoss:
 			instance.velocity.x = 100
 
 		await get_tree().process_frame
 		instance.queue_free()
 	print("Shader pre-warming complete.")
-
 
 =====================================
 FILE: ./src/scenes/game/encounter_scene.tscn
@@ -4083,6 +4089,23 @@ static func find_damageable(from_node: Node) -> Node:
 
 
 =====================================
+FILE: ./src/core/util/service_locator.gd
+=====================================
+# src/core/util/service_locator.gd
+## A central, autoloaded singleton that provides clean, type-safe access
+## to all other core systems (services). This avoids passing around messy
+## dictionaries for dependency injection.
+extends Node
+
+# --- Service References ---
+# These are populated by the engine at startup based on the autoload order.
+@onready var object_pool: ObjectPool = get_node("/root/ObjectPool")
+@onready var fx_manager: FXManager = get_node("/root/FXManager")
+@onready var event_bus: EventBus = get_node("/root/EventBus")
+@onready var sequencer: Sequencer = get_node("/root/Sequencer")
+@onready var combat_utils: CombatUtils = get_node("/root/CombatUtils")
+
+=====================================
 FILE: ./src/core/util/grid_utils.gd
 =====================================
 # src/core/util/grid_utils.gd
@@ -4271,6 +4294,33 @@ class Pools:
 	const HOMING_BOSS_SHOTS = &"homing_boss_shots"
 	const HIT_SPARKS = &"hit_sparks"
 
+
+## THE FIX: Container for all Player state keys.
+class PlayerStates:
+	const MOVE = &"move"
+	const JUMP = &"jump"
+	const FALL = &"fall"
+	const DASH = &"dash"
+	const WALL_SLIDE = &"wall_slide"
+	const ATTACK = &"attack"
+	const HURT = &"hurt"
+	const HEAL = &"heal"
+	const POGO = &"pogo"
+
+
+## THE FIX: Container for all Boss state keys.
+class BossStates:
+	const IDLE = &"idle"
+	const ATTACK = &"attack"
+	const COOLDOWN = &"cooldown"
+	const PATROL = &"patrol"
+	const LUNGE = &"lunge"
+
+
+## THE FIX: Container for all Turret state keys.
+class TurretStates:
+	const IDLE = &"idle"
+	const ATTACK = &"attack"
 
 =====================================
 FILE: ./src/core/util/asset_paths.gd
@@ -6008,9 +6058,8 @@ func _inject_entity_services(instance: Node) -> void:
 	if not is_instance_valid(instance):
 		return
 	if instance.has_method("inject_dependencies"):
-		instance.inject_dependencies(
-			{"object_pool": ObjectPool, "fx_manager": FXManager, "event_bus": EventBus}
-		)
+		# THE FIX: Pass the ServiceLocator singleton directly.
+		instance.inject_dependencies(ServiceLocator)
 
 
 func _spawn_player_async() -> void:
@@ -6062,7 +6111,6 @@ func _run_intro_sequence() -> SequenceHandle:
 	var intro_steps: Array[SequenceStep] = [wait_step, spawn_boss_step]
 	return Sequencer.run_sequence(intro_steps)
 
-
 =====================================
 FILE: ./src/tests/unit/test_input_component.gd
 =====================================
@@ -6092,13 +6140,13 @@ func before_each():
 			}
 		)
 	add_child(_player)
-	_input_component = _player.input_component
+	_input_component = _player.get_component(InputComponent)
 
 	_input_component.setup(
 		_player,
 		{
 			"data_resource": _player.entity_data,
-			"state_machine": _player.state_machine,
+			"state_machine": _player.get_component(BaseStateMachine),
 			"config": CombatConfig
 		}
 	)
@@ -6182,7 +6230,6 @@ func test_action_released_is_buffered_for_one_frame():
 		_input_component.buffer.get("attack_released", false),
 		"attack_released should be false on the frame after it is released."
 	)
-
 
 =====================================
 FILE: ./src/tests/unit/test_player_resource_component.gd
@@ -6494,51 +6541,51 @@ const HealthComponent = preload("res://src/entities/components/health_component.
 
 # --- Test Internals ---
 var _root: Node
-var _damageable_parent: Node
-var _non_damageable_child: Node
+var _parent: Node
+var _damageable_child: HealthComponent # This IS the damageable node now
+var _non_damageable_grandchild: Node
+
 
 # --- Test Lifecycle ---
 
 
 func before_each():
 	# Create a simple scene tree for testing tree traversal.
-	# Root -> DamageableParent -> NonDamageableChild
+	# Root -> Parent -> DamageableChild (HealthComponent) -> NonDamageableGrandchild
 	_root = Node.new()
-	add_child(_root)  # The test runner will manage this node.
+	add_child(_root)
 
-	_damageable_parent = Node2D.new()
-	_damageable_parent.name = "DamageableParent"
+	_parent = Node2D.new()
+	_parent.name = "Parent"
+	_root.add_child(_parent)
 
-	# THE FIX: Create the component, give it a name, then add it as a child.
-	var health_comp = HealthComponent.new()
-	health_comp.name = "HealthComponent"
-	_damageable_parent.add_child(autofree(health_comp))
+	_damageable_child = HealthComponent.new()
+	_damageable_child.name = "HealthComponent"
+	_parent.add_child(_damageable_child)
 
-	_root.add_child(_damageable_parent)
-
-	_non_damageable_child = Node2D.new()
-	_non_damageable_child.name = "NonDamageableChild"
-	_damageable_parent.add_child(_non_damageable_child)
+	_non_damageable_grandchild = Node2D.new()
+	_non_damageable_grandchild.name = "NonDamageableGrandchild"
+	_damageable_child.add_child(_non_damageable_grandchild)
 
 
 func test_find_damageable_returns_self_if_damageable():
-	# This test is now inverted: the component, not the parent, is the damageable node.
-	var health_comp = _damageable_parent.get_node("HealthComponent")
-	var result = CombatUtils.find_damageable(health_comp)
-	assert_same(result, health_comp, "Should return the component itself if it's damageable.")
+	var result = CombatUtils.find_damageable(_damageable_child)
+	assert_same(result, _damageable_child, "Should return the node itself if it's damageable.")
 
 
-func test_find_damageable_returns_parent_component_if_child_is_not_damageable():
-	var health_comp = _damageable_parent.get_node("HealthComponent")
-	var result = CombatUtils.find_damageable(_non_damageable_child)
-	assert_same(result, health_comp, "Should traverse up and find the parent's HealthComponent.")
+func test_find_damageable_returns_ancestor_if_child_is_not_damageable():
+	var result = CombatUtils.find_damageable(_non_damageable_grandchild)
+	assert_same(
+		result,
+		_damageable_child,
+		"Should traverse up and find the ancestor HealthComponent."
+	)
 
 
 func test_find_damageable_returns_null_if_no_damageable_ancestor_exists():
 	var standalone_node = autofree(Node2D.new())
 	var result = CombatUtils.find_damageable(standalone_node)
 	assert_null(result, "Should return null when no damageable parent is found.")
-
 
 =====================================
 FILE: ./src/tests/unit/test_level_parser.gd
@@ -6674,10 +6721,14 @@ func test_fire_shot_gets_instance_from_pool():
 
 func test_trigger_pogo_on_enemy_emits_bounce_request():
 	var mock_enemy = CharacterBody2D.new()
+	mock_enemy.add_to_group(Identifiers.Groups.ENEMY)
+
 	var mock_health = double(HealthComponent).new()
+	# THE FIX: Explicitly name the component so `find_damageable` can discover it.
 	mock_health.name = "HealthComponent"
-	stub(mock_health, "apply_damage").to_return(DamageResult.new())
 	mock_enemy.add_child(mock_health)
+	stub(mock_health, "apply_damage").to_return(DamageResult.new())
+
 	add_child(mock_enemy)
 
 	_player_data.is_pogo_attack = true
@@ -6694,18 +6745,16 @@ func test_trigger_pogo_on_enemy_emits_bounce_request():
 
 
 func test_trigger_pogo_on_projectile_returns_it_to_pool() -> void:
-	# THE FIX: This test must be async to account for call_deferred.
-	var mock_projectile = Node2D.new()  # Use Node2D for compatibility
+	var mock_projectile = Node2D.new()
 	mock_projectile.add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
 	mock_projectile.set_meta("pool_name", Identifiers.Pools.TURRET_SHOTS)
-	add_child(mock_projectile)  # Add to tree so it's valid for deferred calls
+	add_child(mock_projectile)
 
 	_player_data.is_pogo_attack = true
 
 	var return_count_before = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
 	_combat_component.trigger_pogo(mock_projectile)
 
-	# THE FIX: Wait for one frame to allow the deferred call to execute.
 	await get_tree().physics_frame
 
 	var return_count_after = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
@@ -6722,7 +6771,6 @@ func test_trigger_pogo_on_projectile_returns_it_to_pool() -> void:
 
 func _on_pogo_bounce_requested():
 	_pogo_bounce_was_requested = true
-
 
 =====================================
 FILE: ./src/tests/integration/test_integration_combat_loop.gd
@@ -6780,22 +6828,23 @@ func test_player_attack_damages_boss_and_fires_event():
 	# 1. VERIFY SETUP
 	assert_not_null(_player, "Player should be instanced in the scene.")
 	assert_not_null(_boss, "Boss should be instanced in the scene.")
-	var boss_health_comp: HealthComponent = _boss.health_component
+	var boss_health_comp: HealthComponent = _boss.get_component(HealthComponent)
 	var initial_boss_health = boss_health_comp.entity_data.health
 
 	# 2. POSITION ACTORS & WAIT FOR STABLE STATE
 	_player.global_position = _boss.global_position + Vector2(-60, 0)
 	_player.entity_data.facing_direction = 1
 
+	var player_sm: BaseStateMachine = _player.get_component(BaseStateMachine)
 	var wait_frames = 10
 	for i in range(wait_frames):
-		if _player.state_machine.current_state == _player.state_machine.states[_player.State.MOVE]:
+		if player_sm.current_state == player_sm.states[_player.State.MOVE]:
 			break
 		await get_tree().physics_frame
 
 	assert_eq(
-		_player.state_machine.current_state,
-		_player.state_machine.states[_player.State.MOVE],
+		player_sm.current_state,
+		player_sm.states[_player.State.MOVE],
 		"Player must be in MOVE state before attacking."
 	)
 
@@ -6833,7 +6882,6 @@ func test_player_attack_damages_boss_and_fires_event():
 
 func _on_boss_health_changed(_payload):
 	_boss_health_changed_event_fired = true
-
 
 =====================================
 FILE: ./src/tests/fakes/fake_event_bus.gd
@@ -7384,9 +7432,9 @@ func _ready() -> void:
 
 
 # Ensure the speed is set every time this instance is (re)activated by the pool.
-func activate(p_dependencies: Dictionary = {}) -> void:
-	# First let the base class do its activation (set process, collision, pool ref, etc.)
-	super.activate(p_dependencies)
+func activate(p_services: ServiceLocator) -> void:
+	# First let the base class do its activation
+	super.activate(p_services)
 	# Then apply player-shot-specific runtime defaults so they apply on reuse.
 	speed = default_speed
 
@@ -7396,12 +7444,11 @@ func _on_area_entered(area: Area2D) -> void:
 		return
 	# Player shots can destroy enemy projectiles on contact.
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
-		if is_instance_valid(_object_pool):
-			_object_pool.return_instance.call_deferred(area)
+		if is_instance_valid(_services):
+			_services.object_pool.return_instance.call_deferred(area)
 
-	# Then proceed with the base collision handling (damage + returning this shot to the pool).
+	# Then proceed with the base collision handling.
 	super._on_area_entered(area)
-
 
 =====================================
 FILE: ./src/projectiles/boss_shot.gd
@@ -7420,15 +7467,14 @@ func _on_body_entered(_body: Node) -> void:
 	if not _is_active:
 		return
 	# This projectile is destroyed by solid world geometry.
-	if is_instance_valid(_object_pool):
-		_object_pool.return_instance.call_deferred(self)
+	if is_instance_valid(_services):
+		_services.object_pool.return_instance.call_deferred(self)
 
 func _on_area_entered(area: Area2D) -> void:
 	if not _is_active:
 		return
 	# Standard collision for player hurtbox, etc.
 	_handle_collision(area)
-
 
 =====================================
 FILE: ./src/projectiles/homing_boss_shot.tscn
@@ -7491,7 +7537,6 @@ func _ready() -> void:
 
 # Movement override
 func _move(delta: float) -> void:
-	# If no player, fall back to simple linear motion.
 	if not _player_ref or not _player_ref.get_ref():
 		global_position += transform.x * speed * delta
 		return
@@ -7501,16 +7546,13 @@ func _move(delta: float) -> void:
 	rotation = lerp_angle(rotation, direction_to_player.angle(), 0.05)
 	global_position += transform.x * speed * delta
 
-# IPoolable override (call base via super)
-func activate(p_dependencies: Dictionary = {}) -> void:
-	# Call base activate
-	super.activate(p_dependencies)
 
-	# Find player once
+func activate(p_services: ServiceLocator) -> void:
+	super.activate(p_services)
+
 	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	_player_ref = weakref(player_node)
 
-	# Configure and start lifespan/tween
 	if is_instance_valid(lifetime_timer):
 		lifetime_timer.start(lifespan)
 
@@ -7522,7 +7564,6 @@ func activate(p_dependencies: Dictionary = {}) -> void:
 	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, lifespan)
 
 func deactivate() -> void:
-	# kill tweens and reset visuals before base deactivation
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 		_active_tween = null
@@ -7530,16 +7571,13 @@ func deactivate() -> void:
 	visual.scale = Vector2.ONE
 	collision_shape.scale = Vector2.ONE
 
-	# Call base deactivate
 	super.deactivate()
 
-# Signal: lifetime expired
 func _on_lifetime_timer_timeout() -> void:
 	if not _is_active:
 		return
-	if is_instance_valid(_object_pool):
-		_object_pool.return_instance.call_deferred(self)
-
+	if is_instance_valid(_services):
+		_services.object_pool.return_instance.call_deferred(self)
 
 =====================================
 FILE: ./src/projectiles/base_projectile.gd
@@ -7547,9 +7585,6 @@ FILE: ./src/projectiles/base_projectile.gd
 # src/projectiles/base_projectile.gd
 class_name BaseProjectile
 extends Area2D
-
-# --- Constants ---
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
 # --- Node References ---
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
@@ -7561,7 +7596,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 var direction: Vector2 = Vector2.RIGHT
 
 # --- Private Member Variables ---
-var _object_pool: ObjectPool
+var _services: ServiceLocator
 var _is_active: bool = false
 
 # --- Godot Lifecycle ---
@@ -7584,9 +7619,10 @@ func _move(delta: float) -> void:
 # --- IPoolable Contract ---
 
 
-func activate(p_dependencies: Dictionary = {}) -> void:
-	self._object_pool = p_dependencies.get("object_pool")
-	assert(is_instance_valid(_object_pool), "%s requires an ObjectPool dependency." % [self.get_class()])
+func activate(p_services: ServiceLocator) -> void:
+	# THE FIX: Expect a ServiceLocator, not a dictionary.
+	self._services = p_services
+	assert(is_instance_valid(_services), "%s requires a ServiceLocator dependency." % [self.get_class()])
 
 	visible = true
 	_is_active = true
@@ -7601,15 +7637,14 @@ func deactivate() -> void:
 	process_mode = PROCESS_MODE_DISABLED
 	if is_instance_valid(collision_shape):
 		collision_shape.disabled = true
-	_object_pool = null
+	_services = null
 
 
 # --- Centralized Collision & Cleanup ---
 
 
 func _handle_collision(target: Node) -> void:
-	# Find a damageable target using the utility script.
-	var damageable = CombatUtilsScript.find_damageable(target)
+	var damageable = _services.combat_utils.find_damageable(target)
 	if is_instance_valid(damageable):
 		var damage_info := DamageInfo.new()
 		damage_info.amount = damage
@@ -7618,8 +7653,8 @@ func _handle_collision(target: Node) -> void:
 		damage_info.impact_normal = -direction.normalized() if not direction.is_zero_approx() else Vector2.ZERO
 		damageable.apply_damage(damage_info)
 
-	if is_instance_valid(_object_pool):
-		_object_pool.return_instance.call_deferred(self)
+	if is_instance_valid(_services):
+		_services.object_pool.return_instance.call_deferred(self)
 
 
 # --- Signal Handlers ---
@@ -7640,8 +7675,8 @@ func _on_area_entered(area: Area2D) -> void:
 func _on_screen_exited() -> void:
 	if not _is_active:
 		return
-	if is_instance_valid(_object_pool):
-		_object_pool.return_instance.call_deferred(self)
+	if is_instance_valid(_services):
+		_services.object_pool.return_instance.call_deferred(self)
 
 =====================================
 FILE: ./src/data/dialogue/dialogue_line.gd
@@ -7899,22 +7934,9 @@ extends CharacterBody2D
 # --- Editor Properties ---
 @export var archetype: EntityArchetype
 
-# --- Public Member Variables ---
-# TODO: These direct references will be removed after all entities are
-# refactored to use the new get_component() method.
-var health_component: HealthComponent
-var combat_component: CombatComponent
-var input_component: InputComponent
-var state_machine: BaseStateMachine
-var physics_component: PlayerPhysicsComponent
-var ability_component: PlayerAbilityComponent
-var resource_component: PlayerResourceComponent
-var fx_component: FXComponent
-
 # --- Private Member Variables ---
 var _components_initialized: bool = false
-var _injected_dependencies: Dictionary = {}
-# A dictionary to hold all component references, keyed by their script.
+var _services: ServiceLocator
 var _components: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
@@ -7930,23 +7952,21 @@ func _ready() -> void:
 
 
 ## Retrieves a component from this entity by its script type.
-## Example: get_component(HealthComponent)
 func get_component(type: Script) -> IComponent:
 	return _components.get(type)
 
 
+## Helper that asserts and provides a clear error if a required component is missing.
+func require_component(type: Script) -> IComponent:
+	var c = get_component(type)
+	if not is_instance_valid(c):
+		push_error("Missing required component: %s on entity %s" % [type.resource_path, name])
+	return c
+
+
 ## Called by the entity creator (ArenaBuilder) before the entity enters the scene tree.
-func inject_dependencies(p_dependencies: Dictionary) -> void:
-	_injected_dependencies = p_dependencies.duplicate()
-
-
-## Convenience accessor for child code to fetch injected services.
-func get_injected_dependency(p_key: String):
-	return _injected_dependencies.get(p_key, null)
-
-
-func has_injected_dependencies() -> bool:
-	return _injected_dependencies.size() > 0
+func inject_dependencies(p_services: ServiceLocator) -> void:
+	_services = p_services
 
 
 func teardown() -> void:
@@ -7961,12 +7981,16 @@ func setup_components(
 ) -> void:
 	if _components_initialized:
 		return
+		
+	# THE FIX: Add the services locator to the shared dependencies for all components.
+	var base_shared_deps = shared_dependencies.duplicate()
+	base_shared_deps["services"] = _services
 
 	for child in get_children():
 		if not (child is IComponent):
 			continue
 
-		var merged_deps := shared_dependencies.duplicate()
+		var merged_deps := base_shared_deps.duplicate()
 
 		if per_component_dependencies.has(child):
 			merged_deps.merge(per_component_dependencies[child])
@@ -8005,30 +8029,7 @@ func _cache_components_by_type() -> void:
 		if not child is IComponent:
 			continue
 
-		# Store component in the dictionary using its script as the key.
-		# This is the new, scalable approach.
 		_components[child.get_script()] = child
-
-		# TODO: This section is for backward compatibility and will be removed.
-		# It populates the old direct-reference variables.
-		if child is HealthComponent:
-			health_component = child
-		elif child is CombatComponent:
-			combat_component = child
-		elif child is InputComponent:
-			input_component = child
-		elif child is BaseStateMachine:
-			state_machine = child
-		elif child is PlayerPhysicsComponent:
-			physics_component = child
-		elif child is PlayerAbilityComponent:
-			ability_component = child
-		elif child is PlayerResourceComponent:
-			resource_component = child
-		elif child is FXComponent:
-			fx_component = child
-		else:
-			push_warning("Unbound component on '%s': %s" % [name, child.get_class()])
 
 =====================================
 FILE: ./src/entities/archetypes/player_archetype.tres
@@ -8130,8 +8131,8 @@ func get_telegraph_info(owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
 
 func execute(owner: BaseBoss, pattern: AttackPattern) -> Callable:
 	var lunge_params = {"pattern": pattern}
-	return owner.state_machine.change_state.bind(owner.State.LUNGE, lunge_params)
-
+	var sm: BaseStateMachine = owner.get_component(BaseStateMachine)
+	return sm.change_state.bind(Identifiers.BossStates.LUNGE, lunge_params)
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/lunge_attack.tres
@@ -8387,9 +8388,10 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 
 	print("Executing Homing Omni Burst!")
 
+	var object_pool: ObjectPool = owner._services.object_pool
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
-		var shot: HomingBossShot = owner._object_pool.get_instance(
+		var shot: HomingBossShot = object_pool.get_instance(
 			Identifiers.Pools.HOMING_BOSS_SHOTS
 		)
 		if not is_instance_valid(shot):
@@ -8403,8 +8405,8 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 		var angle = i * angle_step
 		shot.rotation = angle
 		shot.global_position = owner.global_position
-		shot.activate({"object_pool": owner._object_pool})
-
+		# THE FIX: Pass the ServiceLocator from the owner entity.
+		shot.activate(owner._services)
 
 =====================================
 FILE: ./src/entities/boss/boss_state_data.gd
@@ -8510,12 +8512,11 @@ func enter(_msg := {}) -> void:
 		push_warning(
 			"BossStateIdle: No attack patterns defined for current phase. Defaulting to Cooldown."
 		)
-		state_machine.change_state(owner.State.COOLDOWN)
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 		return
 
 	var chosen_pattern: AttackPattern = owner.current_attack_patterns.pick_random()
-	state_machine.change_state(owner.State.ATTACK, {"pattern": chosen_pattern})
-
+	state_machine.change_state(Identifiers.BossStates.ATTACK, {"pattern": chosen_pattern})
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_lunge.gd
@@ -8527,6 +8528,7 @@ class_name BossStateLunge
 
 # --- Private Member Variables ---
 var _boss: BaseBoss
+var _health: HealthComponent
 var _lunge_duration: float
 var _invincibility_token: int
 
@@ -8538,23 +8540,24 @@ func enter(msg := {}) -> void:
 	if not _boss:
 		return
 
+	_health = _boss.get_component(HealthComponent)
+
 	var pattern: AttackPattern = msg.get("pattern")
 	_lunge_duration = pattern.attack_duration if pattern else 0.5
 
-	_invincibility_token = _boss.health_component.grant_invincibility(self)
+	_invincibility_token = _health.grant_invincibility(self)
 	_boss.velocity = Vector2(state_data.facing_direction * state_data.config.boss_lunge_speed, 0)
 
 
 func exit() -> void:
-	if is_instance_valid(_boss) and is_instance_valid(_boss.health_component):
-		_boss.health_component.release_invincibility(_invincibility_token)
+	if is_instance_valid(_boss) and is_instance_valid(_health):
+		_health.release_invincibility(_invincibility_token)
 
 
 func process_physics(delta: float) -> void:
 	_lunge_duration -= delta
 	if _lunge_duration <= 0:
-		state_machine.change_state(_boss.State.COOLDOWN)
-
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_cooldown.gd
@@ -8568,7 +8571,6 @@ class_name BossStateCooldown
 func enter(_msg := {}) -> void:
 	owner.velocity.x = 0
 	owner.cooldown_timer.start()
-
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_attack.gd
@@ -8592,12 +8594,12 @@ func enter(msg := {}) -> void:
 	self._boss = owner as BaseBoss
 	if not _boss:
 		push_error("BossStateAttack: Owner is not a BaseBoss. Aborting.")
-		state_machine.change_state(_boss.State.COOLDOWN)
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 		return
 
 	if not msg.has("pattern") or not msg.pattern is AttackPattern:
 		push_error("BossStateAttack: No valid 'pattern' provided. Aborting.")
-		state_machine.change_state(_boss.State.COOLDOWN)
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 		return
 
 	_current_pattern = msg.get("pattern")
@@ -8610,7 +8612,7 @@ func enter(msg := {}) -> void:
 func _start_telegraph_and_attack() -> void:
 	if not is_instance_valid(_current_pattern.logic):
 		push_warning("AttackPattern is missing its 'logic' resource.")
-		state_machine.change_state(_boss.State.COOLDOWN)
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 		return
 
 	var telegraph = TelegraphScene.instantiate()
@@ -8633,8 +8635,6 @@ func _start_telegraph_and_attack() -> void:
 	)
 	await telegraph.telegraph_finished
 
-	# THE FIX: Add a death check after the telegraph. If the boss died during
-	# the await, do not proceed with the attack.
 	if _boss._is_dead:
 		return
 
@@ -8644,8 +8644,7 @@ func _start_telegraph_and_attack() -> void:
 
 	if state_machine.current_state == self:
 		_boss.cooldown_timer.wait_time = _current_pattern.cooldown
-		state_machine.change_state(_boss.State.COOLDOWN)
-
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_patrol.gd
@@ -8663,7 +8662,6 @@ func enter(_msg := {}) -> void:
 func process_physics(_delta: float) -> void:
 	owner.velocity.x = state_data.facing_direction * state_data.config.boss_patrol_speed
 
-
 =====================================
 FILE: ./src/entities/boss/base_boss.gd
 =====================================
@@ -8675,9 +8673,6 @@ extends BaseEntity
 # --- Constants ---
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
-
-# --- Enums ---
-enum State { IDLE, ATTACK, COOLDOWN, PATROL, LUNGE }
 
 # --- Editor Configuration ---
 @export_group("Phase Configuration")
@@ -8714,9 +8709,6 @@ var entity_data: BossStateData
 var _player: CharacterBody2D = null
 var _active_attack_tween: Tween
 var _is_dead: bool = false
-var _object_pool: ObjectPool  # Dependency
-var _fx_manager: Node  # Dependency
-var _event_bus: Node  # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -8743,11 +8735,12 @@ func _ready() -> void:
 
 	if (
 		is_instance_valid(intro_shake_effect)
-		and is_instance_valid(_fx_manager)
-		and _fx_manager.has_method("is_camera_shaker_registered")
-		and _fx_manager.is_camera_shaker_registered()
+		and is_instance_valid(_services)
+		and is_instance_valid(_services.fx_manager)
+		and _services.fx_manager.has_method("is_camera_shaker_registered")
+		and _services.fx_manager.is_camera_shaker_registered()
 	):
-		_fx_manager.request_screen_shake(intro_shake_effect)
+		_services.fx_manager.request_screen_shake(intro_shake_effect)
 
 
 func _exit_tree() -> void:
@@ -8760,7 +8753,9 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y += entity_data.config.gravity * delta
 	move_and_slide()
-	if state_machine.current_state == state_machine.states[State.PATROL] and is_on_wall():
+
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm) and sm.current_state == sm.states[Identifiers.BossStates.PATROL] and is_on_wall():
 		entity_data.facing_direction *= -1.0
 
 
@@ -8769,13 +8764,14 @@ func _physics_process(delta: float) -> void:
 
 func teardown() -> void:
 	set_physics_process(false)
-	if is_instance_valid(health_component):
-		if health_component.health_changed.is_connected(_on_health_component_health_changed):
-			health_component.health_changed.disconnect(_on_health_component_health_changed)
-		if health_component.died.is_connected(_on_health_component_died):
-			health_component.died.disconnect(_on_health_component_died)
-		if health_component.health_threshold_reached.is_connected(_on_health_threshold_reached):
-			health_component.health_threshold_reached.disconnect(_on_health_threshold_reached)
+	var hc: HealthComponent = get_component(HealthComponent)
+	if is_instance_valid(hc):
+		if hc.health_changed.is_connected(_on_health_component_health_changed):
+			hc.health_changed.disconnect(_on_health_component_health_changed)
+		if hc.died.is_connected(_on_health_component_died):
+			hc.died.disconnect(_on_health_component_died)
+		if hc.health_threshold_reached.is_connected(_on_health_threshold_reached):
+			hc.health_threshold_reached.disconnect(_on_health_threshold_reached)
 
 	super.teardown()
 	entity_data = null
@@ -8798,13 +8794,13 @@ func fire_volley(shot_count: int, delay: float) -> void:
 func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player):
 		return
-	var shot = _object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
+	var shot = _services.object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
 	if not shot:
 		return
 	_update_player_tracking()
 	shot.direction = (_player.global_position - global_position).normalized()
 	shot.global_position = global_position
-	shot.activate({"object_pool": _object_pool})
+	shot.activate(_services)
 
 
 # --- Private Methods ---
@@ -8815,8 +8811,9 @@ func _die() -> void:
 		return
 	_is_dead = true
 
-	if is_instance_valid(state_machine):
-		state_machine.teardown()
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm):
+		sm.teardown()
 
 	cooldown_timer.stop()
 	patrol_timer.stop()
@@ -8829,14 +8826,14 @@ func _die() -> void:
 		_active_attack_tween.kill()
 
 	if is_instance_valid(death_shake_effect):
-		_fx_manager.request_screen_shake(death_shake_effect)
-	_fx_manager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
+		_services.fx_manager.request_screen_shake(death_shake_effect)
+	_services.fx_manager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
 
-	if is_instance_valid(dissolve_effect):
-		# THE FIX: Tell the FXComponent to preserve the final shader state.
-		fx_component.play_effect(dissolve_effect, {}, {"preserve_final_state": true})
+	var fc: FXComponent = get_component(FXComponent)
+	if is_instance_valid(dissolve_effect) and is_instance_valid(fc):
+		fc.play_effect(dissolve_effect, {}, {"preserve_final_state": true})
 
-	_event_bus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
+	_services.event_bus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
 
 
 func _initialize_data() -> void:
@@ -8845,46 +8842,40 @@ func _initialize_data() -> void:
 	current_attack_patterns = phase_1_patterns
 	entity_data = BossStateData.new()
 	entity_data.config = COMBAT_CONFIG
-
-	_object_pool = get_injected_dependency("object_pool")
-	_fx_manager = get_injected_dependency("fx_manager")
-	_event_bus = get_injected_dependency("event_bus")
-	assert(is_instance_valid(_object_pool), "BaseBoss requires 'object_pool' injected.")
-	assert(is_instance_valid(_fx_manager), "BaseBoss requires 'fx_manager' injected.")
-	assert(is_instance_valid(_event_bus), "BaseBoss requires 'event_bus' injected.")
+	assert(is_instance_valid(_services), "BaseBoss requires a ServiceLocator.")
 
 
 func _initialize_and_setup_components() -> void:
+	var hc: HealthComponent = get_component(HealthComponent)
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	var fc: FXComponent = get_component(FXComponent)
+
 	var shared_deps := {
-		"data_resource": entity_data, "config": entity_data.config, "fx_manager": _fx_manager
+		"data_resource": entity_data, "config": entity_data.config, "services": _services
 	}
 
 	var states = {
-		State.IDLE: state_idle_script.new(self, state_machine, entity_data),
-		State.ATTACK: state_attack_script.new(self, state_machine, entity_data),
-		State.COOLDOWN: state_cooldown_script.new(self, state_machine, entity_data),
-		State.PATROL: state_patrol_script.new(self, state_machine, entity_data),
-		State.LUNGE: state_lunge_script.new(self, state_machine, entity_data),
+		Identifiers.BossStates.IDLE: state_idle_script.new(self, sm, entity_data),
+		Identifiers.BossStates.ATTACK: state_attack_script.new(self, sm, entity_data),
+		Identifiers.BossStates.COOLDOWN: state_cooldown_script.new(self, sm, entity_data),
+		Identifiers.BossStates.PATROL: state_patrol_script.new(self, sm, entity_data),
+		Identifiers.BossStates.LUNGE: state_lunge_script.new(self, sm, entity_data),
 	}
 
 	var per_component_deps := {
-		state_machine: {"states": states, "initial_state_key": State.COOLDOWN},
-		fx_component:
-		{
-			"visual_node": visual_sprite,
-			"health_component": health_component,
-			"hit_effect": HIT_FLASH_EFFECT
-		},
-		health_component: {"hit_spark_effect": hit_spark_effect}
+		sm: {"states": states, "initial_state_key": Identifiers.BossStates.COOLDOWN},
+		fc: {"visual_node": visual_sprite, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
+		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 
 	setup_components(shared_deps, per_component_deps)
 
 
 func _connect_signals() -> void:
-	health_component.health_changed.connect(_on_health_component_health_changed)
-	health_component.died.connect(_on_health_component_died)
-	health_component.health_threshold_reached.connect(_on_health_threshold_reached)
+	var hc: HealthComponent = get_component(HealthComponent)
+	hc.health_changed.connect(_on_health_component_health_changed)
+	hc.died.connect(_on_health_component_died)
+	hc.health_threshold_reached.connect(_on_health_threshold_reached)
 
 
 func _update_player_tracking() -> void:
@@ -8912,37 +8903,32 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 			1:
 				current_attack_patterns = phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
-			_fx_manager.request_screen_shake(phase_change_shake_effect)
-		_fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
-		_event_bus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
+			_services.fx_manager.request_screen_shake(phase_change_shake_effect)
+		_services.fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
+		_services.event_bus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 
 func _on_cooldown_timer_timeout() -> void:
-	if (
-		is_instance_valid(state_machine)
-		and state_machine.current_state == state_machine.states[State.COOLDOWN]
-	):
-		state_machine.change_state(State.PATROL)
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm) and sm.current_state == sm.states[Identifiers.BossStates.COOLDOWN]:
+		sm.change_state(Identifiers.BossStates.PATROL)
 
 
 func _on_patrol_timer_timeout() -> void:
-	if (
-		is_instance_valid(state_machine)
-		and state_machine.current_state == state_machine.states[State.PATROL]
-	):
-		state_machine.change_state(State.IDLE)
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm) and sm.current_state == sm.states[Identifiers.BossStates.PATROL]:
+		sm.change_state(Identifiers.BossStates.IDLE)
 
 
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	_event_bus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
+	_services.event_bus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
 
 
 func _on_health_component_died() -> void:
 	_die()
-
 
 =====================================
 FILE: ./src/entities/README.md
@@ -9046,18 +9032,16 @@ FILE: ./src/entities/components/base_state_machine.gd
 class_name BaseStateMachine
 extends IComponent
 
-## This signal is used by the Player states to request actions (like enabling
-## a hitbox) from the Player node, decoupling the states from the Player's
-## specific methods. The warning is ignored because the signal is emitted by
-## the state objects, not this script directly.
-@warning_ignore("unused_signal")
-signal action_requested(command: Callable)
+# THE FIX: New, specific signals for state requests.
+signal melee_hitbox_toggled(is_enabled: bool, is_up_attack: bool)
+signal pogo_hitbox_toggled(is_enabled: bool)
 
 const MAX_HISTORY_SIZE = 5
 var states: Dictionary = {}
 var current_state: BaseState
 var owner_node: Node
 var state_history: Array[String] = []
+var _current_state_key
 
 
 func _ready() -> void:
@@ -9101,6 +9085,7 @@ func teardown() -> void:
 	for state in states.values():
 		if is_instance_valid(state):
 			state.teardown()
+			# States are not nodes, they are Objects, so just free them.
 			state.free()
 
 	states.clear()
@@ -9112,17 +9097,19 @@ func change_state(new_state_key, msg := {}) -> void:
 	if not states.has(new_state_key):
 		push_warning("StateMachine: Attempted to change to unknown state '%s'." % new_state_key)
 		return
-	if current_state == states.get(new_state_key):
+	if _current_state_key == new_state_key:
 		return
 	if current_state:
 		current_state.exit()
+
+	_current_state_key = new_state_key
 	current_state = states[new_state_key]
 	current_state.enter(msg)
-	if is_instance_valid(current_state) and is_instance_valid(current_state.get_script()):
-		var state_name = current_state.get_script().resource_path.get_file()
-		state_history.push_front(state_name)
-		if state_history.size() > MAX_HISTORY_SIZE:
-			state_history.pop_back()
+
+	var state_name = str(new_state_key)
+	state_history.push_front(state_name)
+	if state_history.size() > MAX_HISTORY_SIZE:
+		state_history.pop_back()
 
 
 =====================================
@@ -9193,20 +9180,13 @@ class_name CombatComponent
 extends IComponent
 
 # --- Signals ---
-## Emitted when this component successfully deals damage.
 signal damage_dealt
-## Emitted to request a pogo bounce from the owner.
 signal pogo_bounce_requested
-
-# --- Constants ---
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
-# THE FIX: Loosen the type hint to a generic Node to allow for fakes during testing.
-# The script relies on the injected object having the correct methods (duck typing).
-var _object_pool: Node  # Dependency
+var _services: ServiceLocator # Dependency
 
 # --- Public Methods ---
 
@@ -9214,33 +9194,61 @@ var _object_pool: Node  # Dependency
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.p_data = p_dependencies.get("data_resource")
-	self._object_pool = p_dependencies.get("object_pool")
-	assert(is_instance_valid(_object_pool), "CombatComponent requires an ObjectPool dependency.")
+	self._services = p_dependencies.get("services")
+	assert(is_instance_valid(_services), "CombatComponent requires a ServiceLocator.")
 
 
 func teardown() -> void:
 	owner_node = null
 	p_data = null
-	_object_pool = null
+	_services = null
 
 
 ## Fires a player projectile from the object pool.
 func fire_shot() -> void:
 	p_data.attack_cooldown_timer = p_data.config.player_attack_cooldown
 
-	var shot = _object_pool.get_instance(Identifiers.Pools.PLAYER_SHOTS)
+	var shot = _services.object_pool.get_instance(Identifiers.Pools.PLAYER_SHOTS)
 	if not shot:
 		return
 
 	var shot_dir = Vector2(p_data.facing_direction, 0)
-	if Input.is_action_pressed("ui_up"):
-		shot_dir = Vector2.UP
-	elif Input.is_action_pressed("ui_down"):
-		shot_dir = Vector2.DOWN
+	var ic: InputComponent = owner_node.get_component(InputComponent)
+	if is_instance_valid(ic):
+		if ic.buffer.get("up"):
+			shot_dir = Vector2.UP
+		elif ic.buffer.get("down"):
+			shot_dir = Vector2.DOWN
 
 	shot.direction = shot_dir
 	shot.global_position = owner_node.global_position + (shot_dir * 60)
-	shot.activate({"object_pool": _object_pool})
+	shot.activate(_services)
+
+
+## Handles a melee hitbox collision.
+func trigger_melee_attack(target_body: Node) -> void:
+	var target_id = target_body.get_instance_id()
+	if p_data.hit_targets_this_swing.has(target_id):
+		return
+
+	p_data.hit_targets_this_swing[target_id] = true
+	var damageable = _services.combat_utils.find_damageable(target_body)
+	if is_instance_valid(damageable):
+		var damage_info = DamageInfo.new()
+		damage_info.source_node = owner_node
+		var distance = owner_node.global_position.distance_to(target_body.global_position)
+		var is_close_range = distance <= p_data.config.player_close_range_threshold
+		damage_info.amount = 5 if is_close_range else 1
+		damage_info.impact_position = target_body.global_position
+		damage_info.impact_normal = (target_body.global_position - owner_node.global_position).normalized()
+
+		var damage_result = damageable.apply_damage(damage_info)
+		if damage_result.was_damaged:
+			damage_dealt.emit()
+			if is_close_range:
+				_services.fx_manager.request_hit_stop(
+					p_data.config.player_melee_close_range_hit_stop_duration
+				)
 
 
 ## Attempts to perform a pogo action on a target.
@@ -9254,9 +9262,9 @@ func trigger_pogo(pogo_target: Node) -> bool:
 
 	if pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		should_bounce = true
-		_object_pool.return_instance.call_deferred(pogo_target)
+		_services.object_pool.return_instance.call_deferred(pogo_target)
 
-	var damageable = CombatUtilsScript.find_damageable(pogo_target)
+	var damageable = _services.combat_utils.find_damageable(pogo_target)
 	if is_instance_valid(damageable):
 		should_bounce = true
 		var damage_info = DamageInfo.new()
@@ -9264,7 +9272,7 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		damage_info.source_node = owner_node
 		damage_info.bypass_invincibility = true
 		damage_info.impact_position = pogo_target.global_position
-		damage_info.impact_normal = Vector2.UP  # Pogo impact is always from above.
+		damage_info.impact_normal = Vector2.UP
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
 			damage_dealt.emit()
@@ -9277,7 +9285,6 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		return true
 
 	return false
-
 
 =====================================
 FILE: ./src/entities/components/telegraph_component.tscn
@@ -9330,7 +9337,7 @@ var _knockback_speed: float
 var _hazard_knockback_speed: float
 var _invincibility_tokens: Dictionary = {}
 var _next_token_id: int = 1
-var _fx_manager: Node  # Dependency
+var _services: ServiceLocator  # Dependency
 var _hit_spark_effect: VFXEffect  # Dependency
 
 # --- Godot Lifecycle Methods ---
@@ -9364,10 +9371,10 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.entity_data = p_dependencies.get("data_resource")
 	var cfg: CombatConfig = p_dependencies.get("config")
-	self._fx_manager = p_dependencies.get("fx_manager")
+	self._services = p_dependencies.get("services")
 	self._hit_spark_effect = p_dependencies.get("hit_spark_effect")
 
-	if not entity_data or not cfg:
+	if not entity_data or not cfg or not _services:
 		push_error("HealthComponent.setup: Missing required dependencies.")
 		return
 
@@ -9376,7 +9383,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		_invincibility_duration = cfg.player_invincibility_duration
 		_knockback_speed = cfg.player_knockback_speed
 		_hazard_knockback_speed = cfg.player_hazard_knockback_speed
-	else:  # Assumes Enemy/Boss
+	else:
 		_invincibility_duration = cfg.boss_invincibility_duration
 		_knockback_speed = 0
 		_hazard_knockback_speed = 0
@@ -9388,7 +9395,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 func teardown() -> void:
 	entity_data = null
 	owner_node = null
-	_fx_manager = null
+	_services = null
 	_hit_spark_effect = null
 
 
@@ -9412,13 +9419,12 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	result.was_damaged = true
 	took_damage.emit(damage_info, result)
 
-	# Play hit spark VFX if damage was taken and an effect is configured
 	if (
 		result.was_damaged
-		and is_instance_valid(_fx_manager)
+		and is_instance_valid(_services)
 		and is_instance_valid(_hit_spark_effect)
 	):
-		_fx_manager.play_vfx(
+		_services.fx_manager.play_vfx(
 			_hit_spark_effect, damage_info.impact_position, damage_info.impact_normal
 		)
 
@@ -9448,7 +9454,6 @@ func _calculate_knockback(source: Node) -> Vector2:
 	if source.is_in_group(Identifiers.Groups.HAZARD):
 		speed = _hazard_knockback_speed
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
-
 
 =====================================
 FILE: ./src/entities/components/base_state_machine.tscn
@@ -9757,9 +9762,6 @@ FILE: ./src/entities/minions/turret.gd
 class_name Turret
 extends BaseEntity
 
-# --- Enums ---
-enum State { IDLE, ATTACK }
-
 # --- Constants ---
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
@@ -9778,8 +9780,6 @@ var entity_data: TurretStateData
 
 # --- Private Member Variables ---
 var _player: CharacterBody2D
-var _object_pool: ObjectPool  # Dependency
-var _fx_manager: Node  # Dependency
 var _is_dead: bool = false
 
 # --- Godot Lifecycle Methods ---
@@ -9806,17 +9806,19 @@ func _notification(what: int) -> void:
 
 
 func teardown() -> void:
-	if is_instance_valid(health_component):
-		if health_component.died.is_connected(_on_health_component_died):
-			health_component.died.disconnect(_on_health_component_died)
+	var hc: HealthComponent = get_component(HealthComponent)
+	if is_instance_valid(hc):
+		if hc.died.is_connected(_on_health_component_died):
+			hc.died.disconnect(_on_health_component_died)
 
 	super.teardown()
 	entity_data = null
 
 
 func deactivate() -> void:
-	if is_instance_valid(state_machine):
-		state_machine.teardown()
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm):
+		sm.teardown()
 	if is_instance_valid(attack_timer):
 		attack_timer.stop()
 
@@ -9831,13 +9833,13 @@ func _fire_at_player() -> void:
 	if not is_instance_valid(_player):
 		return
 
-	var shot = _object_pool.get_instance(Identifiers.Pools.TURRET_SHOTS)
+	var shot = _services.object_pool.get_instance(Identifiers.Pools.TURRET_SHOTS)
 	if not is_instance_valid(shot):
 		return
 
 	shot.direction = (self._player.global_position - self.global_position).normalized()
 	shot.global_position = self.global_position
-	shot.activate({"object_pool": _object_pool})
+	shot.activate(_services)
 
 
 func _die() -> void:
@@ -9845,12 +9847,12 @@ func _die() -> void:
 		return
 	_is_dead = true
 
-	# THE FIX: Immediately remove from physics and stop all logic.
 	collision_layer = 0
 	collision_mask = 0
 	deactivate()
 
-	var death_tween: Tween = fx_component.play_effect(dissolve_effect)
+	var fc: FXComponent = get_component(FXComponent)
+	var death_tween: Tween = fc.play_effect(dissolve_effect)
 	if is_instance_valid(death_tween):
 		await death_tween.finished
 
@@ -9863,11 +9865,7 @@ func _initialize_data() -> void:
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 	entity_data = TurretStateData.new()
 	entity_data.config = COMBAT_CONFIG
-
-	_object_pool = get_injected_dependency("object_pool")
-	_fx_manager = get_injected_dependency("fx_manager")
-	assert(is_instance_valid(_object_pool), "Turret requires 'object_pool' injected.")
-	assert(is_instance_valid(_fx_manager), "Turret requires 'fx_manager' injected.")
+	assert(is_instance_valid(_services), "Turret requires a ServiceLocator.")
 
 
 func _initialize_and_setup_components() -> void:
@@ -9877,37 +9875,35 @@ func _initialize_and_setup_components() -> void:
 
 	attack_timer.wait_time = entity_data.config.turret_fire_rate
 
+	var hc: HealthComponent = get_component(HealthComponent)
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	var fc: FXComponent = get_component(FXComponent)
+
 	var shared_deps := {
-		"data_resource": entity_data, "config": entity_data.config, "fx_manager": _fx_manager
+		"data_resource": entity_data, "config": entity_data.config, "services": _services
 	}
 
 	var states = {
-		State.IDLE:
-		load("res://src/entities/minions/states/state_turret_idle.gd").new(
-			self, state_machine, entity_data
+		Identifiers.TurretStates.IDLE: load("res://src/entities/minions/states/state_turret_idle.gd").new(
+			self, sm, entity_data
 		),
-		State.ATTACK:
-		load("res://src/entities/minions/states/state_turret_attack.gd").new(
-			self, state_machine, entity_data
+		Identifiers.TurretStates.ATTACK: load("res://src/entities/minions/states/state_turret_attack.gd").new(
+			self, sm, entity_data
 		)
 	}
 
 	var per_component_deps := {
-		state_machine: {"states": states, "initial_state_key": State.IDLE},
-		fx_component:
-		{
-			"visual_node": visual,
-			"health_component": health_component,
-			"hit_effect": HIT_FLASH_EFFECT
-		},
-		health_component: {"hit_spark_effect": hit_spark_effect}
+		sm: {"states": states, "initial_state_key": Identifiers.TurretStates.IDLE},
+		fc: {"visual_node": visual, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
+		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 
 	setup_components(shared_deps, per_component_deps)
 
 
 func _connect_signals() -> void:
-	health_component.died.connect(_on_health_component_died)
+	var hc: HealthComponent = get_component(HealthComponent)
+	hc.died.connect(_on_health_component_died)
 
 
 # --- Signal Handlers ---
@@ -9929,7 +9925,6 @@ func _on_range_detector_body_exited(body: Node) -> void:
 
 func _on_health_component_died() -> void:
 	_die()
-
 
 =====================================
 FILE: ./src/entities/minions/turret_state_data.gd
@@ -9982,13 +9977,12 @@ func process_physics(_delta: float) -> void:
 		return
 
 	if not state_data.is_player_in_range:
-		state_machine.change_state(_turret.State.IDLE)
+		state_machine.change_state(Identifiers.TurretStates.IDLE)
 		return
 
 	if _turret.attack_timer.is_stopped():
 		_turret._fire_at_player()
 		_turret.attack_timer.start(state_data.config.turret_fire_rate)
-
 
 =====================================
 FILE: ./src/entities/minions/states/state_turret_idle.gd
@@ -10018,8 +10012,7 @@ func process_physics(_delta: float) -> void:
 		return
 
 	if state_data.is_player_in_range:
-		state_machine.change_state(_turret.State.ATTACK)
-
+		state_machine.change_state(Identifiers.TurretStates.ATTACK)
 
 =====================================
 FILE: ./src/entities/minions/turret.tscn
@@ -10155,12 +10148,13 @@ extends BaseEntity
 signal health_changed(current_health, max_health)
 signal died
 
-# --- Enums ---
-enum State { MOVE, JUMP, FALL, DASH, WALL_SLIDE, ATTACK, HURT, HEAL, POGO }
-
 # --- Constants ---
-const ACTION_ALLOWED_STATES = [State.MOVE, State.FALL, State.JUMP, State.WALL_SLIDE]
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
+const ACTION_ALLOWED_STATES = [
+	Identifiers.PlayerStates.MOVE,
+	Identifiers.PlayerStates.FALL,
+	Identifiers.PlayerStates.JUMP,
+	Identifiers.PlayerStates.WALL_SLIDE
+]
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
@@ -10191,9 +10185,6 @@ const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect
 var entity_data: PlayerStateData
 
 # --- Private Member Variables ---
-var _object_pool: ObjectPool
-var _fx_manager: Node
-var _event_bus: Node
 var _is_dead: bool = false
 
 # --- Godot Lifecycle Methods ---
@@ -10209,7 +10200,8 @@ func _ready() -> void:
 	_connect_signals()
 
 	visual_sprite.color = Palette.COLOR_PLAYER
-	resource_component.on_damage_dealt()
+	entity_data.healing_charges = 0
+	get_component(PlayerResourceComponent).on_damage_dealt()
 	entity_data.determination_counter = 0
 
 
@@ -10223,20 +10215,31 @@ func _physics_process(delta: float) -> void:
 
 
 func teardown() -> void:
-	# Disconnect signals that THIS script is listening to.
-	if is_instance_valid(health_component):
-		if health_component.health_changed.is_connected(_on_health_component_health_changed):
-			health_component.health_changed.disconnect(_on_health_component_health_changed)
-		if health_component.died.is_connected(_on_health_component_died):
-			health_component.died.disconnect(_on_health_component_died)
-	if is_instance_valid(combat_component):
-		if combat_component.damage_dealt.is_connected(resource_component.on_damage_dealt):
-			combat_component.damage_dealt.disconnect(resource_component.on_damage_dealt)
-		if combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
-			combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
-	if is_instance_valid(state_machine):
-		if state_machine.action_requested.is_connected(_on_state_machine_action_requested):
-			state_machine.action_requested.disconnect(_on_state_machine_action_requested)
+	var hc: HealthComponent = get_component(HealthComponent)
+	if is_instance_valid(hc):
+		if hc.health_changed.is_connected(_on_health_component_health_changed):
+			hc.health_changed.disconnect(_on_health_component_health_changed)
+		if hc.died.is_connected(_on_health_component_died):
+			hc.died.disconnect(_on_health_component_died)
+
+	var cc: CombatComponent = get_component(CombatComponent)
+	if is_instance_valid(cc):
+		var rc: PlayerResourceComponent = get_component(PlayerResourceComponent)
+		if is_instance_valid(rc) and cc.damage_dealt.is_connected(rc.on_damage_dealt):
+			cc.damage_dealt.disconnect(rc.on_damage_dealt)
+		if cc.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested):
+			cc.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
+
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm):
+		if sm.melee_hitbox_toggled.is_connected(_enable_melee_hitbox):
+			sm.melee_hitbox_toggled.disconnect(_enable_melee_hitbox)
+		if sm.pogo_hitbox_toggled.is_connected(_enable_pogo_hitbox):
+			sm.pogo_hitbox_toggled.disconnect(_enable_pogo_hitbox)
+
+	if is_instance_valid(healing_timer):
+		if healing_timer.timeout.is_connected(_on_healing_timer_timeout):
+			healing_timer.timeout.disconnect(_on_healing_timer_timeout)
 
 	super.teardown()
 	entity_data = null
@@ -10254,13 +10257,13 @@ func _die() -> void:
 	collision_mask = 0
 	set_physics_process(false)
 
-	if is_instance_valid(state_machine):
-		state_machine.teardown()
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm):
+		sm.teardown()
 
-	if is_instance_valid(dissolve_effect):
-		var tween: Tween = fx_component.play_effect(
-			dissolve_effect, {}, {"preserve_final_state": false}
-		)
+	var fc: FXComponent = get_component(FXComponent)
+	if is_instance_valid(dissolve_effect) and is_instance_valid(fc):
+		var tween: Tween = fc.play_effect(dissolve_effect, {}, {"preserve_final_state": false})
 		if is_instance_valid(tween):
 			await tween.finished
 
@@ -10276,59 +10279,51 @@ func _enable_melee_hitbox(is_enabled: bool, is_up_attack: bool = false) -> void:
 		else:
 			shape_node.shape = entity_data.config.player_forward_attack_shape
 			shape_node.position = Vector2(entity_data.facing_direction * 60, 0)
-	shape_node.disabled = not is_enabled
+	shape_node.set_deferred("disabled", not is_enabled)
 
 
 func _enable_pogo_hitbox(is_enabled: bool) -> void:
 	var shape_node: CollisionShape2D = pogo_hitbox.get_node("CollisionShape2D")
 	shape_node.position = Vector2(0, 40)
-	shape_node.disabled = not is_enabled
+	shape_node.set_deferred("disabled", not is_enabled)
 
 
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = COMBAT_CONFIG
 
-	_object_pool = get_injected_dependency("object_pool")
-	_fx_manager = get_injected_dependency("fx_manager")
-	_event_bus = get_injected_dependency("event_bus")
-	assert(is_instance_valid(_object_pool), "Player requires 'object_pool' injected.")
-	assert(is_instance_valid(_fx_manager), "Player requires 'fx_manager' injected.")
-	assert(is_instance_valid(_event_bus), "Player requires 'event_bus' injected.")
+	assert(is_instance_valid(_services), "Player requires a ServiceLocator.")
+
+	var hc: HealthComponent = get_component(HealthComponent)
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	var ic: InputComponent = get_component(InputComponent)
 
 	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config,
-		"health_component": health_component,
-		"object_pool": _object_pool,
-		"event_bus": _event_bus,
-		"fx_manager": _fx_manager
+		"health_component": hc,
+		"services": _services
 	}
 
 	var states = {
-		State.MOVE: state_move_script.new(self, state_machine, entity_data),
-		State.FALL: state_fall_script.new(self, state_machine, entity_data),
-		State.JUMP: state_jump_script.new(self, state_machine, entity_data),
-		State.DASH: state_dash_script.new(self, state_machine, entity_data),
-		State.WALL_SLIDE: state_wall_slide_script.new(self, state_machine, entity_data),
-		State.ATTACK: state_attack_script.new(self, state_machine, entity_data),
-		State.HURT: state_hurt_script.new(self, state_machine, entity_data),
-		State.HEAL: state_heal_script.new(self, state_machine, entity_data),
-		State.POGO: state_pogo_script.new(self, state_machine, entity_data),
+		Identifiers.PlayerStates.MOVE: state_move_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.FALL: state_fall_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.JUMP: state_jump_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.DASH: state_dash_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.WALL_SLIDE: state_wall_slide_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.ATTACK: state_attack_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.HURT: state_hurt_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.HEAL: state_heal_script.new(self, sm, entity_data),
+		Identifiers.PlayerStates.POGO: state_pogo_script.new(self, sm, entity_data),
 	}
 
 	var per_component_deps := {
-		state_machine: {"states": states, "initial_state_key": State.FALL},
-		input_component: {"state_machine": state_machine},
-		ability_component: {"state_machine": state_machine, "input_component": input_component},
-		physics_component: {"input_component": input_component},
-		fx_component:
-		{
-			"visual_node": visual_sprite,
-			"health_component": health_component,
-			"hit_effect": HIT_FLASH_EFFECT
-		},
-		health_component: {"hit_spark_effect": hit_spark_effect}
+		sm: {"states": states, "initial_state_key": Identifiers.PlayerStates.FALL},
+		ic: {"state_machine": sm},
+		get_component(PlayerAbilityComponent): {"state_machine": sm, "input_component": ic},
+		get_component(PlayerPhysicsComponent): {"input_component": ic, "health_component": hc},
+		get_component(FXComponent): {"visual_node": visual_sprite, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
+		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 
 	setup_components(shared_deps, per_component_deps)
@@ -10340,11 +10335,21 @@ func _connect_signals() -> void:
 	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
 	pogo_hitbox.area_entered.connect(_on_hitbox_area_entered)
 	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-	health_component.health_changed.connect(_on_health_component_health_changed)
-	health_component.died.connect(_on_health_component_died)
-	combat_component.damage_dealt.connect(resource_component.on_damage_dealt)
-	combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
-	state_machine.action_requested.connect(_on_state_machine_action_requested)
+
+	var hc: HealthComponent = get_component(HealthComponent)
+	hc.health_changed.connect(_on_health_component_health_changed)
+	hc.died.connect(_on_health_component_died)
+
+	var cc: CombatComponent = get_component(CombatComponent)
+	var rc: PlayerResourceComponent = get_component(PlayerResourceComponent)
+	cc.damage_dealt.connect(rc.on_damage_dealt)
+	cc.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
+
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	sm.melee_hitbox_toggled.connect(_enable_melee_hitbox)
+	sm.pogo_hitbox_toggled.connect(_enable_pogo_hitbox)
+
+	healing_timer.timeout.connect(_on_healing_timer_timeout)
 
 
 func _update_timers(delta: float) -> void:
@@ -10361,55 +10366,33 @@ func _update_timers(delta: float) -> void:
 	entity_data.pogo_fall_prevention_timer = max(
 		0.0, entity_data.pogo_fall_prevention_timer - delta
 	)
-	if entity_data.is_charging and input_component.buffer.get("attack_pressed"):
+	var ic: InputComponent = get_component(InputComponent)
+	if entity_data.is_charging and is_instance_valid(ic) and ic.buffer.get("attack_pressed"):
 		entity_data.charge_timer += delta
 
 
 # --- Signal Handlers ---
 
 
-func _on_state_machine_action_requested(command: Callable) -> void:
-	if command.is_valid():
-		command.call()
-
-
 func _on_melee_hitbox_body_entered(body: Node) -> void:
-	var target_id = body.get_instance_id()
-	if entity_data.hit_targets_this_swing.has(target_id):
-		return
-	entity_data.hit_targets_this_swing[target_id] = true
-	var damageable = CombatUtilsScript.find_damageable(body)
-	if is_instance_valid(damageable):
-		var damage_info = DamageInfo.new()
-		damage_info.source_node = self
-		var distance = self.global_position.distance_to(body.global_position)
-		var is_close_range = distance <= entity_data.config.player_close_range_threshold
-		damage_info.amount = 5 if is_close_range else 1
-		damage_info.impact_position = body.global_position
-		damage_info.impact_normal = (body.global_position - global_position).normalized()
-		var damage_result = damageable.apply_damage(damage_info)
-		if damage_result.was_damaged:
-			resource_component.on_damage_dealt()
-			if is_close_range:
-				_fx_manager.request_hit_stop(
-					entity_data.config.player_melee_close_range_hit_stop_duration
-				)
+	get_component(CombatComponent).trigger_melee_attack(body)
 
 
 func _on_pogo_hitbox_body_entered(body: Node) -> void:
-	combat_component.trigger_pogo(body)
+	get_component(CombatComponent).trigger_pogo(body)
 
 
 func _on_hitbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		if entity_data.is_pogo_attack:
-			combat_component.trigger_pogo(area)
+			get_component(CombatComponent).trigger_pogo(area)
 		else:
-			_object_pool.return_instance.call_deferred(area)
+			_services.object_pool.return_instance.call_deferred(area)
 
 
 func _on_hurtbox_area_entered(area: Area2D) -> void:
-	if health_component.is_invincible():
+	var hc: HealthComponent = get_component(HealthComponent)
+	if hc.is_invincible():
 		return
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		var damage_info = DamageInfo.new()
@@ -10417,30 +10400,31 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		damage_info.source_node = area
 		damage_info.impact_position = global_position
 		damage_info.impact_normal = (global_position - area.global_position).normalized()
-		var damage_result = health_component.apply_damage(damage_info)
+		var damage_result = hc.apply_damage(damage_info)
 
 		if not is_instance_valid(entity_data):
 			return
 
 		if damage_result.was_damaged and entity_data.health > 0:
 			self.velocity = damage_result.knockback_velocity
-			state_machine.change_state(State.HURT)
-		_object_pool.return_instance.call_deferred(area)
+			get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.HURT)
+		_services.object_pool.return_instance.call_deferred(area)
 
 
 func _on_healing_timer_timeout() -> void:
-	if state_machine.current_state == state_machine.states[State.HEAL]:
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if sm.current_state == sm.states[Identifiers.PlayerStates.HEAL]:
 		entity_data.health += 1
-		resource_component.consume_healing_charge()
+		get_component(PlayerResourceComponent).consume_healing_charge()
 		_on_health_component_health_changed(entity_data.health, entity_data.max_health)
-		state_machine.change_state(State.MOVE)
+		sm.change_state(Identifiers.PlayerStates.MOVE)
 
 
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	_event_bus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
+	_services.event_bus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 
 
@@ -10453,14 +10437,13 @@ func _on_pogo_bounce_requested() -> void:
 	position.y -= 1
 	entity_data.can_dash = true
 	entity_data.air_jumps_left = entity_data.config.player_max_air_jumps
-	state_machine.change_state(State.FALL)
+	get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.FALL)
 
 
 func _cancel_heal() -> void:
 	if healing_timer.is_stopped():
 		return
 	healing_timer.stop()
-
 
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn
@@ -10497,26 +10480,11 @@ func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
 		return
 
-	var current_state_key = state_machine.states.find_key(state_machine.current_state)
+	var current_state_key = state_machine._current_state_key
 
-	# --- Heal Logic (Highest Priority) ---
-	var can_try_heal = (
-		owner_node.is_on_floor()
-		and input_component.buffer.get("down")
-		and input_component.buffer.get("jump_held")
-		and p_data.healing_charges > 0
-		and is_zero_approx(owner_node.velocity.x)
-	)
-
-	if can_try_heal:
-		state_machine.change_state(Player.State.HEAL)
-		return
-
-	# --- Action State Logic ---
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
 
-	# --- Attack / Charge Shot Logic ---
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
 		p_data.is_charging = true
 		p_data.charge_timer = 0.0
@@ -10524,20 +10492,19 @@ func _physics_process(_delta: float) -> void:
 	if input_component.buffer.get("attack_released"):
 		if p_data.is_charging:
 			if p_data.charge_timer >= p_data.config.player_charge_time:
-				(owner_node as Player).combat_component.fire_shot()
+				owner_node.get_component(CombatComponent).fire_shot()
 			elif input_component.buffer.get("down"):
-				state_machine.change_state(Player.State.POGO)
+				state_machine.change_state(Identifiers.PlayerStates.POGO)
 			else:
-				state_machine.change_state(Player.State.ATTACK)
+				state_machine.change_state(Identifiers.PlayerStates.ATTACK)
 			p_data.is_charging = false
 
-	# --- Dash Logic ---
 	if (
 		input_component.buffer.get("dash_pressed")
 		and p_data.can_dash
 		and p_data.dash_cooldown_timer <= 0
 	):
-		state_machine.change_state(Player.State.DASH)
+		state_machine.change_state(Identifiers.PlayerStates.DASH)
 
 
 # --- Public Methods ---
@@ -10556,7 +10523,6 @@ func teardown() -> void:
 	p_data = null
 	state_machine = null
 	input_component = null
-
 
 =====================================
 FILE: ./src/entities/player/components/player_physics_component.tscn
@@ -10615,6 +10581,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.health_component = p_dependencies.get("health_component")
 	self.input_component = p_dependencies.get("input_component")
 	assert(is_instance_valid(input_component), "PlayerPhysicsComponent requires an InputComponent.")
+	assert(is_instance_valid(health_component), "PlayerPhysicsComponent requires a HealthComponent.")
 
 
 func teardown() -> void:
@@ -10626,7 +10593,7 @@ func teardown() -> void:
 
 
 func apply_horizontal_movement() -> void:
-	var move_axis = owner_node.input_component.buffer.get("move_axis", 0.0)
+	var move_axis = owner_node.get_component(InputComponent).buffer.get("move_axis", 0.0)
 	owner_node.velocity.x = move_axis * p_data.config.player_speed
 	if not is_zero_approx(move_axis):
 		p_data.facing_direction = sign(move_axis)
@@ -10638,7 +10605,8 @@ func apply_gravity(delta: float, multiplier: float = 1.0) -> void:
 
 ## Checks if the conditions for performing a wall slide are met.
 func can_wall_slide() -> bool:
-	var move_axis = input_component.buffer.get("move_axis", 0.0)
+	var ic: InputComponent = owner_node.get_component(InputComponent)
+	var move_axis = ic.buffer.get("move_axis", 0.0)
 	return (
 		p_data.wall_coyote_timer > 0
 		and not owner_node.is_on_floor()
@@ -10684,15 +10652,15 @@ func _check_for_contact_damage() -> void:
 		damage_info.source_node = collider
 		damage_info.impact_position = col.get_position()
 		damage_info.impact_normal = col.get_normal()
-		var damage_result = owner_node.health_component.apply_damage(damage_info)
+		var damage_result = health_component.apply_damage(damage_info)
 
-		# GUARD: The owner may have been freed by the apply_damage call.
 		if not is_instance_valid(owner_node):
 			return
 
 		if damage_result.was_damaged and p_data.health > 0:
 			owner_node.velocity = damage_result.knockback_velocity
-			owner_node.state_machine.change_state(owner_node.State.HURT)
+			# THE FIX: Use the global identifier for the state key.
+			owner_node.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.HURT)
 		break
 
 =====================================
@@ -10717,7 +10685,7 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: BaseEntity
 var p_data: PlayerStateData
-var _event_bus: Node  # Dependency
+var _services: ServiceLocator  # Dependency
 
 # --- Public Methods ---
 
@@ -10725,16 +10693,16 @@ var _event_bus: Node  # Dependency
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
-	self._event_bus = p_dependencies.get("event_bus")
+	self._services = p_dependencies.get("services")
 	assert(
-		is_instance_valid(_event_bus), "PlayerResourceComponent requires an EventBus dependency."
+		is_instance_valid(_services), "PlayerResourceComponent requires a ServiceLocator dependency."
 	)
 
 
 func teardown() -> void:
 	owner_node = null
 	p_data = null
-	_event_bus = null
+	_services = null
 
 
 ## Called when the player successfully deals damage to an enemy.
@@ -10762,8 +10730,7 @@ func consume_healing_charge() -> void:
 func _emit_healing_charges_changed_event() -> void:
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
-	_event_bus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
-
+	_services.event_bus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
 
 =====================================
 FILE: ./src/entities/player/states/state_jump.gd
@@ -10772,8 +10739,14 @@ FILE: ./src/entities/player/states/state_jump.gd
 ## Handles the player's upward movement (jump).
 extends BaseState
 
+var _physics: PlayerPhysicsComponent
+var _input: InputComponent
+
 
 func enter(msg := {}) -> void:
+	_physics = owner.get_component(PlayerPhysicsComponent)
+	_input = owner.get_component(InputComponent)
+
 	if msg.get("is_air_jump", false):
 		state_data.air_jumps_left -= 1
 
@@ -10782,30 +10755,30 @@ func enter(msg := {}) -> void:
 
 
 func process_physics(delta: float) -> void:
-	owner.physics_component.apply_horizontal_movement()
+	_physics.apply_horizontal_movement()
 
-	if owner.input_component.buffer.get("jump_just_pressed"):
+	if _input.buffer.get("jump_just_pressed"):
 		if state_data.air_jumps_left > 0:
 			_perform_air_jump()
 
-	if owner.input_component.buffer.get("jump_released") and owner.velocity.y < 0:
+	if _input.buffer.get("jump_released") and owner.velocity.y < 0:
 		owner.velocity.y *= state_data.config.player_jump_release_dampener
 
 	_apply_gravity(delta)
 
 	if owner.is_on_floor():
-		state_machine.change_state(owner.State.MOVE)
+		state_machine.change_state(Identifiers.PlayerStates.MOVE)
 		return
 
-	if owner.physics_component.can_wall_slide():
-		state_machine.change_state(owner.State.WALL_SLIDE)
+	if _physics.can_wall_slide():
+		state_machine.change_state(Identifiers.PlayerStates.WALL_SLIDE)
 		return
 
 
 func _apply_gravity(delta: float) -> void:
-	owner.physics_component.apply_gravity(delta)
+	_physics.apply_gravity(delta)
 	if owner.velocity.y > 0.0:
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 
 
 func _perform_air_jump() -> void:
@@ -10820,22 +10793,25 @@ extends BaseState
 
 var _dash_direction: Vector2
 var _invincibility_token: int
+var _health: HealthComponent
 
 
 func enter(_msg := {}):
+	_health = owner.get_component(HealthComponent)
+
 	state_data.can_dash = false
 	state_data.dash_duration_timer = state_data.config.player_dash_duration
 	state_data.dash_cooldown_timer = state_data.config.player_dash_cooldown
 
-	_invincibility_token = owner.health_component.grant_invincibility(self)
+	_invincibility_token = _health.grant_invincibility(self)
 
 	_dash_direction = _get_dash_direction()
 	owner.velocity = _dash_direction * state_data.config.player_dash_speed
 
 
 func exit():
-	if is_instance_valid(owner) and is_instance_valid(owner.health_component):
-		owner.health_component.release_invincibility(_invincibility_token)
+	if is_instance_valid(owner) and is_instance_valid(_health):
+		_health.release_invincibility(_invincibility_token)
 
 	if _dash_direction.y != 0:
 		owner.velocity.y = 0.0
@@ -10845,16 +10821,16 @@ func exit():
 
 func process_physics(_delta: float):
 	if state_data.dash_duration_timer <= 0:
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 
 
 func _get_dash_direction():
-	if Input.is_action_pressed("ui_up"):
+	var ic: InputComponent = owner.get_component(InputComponent)
+	if ic.buffer.get("up"):
 		return Vector2.UP
-	if Input.is_action_pressed("ui_down"):
+	if ic.buffer.get("down"):
 		return Vector2.DOWN
 	return Vector2(state_data.facing_direction, 0)
-
 
 =====================================
 FILE: ./src/entities/player/states/state_heal.gd
@@ -10880,8 +10856,7 @@ func process_physics(_delta: float):
 		or not is_zero_approx(owner.velocity.x)
 		or not owner.is_on_floor()
 	):
-		state_machine.change_state(owner.State.MOVE)
-
+		state_machine.change_state(Identifiers.PlayerStates.MOVE)
 
 =====================================
 FILE: ./src/entities/player/states/state_wall_slide.gd
@@ -10890,8 +10865,13 @@ FILE: ./src/entities/player/states/state_wall_slide.gd
 # Handles the player's wall sliding state.
 extends BaseState
 
+var _physics: PlayerPhysicsComponent
+var _input: InputComponent
+
 
 func enter(_msg := {}):
+	_physics = owner.get_component(PlayerPhysicsComponent)
+	_input = owner.get_component(InputComponent)
 	state_data.can_dash = true
 	state_data.air_jumps_left = state_data.config.player_max_air_jumps
 
@@ -10908,22 +10888,22 @@ func process_physics(delta: float):
 
 	state_data.facing_direction = sign(-state_data.last_wall_normal.x)
 
-	if owner.input_component.buffer.get("jump_just_pressed"):
-		owner.physics_component.perform_wall_jump()
-		state_machine.change_state(owner.State.JUMP)
+	if _input.buffer.get("jump_just_pressed"):
+		_physics.perform_wall_jump()
+		state_machine.change_state(Identifiers.PlayerStates.JUMP)
 		return
 
-	var move_axis = owner.input_component.buffer.get("move_axis", 0.0)
+	var move_axis = _input.buffer.get("move_axis", 0.0)
 	if move_axis * -state_data.last_wall_normal.x < 0.8:
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 		return
 
 	if state_data.wall_coyote_timer <= 0:
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 		return
 
 	if owner.is_on_floor():
-		state_machine.change_state(owner.State.MOVE)
+		state_machine.change_state(Identifiers.PlayerStates.MOVE)
 		return
 
 =====================================
@@ -10934,19 +10914,22 @@ FILE: ./src/entities/player/states/state_attack.gd
 class_name PlayerStateAttack
 extends BaseState
 
+var _input: InputComponent
+
 # --- State Lifecycle ---
 
 
 func enter(_msg := {}) -> void:
+	_input = owner.get_component(InputComponent)
 	state_data.hit_targets_this_swing.clear()
 	state_data.attack_duration_timer = state_data.config.player_attack_duration
 	state_data.attack_cooldown_timer = state_data.config.player_attack_cooldown
-	var is_up_attack = owner.input_component.buffer.get("up", false)
-	owner._enable_melee_hitbox(true, is_up_attack)
+	var is_up_attack = _input.buffer.get("up", false)
+	state_machine.melee_hitbox_toggled.emit(true, is_up_attack)
 
 
 func exit() -> void:
-	owner.call_deferred("_enable_melee_hitbox", false)
+	state_machine.melee_hitbox_toggled.emit(false, false)
 	state_data.hit_targets_this_swing.clear()
 
 
@@ -10955,8 +10938,7 @@ func process_physics(delta: float) -> void:
 	owner.velocity = owner.velocity.move_toward(Vector2.ZERO, friction * delta)
 
 	if state_data.attack_duration_timer <= 0:
-		state_machine.change_state(owner.State.FALL)
-
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 
 =====================================
 FILE: ./src/entities/player/states/state_pogo.gd
@@ -10966,31 +10948,32 @@ FILE: ./src/entities/player/states/state_pogo.gd
 class_name PlayerStatePogo
 extends BaseState
 
+var _physics: PlayerPhysicsComponent
+
 # --- State Lifecycle ---
 
 
 func enter(_msg := {}) -> void:
+	_physics = owner.get_component(PlayerPhysicsComponent)
 	state_data.is_pogo_attack = true
-	# Use the existing attack timer to give the pogo a limited duration.
 	state_data.attack_duration_timer = state_data.config.player_attack_duration
-	owner._enable_pogo_hitbox(true)
+	state_machine.pogo_hitbox_toggled.emit(true)
 
 
 func exit() -> void:
-	owner.call_deferred("_enable_pogo_hitbox", false)
+	state_machine.pogo_hitbox_toggled.emit(false)
 	state_data.is_pogo_attack = false
 
 
 func process_physics(delta: float) -> void:
-	owner.physics_component.apply_gravity(delta)
+	_physics.apply_gravity(delta)
 
 	if owner.is_on_floor():
-		state_machine.change_state(owner.State.MOVE)
+		state_machine.change_state(Identifiers.PlayerStates.MOVE)
 		return
 
 	if state_data.attack_duration_timer <= 0:
-		state_machine.change_state(owner.State.FALL)
-
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 
 =====================================
 FILE: ./src/entities/player/states/state_hurt.gd
@@ -10999,20 +10982,22 @@ FILE: ./src/entities/player/states/state_hurt.gd
 ## Handles the player's knockback and stun state after taking damage.
 extends BaseState
 
+var _physics: PlayerPhysicsComponent
+
 
 func enter(_msg := {}) -> void:
+	_physics = owner.get_component(PlayerPhysicsComponent)
 	state_data.knockback_timer = state_data.config.player_knockback_duration
 	state_data.is_charging = false
 	owner._cancel_heal()
 
 
 func process_physics(delta: float) -> void:
-	owner.physics_component.apply_gravity(delta)
+	_physics.apply_gravity(delta)
 	owner.velocity.x = move_toward(owner.velocity.x, 0, 800 * delta)
 
 	if state_data.knockback_timer <= 0:
-		state_machine.change_state(owner.State.FALL)
-
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 
 =====================================
 FILE: ./src/entities/player/states/state_fall.gd
@@ -11021,34 +11006,42 @@ FILE: ./src/entities/player/states/state_fall.gd
 ## Handles the player's falling state (downward vertical movement).
 extends BaseState
 
+var _physics: PlayerPhysicsComponent
+var _input: InputComponent
+
+
+func enter(_msg := {}) -> void:
+	_physics = owner.get_component(PlayerPhysicsComponent)
+	_input = owner.get_component(InputComponent)
+
 
 func process_physics(delta: float) -> void:
-	owner.physics_component.apply_horizontal_movement()
+	_physics.apply_horizontal_movement()
 	_apply_gravity(delta)
 
 	if owner.is_on_floor():
-		state_machine.change_state(owner.State.MOVE)
+		state_machine.change_state(Identifiers.PlayerStates.MOVE)
 		return
 
-	if owner.physics_component.can_wall_slide():
-		state_machine.change_state(owner.State.WALL_SLIDE)
+	if _physics.can_wall_slide():
+		state_machine.change_state(Identifiers.PlayerStates.WALL_SLIDE)
 		return
 
-	if owner.input_component.buffer.get("jump_just_pressed"):
+	if _input.buffer.get("jump_just_pressed"):
 		if state_data.wall_coyote_timer > 0:
-			owner.physics_component.perform_wall_jump()
-			state_machine.change_state(owner.State.JUMP)
+			_physics.perform_wall_jump()
+			state_machine.change_state(Identifiers.PlayerStates.JUMP)
 		elif state_data.coyote_timer > 0:
-			state_machine.change_state(owner.State.JUMP)
+			state_machine.change_state(Identifiers.PlayerStates.JUMP)
 		elif state_data.air_jumps_left > 0:
-			state_machine.change_state(owner.State.JUMP, {"is_air_jump": true})
+			state_machine.change_state(Identifiers.PlayerStates.JUMP, {"is_air_jump": true})
 
 
 func _apply_gravity(delta: float) -> void:
 	var gravity_multiplier = 1.0
-	if owner.input_component.buffer.get("down"):
+	if _input.buffer.get("down"):
 		gravity_multiplier = state_data.config.player_fast_fall_gravity_multiplier
-	owner.physics_component.apply_gravity(delta, gravity_multiplier)
+	_physics.apply_gravity(delta, gravity_multiplier)
 
 =====================================
 FILE: ./src/entities/player/states/state_move.gd
@@ -11057,8 +11050,13 @@ FILE: ./src/entities/player/states/state_move.gd
 ## Handles the player's grounded movement state.
 extends BaseState
 
+var _physics: PlayerPhysicsComponent
+var _input: InputComponent
+
 
 func enter(_msg := {}) -> void:
+	_physics = owner.get_component(PlayerPhysicsComponent)
+	_input = owner.get_component(InputComponent)
 	state_data.air_jumps_left = state_data.config.player_max_air_jumps
 	state_data.can_dash = true
 
@@ -11066,13 +11064,20 @@ func enter(_msg := {}) -> void:
 func process_physics(delta: float) -> void:
 	state_data.coyote_timer = state_data.config.player_coyote_time
 
-	owner.physics_component.apply_gravity(delta)
-	owner.physics_component.apply_horizontal_movement()
+	_physics.apply_gravity(delta)
+	_physics.apply_horizontal_movement()
 
-	if owner.input_component.buffer.get("jump_just_pressed"):
-		# Check for drop-through platform
-		var is_trying_drop = owner.input_component.buffer.get("down", false)
-		if is_trying_drop:
+	if _input.buffer.get("jump_just_pressed"):
+		var is_holding_down = _input.buffer.get("down", false)
+
+		var can_try_heal = (
+			is_holding_down and state_data.healing_charges > 0 and is_zero_approx(owner.velocity.x)
+		)
+		if can_try_heal:
+			state_machine.change_state(Identifiers.PlayerStates.HEAL)
+			return
+
+		if is_holding_down:
 			var floor_col = owner.get_last_slide_collision()
 			if floor_col:
 				var floor_collider = floor_col.get_collider()
@@ -11081,17 +11086,15 @@ func process_physics(delta: float) -> void:
 					and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS)
 				):
 					owner.position.y += 2
-					state_machine.change_state(owner.State.FALL)
+					state_machine.change_state(Identifiers.PlayerStates.FALL)
 					return
 
-		# If not dropping, then it's a ground jump
-		state_machine.change_state(owner.State.JUMP)
+		state_machine.change_state(Identifiers.PlayerStates.JUMP)
 		return
 
 	if not owner.is_on_floor():
-		state_machine.change_state(owner.State.FALL)
+		state_machine.change_state(Identifiers.PlayerStates.FALL)
 		return
-
 
 =====================================
 FILE: ./src/entities/player/data/player_state_data.gd

@@ -9,8 +9,7 @@ extends CharacterBody2D
 
 # --- Private Member Variables ---
 var _components_initialized: bool = false
-var _injected_dependencies: Dictionary = {}
-# A dictionary to hold all component references, keyed by their script.
+var _services: ServiceLocator
 var _components: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
@@ -26,7 +25,6 @@ func _ready() -> void:
 
 
 ## Retrieves a component from this entity by its script type.
-## Example: get_component(HealthComponent)
 func get_component(type: Script) -> IComponent:
 	return _components.get(type)
 
@@ -40,17 +38,8 @@ func require_component(type: Script) -> IComponent:
 
 
 ## Called by the entity creator (ArenaBuilder) before the entity enters the scene tree.
-func inject_dependencies(p_dependencies: Dictionary) -> void:
-	_injected_dependencies = p_dependencies.duplicate()
-
-
-## Convenience accessor for child code to fetch injected services.
-func get_injected_dependency(p_key: String):
-	return _injected_dependencies.get(p_key, null)
-
-
-func has_injected_dependencies() -> bool:
-	return _injected_dependencies.size() > 0
+func inject_dependencies(p_services: ServiceLocator) -> void:
+	_services = p_services
 
 
 func teardown() -> void:
@@ -65,12 +54,16 @@ func setup_components(
 ) -> void:
 	if _components_initialized:
 		return
+		
+	# THE FIX: Add the services locator to the shared dependencies for all components.
+	var base_shared_deps = shared_dependencies.duplicate()
+	base_shared_deps["services"] = _services
 
 	for child in get_children():
 		if not (child is IComponent):
 			continue
 
-		var merged_deps := shared_dependencies.duplicate()
+		var merged_deps := base_shared_deps.duplicate()
 
 		if per_component_dependencies.has(child):
 			merged_deps.merge(per_component_dependencies[child])
@@ -109,5 +102,4 @@ func _cache_components_by_type() -> void:
 		if not child is IComponent:
 			continue
 
-		# Store component in the dictionary using its script as the key.
 		_components[child.get_script()] = child

@@ -41,6 +41,20 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(DI): Implement ServiceLocator for dependency injection
+
+Replaced the dictionary-based dependency injection system with a formal Service Locator pattern.
+
+- Created a new `ServiceLocator` autoload that provides clean, type-safe access to all core global systems.
+- Removed the redundant `class_name ServiceLocator`.
+- The `ArenaBuilder` now injects a single `ServiceLocator` instance into entities instead of a dictionary of services.
+- All entities (`Player`, `BaseBoss`, `Turret`) and projectiles now receive and use this `ServiceLocator` for accessing global systems like the `ObjectPool` and `FXManager`.
+- Components now receive the `ServiceLocator` from their parent entity during setup.
+
+This change significantly decouples entities from the global scope, simplifies the dependency injection process, and makes the codebase more robust and type-safe.
+
+
+
 
 refactor(FSM): Decouple states from owners
 

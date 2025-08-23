@@ -2,9 +2,6 @@
 class_name BaseProjectile
 extends Area2D
 
-# --- Constants ---
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
-
 # --- Node References ---
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var visual: ColorRect = $ColorRect
@@ -15,7 +12,7 @@ const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 var direction: Vector2 = Vector2.RIGHT
 
 # --- Private Member Variables ---
-var _object_pool: ObjectPool
+var _services: ServiceLocator
 var _is_active: bool = false
 
 # --- Godot Lifecycle ---
@@ -38,9 +35,10 @@ func _move(delta: float) -> void:
 # --- IPoolable Contract ---
 
 
-func activate(p_dependencies: Dictionary = {}) -> void:
-	self._object_pool = p_dependencies.get("object_pool")
-	assert(is_instance_valid(_object_pool), "%s requires an ObjectPool dependency." % [self.get_class()])
+func activate(p_services: ServiceLocator) -> void:
+	# THE FIX: Expect a ServiceLocator, not a dictionary.
+	self._services = p_services
+	assert(is_instance_valid(_services), "%s requires a ServiceLocator dependency." % [self.get_class()])
 
 	visible = true
 	_is_active = true
@@ -55,15 +53,14 @@ func deactivate() -> void:
 	process_mode = PROCESS_MODE_DISABLED
 	if is_instance_valid(collision_shape):
 		collision_shape.disabled = true
-	_object_pool = null
+	_services = null
 
 
 # --- Centralized Collision & Cleanup ---
 
 
 func _handle_collision(target: Node) -> void:
-	# Find a damageable target using the utility script.
-	var damageable = CombatUtilsScript.find_damageable(target)
+	var damageable = _services.combat_utils.find_damageable(target)
 	if is_instance_valid(damageable):
 		var damage_info := DamageInfo.new()
 		damage_info.amount = damage
@@ -72,8 +69,8 @@ func _handle_collision(target: Node) -> void:
 		damage_info.impact_normal = -direction.normalized() if not direction.is_zero_approx() else Vector2.ZERO
 		damageable.apply_damage(damage_info)
 
-	if is_instance_valid(_object_pool):
-		_object_pool.return_instance.call_deferred(self)
+	if is_instance_valid(_services):
+		_services.object_pool.return_instance.call_deferred(self)
 
 
 # --- Signal Handlers ---
@@ -94,5 +91,5 @@ func _on_area_entered(area: Area2D) -> void:
 func _on_screen_exited() -> void:
 	if not _is_active:
 		return
-	if is_instance_valid(_object_pool):
-		_object_pool.return_instance.call_deferred(self)
+	if is_instance_valid(_services):
+		_services.object_pool.return_instance.call_deferred(self)

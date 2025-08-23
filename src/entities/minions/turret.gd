@@ -22,8 +22,6 @@ var entity_data: TurretStateData
 
 # --- Private Member Variables ---
 var _player: CharacterBody2D
-var _object_pool: ObjectPool  # Dependency
-var _fx_manager: Node  # Dependency
 var _is_dead: bool = false
 
 # --- Godot Lifecycle Methods ---
@@ -77,13 +75,13 @@ func _fire_at_player() -> void:
 	if not is_instance_valid(_player):
 		return
 
-	var shot = _object_pool.get_instance(Identifiers.Pools.TURRET_SHOTS)
+	var shot = _services.object_pool.get_instance(Identifiers.Pools.TURRET_SHOTS)
 	if not is_instance_valid(shot):
 		return
 
 	shot.direction = (self._player.global_position - self.global_position).normalized()
 	shot.global_position = self.global_position
-	shot.activate({"object_pool": _object_pool})
+	shot.activate(_services)
 
 
 func _die() -> void:
@@ -109,11 +107,7 @@ func _initialize_data() -> void:
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 	entity_data = TurretStateData.new()
 	entity_data.config = COMBAT_CONFIG
-
-	_object_pool = get_injected_dependency("object_pool")
-	_fx_manager = get_injected_dependency("fx_manager")
-	assert(is_instance_valid(_object_pool), "Turret requires 'object_pool' injected.")
-	assert(is_instance_valid(_fx_manager), "Turret requires 'fx_manager' injected.")
+	assert(is_instance_valid(_services), "Turret requires a ServiceLocator.")
 
 
 func _initialize_and_setup_components() -> void:
@@ -128,7 +122,7 @@ func _initialize_and_setup_components() -> void:
 	var fc: FXComponent = get_component(FXComponent)
 
 	var shared_deps := {
-		"data_resource": entity_data, "config": entity_data.config, "fx_manager": _fx_manager
+		"data_resource": entity_data, "config": entity_data.config, "services": _services
 	}
 
 	var states = {

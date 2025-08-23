@@ -7,8 +7,6 @@ extends BaseEntity
 signal health_changed(current_health, max_health)
 signal died
 
-# --- THE FIX: The State enum is no longer needed here. ---
-
 # --- Constants ---
 const ACTION_ALLOWED_STATES = [
 	Identifiers.PlayerStates.MOVE,
@@ -16,7 +14,6 @@ const ACTION_ALLOWED_STATES = [
 	Identifiers.PlayerStates.JUMP,
 	Identifiers.PlayerStates.WALL_SLIDE
 ]
-const CombatUtilsScript = preload(AssetPaths.SCRIPT_COMBAT_UTILS)
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
@@ -47,9 +44,6 @@ const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect
 var entity_data: PlayerStateData
 
 # --- Private Member Variables ---
-var _object_pool: ObjectPool
-var _fx_manager: Node
-var _event_bus: Node
 var _is_dead: bool = false
 
 # --- Godot Lifecycle Methods ---
@@ -157,12 +151,7 @@ func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
 	entity_data.config = COMBAT_CONFIG
 
-	_object_pool = get_injected_dependency("object_pool")
-	_fx_manager = get_injected_dependency("fx_manager")
-	_event_bus = get_injected_dependency("event_bus")
-	assert(is_instance_valid(_object_pool), "Player requires 'object_pool' injected.")
-	assert(is_instance_valid(_fx_manager), "Player requires 'fx_manager' injected.")
-	assert(is_instance_valid(_event_bus), "Player requires 'event_bus' injected.")
+	assert(is_instance_valid(_services), "Player requires a ServiceLocator.")
 
 	var hc: HealthComponent = get_component(HealthComponent)
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
@@ -172,9 +161,7 @@ func _initialize_and_setup_components() -> void:
 		"data_resource": entity_data,
 		"config": entity_data.config,
 		"health_component": hc,
-		"object_pool": _object_pool,
-		"event_bus": _event_bus,
-		"fx_manager": _fx_manager
+		"services": _services
 	}
 
 	var states = {
@@ -259,7 +246,7 @@ func _on_hitbox_area_entered(area: Area2D) -> void:
 		if entity_data.is_pogo_attack:
 			get_component(CombatComponent).trigger_pogo(area)
 		else:
-			_object_pool.return_instance.call_deferred(area)
+			_services.object_pool.return_instance.call_deferred(area)
 
 
 func _on_hurtbox_area_entered(area: Area2D) -> void:
@@ -280,7 +267,7 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		if damage_result.was_damaged and entity_data.health > 0:
 			self.velocity = damage_result.knockback_velocity
 			get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.HURT)
-		_object_pool.return_instance.call_deferred(area)
+		_services.object_pool.return_instance.call_deferred(area)
 
 
 func _on_healing_timer_timeout() -> void:
@@ -296,7 +283,7 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = PlayerHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	_event_bus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
+	_services.event_bus.emit(EventCatalog.PLAYER_HEALTH_CHANGED, ev)
 	health_changed.emit(current, max_val)
 
 

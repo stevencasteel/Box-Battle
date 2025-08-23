@@ -65,9 +65,8 @@ func _inject_entity_services(instance: Node) -> void:
 	if not is_instance_valid(instance):
 		return
 	if instance.has_method("inject_dependencies"):
-		instance.inject_dependencies(
-			{"object_pool": ObjectPool, "fx_manager": FXManager, "event_bus": EventBus}
-		)
+		# THE FIX: Pass the ServiceLocator singleton directly.
+		instance.inject_dependencies(ServiceLocator)
 
 
 func _spawn_player_async() -> void:

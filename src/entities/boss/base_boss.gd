@@ -42,9 +42,6 @@ var entity_data: BossStateData
 var _player: CharacterBody2D = null
 var _active_attack_tween: Tween
 var _is_dead: bool = false
-var _object_pool: ObjectPool  # Dependency
-var _fx_manager: Node  # Dependency
-var _event_bus: Node  # Dependency
 
 # --- Godot Lifecycle Methods ---
 
@@ -71,11 +68,12 @@ func _ready() -> void:
 
 	if (
 		is_instance_valid(intro_shake_effect)
-		and is_instance_valid(_fx_manager)
-		and _fx_manager.has_method("is_camera_shaker_registered")
-		and _fx_manager.is_camera_shaker_registered()
+		and is_instance_valid(_services)
+		and is_instance_valid(_services.fx_manager)
+		and _services.fx_manager.has_method("is_camera_shaker_registered")
+		and _services.fx_manager.is_camera_shaker_registered()
 	):
-		_fx_manager.request_screen_shake(intro_shake_effect)
+		_services.fx_manager.request_screen_shake(intro_shake_effect)
 
 
 func _exit_tree() -> void:
@@ -129,13 +127,13 @@ func fire_volley(shot_count: int, delay: float) -> void:
 func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player):
 		return
-	var shot = _object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
+	var shot = _services.object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
 	if not shot:
 		return
 	_update_player_tracking()
 	shot.direction = (_player.global_position - global_position).normalized()
 	shot.global_position = global_position
-	shot.activate({"object_pool": _object_pool})
+	shot.activate(_services)
 
 
 # --- Private Methods ---
@@ -161,14 +159,14 @@ func _die() -> void:
 		_active_attack_tween.kill()
 
 	if is_instance_valid(death_shake_effect):
-		_fx_manager.request_screen_shake(death_shake_effect)
-	_fx_manager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
+		_services.fx_manager.request_screen_shake(death_shake_effect)
+	_services.fx_manager.request_hit_stop(entity_data.config.boss_death_hit_stop_duration)
 
 	var fc: FXComponent = get_component(FXComponent)
 	if is_instance_valid(dissolve_effect) and is_instance_valid(fc):
 		fc.play_effect(dissolve_effect, {}, {"preserve_final_state": true})
 
-	_event_bus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
+	_services.event_bus.emit(EventCatalog.BOSS_DIED, {"boss_node": self})
 
 
 func _initialize_data() -> void:
@@ -177,13 +175,7 @@ func _initialize_data() -> void:
 	current_attack_patterns = phase_1_patterns
 	entity_data = BossStateData.new()
 	entity_data.config = COMBAT_CONFIG
-
-	_object_pool = get_injected_dependency("object_pool")
-	_fx_manager = get_injected_dependency("fx_manager")
-	_event_bus = get_injected_dependency("event_bus")
-	assert(is_instance_valid(_object_pool), "BaseBoss requires 'object_pool' injected.")
-	assert(is_instance_valid(_fx_manager), "BaseBoss requires 'fx_manager' injected.")
-	assert(is_instance_valid(_event_bus), "BaseBoss requires 'event_bus' injected.")
+	assert(is_instance_valid(_services), "BaseBoss requires a ServiceLocator.")
 
 
 func _initialize_and_setup_components() -> void:
@@ -192,7 +184,7 @@ func _initialize_and_setup_components() -> void:
 	var fc: FXComponent = get_component(FXComponent)
 
 	var shared_deps := {
-		"data_resource": entity_data, "config": entity_data.config, "fx_manager": _fx_manager
+		"data_resource": entity_data, "config": entity_data.config, "services": _services
 	}
 
 	var states = {
@@ -244,9 +236,9 @@ func _on_health_threshold_reached(health_percentage: float) -> void:
 			1:
 				current_attack_patterns = phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
-			_fx_manager.request_screen_shake(phase_change_shake_effect)
-		_fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
-		_event_bus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
+			_services.fx_manager.request_screen_shake(phase_change_shake_effect)
+		_services.fx_manager.request_hit_stop(entity_data.config.boss_phase_change_hit_stop_duration)
+		_services.event_bus.emit(EventCatalog.BOSS_PHASE_CHANGED, {"phases_remaining": phases_remaining})
 
 
 func _on_cooldown_timer_timeout() -> void:
@@ -265,7 +257,7 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 	var ev = BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
-	_event_bus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
+	_services.event_bus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
 
 
 func _on_health_component_died() -> void:

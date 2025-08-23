@@ -12,8 +12,8 @@ func _on_body_entered(_body: Node) -> void:
 	if not _is_active:
 		return
 	# This projectile is destroyed by solid world geometry.
-	if is_instance_valid(_object_pool):
-		_object_pool.return_instance.call_deferred(self)
+	if is_instance_valid(_services):
+		_services.object_pool.return_instance.call_deferred(self)
 
 func _on_area_entered(area: Area2D) -> void:
 	if not _is_active:

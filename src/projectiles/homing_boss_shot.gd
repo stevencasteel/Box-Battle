@@ -18,7 +18,6 @@ func _ready() -> void:
 
 # Movement override
 func _move(delta: float) -> void:
-	# If no player, fall back to simple linear motion.
 	if not _player_ref or not _player_ref.get_ref():
 		global_position += transform.x * speed * delta
 		return
@@ -28,16 +27,13 @@ func _move(delta: float) -> void:
 	rotation = lerp_angle(rotation, direction_to_player.angle(), 0.05)
 	global_position += transform.x * speed * delta
 
-# IPoolable override (call base via super)
-func activate(p_dependencies: Dictionary = {}) -> void:
-	# Call base activate
-	super.activate(p_dependencies)
 
-	# Find player once
+func activate(p_services: ServiceLocator) -> void:
+	super.activate(p_services)
+
 	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	_player_ref = weakref(player_node)
 
-	# Configure and start lifespan/tween
 	if is_instance_valid(lifetime_timer):
 		lifetime_timer.start(lifespan)
 
@@ -49,7 +45,6 @@ func activate(p_dependencies: Dictionary = {}) -> void:
 	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, lifespan)
 
 func deactivate() -> void:
-	# kill tweens and reset visuals before base deactivation
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
 		_active_tween = null
@@ -57,12 +52,10 @@ func deactivate() -> void:
 	visual.scale = Vector2.ONE
 	collision_shape.scale = Vector2.ONE
 
-	# Call base deactivate
 	super.deactivate()
 
-# Signal: lifetime expired
 func _on_lifetime_timer_timeout() -> void:
 	if not _is_active:
 		return
-	if is_instance_valid(_object_pool):
-		_object_pool.return_instance.call_deferred(self)
+	if is_instance_valid(_services):
+		_services.object_pool.return_instance.call_deferred(self)

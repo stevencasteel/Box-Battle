@@ -62,12 +62,8 @@ func _prewarm_shaders() -> void:
 		var instance = load(scene_path).instantiate()
 
 		if instance.has_method("inject_dependencies"):
-			var deps = {
-				"object_pool": ObjectPool,
-				"fx_manager": FXManager,
-				"event_bus": EventBus,
-			}
-			instance.inject_dependencies(deps)
+			# THE FIX: Pass the ServiceLocator singleton directly.
+			instance.inject_dependencies(ServiceLocator)
 
 		prewarm_viewport.add_child(instance)
 

@@ -12,9 +12,9 @@ func _ready() -> void:
 
 
 # Ensure the speed is set every time this instance is (re)activated by the pool.
-func activate(p_dependencies: Dictionary = {}) -> void:
-	# First let the base class do its activation (set process, collision, pool ref, etc.)
-	super.activate(p_dependencies)
+func activate(p_services: ServiceLocator) -> void:
+	# First let the base class do its activation
+	super.activate(p_services)
 	# Then apply player-shot-specific runtime defaults so they apply on reuse.
 	speed = default_speed
 
@@ -24,8 +24,8 @@ func _on_area_entered(area: Area2D) -> void:
 		return
 	# Player shots can destroy enemy projectiles on contact.
 	if area.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
-		if is_instance_valid(_object_pool):
-			_object_pool.return_instance.call_deferred(area)
+		if is_instance_valid(_services):
+			_services.object_pool.return_instance.call_deferred(area)
 
-	# Then proceed with the base collision handling (damage + returning this shot to the pool).
+	# Then proceed with the base collision handling.
 	super._on_area_entered(area)
