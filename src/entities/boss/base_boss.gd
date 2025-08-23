@@ -4,7 +4,6 @@ class_name BaseBoss
 extends BaseEntity
 
 # --- Constants ---
-const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Configuration ---
@@ -174,8 +173,8 @@ func _initialize_data() -> void:
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
 	current_attack_patterns = phase_1_patterns
 	entity_data = BossStateData.new()
-	entity_data.config = COMBAT_CONFIG
 	assert(is_instance_valid(_services), "BaseBoss requires a ServiceLocator.")
+	entity_data.config = _services.combat_config
 
 
 func _initialize_and_setup_components() -> void:

@@ -14,7 +14,6 @@ const ACTION_ALLOWED_STATES = [
 	Identifiers.PlayerStates.JUMP,
 	Identifiers.PlayerStates.WALL_SLIDE
 ]
-const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Properties ---
@@ -149,9 +148,8 @@ func _enable_pogo_hitbox(is_enabled: bool) -> void:
 
 func _initialize_and_setup_components() -> void:
 	entity_data = PlayerStateData.new()
-	entity_data.config = COMBAT_CONFIG
-
 	assert(is_instance_valid(_services), "Player requires a ServiceLocator.")
+	entity_data.config = _services.combat_config
 
 	var hc: HealthComponent = get_component(HealthComponent)
 	var sm: BaseStateMachine = get_component(BaseStateMachine)

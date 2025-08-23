@@ -5,7 +5,6 @@ class_name Turret
 extends BaseEntity
 
 # --- Constants ---
-const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Configuration ---
@@ -106,8 +105,8 @@ func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 	entity_data = TurretStateData.new()
-	entity_data.config = COMBAT_CONFIG
 	assert(is_instance_valid(_services), "Turret requires a ServiceLocator.")
+	entity_data.config = _services.combat_config
 
 
 func _initialize_and_setup_components() -> void:
