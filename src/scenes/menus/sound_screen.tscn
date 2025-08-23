@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://dsvv7o1v1j8t1"]
+[gd_scene load_steps=6 format=3 uid="uid://dsvv7o1v1j8t1"]
 
 [ext_resource type="Script" uid="uid://451xh65eo2eo" path="res://src/scenes/menus/sound_screen.gd" id="1_sound_script"]
 [ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
 [ext_resource type="FontFile" uid="uid://b41cqy3luy6se" path="res://assets/fonts/font_main_black.ttf" id="3_font_black"]
 [ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/ui/components/mute_button/mute_button.tscn" id="4_mute_button"]
+[ext_resource type="PackedScene" uid="uid://cgt6j1h2w3k4l" path="res://src/ui/components/sound_setting_row/sound_setting_row.tscn" id="5_sound_row"]
 
 [node name="SoundScreen" type="Control"]
 layout_mode = 3
@@ -55,6 +56,21 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 40
 alignment = 1
+
+[node name="MasterRow" parent="MainVBox/MenuItemsVBox" instance=ExtResource("5_sound_row")]
+unique_name_in_owner = true
+layout_mode = 2
+setting_name = "MASTER"
+
+[node name="MusicRow" parent="MainVBox/MenuItemsVBox" instance=ExtResource("5_sound_row")]
+unique_name_in_owner = true
+layout_mode = 2
+setting_name = "MUSIC"
+
+[node name="SfxRow" parent="MainVBox/MenuItemsVBox" instance=ExtResource("5_sound_row")]
+unique_name_in_owner = true
+layout_mode = 2
+setting_name = "SFX"
 
 [node name="ExpandSpacer" type="Control" parent="MainVBox"]
 layout_mode = 2

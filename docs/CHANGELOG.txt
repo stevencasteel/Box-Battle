@@ -12,34 +12,60 @@
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+║                                                                              ║
+
+
+
+
+
+
+
+
+
+
+
+
+
+║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║  ██     [0.14.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/XX/2025    ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
-║                                                                              ║
+
+
+Refactor(UI): Convert Sound and Controls menus to components
+
+The Sound and Controls screens were previously built procedurally in their `_ready()` functions. This mixed layout definitions with control logic, making them difficult to visualize, maintain, and tweak.
+
+This commit refactors both screens to use a component-based approach, aligning with Godot's scene-based philosophy:
+
+- Created reusable `SoundSettingRow` and `ControlSettingRow` scenes, each responsible for its own layout and display logic.
+- The parent `sound_screen.tscn` and `controls_screen.tscn` now instance these row components directly in the editor.
+- The corresponding GDScript files have been simplified to only manage high-level logic (navigation, signal connections), completely removing procedural UI generation.
+
+This change significantly improves maintainability by separating presentation from control, allowing for faster iteration on UI layouts directly in the Godot editor.
+
 
 
 

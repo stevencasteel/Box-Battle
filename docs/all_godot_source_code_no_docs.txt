@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 16:13:49 CDT 2025
+Generated on: Sat Aug 23 17:05:58 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -130,7 +130,6 @@ PROJECT DIRECTORY STRUCTURE:
 │       ├── version_conversion.gd
 │       ├── version_numbers.gd
 │       └── warnings_manager.gd
-├── all_script_errors.txt
 ├── default_bus_layout.tres
 ├── docs
 │   ├── ARCHITECTURE.txt
@@ -420,14 +419,21 @@ PROJECT DIRECTORY STRUCTURE:
 │   │       └── test_player_resource_component.gd
 │   ├── ui
 │   │   ├── components
+│   │   │   ├── control_setting_row
+│   │   │   │   ├── control_setting_row.gd
+│   │   │   │   └── control_setting_row.tscn
 │   │   │   ├── custom_slider
-│   │   │   │   └── custom_slider.gd
+│   │   │   │   ├── custom_slider.gd
+│   │   │   │   └── custom_slider.tscn
 │   │   │   ├── logo_display
 │   │   │   │   ├── logo_display.gd
 │   │   │   │   └── logo_display.tscn
 │   │   │   ├── mute_button
 │   │   │   │   ├── mute_button.gd
 │   │   │   │   └── mute_button.tscn
+│   │   │   ├── sound_setting_row
+│   │   │   │   ├── sound_setting_row.gd
+│   │   │   │   └── sound_setting_row.tscn
 │   │   │   └── styled_menu_item
 │   │   │       ├── styled_menu_item.gd
 │   │   │       └── styled_menu_item.tscn
@@ -450,7 +456,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-79 directories, 363 files
+81 directories, 367 files
 
 
 =====================================
@@ -665,323 +671,6 @@ FILE: ./materials/entity_hit_flash_material.tres
 shader = ExtResource("1_shader")
 shader_parameter/fx_progress = 0.0
 shader_parameter/tint_color = Color(1, 0, 0, 1)
-
-=====================================
-FILE: ./all_script_errors.txt
-=====================================
-WorkerThreadPool: 8 threads, 2 max low-priority.
-Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
-TextServer: Added interface "Dummy"
-TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
-Devices:
-  #0: Apple Apple M1 (Apple7) - Supported, Integrated
-- Metal multiview supported:
-  max view count: 16
-  max instances: 4294967295
-Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
-Using "default" pen tablet driver...
-Shader 'CanvasSdfShaderRD' (group 0) SHA256: 97dc9fb2f592cd02d8b1f8fd33df8aec73849d2fbafcfeaa6e99b9c3678c221d
-Shader 'SkeletonShaderRD' (group 0) SHA256: a7e5115c09793f8e950720a2ab8906bff195e9b508eec01af7aeb363da2bf75b
-Shader 'SortShaderRD' (group 0) SHA256: e184fb752fd6b1f86c536cb9dff20977fee019403e1025080eca44e6bfa11ef1
-Shader 'ParticlesShaderRD' (group 0) SHA256: 9797916f926fab4024422fe6c75cc0d8d517705d90802882fb9efa6dda0af392
-Shader 'ParticlesCopyShaderRD' (group 0) SHA256: 1a312a6797c1ba217655b41d33ce357ac226cba8d65d4daab9278d88c57d6468
-Shader 'CanvasShaderRD' (group 0) SHA256: 908e609e1337d67f8799155a57f03a3de33fcdba22b574595e90da921079b33d
-Shader 'CanvasOcclusionShaderRD' (group 0) SHA256: f9d6c9d569cf2f40595061ee84efd5fe34d68284e1f7273f62a4ac36de8852ee
-Shader 'SceneForwardMobileShaderRD' (group 0) SHA256: 1c5d16b1f4d38d016026900999bd209a9f901f70f04136d9fdd669f9601e2db3
-Shader 'SkyShaderRD' (group 0) SHA256: 34c03a8e46624b5ab7488ca0527d4f733272c048f0dd61258a69b9bf419225bd
-Shader 'BokehDofRasterShaderRD' (group 0) SHA256: a5ed26e5b86fb1a016f61f719fa3ba45119a0bda505dcc038bfd26e718ef956d
-Shader 'BlurRasterShaderRD' (group 0) SHA256: 193d80f293dc88299ae7ef003640f13fa7cab1fd1a57de366b53029265639146
-Shader 'CopyShaderRD' (group 0) SHA256: aaaaf4bfa2e7bd72bdafaa25005b56152e2e738422178c95ce5ed4976f964862
-Shader 'CopyToFbShaderRD' (group 0) SHA256: f113ba1d923f38bcf263af4dbc168573e755be83c1d3616fc49b7588aa9fffa4
-Shader 'CubeToDpShaderRD' (group 0) SHA256: 37d76ea0432d00e86934ff9eab83ce63c9c7feffafd96809773e109c5a078e17
-Shader 'CubemapDownsamplerRasterShaderRD' (group 0) SHA256: 20c48704e5817755c17d80b22e7c39d99270bd1e95c54446d742753abc03db33
-Shader 'CubemapFilterRasterShaderRD' (group 0) SHA256: de06c7a642b6af01caa44a65e94daa5dfafbdda1a6111bdd975c28e8c1fe4c1a
-Shader 'CubemapRoughnessRasterShaderRD' (group 0) SHA256: 3efae0638df891d7ec5aaa17ead03d3243a3fdc9f5920d95e16f92a0aeccfd04
-Shader 'SpecularMergeShaderRD' (group 0) SHA256: 8d06f9bec87ae4177f0a49133608f41313ebad2d0d81a5c074db1541cd396ddc
-Shader 'ShadowFrustumShaderRD' (group 0) SHA256: b73466659c6c1252aff41d1d117370efac3ed69d2ee89bb6e036036557afb5bd
-Shader 'MotionVectorsShaderRD' (group 0) SHA256: 548f1c61370fbba7d8bacec2827d86adc6984d8874d31cb21b7bb5f78e6d4335
-Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e6003b5a0c97bd615d1990a7012076a61e11cb05df558
-Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
-Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
-CoreAudio: detected 2 channels
-CoreAudio: output sampling rate: 44100 Hz
-CoreAudio: output audio buffer frames: 512 calculated latency: 11ms
-
-TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
-CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
-Loading resource: res://default_bus_layout.tres
-CORE API HASH: 4052744068
-EDITOR API HASH: 910296392
-Loading resource: res://src/core/systems/game_manager.gd
-Loading resource: res://src/core/systems/scene_manager.gd
-Loading resource: res://src/core/systems/audio_manager.gd
-Loading resource: res://src/core/systems/fx_manager.gd
-Loading resource: res://src/core/systems/camera_manager.gd
-Loading resource: res://src/core/systems/cursor_manager.gd
-Loading resource: res://assets/sprites/ui/cursors/sprite_cursor_default.png
-Loading resource: res://.godot/imported/sprite_cursor_default.png-0ae11c7582bcce7f2e16760a505c9927.ctex
-Loading resource: res://assets/sprites/ui/cursors/sprite_cursor_pointer.png
-Loading resource: res://.godot/imported/sprite_cursor_pointer.png-6681326a5b7347271de62dd751fb3b83.ctex
-Loading resource: res://src/core/systems/dialogue_manager.gd
-Loading resource: res://src/ui/dialogue/dialogue_box.tscn
-Loading resource: res://src/ui/dialogue/dialogue_box.gd
-Loading resource: res://src/core/building/arena_builder.gd
-Loading resource: res://src/data/combat_config.tres
-Loading resource: res://src/core/data/config/combat_config.gd
-Loading resource: res://src/entities/player/data/forward_attack_shape.tres
-Loading resource: res://src/entities/player/data/upward_attack_shape.tres
-Loading resource: res://src/api/global_preloader.gd
-Loaded system CA certificates
-Loading resource: res://src/scenes/main/main.tscn
-Loading resource: res://src/scenes/main/main.gd
-Loading resource: res://src/projectiles/player_shot.tscn
-Loading resource: res://src/projectiles/player_shot.gd
-Loading resource: res://src/projectiles/boss_shot.tscn
-Loading resource: res://src/projectiles/boss_shot.gd
-Loading resource: res://src/projectiles/turret_shot.tscn
-Loading resource: res://src/projectiles/turret_shot.gd
-Loading resource: res://src/projectiles/homing_boss_shot.tscn
-Loading resource: res://src/projectiles/homing_boss_shot.gd
-Loading resource: res://src/vfx/hit_spark.tscn
-Loading resource: res://src/vfx/hit_spark.gd
-AssetPaths: Validating all asset paths...
-AssetPaths: All paths validated successfully.
-Loading resource: res://assets/audio/music/music_menu_loop.mp3
-Loading resource: res://.godot/imported/music_menu_loop.mp3-a3f890b5159e51d7cc53cdad36cfcd36.mp3str
-Loading resource: res://src/scenes/menus/title_screen.tscn
-Loading resource: res://src/scenes/menus/title_screen.gd
-Loading resource: res://assets/sprites/ui/icons/icon_ui_sound_on.png
-Loading resource: res://.godot/imported/icon_ui_sound_on.png-c97b0b59545c0dc177b96447a16e0a9f.ctex
-Loading resource: res://assets/sprites/ui/icons/icon_ui_sound_off.png
-Loading resource: res://.godot/imported/icon_ui_sound_off.png-3fb3ac644d936ac41f943fdd25d24217.ctex
-Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
-Loading resource: res://src/ui/components/logo_display/logo_display.tscn
-Loading resource: res://assets/sprites/ui/logos/newgrounds_logo.png
-Loading resource: res://.godot/imported/newgrounds_logo.png-2977cde893870d21b7f84cd17b13c225.ctex
-Loading resource: res://assets/sprites/ui/logos/godot_logo.png
-Loading resource: res://.godot/imported/godot_logo.png-2c4abc4be94a9a8ee3cb014f11b6a489.ctex
-Loading resource: res://assets/sprites/ui/logos/itch_logo.png
-Loading resource: res://.godot/imported/itch_logo.png-55a8cdb2f6f34f33f1968a45adf238ea.ctex
-Loading resource: res://assets/fonts/font_main_black.ttf
-Loading resource: res://.godot/imported/font_main_black.ttf-766d9cc0a208469438ff831535d8483c.fontdata
-Loading resource: res://src/ui/components/mute_button/mute_button.tscn
-Loading resource: res://assets/fonts/font_main_bold.ttf
-Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
-Loading resource: res://assets/audio/sfx/sfx_ui_move.mp3
-Loading resource: res://.godot/imported/sfx_ui_move.mp3-22d501a1c652a7c7f2af3e97d97a2b16.mp3str
-Loading resource: res://assets/audio/sfx/sfx_ui_select.mp3
-Loading resource: res://.godot/imported/sfx_ui_select.mp3-3073366784d3e7caa5d5c9691f71648c.mp3str
-Loading resource: res://src/scenes/loading/loading_screen.tscn
-Loading resource: res://src/scenes/loading/loading_screen.gd
-Loading resource: res://src/data/effects/entity_hit_flash_effect.tres
-Loading resource: res://materials/entity_hit_flash_material.tres
-Loading resource: res://shaders/entity/red_hit_flash_test.gdshader
-Starting shader pre-warming...
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/entities/archetypes/player_archetype.tres
-Loading resource: res://src/entities/components/health_component.tscn
-Loading resource: res://src/entities/components/combat_component.tscn
-Loading resource: res://src/entities/components/input_component.tscn
-Loading resource: res://src/entities/components/base_state_machine.tscn
-Loading resource: res://src/entities/player/components/player_physics_component.tscn
-Loading resource: res://src/entities/player/components/player_ability_component.tscn
-Loading resource: res://src/entities/player/components/player_resource_component.tscn
-Loading resource: res://src/entities/components/fx_component.tscn
-Loading resource: res://src/core/data/effects/player_damage_shake.tres
-Loading resource: res://src/core/data/effects/player_hit_spark_effect.tres
-Loading resource: res://src/entities/player/states/state_move.gd
-Loading resource: res://src/entities/player/states/state_jump.gd
-Loading resource: res://src/entities/player/states/state_fall.gd
-Loading resource: res://src/entities/player/states/state_dash.gd
-Loading resource: res://src/entities/player/states/state_wall_slide.gd
-Loading resource: res://src/entities/player/states/state_attack.gd
-Loading resource: res://src/entities/player/states/state_hurt.gd
-Loading resource: res://src/entities/player/states/state_heal.gd
-Loading resource: res://src/entities/player/states/state_pogo.gd
-Loading resource: res://src/core/data/effects/dissolve_effect.tres
-Loading resource: res://materials/dissolve_material.tres
-Loading resource: res://shaders/entity/dissolve.gdshader
-Loading resource: res://assets/textures/noise_texture.tres
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/entities/boss/attack_patterns/single_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/single_shot_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/projectile_logic.gd
-Loading resource: res://src/entities/boss/attack_patterns/volley_3_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_shot_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_attack.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_logic.gd
-Loading resource: res://src/entities/boss/attack_patterns/volley_5_shot.tres
-Loading resource: res://src/core/data/effects/boss_phase_change_shake.tres
-Loading resource: res://src/core/data/effects/boss_death_shake.tres
-Loading resource: res://src/entities/archetypes/boss_archetype.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
-Loading resource: res://src/entities/boss/states/state_boss_idle.gd
-Loading resource: res://src/entities/boss/states/state_boss_attack.gd
-Loading resource: res://src/entities/components/telegraph_component.tscn
-Loading resource: res://src/entities/components/telegraph_component.gd
-Loading resource: res://src/entities/boss/states/state_boss_cooldown.gd
-Loading resource: res://src/entities/boss/states/state_boss_patrol.gd
-Loading resource: res://src/entities/boss/states/state_boss_lunge.gd
-Shader pre-warming complete.
-Loading resource: res://src/core/data/effects/dissolve_effect.tres
-Loading resource: res://materials/dissolve_material.tres
-Loading resource: res://shaders/entity/dissolve.gdshader
-Loading resource: res://assets/textures/noise_texture.tres
-FXManager: Starting shader pre-warm...
-FXManager: Shader pre-warm complete.
-Loading resource: res://src/data/encounters/encounter_00.tres
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/entities/boss/attack_patterns/single_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/single_shot_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_3_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_shot_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_attack.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_5_shot.tres
-Loading resource: res://src/core/data/effects/boss_phase_change_shake.tres
-Loading resource: res://src/core/data/effects/boss_death_shake.tres
-Loading resource: res://src/core/data/effects/player_hit_spark_effect.tres
-Loading resource: res://src/entities/archetypes/boss_archetype.tres
-Loading resource: res://src/entities/components/health_component.tscn
-Loading resource: res://src/entities/components/base_state_machine.tscn
-Loading resource: res://src/entities/components/fx_component.tscn
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_logic.tres
-Loading resource: res://src/data/layouts/layout_00.tres
-Loading resource: res://src/entities/minions/turret.tscn
-Loading resource: res://src/entities/minions/turret.gd
-Loading resource: res://src/entities/archetypes/turret_archetype.tres
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/entities/archetypes/player_archetype.tres
-Loading resource: res://src/entities/components/combat_component.tscn
-Loading resource: res://src/entities/components/input_component.tscn
-Loading resource: res://src/entities/player/components/player_physics_component.tscn
-Loading resource: res://src/entities/player/components/player_ability_component.tscn
-Loading resource: res://src/entities/player/components/player_resource_component.tscn
-Loading resource: res://src/core/data/effects/player_damage_shake.tres
-Loading resource: res://src/ui/game_hud/game_hud.tscn
-Loading resource: res://src/ui/game_hud/game_hud.gd
-Loading resource: res://src/scenes/game/encounter_scene.tscn
-Loading resource: res://src/scenes/game/encounter_scene.gd
-Loading resource: res://src/data/dialogue/test_conversation.tres
-Loading resource: res://src/entities/minions/states/state_turret_idle.gd
-Loading resource: res://src/entities/minions/states/state_turret_attack.gd
-Loading resource: res://src/core/systems/camera_shaker.tscn
-Loading resource: res://src/ui/dev/debug_overlay.tscn
-XR: Clearing primary interface
-XR: Removed interface "Native mobile"
-XR: Removed interface "OpenXR"
-Leaked instance: GDScriptNativeClass:9223372044941394312
-Leaked instance: GDScriptNativeClass:9223372045025280397
-Leaked instance: GDScriptNativeClass:9223372049924227761
-Leaked instance: GDScriptNativeClass:9223372051769721631
-Leaked instance: GDScriptNativeClass:9223372052356924226
-Leaked instance: GDScriptNativeClass:9223372052373701443
-Leaked instance: GDScriptNativeClass:9223372052692468566
-Leaked instance: GDScriptNativeClass:9223372054336635832
-Leaked instance: GDScript:9223372077036209549 - Resource path: res://src/core/building/level_build_data.gd
-Leaked instance: GDScript:9223372077136872846 - Resource path: 
-Leaked instance: GDScript:9223372077170427279 - Resource path: res://src/data/encounters/encounter_data.gd
-Leaked instance: GDScript:9223372077438862737 - Resource path: res://src/core/building/terrain_builder.gd
-Leaked instance: GDScript:9223372078126728598 - Resource path: res://src/data/layouts/level_layout.gd
-Leaked instance: GDScript:9223372078411941271 - Resource path: res://src/core/util/grid_utils.gd
-Leaked instance: Node:122087803013 - Node path: 
-Leaked instance: SceneTreeTimer:9223372115590252679
-Leaked instance: Node:142170131220 - Node path: 
-Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
-Resource still in use: res://src/core/building/level_build_data.gd (GDScript)
-Resource still in use: res://src/data/encounters/encounter_data.gd (GDScript)
-Resource still in use: res://src/core/building/terrain_builder.gd (GDScript)
-Resource still in use: res://src/data/layouts/level_layout.gd (GDScript)
-Resource still in use: res://src/core/util/grid_utils.gd (GDScript)
-Orphan StringName: GridUtils (static: 0, total: 1)
-Orphan StringName: _enter_tree (static: 0, total: 2)
-Orphan StringName: GridUtilsScript (static: 0, total: 2)
-Orphan StringName: scene (static: 0, total: 3)
-Orphan StringName: dimensions_tiles (static: 0, total: 4)
-Orphan StringName: _set_path_cache (static: 0, total: 6)
-Orphan StringName: _reset_state (static: 0, total: 6)
-Orphan StringName: @terrain_data_setter (static: 0, total: 3)
-Orphan StringName: _unhandled_input (static: 0, total: 2)
-Orphan StringName: _ready (static: 0, total: 2)
-Orphan StringName: _exit_tree (static: 0, total: 2)
-Orphan StringName: _create_solid_tile (static: 0, total: 4)
-Orphan StringName: Camera2D (static: 1, total: 3)
-Orphan StringName: StaticBody2D (static: 1, total: 2)
-Orphan StringName: _setup_local_to_scene (static: 0, total: 6)
-Orphan StringName: LevelLayout (static: 0, total: 4)
-Orphan StringName: terrain_data (static: 0, total: 4)
-Orphan StringName: level_layout (static: 0, total: 4)
-Orphan StringName: color (static: 0, total: 4)
-Orphan StringName: world (static: 0, total: 3)
-Orphan StringName: res://src/data/encounters/encounter_data.gd (static: 0, total: 1)
-Orphan StringName: _create_hazard_tile (static: 0, total: 4)
-Orphan StringName: polygon (static: 0, total: 3)
-Orphan StringName: ColorRect (static: 1, total: 2)
-Orphan StringName: append (static: 0, total: 1)
-Orphan StringName: minion_spawns (static: 0, total: 7)
-Orphan StringName: process_frame (static: 1, total: 2)
-Orphan StringName: one_way_collision (static: 0, total: 1)
-Orphan StringName: MinionSpawnData (static: 0, total: 4)
-Orphan StringName: res://src/core/building/level_build_data.gd (static: 0, total: 3)
-Orphan StringName: encounter_data_resource (static: 0, total: 4)
-Orphan StringName: hazard (static: 0, total: 1)
-Orphan StringName: _input (static: 0, total: 2)
-Orphan StringName: oneway_platforms (static: 0, total: 5)
-Orphan StringName: res://src/core/util/grid_utils.gd (static: 0, total: 3)
-Orphan StringName: Resource (static: 2, total: 7)
-Orphan StringName: RectangleShape2D (static: 1, total: 2)
-Orphan StringName: boss_scene (static: 0, total: 4)
-Orphan StringName: player_spawn_pos (static: 0, total: 4)
-Orphan StringName: has (static: 0, total: 1)
-Orphan StringName: position (static: 0, total: 7)
-Orphan StringName: hazard_tiles (static: 0, total: 4)
-Orphan StringName: background_tiles (static: 0, total: 4)
-Orphan StringName: @group_6_Minions (static: 0, total: 2)
-Orphan StringName: @group_3_Boss (static: 0, total: 2)
-Orphan StringName: _shortcut_input (static: 0, total: 2)
-Orphan StringName: timeout (static: 2, total: 3)
-Orphan StringName: _init (static: 0, total: 3)
-Orphan StringName: res://src/core/building/terrain_builder.gd (static: 0, total: 7)
-Orphan StringName: get_scale (static: 0, total: 1)
-Orphan StringName: Polygon2D (static: 1, total: 2)
-Orphan StringName: EncounterData (static: 0, total: 4)
-Orphan StringName: SceneTree (static: 1, total: 3)
-Orphan StringName: _process (static: 0, total: 2)
-Orphan StringName: LevelBuildData (static: 0, total: 5)
-Orphan StringName: CollisionShape2D (static: 1, total: 2)
-Orphan StringName: _create_oneway_platform (static: 0, total: 4)
-Orphan StringName: terrain_tiles (static: 0, total: 4)
-Orphan StringName: shape (static: 0, total: 3)
-Orphan StringName: _create_background_tile (static: 0, total: 4)
-Orphan StringName: Node (static: 5, total: 18)
-Orphan StringName: boss_spawn_pos (static: 0, total: 4)
-Orphan StringName: _unhandled_key_input (static: 0, total: 2)
-Orphan StringName: player_spawn_marker (static: 0, total: 5)
-Orphan StringName: boss_spawn_marker (static: 0, total: 5)
-Orphan StringName: build_terrain_async (static: 0, total: 3)
-Orphan StringName: LevelBuildData.MinionSpawnData (static: 0, total: 1)
-Orphan StringName: RefCounted (static: 2, total: 5)
-Orphan StringName: grid_to_world (static: 0, total: 3)
-Orphan StringName: _get_configuration_warnings (static: 0, total: 5)
-Orphan StringName: fill_viewport (static: 0, total: 3)
-Orphan StringName: @group_0_Layout (static: 0, total: 2)
-Orphan StringName: floor (static: 0, total: 1)
-Orphan StringName: origin (static: 0, total: 1)
-Orphan StringName: PackedScene (static: 1, total: 7)
-Orphan StringName: @implicit_new (static: 0, total: 6)
-Orphan StringName: _get_rid (static: 0, total: 6)
-Orphan StringName: size (static: 0, total: 4)
-Orphan StringName: TerrainBuilder (static: 0, total: 3)
-Orphan StringName: _physics_process (static: 0, total: 2)
-Orphan StringName: world_to_grid (static: 0, total: 4)
-Orphan StringName: res://src/data/layouts/level_layout.gd (static: 0, total: 3)
-Orphan StringName: collision_layer (static: 0, total: 3)
-StringName: 83 unclaimed string names at exit.
-
 
 =====================================
 FILE: ./README.md
@@ -1901,6 +1590,73 @@ func _on_audio_settings_changed() -> void:
 	update_icon()
 
 =====================================
+FILE: ./src/ui/components/control_setting_row/control_setting_row.tscn
+=====================================
+[gd_scene load_steps=4 format=3 uid="uid://cgt6j1h2w3k4m"]
+
+[ext_resource type="Script" uid="uid://cl6kmmhf3qt04" path="res://src/ui/components/control_setting_row/control_setting_row.gd" id="1_control_row_script"]
+[ext_resource type="FontFile" uid="uid://hypwi2d6bj7t" path="res://assets/fonts/font_main_bold.ttf" id="2_font_bold"]
+[ext_resource type="FontFile" uid="uid://d3jqjftjdw5hh" path="res://assets/fonts/font_main_regular.ttf" id="3_font_regular"]
+
+[node name="ControlSettingRow" type="HBoxContainer"]
+size_flags_horizontal = 4
+theme_override_constants/separation = 40
+script = ExtResource("1_control_row_script")
+
+[node name="ActionLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font_bold")
+theme_override_font_sizes/font_size = 36
+text = "Action"
+horizontal_alignment = 2
+
+[node name="KeysLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font_regular")
+theme_override_font_sizes/font_size = 36
+text = "Keys"
+
+
+=====================================
+FILE: ./src/ui/components/control_setting_row/control_setting_row.gd
+=====================================
+# src/ui/components/control_setting_row/control_setting_row.gd
+@tool
+## A self-contained UI component for a single row in the controls menu.
+## Manages its own labels and layout.
+class_name ControlSettingRow
+extends HBoxContainer
+
+# --- Node References ---
+@onready var action_label: Label = %ActionLabel
+@onready var keys_label: Label = %KeysLabel
+
+# --- Public Properties ---
+@export var action_text: String = "Action":
+	set(value):
+		action_text = value
+		if is_instance_valid(action_label):
+			action_label.text = action_text
+
+@export var keys_text: String = "Keys":
+	set(value):
+		keys_text = value
+		if is_instance_valid(keys_label):
+			keys_label.text = keys_text
+
+# --- Godot Lifecycle Methods ---
+func _ready() -> void:
+	if is_instance_valid(action_label):
+		action_label.text = action_text
+	if is_instance_valid(keys_label):
+		keys_label.text = keys_text
+
+
+=====================================
 FILE: ./src/ui/components/styled_menu_item/styled_menu_item.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://cgt63w7k4w5gq"]
@@ -2109,6 +1865,138 @@ func _on_focus_exited() -> void:
 	is_selected = false
 	_animate_selection(false)
 	queue_redraw()
+
+
+=====================================
+FILE: ./src/ui/components/sound_setting_row/sound_setting_row.tscn
+=====================================
+[gd_scene load_steps=3 format=3 uid="uid://cgt6j1h2w3k4l"]
+
+[ext_resource type="Script" uid="uid://ch4xi7qr5btc" path="res://src/ui/components/sound_setting_row/sound_setting_row.gd" id="1_sound_row_script"]
+[ext_resource type="PackedScene" uid="uid://bvyus5a6b7c8d" path="res://src/ui/components/custom_slider/custom_slider.tscn" id="2_custom_slider"]
+
+[node name="SoundSettingRow" type="HBoxContainer"]
+theme_override_constants/separation = 20
+alignment = 1
+script = ExtResource("1_sound_row_script")
+
+[node name="NameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "SETTING"
+
+[node name="ValueSlider" parent="." instance=ExtResource("2_custom_slider")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ValueLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "100"
+horizontal_alignment = 1
+
+[node name="MuteCheckbox" type="TextureButton" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+
+
+=====================================
+FILE: ./src/ui/components/sound_setting_row/sound_setting_row.gd
+=====================================
+# src/ui/components/sound_setting_row/sound_setting_row.gd
+@tool
+## A self-contained UI component for a single audio setting row.
+## Manages its own visuals and emits signals when its values are changed by the user.
+class_name SoundSettingRow
+extends HBoxContainer
+
+# --- Signals ---
+signal value_changed(value: float)
+signal mute_toggled(is_muted: bool)
+
+# --- Node References ---
+@onready var name_label: Label = %NameLabel
+@onready var value_slider: TextureRect = %ValueSlider
+@onready var value_label: Label = %ValueLabel
+@onready var mute_checkbox: TextureButton = %MuteCheckbox
+
+# --- Public Properties ---
+@export var setting_name: String = "SETTING":
+	set(value):
+		setting_name = value
+		if is_instance_valid(name_label):
+			name_label.text = setting_name
+
+var is_muted: bool = false
+
+# --- Godot Lifecycle Methods ---
+
+
+func _ready() -> void:
+	if is_instance_valid(name_label):
+		name_label.text = setting_name
+	if not Engine.is_editor_hint():
+		value_slider.value_changed.connect(_on_slider_value_changed)
+		mute_checkbox.pressed.connect(_on_mute_button_pressed)
+
+
+# --- Public Methods ---
+
+
+## Sets the visual state of the slider without emitting a signal.
+func set_slider_value(value: float) -> void:
+	if is_instance_valid(value_slider):
+		value_slider.set_value(value)
+	if is_instance_valid(value_label):
+		value_label.text = str(int(value * 100))
+
+
+## Sets the visual state of the checkbox without emitting a signal.
+func set_mute_state(p_is_muted: bool) -> void:
+	is_muted = p_is_muted
+	var new_texture = (
+		load(AssetPaths.SPRITE_CHECKBOX_UNCHECKED)
+		if not is_muted
+		else load(AssetPaths.SPRITE_CHECKBOX_CHECKED)
+	)
+	if is_instance_valid(mute_checkbox) and mute_checkbox.texture_normal != new_texture:
+		mute_checkbox.texture_normal = new_texture
+
+
+# --- Signal Handlers ---
+
+
+func _on_slider_value_changed(value: float) -> void:
+	if is_instance_valid(value_label):
+		value_label.text = str(int(value * 100))
+	value_changed.emit(value)
+
+
+func _on_mute_button_pressed() -> void:
+	is_muted = not is_muted
+	set_mute_state(is_muted)
+	mute_toggled.emit(is_muted)
+
+=====================================
+FILE: ./src/ui/components/custom_slider/custom_slider.tscn
+=====================================
+[gd_scene load_steps=3 format=3 uid="uid://bvyus5a6b7c8d"]
+
+[ext_resource type="Script" uid="uid://8lrojyn5k5fq" path="res://src/ui/components/custom_slider/custom_slider.gd" id="1_custom_slider_script"]
+[ext_resource type="Texture2D" uid="uid://dhh5eeyqf7l6f" path="res://assets/sprites/ui/slider/slider-track.png" id="1_puy0r"]
+
+[node name="CustomSlider" type="TextureRect"]
+custom_minimum_size = Vector2(400, 30)
+offset_right = 400.0
+offset_bottom = 30.0
+size_flags_vertical = 4
+texture = ExtResource("1_puy0r")
+script = ExtResource("1_custom_slider_script")
 
 
 =====================================
@@ -3343,12 +3231,13 @@ func _on_back_button_pressed() -> void:
 =====================================
 FILE: ./src/scenes/menus/sound_screen.tscn
 =====================================
-[gd_scene load_steps=5 format=3 uid="uid://dsvv7o1v1j8t1"]
+[gd_scene load_steps=6 format=3 uid="uid://dsvv7o1v1j8t1"]
 
 [ext_resource type="Script" uid="uid://451xh65eo2eo" path="res://src/scenes/menus/sound_screen.gd" id="1_sound_script"]
 [ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
 [ext_resource type="FontFile" uid="uid://b41cqy3luy6se" path="res://assets/fonts/font_main_black.ttf" id="3_font_black"]
 [ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/ui/components/mute_button/mute_button.tscn" id="4_mute_button"]
+[ext_resource type="PackedScene" uid="uid://cgt6j1h2w3k4l" path="res://src/ui/components/sound_setting_row/sound_setting_row.tscn" id="5_sound_row"]
 
 [node name="SoundScreen" type="Control"]
 layout_mode = 3
@@ -3400,6 +3289,21 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 40
 alignment = 1
+
+[node name="MasterRow" parent="MainVBox/MenuItemsVBox" instance=ExtResource("5_sound_row")]
+unique_name_in_owner = true
+layout_mode = 2
+setting_name = "MASTER"
+
+[node name="MusicRow" parent="MainVBox/MenuItemsVBox" instance=ExtResource("5_sound_row")]
+unique_name_in_owner = true
+layout_mode = 2
+setting_name = "MUSIC"
+
+[node name="SfxRow" parent="MainVBox/MenuItemsVBox" instance=ExtResource("5_sound_row")]
+unique_name_in_owner = true
+layout_mode = 2
+setting_name = "SFX"
 
 [node name="ExpandSpacer" type="Control" parent="MainVBox"]
 layout_mode = 2
@@ -3618,41 +3522,38 @@ extends Control
 
 # --- Constants ---
 const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
-const CustomSliderScript = preload(AssetPaths.SCRIPT_CUSTOM_SLIDER)
 
 # --- Node References ---
-@onready var menu_items_vbox: VBoxContainer = %MenuItemsVBox
+@onready var master_row: SoundSettingRow = %MasterRow
+@onready var music_row: SoundSettingRow = %MusicRow
+@onready var sfx_row: SoundSettingRow = %SfxRow
 @onready var back_button: StyledMenuItem = %BackButton
 @onready var mute_button: MuteButton = $MuteButtonContainer/MuteButton
-
-# --- Private Member Variables ---
-var _master_volume_label: Label
-var _music_volume_label: Label
-var _sfx_volume_label: Label
-var _master_mute_checkbox: TextureButton
-var _music_mute_checkbox: TextureButton
-var _sfx_mute_checkbox: TextureButton
 
 # --- Godot Lifecycle Methods ---
 
 
 func _ready() -> void:
-	for c in menu_items_vbox.get_children():
-		c.queue_free()
-	menu_items_vbox.add_child(_create_volume_row("MASTER", Settings.master_volume, "master"))
-	menu_items_vbox.add_child(_create_volume_row("MUSIC", Settings.music_volume, "music"))
-	menu_items_vbox.add_child(_create_volume_row("SFX", Settings.sfx_volume, "sfx"))
-	_update_ui_from_settings()
-
 	back_button.text = "BACK"
 
 	if not Engine.is_editor_hint():
-		back_button.pressed.connect(_on_back_button_pressed)
+		# Connect component signals to the Settings singleton
+		master_row.value_changed.connect(func(val): Settings.master_volume = val)
+		master_row.mute_toggled.connect(func(val): Settings.master_muted = val)
+		music_row.value_changed.connect(func(val): Settings.music_volume = val)
+		music_row.mute_toggled.connect(func(val): Settings.music_muted = val)
+		sfx_row.value_changed.connect(func(val): Settings.sfx_volume = val)
+		sfx_row.mute_toggled.connect(func(val): Settings.sfx_muted = val)
+
+		# Connect this screen to the Settings singleton to update visuals
 		Settings.audio_settings_changed.connect(_update_ui_from_settings)
-		# THE FIX: Mute button connections are no longer needed here.
+		_update_ui_from_settings() # Set initial state
+
+		back_button.pressed.connect(_on_back_button_pressed)
 
 		var menu_manager = MenuManagerScript.new()
 		add_child(menu_manager)
+		# NOTE: For now, only the back button is focusable with keyboard/controller.
 		menu_manager.setup_menu([back_button])
 
 		# --- Connect Feedback Handlers ---
@@ -3661,8 +3562,6 @@ func _ready() -> void:
 		for item in interactive_items:
 			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		
-		# THE FIX: Mute button handles its own select sound now.
 
 		await get_tree().process_frame
 		back_button.grab_focus()
@@ -3678,85 +3577,21 @@ func _exit_tree() -> void:
 
 
 func _update_ui_from_settings() -> void:
-	if _master_volume_label:
-		_master_volume_label.text = str(int(Settings.master_volume * 100))
-	if _music_volume_label:
-		_music_volume_label.text = str(int(Settings.music_volume * 100))
-	if _sfx_volume_label:
-		_sfx_volume_label.text = str(int(Settings.sfx_volume * 100))
-	if _master_mute_checkbox:
-		_update_checkbox_texture(_master_mute_checkbox, Settings.master_muted)
-	if _music_mute_checkbox:
-		_update_checkbox_texture(_music_mute_checkbox, Settings.music_muted)
-	if _sfx_mute_checkbox:
-		_update_checkbox_texture(_sfx_mute_checkbox, Settings.sfx_muted)
-	# THE FIX: Mute button updates itself, so no need to call its update_icon method.
-
-
-func _create_volume_row(label_text: String, initial_volume: float, type: String) -> HBoxContainer:
-	var hbox = HBoxContainer.new()
-	hbox.alignment = HBoxContainer.ALIGNMENT_CENTER
-	hbox.add_theme_constant_override("separation", 20)
-
-	var row_label = Label.new()
-	row_label.text = label_text
-	row_label.custom_minimum_size.x = 220
-	row_label.add_theme_font_override("font", load(AssetPaths.FONT_MAIN_BOLD))
-	row_label.add_theme_font_size_override("font_size", 48)
-	hbox.add_child(row_label)
-
-	var slider = CustomSliderScript.new()
-	slider.set_value(initial_volume)
-	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	slider.focus_mode = FOCUS_NONE
-	hbox.add_child(slider)
-
-	var volume_label = Label.new()
-	volume_label.custom_minimum_size.x = 120
-	volume_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	volume_label.add_theme_font_override("font", load(AssetPaths.FONT_MAIN_REGULAR))
-	volume_label.add_theme_font_size_override("font_size", 48)
-	hbox.add_child(volume_label)
-
-	var checkbox = TextureButton.new()
-	checkbox.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	checkbox.focus_mode = FOCUS_NONE
-	hbox.add_child(checkbox)
-
-	match type:
-		"master":
-			_master_volume_label = volume_label
-			_master_mute_checkbox = checkbox
-			if not Engine.is_editor_hint():
-				slider.value_changed.connect(func(val): Settings.master_volume = val)
-				checkbox.pressed.connect(func(): Settings.master_muted = not Settings.master_muted)
-		"music":
-			_music_volume_label = volume_label
-			_music_mute_checkbox = checkbox
-			if not Engine.is_editor_hint():
-				slider.value_changed.connect(func(val): Settings.music_volume = val)
-				checkbox.pressed.connect(func(): Settings.music_muted = not Settings.music_muted)
-		"sfx":
-			_sfx_volume_label = volume_label
-			_sfx_mute_checkbox = checkbox
-			if not Engine.is_editor_hint():
-				slider.value_changed.connect(func(val): Settings.sfx_volume = val)
-				checkbox.pressed.connect(func(): Settings.sfx_muted = not Settings.sfx_muted)
-
-	return hbox
-
-
-func _update_checkbox_texture(button_ref: TextureButton, is_muted: bool) -> void:
-	var new_texture = (
-		load(AssetPaths.SPRITE_CHECKBOX_UNCHECKED)
-		if not is_muted
-		else load(AssetPaths.SPRITE_CHECKBOX_CHECKED)
-	)
-	if button_ref.texture_normal != new_texture:
-		button_ref.texture_normal = new_texture
+	# This function now only tells the rows to update themselves.
+	# It doesn't know *how* they update.
+	if is_instance_valid(master_row):
+		master_row.set_slider_value(Settings.master_volume)
+		master_row.set_mute_state(Settings.master_muted)
+	if is_instance_valid(music_row):
+		music_row.set_slider_value(Settings.music_volume)
+		music_row.set_mute_state(Settings.music_muted)
+	if is_instance_valid(sfx_row):
+		sfx_row.set_slider_value(Settings.sfx_volume)
+		sfx_row.set_mute_state(Settings.sfx_muted)
 
 
 # --- Signal Handlers ---
+
 
 func _on_any_item_focused() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
@@ -3777,29 +3612,12 @@ extends Control
 
 # --- Constants ---
 const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
-const CONTROLS_DATA = [
-	{"action": "Movement", "keys": "Arrow Keys / WASD / Mouse"},
-	{"action": "Primary Action", "keys": "X / . / Space / Left-Click"},
-	{"action": "Secondary Action", "keys": "C / , / Shift / Right-Click"},
-	{"action": "Tertiary Action", "keys": "Z / / / Ctrl / Middle-Click"},
-	{"action": "Pause / Menu", "keys": "Enter / P / Escape"},
-	{"action": "Back / Cancel", "keys": "Escape / Backspace"}
-]
 
 # --- Node References ---
-@onready var controls_vbox: VBoxContainer = %ControlsVBox
 @onready var back_button: StyledMenuItem = %BackButton
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
-	# --- Procedurally build the UI rows ---
-	for c in controls_vbox.get_children():
-		c.queue_free()
-	for data in CONTROLS_DATA:
-		controls_vbox.add_child(_create_control_row(data))
-
 	back_button.text = "BACK"
 
 	if not Engine.is_editor_hint():
@@ -3817,54 +3635,24 @@ func _ready() -> void:
 		await get_tree().process_frame
 		back_button.grab_focus()
 
-
-# --- Private Methods ---
-
-
-func _create_control_row(data: Dictionary) -> HBoxContainer:
-	var hbox = HBoxContainer.new()
-	hbox.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	hbox.add_theme_constant_override("separation", 40)
-
-	var action_label = Label.new()
-	action_label.text = data.action
-	action_label.custom_minimum_size.x = 400
-	action_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	action_label.add_theme_font_override("font", load(AssetPaths.FONT_MAIN_BOLD))
-	action_label.add_theme_font_size_override("font_size", 36)
-	hbox.add_child(action_label)
-
-	var keys_label = Label.new()
-	keys_label.text = data.keys
-	keys_label.custom_minimum_size.x = 500
-	keys_label.add_theme_font_override("font", load(AssetPaths.FONT_MAIN_REGULAR))
-	keys_label.add_theme_font_size_override("font_size", 36)
-	hbox.add_child(keys_label)
-
-	return hbox
-
-
 # --- Signal Handlers ---
-
-
 func _on_any_item_focused() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
-
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
 
-
 =====================================
 FILE: ./src/scenes/menus/controls_screen.tscn
 =====================================
-[gd_scene load_steps=5 format=3 uid="uid://df5wylg5n16f"]
+[gd_scene load_steps=6 format=3 uid="uid://df5wylg5n16f"]
 
 [ext_resource type="Script" uid="uid://bm6noor4pxywc" path="res://src/scenes/menus/controls_screen.gd" id="1_controls_script"]
 [ext_resource type="PackedScene" uid="uid://cgt63w7k4w5gq" path="res://src/ui/components/styled_menu_item/styled_menu_item.tscn" id="2_styled_menu_item"]
 [ext_resource type="FontFile" uid="uid://b41cqy3luy6se" path="res://assets/fonts/font_main_black.ttf" id="3_font_black"]
 [ext_resource type="PackedScene" uid="uid://d1g2h3i4j5k6l" path="res://src/ui/components/mute_button/mute_button.tscn" id="4_mute_button"]
+[ext_resource type="PackedScene" uid="uid://cgt6j1h2w3k4m" path="res://src/ui/components/control_setting_row/control_setting_row.tscn" id="5_control_row"]
 
 [node name="ControlsScreen" type="Control"]
 layout_mode = 3
@@ -3907,28 +3695,50 @@ text = "CONTROLS"
 horizontal_alignment = 1
 
 [node name="TitleMenuSpacer" type="Control" parent="MainVBox"]
-custom_minimum_size = Vector2(0, 50)
+custom_minimum_size = Vector2(0, 14.1)
 layout_mode = 2
 
-[node name="ControlsRowHBox" type="HBoxContainer" parent="MainVBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="LeftSpacer" type="Control" parent="MainVBox/ControlsRowHBox"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.8
-
-[node name="ControlsVBox" type="VBoxContainer" parent="MainVBox/ControlsRowHBox"]
+[node name="ControlsVBox" type="VBoxContainer" parent="MainVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="RightSpacer" type="Control" parent="MainVBox/ControlsRowHBox"]
+[node name="ControlSettingRow" parent="MainVBox/ControlsVBox" instance=ExtResource("5_control_row")]
 layout_mode = 2
-size_flags_horizontal = 3
+action_text = "Movement"
+keys_text = "Arrow Keys / WASD / Mouse"
+
+[node name="ControlSettingRow2" parent="MainVBox/ControlsVBox" instance=ExtResource("5_control_row")]
+layout_mode = 2
+action_text = "Primary Action"
+keys_text = "X / . / Space / Left-Click"
+
+[node name="ControlSettingRow3" parent="MainVBox/ControlsVBox" instance=ExtResource("5_control_row")]
+layout_mode = 2
+action_text = "Secondary Action"
+keys_text = "C / , / Shift / Right-Click"
+
+[node name="ControlSettingRow4" parent="MainVBox/ControlsVBox" instance=ExtResource("5_control_row")]
+layout_mode = 2
+action_text = "Tertiary Action"
+keys_text = "Z / / / Ctrl / Middle-Click"
+
+[node name="ControlSettingRow5" parent="MainVBox/ControlsVBox" instance=ExtResource("5_control_row")]
+layout_mode = 2
+action_text = "Heal"
+keys_text = "Down + Jump"
+
+[node name="ControlSettingRow6" parent="MainVBox/ControlsVBox" instance=ExtResource("5_control_row")]
+layout_mode = 2
+action_text = "Pause / Menu"
+keys_text = "Enter / P / Escape"
+
+[node name="ControlSettingRow7" parent="MainVBox/ControlsVBox" instance=ExtResource("5_control_row")]
+layout_mode = 2
+action_text = "Back / Cancel"
+keys_text = "Escape / Backspace"
 
 [node name="ExpandSpacer" type="Control" parent="MainVBox"]
 layout_mode = 2
@@ -4694,6 +4504,7 @@ const SCENE_CREDITS_SCREEN = "res://src/scenes/menus/credits_screen.tscn"
 const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
 const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
 const SCENE_MUTE_BUTTON = "res://src/ui/components/mute_button/mute_button.tscn"
+const SCENE_CONTROL_SETTING_ROW = "res://src/ui/components/control_setting_row/control_setting_row.tscn" # New Entry
 
 # --- DEV TOOLS ---
 const SCENE_DEBUG_OVERLAY = "res://src/ui/dev/debug_overlay.tscn"
@@ -4743,7 +4554,6 @@ func validate_all_paths() -> void:
 
 	if not missing_assets:
 		print("AssetPaths: All paths validated successfully.")
-
 
 =====================================
 FILE: ./src/core/util/constants.gd

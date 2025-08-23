@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3 uid="uid://cgt6j1h2w3k4l"]
+
+[ext_resource type="Script" uid="uid://ch4xi7qr5btc" path="res://src/ui/components/sound_setting_row/sound_setting_row.gd" id="1_sound_row_script"]
+[ext_resource type="PackedScene" uid="uid://bvyus5a6b7c8d" path="res://src/ui/components/custom_slider/custom_slider.tscn" id="2_custom_slider"]
+
+[node name="SoundSettingRow" type="HBoxContainer"]
+theme_override_constants/separation = 20
+alignment = 1
+script = ExtResource("1_sound_row_script")
+
+[node name="NameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "SETTING"
+
+[node name="ValueSlider" parent="." instance=ExtResource("2_custom_slider")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ValueLabel" type="Label" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+text = "100"
+horizontal_alignment = 1
+
+[node name="MuteCheckbox" type="TextureButton" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4

@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://bvyus5a6b7c8d"]
+
+[ext_resource type="Script" uid="uid://8lrojyn5k5fq" path="res://src/ui/components/custom_slider/custom_slider.gd" id="1_custom_slider_script"]
+[ext_resource type="Texture2D" uid="uid://dhh5eeyqf7l6f" path="res://assets/sprites/ui/slider/slider-track.png" id="1_puy0r"]
+
+[node name="CustomSlider" type="TextureRect"]
+custom_minimum_size = Vector2(400, 30)
+offset_right = 400.0
+offset_bottom = 30.0
+size_flags_vertical = 4
+texture = ExtResource("1_puy0r")
+script = ExtResource("1_custom_slider_script")
