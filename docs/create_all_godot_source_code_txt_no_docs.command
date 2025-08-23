@@ -4,7 +4,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # Change to the parent directory (BOX BATTLE root)
 cd "$SCRIPT_DIR/.."
 # Define the output file path
-OUTPUT_FILE="docs/all_godot_source_code.txt"
+OUTPUT_FILE="docs/all_godot_source_code_no_docs.txt"
 echo "🎮 BOX BATTLE Source Code Generator"
 echo "=================================="
 echo "Working directory: $(pwd)"
@@ -22,7 +22,7 @@ echo "=====================================" >> "$OUTPUT_FILE"
 echo "PROJECT DIRECTORY STRUCTURE:" >> "$OUTPUT_FILE"
 echo "=====================================" >> "$OUTPUT_FILE"
 if command -v tree >/dev/null 2>&1; then
-    # Use tree command if available (excludes common non-essential directories and files, but shows addons directory)
+    # Use tree command if available (excludes common non-essential directories and files, but shows docs and addons directories)
     tree -I 'assets|.git|.godot|.tmp|*.uid|*.import' >> "$OUTPUT_FILE"
 else
     # Fallback to find command if tree is not available
@@ -38,7 +38,7 @@ fi
 echo "" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
 echo "📁 Collecting project files..."
-# Step 3: Find all the project files and append them to the file (excluding addons directory files)
+# Step 3: Find all the project files and append them to the file (excluding docs and addons directory files)
 find . -type f \( \
   -name "*.gd" -o \
   -name "*.tscn" -o \
@@ -51,6 +51,7 @@ find . -type f \( \
   -name "*.txt" \
 \) \
 -not -path "./assets/*" \
+-not -path "./docs/*" \
 -not -path "./addons/*" \
 -not -path "./.git/*" \
 -not -path "./.godot/*" \
