@@ -28,7 +28,7 @@ class Pools:
 	const HIT_SPARKS = &"hit_sparks"
 
 
-## THE FIX: Container for all Player state keys.
+## Container for all Player state keys.
 class PlayerStates:
 	const MOVE = &"move"
 	const JUMP = &"jump"
@@ -41,7 +41,7 @@ class PlayerStates:
 	const POGO = &"pogo"
 
 
-## THE FIX: Container for all Boss state keys.
+## Container for all Boss state keys.
 class BossStates:
 	const IDLE = &"idle"
 	const ATTACK = &"attack"
@@ -50,7 +50,7 @@ class BossStates:
 	const LUNGE = &"lunge"
 
 
-## THE FIX: Container for all Turret state keys.
+## Container for all Turret state keys.
 class TurretStates:
 	const IDLE = &"idle"
 	const ATTACK = &"attack"

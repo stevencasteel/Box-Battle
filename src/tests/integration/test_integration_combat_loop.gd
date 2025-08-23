@@ -61,13 +61,13 @@ func test_player_attack_damages_boss_and_fires_event():
 	var player_sm: BaseStateMachine = _player.get_component(BaseStateMachine)
 	var wait_frames = 10
 	for i in range(wait_frames):
-		if player_sm.current_state == player_sm.states[_player.State.MOVE]:
+		if player_sm.current_state == player_sm.states[Identifiers.PlayerStates.MOVE]:
 			break
 		await get_tree().physics_frame
 
 	assert_eq(
 		player_sm.current_state,
-		player_sm.states[_player.State.MOVE],
+		player_sm.states[Identifiers.PlayerStates.MOVE],
 		"Player must be in MOVE state before attacking."
 	)
 

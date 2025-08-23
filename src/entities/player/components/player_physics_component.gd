@@ -120,6 +120,5 @@ func _check_for_contact_damage() -> void:
 
 		if damage_result.was_damaged and p_data.health > 0:
 			owner_node.velocity = damage_result.knockback_velocity
-			# THE FIX: Use the global identifier for the state key.
 			owner_node.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.HURT)
 		break

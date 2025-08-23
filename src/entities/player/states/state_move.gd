@@ -2,7 +2,6 @@
 ## Handles the player's grounded movement state.
 extends BaseState
 
-# THE FIX: Preload the helper script to make its static methods available.
 const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
 
 var _physics: PlayerPhysicsComponent
