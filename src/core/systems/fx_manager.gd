@@ -10,11 +10,20 @@ var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
 var _effect_timestamps: Dictionary = {}  # Tracks { entity_id: { effect_path: timestamp_msec } }
 
-# TODO: Add debug stats variables.
 var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
 
 # --- Public Methods ---
+
+
+## Increments the active shader counter. Called by external systems like FXComponent.
+func increment_shader_count() -> void:
+	_active_shader_effects += 1
+
+
+## Decrements the active shader counter. Called by external systems like FXComponent.
+func decrement_shader_count() -> void:
+	_active_shader_effects -= 1
 
 
 ## Stores a reference to the active CameraShaker in the scene.
@@ -85,10 +94,10 @@ func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary =
 			_effect_timestamps[target_id] = {}
 		_effect_timestamps[target_id][effect_path] = current_time
 
-	_active_shader_effects += 1
+	increment_shader_count()
 	var tween = get_tree().create_tween()
 	tween.tween_interval(effect.duration)
-	tween.finished.connect(func(): _active_shader_effects -= 1, CONNECT_ONE_SHOT)
+	tween.finished.connect(decrement_shader_count, CONNECT_ONE_SHOT)
 
 	match effect.target_scope:
 		# ENTITY scope is now handled directly by FXComponent.
@@ -140,7 +149,6 @@ func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubVi
 	print("FXManager: Shader pre-warm complete.")
 
 
-# TODO: Add get_debug_stats method
 ## Returns a dictionary of current FX stats for debugging purposes.
 func get_debug_stats() -> Dictionary:
 	return {

@@ -82,7 +82,6 @@ func _process(_delta: float) -> void:
 		pool_text_parts.append("%s [%d/%d]" % [pool_name, stats.active, stats.total])
 	object_pool_label.text = "Pools: " + " ".join(pool_text_parts)
 
-	# TODO: Display FXManager debug stats.
 	var fx_stats = FXManager.get_debug_stats()
 	fx_label.text = "FX: Shaders[%d] VFX[%d]" % [fx_stats.active_shaders, fx_stats.active_vfx]
 

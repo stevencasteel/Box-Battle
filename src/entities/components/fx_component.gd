@@ -15,6 +15,7 @@ var _hit_effect: ShaderEffect  # Injected Dependency
 var _original_material: Material
 var _current_effect_name: String = "None"
 var _active_tween: Tween
+var _services: ServiceLocator
 
 
 # --- Godot Lifecycle Methods ---
@@ -25,6 +26,8 @@ func _notification(what: int) -> void:
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
+	self._services = p_dependencies.get("services")
+	assert(is_instance_valid(_services), "FXComponent requires a ServiceLocator.")
 
 	assert(p_dependencies.has("visual_node"), "FXComponent requires a 'visual_node' dependency.")
 	_visual_node = p_dependencies.get("visual_node")
@@ -69,6 +72,7 @@ func teardown() -> void:
 	_visual_node = null
 	_owner = null
 	_health_component = null
+	_services = null
 
 
 # --- Public API ---
@@ -96,6 +100,9 @@ func play_effect(effect: ShaderEffect, overrides: Dictionary = {}, opts: Diction
 			material_instance.set_shader_parameter(param_name, overrides[param_name])
 
 	_visual_node.material = material_instance
+
+	# Report the effect start to the central manager.
+	_services.fx_manager.increment_shader_count()
 
 	_active_tween = create_tween().set_parallel(false)
 	_active_tween.tween_property(
@@ -130,6 +137,10 @@ func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResul
 
 
 func _on_effect_finished(preserve_final_state: bool) -> void:
+	# Report the effect end to the central manager.
+	if is_instance_valid(_services):
+		_services.fx_manager.decrement_shader_count()
+	
 	# Ensure the owner is still valid before trying to access it.
 	if not is_instance_valid(_owner):
 		return

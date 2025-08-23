@@ -36,6 +36,15 @@
 ║                                                                              ║
 
 
+feat(debug): Implement FXManager debug stats and display on overlay.
+
+- Implemented the `get_debug_stats` method in `FXManager` to return the number of active VFX and shader effects.
+- Added tracking methods to `FXManager` to allow external systems like `FXComponent` to report their activity.
+- Updated `FXComponent` to report the start and end of its shader effects to `FXManager`, ensuring accurate centralized tracking.
+- Updated `DebugOverlay` to call `FXManager.get_debug_stats()` and display the live counts, providing real-time performance feedback.
+
+
+
 refactor(components): Decouple FXComponent from direct HealthComponent injection.
 
 - Modified `FXComponent` to automatically discover the `HealthComponent` on its owner entity at runtime.
