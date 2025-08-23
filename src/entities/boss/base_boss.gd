@@ -196,7 +196,7 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.BossStates.COOLDOWN},
-		fc: {"visual_node": visual_sprite, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
+		fc: {"visual_node": visual_sprite, "hit_effect": HIT_FLASH_EFFECT},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 

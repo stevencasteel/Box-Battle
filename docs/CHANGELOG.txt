@@ -36,6 +36,13 @@
 ║                                                                              ║
 
 
+refactor(components): Decouple FXComponent from direct HealthComponent injection.
+
+- Modified `FXComponent` to automatically discover the `HealthComponent` on its owner entity at runtime.
+- Removed the manual injection of `HealthComponent` into `FXComponent` from the `Player`, `BaseBoss`, and `Turret` setup methods.
+- This change further enforces component decoupling, making `FXComponent` more modular and self-contained.
+
+
 refactor(components): Decouple InputComponent from direct injection.
 
 - Removed an unused `state_machine` dependency from `InputComponent`.

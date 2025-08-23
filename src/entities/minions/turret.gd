@@ -135,7 +135,7 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.TurretStates.IDLE},
-		fc: {"visual_node": visual, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
+		fc: {"visual_node": visual, "hit_effect": HIT_FLASH_EFFECT},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 

@@ -153,12 +153,10 @@ func _initialize_and_setup_components() -> void:
 
 	var hc: HealthComponent = get_component(HealthComponent)
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	var ic: InputComponent = get_component(InputComponent)
 
 	var shared_deps := {
 		"data_resource": entity_data,
 		"config": entity_data.config,
-		"health_component": hc,
 		"services": _services
 	}
 
@@ -176,7 +174,7 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.PlayerStates.FALL},
-		get_component(FXComponent): {"visual_node": visual_sprite, "health_component": hc, "hit_effect": HIT_FLASH_EFFECT},
+		get_component(FXComponent): {"visual_node": visual_sprite, "hit_effect": HIT_FLASH_EFFECT},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 

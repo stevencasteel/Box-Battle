@@ -2,8 +2,8 @@
 @tool
 ## A dedicated component for managing all entity-specific visual effects.
 ##
-## CONTRACT: This component requires a "visual_node" dependency and optionally
-## accepts a "health_component" to auto-trigger damage effects.
+## CONTRACT: This component requires a "visual_node" dependency and will
+## automatically discover a "HealthComponent" on its owner to trigger damage effects.
 class_name FXComponent
 extends IComponent
 
@@ -35,7 +35,10 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 
 	_original_material = _visual_node.material
 
-	_health_component = p_dependencies.get("health_component", null)
+	# THE FIX: Automatically discover the HealthComponent on the owner.
+	if _owner.has_method("get_component"):
+		_health_component = _owner.get_component(HealthComponent)
+
 	if is_instance_valid(_health_component):
 		assert(
 			p_dependencies.has("hit_effect"),
