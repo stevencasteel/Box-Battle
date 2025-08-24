@@ -12,7 +12,7 @@ extends ISceneController
 
 # --- Private Member Variables ---
 var _level_container: Node = null
-var _debug_overlay: CanvasLayer = null # THE FIX: Use a more general type hint
+var _debug_overlay: CanvasLayer = null
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
 var _camera_shaker: CameraShaker = null
@@ -42,13 +42,13 @@ func _ready() -> void:
 		if build_data:
 			CameraManager.center_camera_on_arena(camera, build_data.dimensions_tiles)
 			await get_tree().process_frame
-			var terrain_builder = TerrainBuilder.new()
+			var terrain_builder := TerrainBuilder.new()
 			terrain_builder.fill_viewport(_level_container, build_data, camera, ServiceLocator)
 
 	_initialize_camera_shaker()
 	_initialize_debug_inspector()
 
-	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	var player_node: Node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
 
@@ -63,7 +63,6 @@ func _unhandled_input(_event: InputEvent) -> void:
 			DialogueManager.end_conversation()
 		else:
 			DialogueManager.start_conversation(TestConversation)
-			print("VERIFICATION: Dialogue triggered.")
 
 	if Input.is_action_just_pressed("debug_cycle_target"):
 		if is_instance_valid(_debug_overlay) and _debug_overlay.visible:
@@ -95,18 +94,18 @@ func scene_exiting() -> void:
 
 func _cleanup_entities() -> void:
 	# This centralized function ensures all entities are properly torn down.
-	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	var player_node: Node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node) and player_node.has_method("teardown"):
 		player_node.teardown()
 
-	var enemy_nodes = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
+	var enemy_nodes: Array[Node] = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
 	for enemy in enemy_nodes:
 		if is_instance_valid(enemy) and enemy.has_method("teardown"):
 			enemy.teardown()
 
 
 func _initialize_camera_shaker() -> void:
-	var shaker_scene = load("res://src/core/systems/camera_shaker.tscn")
+	var shaker_scene: PackedScene = load("res://src/core/systems/camera_shaker.tscn")
 	if shaker_scene:
 		_camera_shaker = shaker_scene.instantiate() as CameraShaker
 		add_child(_camera_shaker)
@@ -135,12 +134,12 @@ func _cycle_debug_target() -> void:
 		return
 
 	_current_inspect_index = (_current_inspect_index + 1) % _inspectable_entities.size()
-	var new_target = _inspectable_entities[_current_inspect_index]
+	var new_target: Node = _inspectable_entities[_current_inspect_index]
 	_debug_overlay.set_target(new_target)
 
 
 func _deactivate_all_minions() -> void:
-	var minions = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
+	var minions: Array[Node] = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
 	for minion in minions:
 		if minion.has_method("deactivate"):
 			minion.deactivate()
@@ -154,14 +153,14 @@ func _on_player_died() -> void:
 
 
 func _on_boss_died(payload: Dictionary) -> void:
-	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	var player_node: Node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node):
 		player_node.set_physics_process(false)
-	var boss_node = payload.get("boss_node")
+	var boss_node: Node = payload.get("boss_node")
 
 	_deactivate_all_minions()
 
-	var wait_step = WaitStep.new()
+	var wait_step := WaitStep.new()
 	wait_step.duration = 2.0
 	var death_sequence: Array[SequenceStep] = [wait_step]
 

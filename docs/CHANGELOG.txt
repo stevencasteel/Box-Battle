@@ -36,6 +36,16 @@
 ║                                                                              ║
 
 
+refactor(Typing): Enforce static typing on core APIs and interfaces
+
+Implements the first P1 task from the architectural audit.
+
+- Added explicit GDScript static type hints to all public methods and signals in the core interfaces: IComponent, IDamageable, IFXManager, IObjectPool, and ISceneController.
+
+- Updated the concrete implementations of these interfaces (e.g., HealthComponent, FXManager, ObjectPool, EncounterScene) to match the new, stricter typed signatures.
+
+
+
 refactor(Pool): Harden ObjectPool lifecycle and cleanup
 
 Implements the second P0 task from the architectural audit.

@@ -21,7 +21,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	for i in range(get_child_count() - 1, -1, -1):
-		var child = get_child(i)
+		var child: Node = get_child(i)
 		for j in range(child.get_child_count() - 1, -1, -1):
 			child.get_child(j).free()
 		child.free()
@@ -34,16 +34,16 @@ func _exit_tree() -> void:
 func get_pool_stats() -> Dictionary:
 	var stats: Dictionary = {}
 	for pool_name in _pools:
-		var pool = _pools[pool_name]
-		var total_count = pool.container.get_child_count()
-		var inactive_count = pool.inactive.size()
+		var pool: Dictionary = _pools[pool_name]
+		var total_count: int = pool.container.get_child_count()
+		var inactive_count: int = pool.inactive.size()
 		stats[pool_name] = {"active": total_count - inactive_count, "total": total_count}
 	return stats
 
 
 func reset() -> void:
 	for pool_name in _pools:
-		var pool = _pools[pool_name]
+		var pool: Dictionary = _pools[pool_name]
 		var active_nodes_to_return: Array[Node] = []
 		for child in pool.container.get_children():
 			if not pool.inactive.has(child):
@@ -58,7 +58,7 @@ func get_instance(p_pool_name: StringName) -> Node:
 		push_error("ObjectPool: Attempted to get instance from a non-existent pool: '%s'" % p_pool_name)
 		return null
 
-	var pool = _pools[p_pool_name]
+	var pool: Dictionary = _pools[p_pool_name]
 	var instance: Node
 
 	if not pool.inactive.is_empty():
@@ -75,12 +75,12 @@ func return_instance(p_instance: Node) -> void:
 	if not is_instance_valid(p_instance):
 		return
 
-	var pool_name = p_instance.get_meta("pool_name", "")
+	var pool_name: StringName = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
 		p_instance.queue_free()
 		return
 
-	var pool = _pools[pool_name]
+	var pool: Dictionary = _pools[pool_name]
 	if not pool.inactive.has(p_instance):
 		pool.inactive.push_front(p_instance)
 
@@ -106,14 +106,14 @@ func _create_pool_for_scene(
 	if _pools.has(p_pool_name):
 		return
 
-	var pool_container = Node.new()
-	pool_container.name = p_pool_name
+	var pool_container := Node.new()
+	pool_container.name = str(p_pool_name)
 	add_child(pool_container)
 
 	_pools[p_pool_name] = {"scene": p_scene, "inactive": [], "container": pool_container}
 
 	for i in range(p_initial_size):
-		var instance = p_scene.instantiate()
+		var instance: Node = p_scene.instantiate()
 		instance.set_meta("pool_name", p_pool_name)
 		pool_container.add_child(instance)
 		if instance.has_method("deactivate"):

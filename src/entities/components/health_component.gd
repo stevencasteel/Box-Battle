@@ -71,9 +71,8 @@ func teardown() -> void:
 
 
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
-	var result = DamageResult.new()
-	
-	# THE FIX: Add a guard clause to handle null input gracefully.
+	var result := DamageResult.new()
+
 	if not is_instance_valid(damage_info):
 		push_warning("HealthComponent received an invalid DamageInfo object.")
 		return result
@@ -81,11 +80,11 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	if is_invincible() and not damage_info.bypass_invincibility:
 		return result
 
-	var health_before_damage = entity_data.health
+	var health_before_damage: int = entity_data.health
 	entity_data.health -= damage_info.amount
 	health_changed.emit(entity_data.health, _max_health)
 
-	var post_hit_token = grant_invincibility(self)
+	var post_hit_token: int = grant_invincibility(self)
 	get_tree().create_timer(_invincibility_duration).timeout.connect(
 		release_invincibility.bind(post_hit_token)
 	)
@@ -115,7 +114,7 @@ func is_invincible() -> bool:
 
 
 func grant_invincibility(requester: Object) -> int:
-	var token_id = _next_token_id
+	var token_id := _next_token_id
 	_next_token_id += 1
 	_invincibility_tokens[token_id] = requester.get_instance_id()
 	return token_id
@@ -131,8 +130,8 @@ func _check_for_threshold_crossing(health_before: int, health_after: int) -> voi
 	if not owner_node.has_method("get_health_thresholds"):
 		return
 	var thresholds: Array[float] = owner_node.get_health_thresholds()
-	var old_percent = float(health_before) / _max_health
-	var new_percent = float(health_after) / _max_health
+	var old_percent: float = float(health_before) / _max_health
+	var new_percent: float = float(health_after) / _max_health
 	for threshold in thresholds:
 		if old_percent > threshold and new_percent <= threshold:
 			health_threshold_reached.emit(threshold)
@@ -141,8 +140,8 @@ func _check_for_threshold_crossing(health_before: int, health_after: int) -> voi
 func _calculate_knockback(source: Node) -> Vector2:
 	if _knockback_speed == 0 or not is_instance_valid(source):
 		return Vector2.ZERO
-	var knockback_dir = (owner_node.global_position - source.global_position).normalized()
-	var speed = _knockback_speed
+	var knockback_dir: Vector2 = (owner_node.global_position - source.global_position).normalized()
+	var speed: float = _knockback_speed
 	if source.is_in_group(Identifiers.Groups.HAZARD):
 		speed = _hazard_knockback_speed
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed

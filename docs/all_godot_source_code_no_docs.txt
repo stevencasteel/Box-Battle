@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 24 14:45:35 CDT 2025
+Generated on: Sun Aug 24 15:07:31 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -2660,7 +2660,7 @@ extends ISceneController
 
 # --- Private Member Variables ---
 var _level_container: Node = null
-var _debug_overlay: CanvasLayer = null # THE FIX: Use a more general type hint
+var _debug_overlay: CanvasLayer = null
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
 var _camera_shaker: CameraShaker = null
@@ -2690,13 +2690,13 @@ func _ready() -> void:
 		if build_data:
 			CameraManager.center_camera_on_arena(camera, build_data.dimensions_tiles)
 			await get_tree().process_frame
-			var terrain_builder = TerrainBuilder.new()
+			var terrain_builder := TerrainBuilder.new()
 			terrain_builder.fill_viewport(_level_container, build_data, camera, ServiceLocator)
 
 	_initialize_camera_shaker()
 	_initialize_debug_inspector()
 
-	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	var player_node: Node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node):
 		player_node.died.connect(_on_player_died)
 
@@ -2711,7 +2711,6 @@ func _unhandled_input(_event: InputEvent) -> void:
 			DialogueManager.end_conversation()
 		else:
 			DialogueManager.start_conversation(TestConversation)
-			print("VERIFICATION: Dialogue triggered.")
 
 	if Input.is_action_just_pressed("debug_cycle_target"):
 		if is_instance_valid(_debug_overlay) and _debug_overlay.visible:
@@ -2743,18 +2742,18 @@ func scene_exiting() -> void:
 
 func _cleanup_entities() -> void:
 	# This centralized function ensures all entities are properly torn down.
-	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	var player_node: Node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node) and player_node.has_method("teardown"):
 		player_node.teardown()
 
-	var enemy_nodes = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
+	var enemy_nodes: Array[Node] = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
 	for enemy in enemy_nodes:
 		if is_instance_valid(enemy) and enemy.has_method("teardown"):
 			enemy.teardown()
 
 
 func _initialize_camera_shaker() -> void:
-	var shaker_scene = load("res://src/core/systems/camera_shaker.tscn")
+	var shaker_scene: PackedScene = load("res://src/core/systems/camera_shaker.tscn")
 	if shaker_scene:
 		_camera_shaker = shaker_scene.instantiate() as CameraShaker
 		add_child(_camera_shaker)
@@ -2783,12 +2782,12 @@ func _cycle_debug_target() -> void:
 		return
 
 	_current_inspect_index = (_current_inspect_index + 1) % _inspectable_entities.size()
-	var new_target = _inspectable_entities[_current_inspect_index]
+	var new_target: Node = _inspectable_entities[_current_inspect_index]
 	_debug_overlay.set_target(new_target)
 
 
 func _deactivate_all_minions() -> void:
-	var minions = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
+	var minions: Array[Node] = get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY)
 	for minion in minions:
 		if minion.has_method("deactivate"):
 			minion.deactivate()
@@ -2802,14 +2801,14 @@ func _on_player_died() -> void:
 
 
 func _on_boss_died(payload: Dictionary) -> void:
-	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	var player_node: Node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node):
 		player_node.set_physics_process(false)
-	var boss_node = payload.get("boss_node")
+	var boss_node: Node = payload.get("boss_node")
 
 	_deactivate_all_minions()
 
-	var wait_step = WaitStep.new()
+	var wait_step := WaitStep.new()
 	wait_step.duration = 2.0
 	var death_sequence: Array[SequenceStep] = [wait_step]
 
@@ -5173,7 +5172,7 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	for i in range(get_child_count() - 1, -1, -1):
-		var child = get_child(i)
+		var child: Node = get_child(i)
 		for j in range(child.get_child_count() - 1, -1, -1):
 			child.get_child(j).free()
 		child.free()
@@ -5186,16 +5185,16 @@ func _exit_tree() -> void:
 func get_pool_stats() -> Dictionary:
 	var stats: Dictionary = {}
 	for pool_name in _pools:
-		var pool = _pools[pool_name]
-		var total_count = pool.container.get_child_count()
-		var inactive_count = pool.inactive.size()
+		var pool: Dictionary = _pools[pool_name]
+		var total_count: int = pool.container.get_child_count()
+		var inactive_count: int = pool.inactive.size()
 		stats[pool_name] = {"active": total_count - inactive_count, "total": total_count}
 	return stats
 
 
 func reset() -> void:
 	for pool_name in _pools:
-		var pool = _pools[pool_name]
+		var pool: Dictionary = _pools[pool_name]
 		var active_nodes_to_return: Array[Node] = []
 		for child in pool.container.get_children():
 			if not pool.inactive.has(child):
@@ -5210,7 +5209,7 @@ func get_instance(p_pool_name: StringName) -> Node:
 		push_error("ObjectPool: Attempted to get instance from a non-existent pool: '%s'" % p_pool_name)
 		return null
 
-	var pool = _pools[p_pool_name]
+	var pool: Dictionary = _pools[p_pool_name]
 	var instance: Node
 
 	if not pool.inactive.is_empty():
@@ -5227,12 +5226,12 @@ func return_instance(p_instance: Node) -> void:
 	if not is_instance_valid(p_instance):
 		return
 
-	var pool_name = p_instance.get_meta("pool_name", "")
+	var pool_name: StringName = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
 		p_instance.queue_free()
 		return
 
-	var pool = _pools[pool_name]
+	var pool: Dictionary = _pools[pool_name]
 	if not pool.inactive.has(p_instance):
 		pool.inactive.push_front(p_instance)
 
@@ -5258,14 +5257,14 @@ func _create_pool_for_scene(
 	if _pools.has(p_pool_name):
 		return
 
-	var pool_container = Node.new()
-	pool_container.name = p_pool_name
+	var pool_container := Node.new()
+	pool_container.name = str(p_pool_name)
 	add_child(pool_container)
 
 	_pools[p_pool_name] = {"scene": p_scene, "inactive": [], "container": pool_container}
 
 	for i in range(p_initial_size):
-		var instance = p_scene.instantiate()
+		var instance: Node = p_scene.instantiate()
 		instance.set_meta("pool_name", p_pool_name)
 		pool_container.add_child(instance)
 		if instance.has_method("deactivate"):
@@ -5526,7 +5525,7 @@ func apply_shader_effect(
 	if not is_instance_valid(target_node) or not is_instance_valid(effect):
 		return null
 
-	var target_id = target_node.get_instance_id()
+	var target_id: int = target_node.get_instance_id()
 	cancel_effect_on_node(target_node)
 
 	var material_instance := effect.material.duplicate(true) as ShaderMaterial
@@ -5546,12 +5545,12 @@ func apply_shader_effect(
 
 	increment_shader_count()
 
-	var tween = create_tween().set_parallel(false)
+	var tween: Tween = create_tween().set_parallel(false)
 	tween.tween_property(
 		material_instance, "shader_parameter/fx_progress", 1.0, effect.duration
 	)
 
-	var preserve_final_state = opts.get("preserve_final_state", false)
+	var preserve_final_state: bool = opts.get("preserve_final_state", false)
 	tween.tween_callback(_on_shader_effect_finished.bind(target_node, preserve_final_state))
 	_managed_effects[target_id]["active_tween"] = tween
 
@@ -5561,9 +5560,9 @@ func apply_shader_effect(
 func cancel_effect_on_node(target_node: CanvasItem) -> void:
 	if not is_instance_valid(target_node):
 		return
-	var target_id = target_node.get_instance_id()
+	var target_id: int = target_node.get_instance_id()
 	if _managed_effects.has(target_id):
-		var effect_data = _managed_effects[target_id]
+		var effect_data: Dictionary = _managed_effects[target_id]
 		if is_instance_valid(effect_data.active_tween):
 			effect_data.active_tween.kill()
 		_on_shader_effect_finished(target_node, false)
@@ -5607,8 +5606,8 @@ func play_vfx(
 		push_warning("FXManager: VFXEffect resource is missing a 'pool_key'.")
 		return
 
-	var services = _get_services()
-	var vfx_instance = services.object_pool.get_instance(effect.pool_key)
+	var services: ServiceLocator = _get_services()
+	var vfx_instance: Node = services.object_pool.get_instance(effect.pool_key)
 	if not is_instance_valid(vfx_instance):
 		push_error("FXManager: Failed to get instance for pool key '%s'." % effect.pool_key)
 		return
@@ -5616,7 +5615,7 @@ func play_vfx(
 	vfx_instance.global_position = global_position
 
 	if vfx_instance.has_method("activate"):
-		var dependencies = {"services": services, "direction": direction}
+		var dependencies: Dictionary = {"services": services, "direction": direction}
 		vfx_instance.call("activate", dependencies)
 
 
@@ -5634,7 +5633,7 @@ func request_hit_stop(duration: float) -> void:
 		if is_instance_valid(node):
 			node.set_deferred("process_mode", Node.PROCESS_MODE_DISABLED)
 
-	var timer = get_tree().create_timer(duration, true, false, true)
+	var timer: SceneTreeTimer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
 	if not get_tree():
@@ -5657,7 +5656,7 @@ func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubVi
 		if not is_instance_valid(effect) or not is_instance_valid(effect.material):
 			continue
 
-		var temp_rect = ColorRect.new()
+		var temp_rect := ColorRect.new()
 		temp_rect.material = effect.material.duplicate(true)
 		prewarm_viewport.add_child(temp_rect)
 
@@ -5668,13 +5667,10 @@ func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubVi
 
 
 func get_debug_stats() -> Dictionary:
-	var services = _get_services()
-	var pool_stats = services.object_pool.get_pool_stats()
-	var vfx_count = 0
-	
-	# THE FIX: Query the ObjectPool directly for the count of active VFX.
-	# This makes the ObjectPool the single source of truth and removes risky signal connections.
-	# TODO: In the future, we could formalize which pools are "VFX" pools.
+	var services: ServiceLocator = _get_services()
+	var pool_stats: Dictionary = services.object_pool.get_pool_stats()
+	var vfx_count: int = 0
+
 	if pool_stats.has(Identifiers.Pools.HIT_SPARKS):
 		vfx_count += pool_stats[Identifiers.Pools.HIT_SPARKS].active
 
@@ -5699,12 +5695,12 @@ func _on_shader_effect_finished(target_node: CanvasItem, preserve_final_state: b
 	if not is_instance_valid(target_node):
 		return
 
-	var target_id = target_node.get_instance_id()
+	var target_id: int = target_node.get_instance_id()
 	if not _managed_effects.has(target_id):
 		return
 
-	var effect_data = _managed_effects[target_id]
-	var should_restore = not target_node.is_queued_for_deletion() and not preserve_final_state
+	var effect_data: Dictionary = _managed_effects[target_id]
+	var should_restore: bool = not target_node.is_queued_for_deletion() and not preserve_final_state
 
 	if should_restore:
 		target_node.material = effect_data.original_material
@@ -7191,7 +7187,6 @@ func reset() -> void:
 func get_pool_stats() -> Dictionary:
 	return {}
 
-
 =====================================
 FILE: ./src/api/interfaces/ISceneController.gd
 =====================================
@@ -7211,7 +7206,6 @@ extends Node
 func scene_exiting() -> void:
 	pass
 
-
 =====================================
 FILE: ./src/api/interfaces/IDamageable.gd
 =====================================
@@ -7230,6 +7224,7 @@ extends IComponent
 func apply_damage(_damage_info: DamageInfo) -> DamageResult:
 	push_warning("IDamageable.apply_damage() was called but not overridden by the implementer.")
 	return DamageResult.new()
+
 
 =====================================
 FILE: ./src/api/interfaces/IComponent.gd
@@ -7707,6 +7702,7 @@ func _on_screen_exited() -> void:
 
 	if is_instance_valid(_services):
 		_services.object_pool.return_instance.call_deferred(self)
+
 
 =====================================
 FILE: ./src/data/dialogue/dialogue_line.gd
@@ -9465,9 +9461,8 @@ func teardown() -> void:
 
 
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
-	var result = DamageResult.new()
-	
-	# THE FIX: Add a guard clause to handle null input gracefully.
+	var result := DamageResult.new()
+
 	if not is_instance_valid(damage_info):
 		push_warning("HealthComponent received an invalid DamageInfo object.")
 		return result
@@ -9475,11 +9470,11 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	if is_invincible() and not damage_info.bypass_invincibility:
 		return result
 
-	var health_before_damage = entity_data.health
+	var health_before_damage: int = entity_data.health
 	entity_data.health -= damage_info.amount
 	health_changed.emit(entity_data.health, _max_health)
 
-	var post_hit_token = grant_invincibility(self)
+	var post_hit_token: int = grant_invincibility(self)
 	get_tree().create_timer(_invincibility_duration).timeout.connect(
 		release_invincibility.bind(post_hit_token)
 	)
@@ -9509,7 +9504,7 @@ func is_invincible() -> bool:
 
 
 func grant_invincibility(requester: Object) -> int:
-	var token_id = _next_token_id
+	var token_id := _next_token_id
 	_next_token_id += 1
 	_invincibility_tokens[token_id] = requester.get_instance_id()
 	return token_id
@@ -9525,8 +9520,8 @@ func _check_for_threshold_crossing(health_before: int, health_after: int) -> voi
 	if not owner_node.has_method("get_health_thresholds"):
 		return
 	var thresholds: Array[float] = owner_node.get_health_thresholds()
-	var old_percent = float(health_before) / _max_health
-	var new_percent = float(health_after) / _max_health
+	var old_percent: float = float(health_before) / _max_health
+	var new_percent: float = float(health_after) / _max_health
 	for threshold in thresholds:
 		if old_percent > threshold and new_percent <= threshold:
 			health_threshold_reached.emit(threshold)
@@ -9535,8 +9530,8 @@ func _check_for_threshold_crossing(health_before: int, health_after: int) -> voi
 func _calculate_knockback(source: Node) -> Vector2:
 	if _knockback_speed == 0 or not is_instance_valid(source):
 		return Vector2.ZERO
-	var knockback_dir = (owner_node.global_position - source.global_position).normalized()
-	var speed = _knockback_speed
+	var knockback_dir: Vector2 = (owner_node.global_position - source.global_position).normalized()
+	var speed: float = _knockback_speed
 	if source.is_in_group(Identifiers.Groups.HAZARD):
 		speed = _hazard_knockback_speed
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed

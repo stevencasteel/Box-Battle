@@ -26,17 +26,16 @@ func _move(delta: float) -> void:
 		global_position += transform.x * speed * delta
 		return
 
-	var player_node = _player_ref.get_ref()
-	var direction_to_player = (player_node.global_position - global_position).normalized()
+	var player_node: Node = _player_ref.get_ref()
+	var direction_to_player: Vector2 = (player_node.global_position - global_position).normalized()
 	rotation = lerp_angle(rotation, direction_to_player.angle(), 0.05)
 	global_position += transform.x * speed * delta
 
 
 func activate(p_services: ServiceLocator) -> void:
 	super.activate(p_services)
-	print("[HOMING_SHOT] ACTIVATE called for instance:", self.get_instance_id())
 
-	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	var player_node: Node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	_player_ref = weakref(player_node)
 
 	if is_instance_valid(lifetime_timer):
@@ -79,7 +78,7 @@ func _maybe_schedule_shrink(p_lifespan: float) -> void:
 
 	_pending_start_on_screen = true
 
-	var timer = get_tree().create_timer(FALLBACK_WAIT_SECONDS)
+	var timer: SceneTreeTimer = get_tree().create_timer(FALLBACK_WAIT_SECONDS)
 	await timer.timeout
 
 	if _pending_start_on_screen and _is_active:
