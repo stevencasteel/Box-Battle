@@ -8,9 +8,15 @@ extends Node
 # --- Private Member Variables ---
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
+var _services: ServiceLocator
 
 var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
+
+
+func _ready() -> void:
+	_services = get_node("/root/ServiceLocator")
+
 
 # --- Public Methods ---
 
@@ -71,7 +77,8 @@ func play_vfx(
 	vfx_instance.global_position = global_position
 
 	if vfx_instance.has_method("activate"):
-		vfx_instance.call("activate", direction)
+		var dependencies = {"services": _services, "direction": direction}
+		vfx_instance.call("activate", dependencies)
 
 
 ## Pauses specific gameplay nodes for a short duration to add impact to an event.

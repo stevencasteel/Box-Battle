@@ -36,6 +36,15 @@
 ║                                                                              ║
 
 
+refactor(VFX): Decouple HitSpark from global ObjectPool
+
+- FXManager now injects a ServiceLocator dependency into VFX instances it activates from the pool.
+- HitSpark.gd has been updated to accept this dependency via its activate() method, removing the direct call to the global ObjectPool singleton.
+- The IPoolable interface documentation was updated to reflect this dependency injection pattern.
+- Fixed an 'unused_parameter' warning in IPoolable.gd.
+
+
+
 feat(Core): Harden timing, hit-stop, and physics processing
 
 - Chore(Input): Set InputComponent process_priority to -100 to ensure it runs before dependent components, preventing frame-order race conditions.

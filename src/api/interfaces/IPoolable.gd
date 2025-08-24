@@ -7,6 +7,7 @@ extends Node
 
 
 ## Prepares the node for use after being retrieved from the pool.
+## Receives a dictionary of dependencies, which should include the ServiceLocator.
 func activate(_dependencies: Dictionary = {}) -> void:
 	pass
 
