@@ -35,6 +35,17 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(Boot): Isolate autoload initialization into BootManager
+
+Implements the first P2 task from the architectural audit.
+
+- Created a new stateless BootManager utility to orchestrate the initialization of core systems. This provides a single, explicit entry point for system startup.
+
+- Refactored the ObjectPool autoload. The heavy work of creating all the initial pooled nodes has been moved from its `_ready()` method into a new public `initialize()` method.
+
+- The game's main entry point (`main.gd`) now calls `BootManager.initialize_systems()` at startup. This makes the initialization sequence explicit and controlled, rather than relying on the implicit order of autoload `_ready()` calls. This improves testability and startup predictability.
+
+
 
 refactor(Typing): Enforce static typing on core APIs and interfaces
 

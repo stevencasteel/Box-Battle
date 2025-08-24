@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 24 15:07:31 CDT 2025
+Generated on: Sun Aug 24 15:21:53 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -206,6 +206,8 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── core
 │   │   ├── DEPRECATION.md
 │   │   ├── README.md
+│   │   ├── boot
+│   │   │   └── boot_manager.gd
 │   │   ├── building
 │   │   │   ├── arena_builder.gd
 │   │   │   ├── level_build_data.gd
@@ -451,7 +453,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-80 directories, 363 files
+81 directories, 364 files
 
 
 =====================================
@@ -3917,6 +3919,10 @@ func _ready() -> void:
 	if OS.is_debug_build():
 		AssetPaths.validate_all_paths()
 
+	# THE FIX: Call the static method directly on the global class name.
+	# This removes the need for a local constant and resolves the warning.
+	BootManager.initialize_systems()
+
 	AudioManager.play_music(AssetPaths.MUSIC_MENU_LOOP)
 
 	SceneManager.go_to_scene(AssetPaths.SCENE_TITLE_SCREEN)
@@ -4210,6 +4216,34 @@ func execute(sequencer_node: Node) -> Variant:
 		return sequencer_node.get_tree().create_timer(duration).timeout
 	return null
 
+
+=====================================
+FILE: ./src/core/boot/boot_manager.gd
+=====================================
+# src/core/boot/boot_manager.gd
+## A stateless utility responsible for orchestrating the initialization of
+## core game systems in a predictable order.
+class_name BootManager
+extends RefCounted
+
+## Finds all necessary autoloads and calls their initialization methods.
+static func initialize_systems() -> void:
+	var scene_tree: SceneTree = Engine.get_main_loop() as SceneTree
+	if not is_instance_valid(scene_tree):
+		push_error("BootManager: Could not get valid SceneTree.")
+		return
+
+	var root_node: Node = scene_tree.root
+	if not is_instance_valid(root_node):
+		push_error("BootManager: Could not get SceneTree's root node.")
+		return
+
+	# Tell the ObjectPool to create all its initial instances.
+	var object_pool: Node = root_node.get_node("/root/ObjectPool")
+	if is_instance_valid(object_pool) and object_pool.has_method("initialize"):
+		object_pool.initialize()
+
+	# TODO: Add other systems here as needed (e.g., pre-caching assets).
 
 =====================================
 FILE: ./src/core/util/combat_utils.gd
@@ -5158,16 +5192,14 @@ extends Node
 
 # --- Private Member Variables ---
 var _pools: Dictionary = {}
+var _is_initialized: bool = false
 
 # --- Godot Lifecycle Methods ---
 
 
 func _ready() -> void:
-	_create_pool_from_path(Identifiers.Pools.PLAYER_SHOTS, AssetPaths.SCENE_PLAYER_SHOT, 15)
-	_create_pool_from_path(Identifiers.Pools.BOSS_SHOTS, AssetPaths.SCENE_BOSS_SHOT, 30)
-	_create_pool_from_path(Identifiers.Pools.TURRET_SHOTS, AssetPaths.SCENE_TURRET_SHOT, 20)
-	_create_pool_from_path(Identifiers.Pools.HOMING_BOSS_SHOTS, AssetPaths.SCENE_HOMING_BOSS_SHOT, 40)
-	_create_pool_from_path(Identifiers.Pools.HIT_SPARKS, AssetPaths.SCENE_HIT_SPARK, 25)
+	# Per SRP, _ready() should be lightweight. Heavy lifting is moved to initialize().
+	pass
 
 
 func _exit_tree() -> void:
@@ -5180,6 +5212,18 @@ func _exit_tree() -> void:
 
 
 # --- Public Methods ---
+
+## THE FIX: This new method contains the heavy initialization logic.
+## It is now called explicitly by the BootManager.
+func initialize() -> void:
+	if _is_initialized:
+		return
+	_create_pool_from_path(Identifiers.Pools.PLAYER_SHOTS, AssetPaths.SCENE_PLAYER_SHOT, 15)
+	_create_pool_from_path(Identifiers.Pools.BOSS_SHOTS, AssetPaths.SCENE_BOSS_SHOT, 30)
+	_create_pool_from_path(Identifiers.Pools.TURRET_SHOTS, AssetPaths.SCENE_TURRET_SHOT, 20)
+	_create_pool_from_path(Identifiers.Pools.HOMING_BOSS_SHOTS, AssetPaths.SCENE_HOMING_BOSS_SHOT, 40)
+	_create_pool_from_path(Identifiers.Pools.HIT_SPARKS, AssetPaths.SCENE_HIT_SPARK, 25)
+	_is_initialized = true
 
 
 func get_pool_stats() -> Dictionary:
@@ -7506,17 +7550,16 @@ func _move(delta: float) -> void:
 		global_position += transform.x * speed * delta
 		return
 
-	var player_node = _player_ref.get_ref()
-	var direction_to_player = (player_node.global_position - global_position).normalized()
+	var player_node: Node = _player_ref.get_ref()
+	var direction_to_player: Vector2 = (player_node.global_position - global_position).normalized()
 	rotation = lerp_angle(rotation, direction_to_player.angle(), 0.05)
 	global_position += transform.x * speed * delta
 
 
 func activate(p_services: ServiceLocator) -> void:
 	super.activate(p_services)
-	print("[HOMING_SHOT] ACTIVATE called for instance:", self.get_instance_id())
 
-	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+	var player_node: Node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	_player_ref = weakref(player_node)
 
 	if is_instance_valid(lifetime_timer):
@@ -7559,7 +7602,7 @@ func _maybe_schedule_shrink(p_lifespan: float) -> void:
 
 	_pending_start_on_screen = true
 
-	var timer = get_tree().create_timer(FALLBACK_WAIT_SECONDS)
+	var timer: SceneTreeTimer = get_tree().create_timer(FALLBACK_WAIT_SECONDS)
 	await timer.timeout
 
 	if _pending_start_on_screen and _is_active:
