@@ -17,3 +17,12 @@ func prewarm_shaders_async(_effects: Array[ShaderEffect], _prewarm_viewport: Sub
 func get_debug_stats() -> Dictionary: return {}
 func increment_shader_count() -> void: pass
 func decrement_shader_count() -> void: pass
+
+## Applies a shader effect directly to a target CanvasItem.
+func apply_shader_effect(
+	_target_node: CanvasItem, _effect: ShaderEffect, _overrides: Dictionary, _opts: Dictionary
+) -> Tween:
+	return null
+
+## Cancels any active shader effect on a specific node.
+func cancel_effect_on_node(_target_node: CanvasItem) -> void: pass

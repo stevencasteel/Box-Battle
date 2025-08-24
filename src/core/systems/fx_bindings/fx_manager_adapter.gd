@@ -35,7 +35,6 @@ func request_hit_stop(duration: float) -> void:
 	_real_fx_manager.request_hit_stop(duration)
 
 func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubViewport) -> void:
-	# This is an awaitable function, so we must await it.
 	await _real_fx_manager.prewarm_shaders_async(effects, prewarm_viewport)
 
 func get_debug_stats() -> Dictionary:
@@ -46,3 +45,11 @@ func increment_shader_count() -> void:
 
 func decrement_shader_count() -> void:
 	_real_fx_manager.decrement_shader_count()
+
+func apply_shader_effect(
+	target_node: CanvasItem, effect: ShaderEffect, overrides: Dictionary, opts: Dictionary
+) -> Tween:
+	return _real_fx_manager.apply_shader_effect(target_node, effect, overrides, opts)
+
+func cancel_effect_on_node(target_node: CanvasItem) -> void:
+	_real_fx_manager.cancel_effect_on_node(target_node)

@@ -9,6 +9,7 @@ extends Node
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
 var _services: ServiceLocator
+var _managed_effects: Dictionary = {}
 
 var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
@@ -21,32 +22,75 @@ func _ready() -> void:
 # --- Public Methods ---
 
 
-## Increments the active shader counter. Called by external systems like FXComponent.
+func apply_shader_effect(
+	target_node: CanvasItem, effect: ShaderEffect, overrides: Dictionary, opts: Dictionary
+) -> Tween:
+	if not is_instance_valid(target_node) or not is_instance_valid(effect):
+		return null
+
+	var target_id = target_node.get_instance_id()
+	cancel_effect_on_node(target_node)
+
+	var material_instance := effect.material.duplicate(true) as ShaderMaterial
+	if not is_instance_valid(material_instance):
+		push_error("FXManager: effect.material is not a ShaderMaterial.")
+		return null
+
+	if not overrides.is_empty():
+		for param_name in overrides:
+			material_instance.set_shader_parameter(param_name, overrides[param_name])
+	
+	_managed_effects[target_id] = {
+		"original_material": target_node.material,
+		"effect_material": material_instance
+	}
+	target_node.material = material_instance
+
+	increment_shader_count()
+	
+	var tween = create_tween().set_parallel(false)
+	tween.tween_property(
+		material_instance, "shader_parameter/fx_progress", 1.0, effect.duration
+	)
+	
+	var preserve_final_state = opts.get("preserve_final_state", false)
+	tween.tween_callback(_on_shader_effect_finished.bind(target_node, preserve_final_state))
+	_managed_effects[target_id]["active_tween"] = tween
+	
+	return tween
+
+
+func cancel_effect_on_node(target_node: CanvasItem) -> void:
+	if not is_instance_valid(target_node):
+		return
+	var target_id = target_node.get_instance_id()
+	if _managed_effects.has(target_id):
+		var effect_data = _managed_effects[target_id]
+		if is_instance_valid(effect_data.active_tween):
+			effect_data.active_tween.kill()
+		_on_shader_effect_finished(target_node, false)
+
+
 func increment_shader_count() -> void:
 	_active_shader_effects += 1
 
 
-## Decrements the active shader counter. Called by external systems like FXComponent.
 func decrement_shader_count() -> void:
 	_active_shader_effects -= 1
 
 
-## Stores a reference to the active CameraShaker in the scene.
 func register_camera_shaker(shaker: CameraShaker) -> void:
 	_camera_shaker = shaker
 
 
-## Clears the reference to the CameraShaker when the scene changes.
 func unregister_camera_shaker() -> void:
 	_camera_shaker = null
 
 
-## Checks if a valid CameraShaker is currently registered.
 func is_camera_shaker_registered() -> bool:
 	return is_instance_valid(_camera_shaker)
 
 
-## The main public API for triggering a screen shake effect.
 func request_screen_shake(shake_effect: ScreenShakeEffect) -> void:
 	if is_instance_valid(_camera_shaker):
 		_camera_shaker.start_shake(shake_effect)
@@ -54,7 +98,6 @@ func request_screen_shake(shake_effect: ScreenShakeEffect) -> void:
 		push_warning("FXManager: request_screen_shake called, but no CameraShaker is registered.")
 
 
-## The main public API for spawning a visual effect from the object pool.
 func play_vfx(
 	effect: VFXEffect, global_position: Vector2, direction: Vector2 = Vector2.ZERO
 ) -> void:
@@ -81,28 +124,23 @@ func play_vfx(
 		vfx_instance.call("activate", dependencies)
 
 
-## Pauses specific gameplay nodes for a short duration to add impact to an event.
 func request_hit_stop(duration: float) -> void:
 	if _is_hit_stop_active:
 		return
 
 	_is_hit_stop_active = true
 
-	# 1. Find all nodes that should be affected by hit-stop.
 	var affected_nodes: Array[Node]
 	affected_nodes.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.PLAYER))
 	affected_nodes.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
 
-	# 2. Pause the nodes using call_deferred to avoid physics engine errors.
 	for node in affected_nodes:
 		if is_instance_valid(node):
 			node.set_deferred("process_mode", Node.PROCESS_MODE_DISABLED)
 
-	# 3. Create a timer that is not affected by time scale.
 	var timer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
-	# 4. Resume the nodes. Guard against scene changes during the await.
 	if not get_tree():
 		return
 
@@ -113,7 +151,6 @@ func request_hit_stop(duration: float) -> void:
 	_is_hit_stop_active = false
 
 
-## Pre-compiles a list of shaders by briefly rendering them off-screen.
 func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubViewport) -> void:
 	if not is_instance_valid(prewarm_viewport):
 		push_error("FXManager: prewarm_shaders_async requires a valid SubViewport.")
@@ -128,16 +165,34 @@ func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubVi
 		temp_rect.material = effect.material.duplicate(true)
 		prewarm_viewport.add_child(temp_rect)
 
-		# Wait one frame for the renderer to process and compile the shader.
 		await get_tree().process_frame
 
 		temp_rect.queue_free()
 	print("FXManager: Shader pre-warm complete.")
 
 
-## Returns a dictionary of current FX stats for debugging purposes.
 func get_debug_stats() -> Dictionary:
 	return {
 		"active_vfx": _active_vfx_count,
 		"active_shaders": _active_shader_effects,
 	}
+
+# --- Private Methods ---
+
+func _on_shader_effect_finished(target_node: CanvasItem, preserve_final_state: bool) -> void:
+	decrement_shader_count()
+	
+	if not is_instance_valid(target_node):
+		return
+		
+	var target_id = target_node.get_instance_id()
+	if not _managed_effects.has(target_id):
+		return
+		
+	var effect_data = _managed_effects[target_id]
+	var should_restore = not target_node.is_queued_for_deletion() and not preserve_final_state
+	
+	if should_restore:
+		target_node.material = effect_data.original_material
+		
+	_managed_effects.erase(target_id)

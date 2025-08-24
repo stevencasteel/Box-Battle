@@ -35,6 +35,25 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(fx): centralize shader effect logic in FXManager
+
+Improves SRP by moving the complex implementation of shader effects
+(material duplication, tweening, parameter setting, and cleanup) out of
+the entity-level `FXComponent` and into the global `FXManager` autoload.
+
+Changes:
+- Added `apply_shader_effect()` and `cancel_effect_on_node()` to the
+  `IFXManager` interface and its adapter.
+- Implemented the logic for these methods in `FXManager`, which now
+  manages the state of active shader effects on nodes via a dictionary.
+- Simplified `FXComponent` into a lightweight requester. Its `play_effect`
+  method is now a one-line call to the `IFXManager` service.
+- The component's responsibility is now solely to 'request' an effect
+  on its owner, not to 'implement' it.
+- Fixed `fx_playground.gd` tool by injecting the required `ServiceLocator`
+  dependency during setup, resolving a crash.
+
+
 refactor(core): decouple FXManager via interface and adapter
 
 Introduces an abstraction layer for the FXManager to break the direct

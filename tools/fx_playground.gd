@@ -11,9 +11,15 @@ extends Control
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
-		# The FXComponent is a direct child in this tool scene, not built from an archetype.
-		# We can set it up directly.
-		fx_component.setup(test_subject, {"visual_node": test_subject})
+		# THE FIX: When running the scene, the ServiceLocator autoload is
+		# available globally. We must provide it to the component's setup
+		# method to satisfy its dependency contract.
+		var dependencies = {
+			"visual_node": test_subject,
+			"services": ServiceLocator,
+			"hit_effect": _hit_flash_effect # Provide a default hit effect
+		}
+		fx_component.setup(test_subject, dependencies)
 		test_subject.visible = true
 
 
