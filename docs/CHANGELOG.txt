@@ -35,6 +35,19 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(Boss): Decouple boss behavior into a Resource
+
+Implements the second P2 task from the architectural audit, fully embracing the Open/Closed Principle for boss design.
+
+- Created a new `BossBehavior` Resource script to encapsulate all of a boss's configurable data: phase health thresholds and the attack patterns for each phase.
+
+- Migrated the attack pattern configuration from being properties on the `BaseBoss` scene to a new `default_boss_behavior.tres` file.
+
+- Refactored `BaseBoss.gd` to remove the explicit phase and pattern properties. It now has a single `@export var behavior: BossBehavior` and all logic reads from this resource.
+
+This change allows designers to create entirely new boss encounters by creating new `AttackPattern` and `BossBehavior` resources, without needing to modify any code or the `BaseBoss` scene itself.
+
+
 refactor(Boot): Isolate autoload initialization into BootManager
 
 Implements the first P2 task from the architectural audit.

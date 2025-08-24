@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BossBehavior" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/entities/boss/data/boss_behavior.gd" id="1_behavior_script"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="2_pattern_single"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="3_pattern_volley3"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="4_pattern_lunge"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_5_shot.tres" id="5_pattern_volley5"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres" id="6_pattern_homing"]
+
+[resource]
+script = ExtResource("1_behavior_script")
+phase_2_threshold = 0.7
+phase_3_threshold = 0.4
+phase_1_patterns = [ExtResource("2_pattern_single")]
+phase_2_patterns = [ExtResource("3_pattern_volley3"), ExtResource("4_pattern_lunge")]
+phase_3_patterns = [ExtResource("5_pattern_volley5"), ExtResource("4_pattern_lunge"), ExtResource("6_pattern_homing")]

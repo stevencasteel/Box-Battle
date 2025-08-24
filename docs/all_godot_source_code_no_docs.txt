@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 24 15:21:53 CDT 2025
+Generated on: Sun Aug 24 16:00:07 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -312,6 +312,9 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── base_boss.gd
 │   │   │   ├── base_boss.tscn
 │   │   │   ├── boss_state_data.gd
+│   │   │   ├── data
+│   │   │   │   ├── boss_behavior.gd
+│   │   │   │   └── default_boss_behavior.tres
 │   │   │   └── states
 │   │   │       ├── state_boss_attack.gd
 │   │   │       ├── state_boss_cooldown.gd
@@ -453,7 +456,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-81 directories, 364 files
+82 directories, 366 files
 
 
 =====================================
@@ -4244,6 +4247,7 @@ static func initialize_systems() -> void:
 		object_pool.initialize()
 
 	# TODO: Add other systems here as needed (e.g., pre-caching assets).
+
 
 =====================================
 FILE: ./src/core/util/combat_utils.gd
@@ -8528,25 +8532,20 @@ var facing_direction: float = -1.0
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=19 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=14 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" uid="uid://5bkyx4fguxor" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
-[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="2_30ufx"]
-[ext_resource type="Resource" uid="uid://bve7t5ucr1k" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="3_pattern_single"]
-[ext_resource type="Resource" uid="uid://k3dglh3t1b4a" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="4_pattern_volley"]
-[ext_resource type="Resource" uid="uid://y6g5o6f7h8ja" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="5_pattern_lunge"]
-[ext_resource type="Resource" uid="uid://01x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_5_shot.tres" id="6_pattern_volley_p3"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="7_phase_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_death_shake.tres" id="8_death_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="9_hit_spark_effect"]
 [ext_resource type="Resource" path="res://src/entities/archetypes/boss_archetype.tres" id="10_archetype"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres" id="11_pattern_homing"]
 [ext_resource type="Script" uid="uid://dnyvyoos5kkxy" path="res://src/entities/boss/states/state_boss_idle.gd" id="12_state_idle"]
 [ext_resource type="Script" uid="uid://bl6ot8t61nixu" path="res://src/entities/boss/states/state_boss_attack.gd" id="13_state_attack"]
 [ext_resource type="Script" uid="uid://dgok3ph2i0i47" path="res://src/entities/boss/states/state_boss_cooldown.gd" id="14_state_cooldown"]
 [ext_resource type="Script" uid="uid://bsmqi0p5h8urh" path="res://src/entities/boss/states/state_boss_patrol.gd" id="15_state_patrol"]
 [ext_resource type="Script" uid="uid://b47bmwcdrdd8d" path="res://src/entities/boss/states/state_boss_lunge.gd" id="16_state_lunge"]
 [ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="17_dissolve_effect"]
+[ext_resource type="Resource" path="res://src/entities/boss/data/default_boss_behavior.tres" id="18_default_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -8555,9 +8554,7 @@ size = Vector2(60, 60)
 collision_layer = 12
 collision_mask = 131
 script = ExtResource("1_26qjf")
-phase_1_patterns = Array[ExtResource("2_30ufx")]([ExtResource("3_pattern_single")])
-phase_2_patterns = Array[ExtResource("2_30ufx")]([ExtResource("4_pattern_volley"), ExtResource("5_pattern_lunge")])
-phase_3_patterns = Array[ExtResource("2_30ufx")]([ExtResource("6_pattern_volley_p3"), ExtResource("5_pattern_lunge"), ExtResource("11_pattern_homing")])
+behavior = ExtResource("18_default_behavior")
 intro_shake_effect = ExtResource("7_phase_shake")
 phase_change_shake_effect = ExtResource("7_phase_shake")
 death_shake_effect = ExtResource("8_death_shake")
@@ -8776,13 +8773,9 @@ extends BaseEntity
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Configuration ---
-@export_group("Phase Configuration")
-@export_range(0.0, 1.0, 0.01) var phase_2_threshold: float = 0.7
-@export_range(0.0, 1.0, 0.01) var phase_3_threshold: float = 0.4
-@export_group("Attack Patterns")
-@export var phase_1_patterns: Array[AttackPattern] = []
-@export var phase_2_patterns: Array[AttackPattern] = []
-@export var phase_3_patterns: Array[AttackPattern] = []
+@export_group("Core Configuration")
+# THE FIX: Replace individual pattern arrays with a single behavior resource.
+@export var behavior: BossBehavior
 @export_group("Juice & Feedback")
 @export var intro_shake_effect: ScreenShakeEffect
 @export var phase_change_shake_effect: ScreenShakeEffect
@@ -8818,9 +8811,11 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
 	if not archetype:
 		warnings.append("This node requires an EntityArchetype resource.")
-		return warnings
-	if phase_1_patterns.is_empty():
-		warnings.append("Phase 1 has no attack patterns assigned.")
+	# THE FIX: Update the warning to check for the new behavior resource.
+	if not behavior:
+		warnings.append("This node requires a BossBehavior resource.")
+	elif is_instance_valid(behavior) and behavior.phase_1_patterns.is_empty():
+		warnings.append("The assigned BossBehavior has no Phase 1 attack patterns.")
 	return warnings
 
 
@@ -8883,7 +8878,10 @@ func teardown() -> void:
 
 
 func get_health_thresholds() -> Array[float]:
-	return [phase_2_threshold, phase_3_threshold]
+	# THE FIX: Read thresholds directly from the behavior resource.
+	if is_instance_valid(behavior):
+		return [behavior.phase_2_threshold, behavior.phase_3_threshold]
+	return []
 
 
 func fire_volley(shot_count: int, delay: float) -> void:
@@ -8899,7 +8897,7 @@ func fire_volley(shot_count: int, delay: float) -> void:
 func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player):
 		return
-	var shot = _services.object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
+	var shot: Node = _services.object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
 	if not shot:
 		return
 	_update_player_tracking()
@@ -8944,7 +8942,9 @@ func _die() -> void:
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
-	current_attack_patterns = phase_1_patterns
+	# THE FIX: Initialize the first set of attacks from the behavior resource.
+	if is_instance_valid(behavior):
+		current_attack_patterns = behavior.phase_1_patterns
 	entity_data = BossStateData.new()
 	assert(is_instance_valid(_services), "BaseBoss requires a ServiceLocator.")
 	entity_data.config = _services.combat_config
@@ -8957,7 +8957,7 @@ func _initialize_and_setup_components() -> void:
 
 	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
-	var states = {
+	var states: Dictionary = {
 		Identifiers.BossStates.IDLE: state_idle_script.new(self, sm, entity_data),
 		Identifiers.BossStates.ATTACK: state_attack_script.new(self, sm, entity_data),
 		Identifiers.BossStates.COOLDOWN: state_cooldown_script.new(self, sm, entity_data),
@@ -8983,7 +8983,7 @@ func _connect_signals() -> void:
 
 func _update_player_tracking() -> void:
 	if is_instance_valid(_player):
-		var dir_to_player = _player.global_position.x - global_position.x
+		var dir_to_player: float = _player.global_position.x - global_position.x
 		if not is_zero_approx(dir_to_player):
 			entity_data.facing_direction = sign(dir_to_player)
 	self.scale.x = entity_data.facing_direction
@@ -8993,18 +8993,22 @@ func _update_player_tracking() -> void:
 
 
 func _on_health_threshold_reached(health_percentage: float) -> void:
-	var new_phases_remaining = phases_remaining
-	if health_percentage <= phase_3_threshold and phases_remaining > 1:
+	if not is_instance_valid(behavior):
+		return
+
+	var new_phases_remaining: int = phases_remaining
+	if health_percentage <= behavior.phase_3_threshold and phases_remaining > 1:
 		new_phases_remaining = 1
-	elif health_percentage <= phase_2_threshold and phases_remaining > 2:
+	elif health_percentage <= behavior.phase_2_threshold and phases_remaining > 2:
 		new_phases_remaining = 2
+
 	if new_phases_remaining != phases_remaining:
 		phases_remaining = new_phases_remaining
 		match phases_remaining:
 			2:
-				current_attack_patterns = phase_2_patterns
+				current_attack_patterns = behavior.phase_2_patterns
 			1:
-				current_attack_patterns = phase_3_patterns
+				current_attack_patterns = behavior.phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
 			_services.fx_manager.request_screen_shake(phase_change_shake_effect)
 		_services.fx_manager.request_hit_stop(
@@ -9028,7 +9032,7 @@ func _on_patrol_timer_timeout() -> void:
 
 
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
-	var ev = BossHealthChangedEvent.new()
+	var ev := BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
 	_services.event_bus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
@@ -9036,6 +9040,50 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 
 func _on_health_component_died() -> void:
 	_die()
+
+
+=====================================
+FILE: ./src/entities/boss/data/default_boss_behavior.tres
+=====================================
+[gd_resource type="Resource" script_class="BossBehavior" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/entities/boss/data/boss_behavior.gd" id="1_behavior_script"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="2_pattern_single"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="3_pattern_volley3"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="4_pattern_lunge"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_5_shot.tres" id="5_pattern_volley5"]
+[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres" id="6_pattern_homing"]
+
+[resource]
+script = ExtResource("1_behavior_script")
+phase_2_threshold = 0.7
+phase_3_threshold = 0.4
+phase_1_patterns = [ExtResource("2_pattern_single")]
+phase_2_patterns = [ExtResource("3_pattern_volley3"), ExtResource("4_pattern_lunge")]
+phase_3_patterns = [ExtResource("5_pattern_volley5"), ExtResource("4_pattern_lunge"), ExtResource("6_pattern_homing")]
+
+
+=====================================
+FILE: ./src/entities/boss/data/boss_behavior.gd
+=====================================
+# src/entities/boss/data/boss_behavior.gd
+@tool
+## A data resource that defines a boss's complete combat behavior.
+##
+## This encapsulates phase health thresholds and the specific attack patterns
+## used in each phase, allowing for the creation of varied boss types without
+## changing the core BaseBoss scene or script.
+class_name BossBehavior
+extends Resource
+
+@export_group("Phase Configuration")
+@export_range(0.0, 1.0, 0.01) var phase_2_threshold: float = 0.7
+@export_range(0.0, 1.0, 0.01) var phase_3_threshold: float = 0.4
+
+@export_group("Attack Patterns")
+@export var phase_1_patterns: Array[AttackPattern] = []
+@export var phase_2_patterns: Array[AttackPattern] = []
+@export var phase_3_patterns: Array[AttackPattern] = []
 
 
 =====================================

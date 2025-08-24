@@ -7,13 +7,9 @@ extends BaseEntity
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Configuration ---
-@export_group("Phase Configuration")
-@export_range(0.0, 1.0, 0.01) var phase_2_threshold: float = 0.7
-@export_range(0.0, 1.0, 0.01) var phase_3_threshold: float = 0.4
-@export_group("Attack Patterns")
-@export var phase_1_patterns: Array[AttackPattern] = []
-@export var phase_2_patterns: Array[AttackPattern] = []
-@export var phase_3_patterns: Array[AttackPattern] = []
+@export_group("Core Configuration")
+# THE FIX: Replace individual pattern arrays with a single behavior resource.
+@export var behavior: BossBehavior
 @export_group("Juice & Feedback")
 @export var intro_shake_effect: ScreenShakeEffect
 @export var phase_change_shake_effect: ScreenShakeEffect
@@ -49,9 +45,11 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
 	if not archetype:
 		warnings.append("This node requires an EntityArchetype resource.")
-		return warnings
-	if phase_1_patterns.is_empty():
-		warnings.append("Phase 1 has no attack patterns assigned.")
+	# THE FIX: Update the warning to check for the new behavior resource.
+	if not behavior:
+		warnings.append("This node requires a BossBehavior resource.")
+	elif is_instance_valid(behavior) and behavior.phase_1_patterns.is_empty():
+		warnings.append("The assigned BossBehavior has no Phase 1 attack patterns.")
 	return warnings
 
 
@@ -114,7 +112,10 @@ func teardown() -> void:
 
 
 func get_health_thresholds() -> Array[float]:
-	return [phase_2_threshold, phase_3_threshold]
+	# THE FIX: Read thresholds directly from the behavior resource.
+	if is_instance_valid(behavior):
+		return [behavior.phase_2_threshold, behavior.phase_3_threshold]
+	return []
 
 
 func fire_volley(shot_count: int, delay: float) -> void:
@@ -130,7 +131,7 @@ func fire_volley(shot_count: int, delay: float) -> void:
 func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player):
 		return
-	var shot = _services.object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
+	var shot: Node = _services.object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
 	if not shot:
 		return
 	_update_player_tracking()
@@ -175,7 +176,9 @@ func _die() -> void:
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
-	current_attack_patterns = phase_1_patterns
+	# THE FIX: Initialize the first set of attacks from the behavior resource.
+	if is_instance_valid(behavior):
+		current_attack_patterns = behavior.phase_1_patterns
 	entity_data = BossStateData.new()
 	assert(is_instance_valid(_services), "BaseBoss requires a ServiceLocator.")
 	entity_data.config = _services.combat_config
@@ -188,7 +191,7 @@ func _initialize_and_setup_components() -> void:
 
 	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
-	var states = {
+	var states: Dictionary = {
 		Identifiers.BossStates.IDLE: state_idle_script.new(self, sm, entity_data),
 		Identifiers.BossStates.ATTACK: state_attack_script.new(self, sm, entity_data),
 		Identifiers.BossStates.COOLDOWN: state_cooldown_script.new(self, sm, entity_data),
@@ -214,7 +217,7 @@ func _connect_signals() -> void:
 
 func _update_player_tracking() -> void:
 	if is_instance_valid(_player):
-		var dir_to_player = _player.global_position.x - global_position.x
+		var dir_to_player: float = _player.global_position.x - global_position.x
 		if not is_zero_approx(dir_to_player):
 			entity_data.facing_direction = sign(dir_to_player)
 	self.scale.x = entity_data.facing_direction
@@ -224,18 +227,22 @@ func _update_player_tracking() -> void:
 
 
 func _on_health_threshold_reached(health_percentage: float) -> void:
-	var new_phases_remaining = phases_remaining
-	if health_percentage <= phase_3_threshold and phases_remaining > 1:
+	if not is_instance_valid(behavior):
+		return
+
+	var new_phases_remaining: int = phases_remaining
+	if health_percentage <= behavior.phase_3_threshold and phases_remaining > 1:
 		new_phases_remaining = 1
-	elif health_percentage <= phase_2_threshold and phases_remaining > 2:
+	elif health_percentage <= behavior.phase_2_threshold and phases_remaining > 2:
 		new_phases_remaining = 2
+
 	if new_phases_remaining != phases_remaining:
 		phases_remaining = new_phases_remaining
 		match phases_remaining:
 			2:
-				current_attack_patterns = phase_2_patterns
+				current_attack_patterns = behavior.phase_2_patterns
 			1:
-				current_attack_patterns = phase_3_patterns
+				current_attack_patterns = behavior.phase_3_patterns
 		if is_instance_valid(phase_change_shake_effect):
 			_services.fx_manager.request_screen_shake(phase_change_shake_effect)
 		_services.fx_manager.request_hit_stop(
@@ -259,7 +266,7 @@ func _on_patrol_timer_timeout() -> void:
 
 
 func _on_health_component_health_changed(current: int, max_val: int) -> void:
-	var ev = BossHealthChangedEvent.new()
+	var ev := BossHealthChangedEvent.new()
 	ev.current_health = current
 	ev.max_health = max_val
 	_services.event_bus.emit(EventCatalog.BOSS_HEALTH_CHANGED, ev)
