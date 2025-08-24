@@ -55,7 +55,6 @@ func setup_components(
 	if _components_initialized:
 		return
 
-	# THE FIX: Add the services locator to the shared dependencies for all components.
 	var base_shared_deps = shared_dependencies.duplicate()
 	base_shared_deps["services"] = _services
 
@@ -63,12 +62,30 @@ func setup_components(
 		if not (child is IComponent):
 			continue
 
+		var class_key: String = child.get_script().get_global_name()
+
+		# --- Dependency Validation ---
+		# We check for metadata, which can be set on the root node of the component's scene.
+		if child.has_meta("REQUIRED_DEPS"):
+			var required = child.get_meta("REQUIRED_DEPS")
+			var all_deps_for_check = base_shared_deps.duplicate()
+			if per_component_dependencies.has(child):
+				all_deps_for_check.merge(per_component_dependencies[child])
+
+			if per_component_dependencies.has(class_key):
+				all_deps_for_check.merge(per_component_dependencies[class_key])
+
+			# Use the global class name directly, no preload constant needed.
+			if not DependencyValidator.validate(child, all_deps_for_check, required):
+				push_error("Dependency validation failed for %s. Aborting entity setup." % child.name)
+				return
+		# --- End Validation ---
+
 		var merged_deps := base_shared_deps.duplicate()
 
 		if per_component_dependencies.has(child):
 			merged_deps.merge(per_component_dependencies[child])
 
-		var class_key: String = child.get_script().get_global_name()
 		if per_component_dependencies.has(class_key):
 			merged_deps.merge(per_component_dependencies[class_key])
 

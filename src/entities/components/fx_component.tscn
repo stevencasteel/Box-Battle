@@ -4,3 +4,4 @@
 
 [node name="FXComponent" type="Node"]
 script = ExtResource("1_fx")
+metadata/REQUIRED_DEPS = PackedStringArray("visual_node", "services")

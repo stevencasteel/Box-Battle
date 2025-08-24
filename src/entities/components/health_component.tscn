@@ -4,3 +4,4 @@
 
 [node name="HealthComponent" type="Node"]
 script = ExtResource("1_health")
+metadata/REQUIRED_DEPS = PackedStringArray("data_resource", "config", "services", "hit_spark_effect")

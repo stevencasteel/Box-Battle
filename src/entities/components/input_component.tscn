@@ -4,3 +4,4 @@
 
 [node name="InputComponent" type="Node"]
 script = ExtResource("1_input")
+metadata/REQUIRED_DEPS = PackedStringArray("data_resource", "config")
