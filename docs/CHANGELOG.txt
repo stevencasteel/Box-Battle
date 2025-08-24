@@ -35,6 +35,13 @@
 ║                                                                              ║
 ║                                                                              ║
 
+test(Component): Add robust unit test for InputComponent
+
+- Created a new unit test for InputComponent.
+- The test correctly implements the documented GUT pattern for input simulation by using GutInputSender, awaiting the idle signal, and manually calling _physics_process on the component to ensure correct timing.
+- This new test verifies buffering logic for axes, just_pressed, released, and held actions, significantly increasing confidence in the input system.
+
+
 test(Component): Add unit test for PlayerResourceComponent
 
 - Created a new unit test for PlayerResourceComponent, verifying all core resource-management logic.
