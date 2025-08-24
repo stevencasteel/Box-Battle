@@ -15,6 +15,7 @@ var _current_data: DialogueData
 var _current_index: int = -1
 var _dialogue_box_instance: DialogueBox
 var _ui_layer: CanvasLayer
+var _scene_transition_token: int
 
 
 func _ready() -> void:
@@ -31,9 +32,14 @@ func _ready() -> void:
 	_dialogue_box_instance.advance_requested.connect(_on_dialogue_box_advance_requested)
 	_dialogue_box_instance.typing_finished.connect(_on_typing_finished)
 
-	# THE FIX: Create a lambda function that accepts the event's payload
-	# (which we ignore with '_') and calls our zero-argument function.
-	EventBus.on(EventCatalog.SCENE_TRANSITION_STARTED, func(_payload): end_conversation())
+	_scene_transition_token = EventBus.on(
+		EventCatalog.SCENE_TRANSITION_STARTED, func(_payload): end_conversation()
+	)
+
+
+func _exit_tree() -> void:
+	# Ensure we unsubscribe from the global event bus when the game closes.
+	EventBus.off(_scene_transition_token)
 
 
 ## Checks if a conversation is currently active.
@@ -101,6 +107,10 @@ func _on_dialogue_box_advance_requested() -> void:
 
 
 func _on_typing_finished() -> void:
+	# THE FIX: Add a guard clause to prevent crash during scene transitions.
+	if not is_instance_valid(_current_data):
+		return
+
 	var line = _current_data.lines[_current_index]
 	if line.wait_after > 0.0:
 		await get_tree().create_timer(line.wait_after).timeout

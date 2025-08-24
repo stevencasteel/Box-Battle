@@ -35,6 +35,11 @@
 ║                                                                              ║
 ║                                                                              ║
 
+fix(dialogue): Add signal safety and fix race condition in DialogueManager.
+
+- Implemented `_exit_tree` in `DialogueManager` to safely unsubscribe from the `EventBus` `SCENE_TRANSITION_STARTED` event, preventing potential memory leaks.
+- Added a guard clause to the `_on_typing_finished` method to prevent a null reference crash that could occur if a scene transition happened while dialogue text was still animating.
+
 
 style: Format codebase with gdformat and add CI check.
 

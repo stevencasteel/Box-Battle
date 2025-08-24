@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 18:44:32 CDT 2025
+Generated on: Sat Aug 23 19:04:47 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -221,7 +221,6 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   │   ├── player_hit_spark_effect.tres
 │   │   │   │   ├── screen_shake_effect.gd
 │   │   │   │   ├── shader_effect.gd
-│   │   │   │   ├── shockwave_effect.tres
 │   │   │   │   └── vfx_effect.gd
 │   │   │   └── game_state_data.gd
 │   │   ├── events
@@ -247,8 +246,6 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── cursor_manager.gd
 │   │   │   ├── dialogue_manager.gd
 │   │   │   ├── fx_bindings
-│   │   │   │   ├── fullscreen_shader_binding.gd
-│   │   │   │   └── ui_shader_binding.gd
 │   │   │   ├── fx_manager.gd
 │   │   │   ├── game_manager.gd
 │   │   │   ├── object_pool.gd
@@ -456,7 +453,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-81 directories, 367 files
+81 directories, 364 files
 
 
 =====================================
@@ -4901,6 +4898,7 @@ var _current_data: DialogueData
 var _current_index: int = -1
 var _dialogue_box_instance: DialogueBox
 var _ui_layer: CanvasLayer
+var _scene_transition_token: int
 
 
 func _ready() -> void:
@@ -4917,9 +4915,14 @@ func _ready() -> void:
 	_dialogue_box_instance.advance_requested.connect(_on_dialogue_box_advance_requested)
 	_dialogue_box_instance.typing_finished.connect(_on_typing_finished)
 
-	# THE FIX: Create a lambda function that accepts the event's payload
-	# (which we ignore with '_') and calls our zero-argument function.
-	EventBus.on(EventCatalog.SCENE_TRANSITION_STARTED, func(_payload): end_conversation())
+	_scene_transition_token = EventBus.on(
+		EventCatalog.SCENE_TRANSITION_STARTED, func(_payload): end_conversation()
+	)
+
+
+func _exit_tree() -> void:
+	# Ensure we unsubscribe from the global event bus when the game closes.
+	EventBus.off(_scene_transition_token)
 
 
 ## Checks if a conversation is currently active.
@@ -4987,10 +4990,13 @@ func _on_dialogue_box_advance_requested() -> void:
 
 
 func _on_typing_finished() -> void:
+	# THE FIX: Add a guard clause to prevent crash during scene transitions.
+	if not is_instance_valid(_current_data):
+		return
+
 	var line = _current_data.lines[_current_index]
 	if line.wait_after > 0.0:
 		await get_tree().create_timer(line.wait_after).timeout
-
 
 =====================================
 FILE: ./src/core/systems/game_manager.gd
@@ -5318,26 +5324,6 @@ func _on_audio_settings_changed() -> void:
 
 
 =====================================
-FILE: ./src/core/systems/fx_bindings/fullscreen_shader_binding.gd
-=====================================
-# src/core/systems/fx_bindings/fullscreen_shader_binding.gd
-class_name FullscreenShaderBinding
-extends CanvasLayer
-
-# TODO: Manage a full-screen ColorRect to apply and animate post-processing shaders.
-
-
-=====================================
-FILE: ./src/core/systems/fx_bindings/ui_shader_binding.gd
-=====================================
-# src/core/systems/fx_bindings/ui_shader_binding.gd
-class_name UIShaderBinding
-extends Node
-
-# TODO: Manage applying shader effects to UI Control nodes.
-
-
-=====================================
 FILE: ./src/core/systems/camera_shaker.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://camera_shaker_scene_id"]
@@ -5409,7 +5395,6 @@ extends Node
 # --- Private Member Variables ---
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
-var _effect_timestamps: Dictionary = {}  # Tracks { entity_id: { effect_path: timestamp_msec } }
 
 var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
@@ -5474,42 +5459,6 @@ func play_vfx(
 
 	if vfx_instance.has_method("activate"):
 		vfx_instance.call("activate", direction)
-
-
-## The main public API for triggering a shader-based effect.
-func play_shader(effect: ShaderEffect, target_node: Node, _options: Dictionary = {}) -> void:
-	if not is_instance_valid(effect) or not is_instance_valid(target_node):
-		push_warning("FXManager.play_shader: Invalid effect or target node provided.")
-		return
-
-	var target_id = target_node.get_instance_id()
-	var effect_path = effect.resource_path
-
-	if effect.coalesce_window > 0.0:
-		var last_played_time = _effect_timestamps.get(target_id, {}).get(effect_path, 0)
-		var current_time = Time.get_ticks_msec()
-		if current_time - last_played_time < effect.coalesce_window * 1000:
-			return  # Coalesced: effect was played too recently on this target.
-
-		if not _effect_timestamps.has(target_id):
-			_effect_timestamps[target_id] = {}
-		_effect_timestamps[target_id][effect_path] = current_time
-
-	increment_shader_count()
-	var tween = get_tree().create_tween()
-	tween.tween_interval(effect.duration)
-	tween.finished.connect(decrement_shader_count, CONNECT_ONE_SHOT)
-
-	match effect.target_scope:
-		# ENTITY scope is now handled directly by FXComponent.
-		ShaderEffect.TargetScope.UI:
-			print("FXManager: Playing UI shader on ", target_node.name)
-			# TODO: Implement UIShaderBinding logic
-		ShaderEffect.TargetScope.FULLSCREEN:
-			print("FXManager: Playing FULLSCREEN shader.")
-			# TODO: Implement FullscreenShaderBinding logic
-		_:
-			push_error("FXManager: Unknown ShaderEffect.TargetScope.")
 
 
 ## Pauses the entire game tree for a short duration to add impact to an event.
@@ -5755,14 +5704,6 @@ frequency = 10.0
 duration = 1.2
 
 =====================================
-FILE: ./src/core/data/effects/shockwave_effect.tres
-=====================================
-[gd_resource type="Resource" script_class="ShaderEffect" format=3]
-
-# TODO: Configure this resource to define the shockwave effect.
-
-
-=====================================
 FILE: ./src/core/data/effects/player_hit_spark_effect.tres
 =====================================
 [gd_resource type="Resource" script_class="VFXEffect" load_steps=3 format=3 uid="uid://player_hit_spark_tres"]
@@ -5823,9 +5764,6 @@ FILE: ./src/core/data/effects/shader_effect.gd
 class_name ShaderEffect
 extends Resource
 
-## The scope determines where the shader will be applied.
-enum TargetScope { ENTITY, UI, FULLSCREEN }  # Applied to a single entity's visual node.  # Applied to a single UI control.  # Applied to the entire screen.
-
 # --- Editor Properties ---
 @export_group("Configuration")
 ## The actual ShaderMaterial resource to be applied.
@@ -5840,9 +5778,6 @@ enum TargetScope { ENTITY, UI, FULLSCREEN }  # Applied to a single entity's visu
 @export var params: Dictionary = {}
 
 @export_group("Behavior")
-## The target scope for this effect.
-@export var target_scope: TargetScope = TargetScope.ENTITY
-
 ## A priority level to resolve conflicts if multiple effects are triggered at once.
 ## Higher numbers have higher priority.
 @export var priority: int = 0
@@ -5851,7 +5786,6 @@ enum TargetScope { ENTITY, UI, FULLSCREEN }  # Applied to a single entity's visu
 ## Minimum time in seconds before this effect can be triggered again on the same target.
 ## A value of 0 disables coalescing.
 @export_range(0.0, 1.0, 0.01) var coalesce_window: float = 0.1
-
 
 =====================================
 FILE: ./src/core/data/effects/vfx_effect.gd
