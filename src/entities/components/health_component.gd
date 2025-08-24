@@ -3,7 +3,7 @@
 ## Manages all health, damage, and invincibility logic for an entity.
 ## Implements the IDamageable interface.
 class_name HealthComponent
-extends IDamageable # THE FIX: Inherit from the interface contract.
+extends IDamageable
 
 # --- Signals ---
 signal health_changed(current_health: int, max_health: int)
@@ -72,6 +72,12 @@ func teardown() -> void:
 
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	var result = DamageResult.new()
+	
+	# THE FIX: Add a guard clause to handle null input gracefully.
+	if not is_instance_valid(damage_info):
+		push_warning("HealthComponent received an invalid DamageInfo object.")
+		return result
+
 	if is_invincible() and not damage_info.bypass_invincibility:
 		return result
 

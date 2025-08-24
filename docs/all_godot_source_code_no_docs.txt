@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 24 12:51:22 CDT 2025
+Generated on: Sun Aug 24 13:21:14 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -401,6 +401,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │       └── victory_screen.tscn
 │   ├── tests
 │   │   ├── fakes
+│   │   │   ├── fake_damageable.gd
 │   │   │   ├── fake_event_bus.gd
 │   │   │   └── fake_service_locator.gd
 │   │   ├── integration
@@ -409,6 +410,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │       ├── test_combat_component.gd
 │   │       ├── test_combat_utils.gd
 │   │       ├── test_health_component.gd
+│   │       ├── test_idamageable_contract.gd
 │   │       ├── test_input_component.gd
 │   │       └── test_player_resource_component.gd
 │   ├── ui
@@ -450,7 +452,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-80 directories, 362 files
+80 directories, 364 files
 
 
 =====================================
@@ -4218,26 +4220,30 @@ FILE: ./src/core/util/combat_utils.gd
 ## An autoloaded singleton containing static helper functions for combat logic.
 extends Node
 
-
-## Traverses up the scene tree from a given node to find the first node that
-## implements the IDamageable interface (i.e., has an `apply_damage` method).
-## This is the canonical way to find a valid damage target from a collision.
-func find_damageable(from_node: Node) -> Node:
+## Traverses up the scene tree from a given node to find its root BaseEntity.
+func find_entity_root(from_node: Node) -> BaseEntity:
 	if not is_instance_valid(from_node):
 		return null
-
+	
 	var current_node = from_node
 	while is_instance_valid(current_node):
-		if current_node.has_method("apply_damage"):
+		if current_node is BaseEntity:
 			return current_node
-
-		# HealthComponent is the primary implementer, check for it directly.
-		var hc = current_node.get_node_or_null("HealthComponent")
-		if is_instance_valid(hc) and hc.has_method("apply_damage"):
-			return hc
-
 		current_node = current_node.get_parent()
+		
+	return null
 
+## Finds the IDamageable component on a target node by first finding the
+## target's entity root, then asking for the component.
+func find_damageable(from_node: Node) -> IDamageable:
+	var entity: BaseEntity = find_entity_root(from_node)
+	if is_instance_valid(entity):
+		return entity.get_component(IDamageable)
+	
+	# Fallback for non-entity damageable nodes (e.g., a simple damageable prop)
+	if from_node is IDamageable:
+		return from_node
+		
 	return null
 
 =====================================
@@ -6595,7 +6601,7 @@ func test_consume_charge_does_nothing_at_zero():
 =====================================
 FILE: ./src/tests/unit/test_health_component.gd
 =====================================
-# res://src/tests/unit/test_health_component.gd
+# src/tests/unit/test_health_component.gd
 extends GutTest
 
 # --- Constants ---
@@ -6604,6 +6610,8 @@ const PlayerStateData = preload("res://src/entities/player/data/player_state_dat
 const DamageInfo = preload("res://src/api/combat/damage_info.gd")
 const CombatConfig = preload("res://src/data/combat_config.tres")
 const VFXEffect = preload("res://src/core/data/effects/vfx_effect.gd")
+const FakeServiceLocator = preload("res://src/tests/fakes/fake_service_locator.gd")
+const IFXManager = preload("res://src/api/interfaces/IFXManager.gd")
 
 # --- Test Internals ---
 var _health_component: HealthComponent
@@ -6611,55 +6619,24 @@ var _player_data: PlayerStateData
 var _mock_owner: CharacterBody2D
 var _died_signal_was_emitted: bool
 var _took_damage_signal_was_emitted: bool
-
-# --- GUT Doubles & Autoload Management ---
-var ServiceLocatorScript: GDScript
-var FXManagerScript: GDScript
-var sl_double: Node                    # ServiceLocator double (will be added under /root)
-var fx_autoload_double: Node           # FXManager autoload double (will be added under /root)
-var _orig_sl_autoload: Node            # original ServiceLocator node if present
-var _orig_fx_autoload: Node            # original FXManager node if present
-
-func before_all() -> void:
-	# Load at runtime to avoid parse-time preloads / circulars
-	ServiceLocatorScript = load("res://src/core/util/service_locator.gd")
-	FXManagerScript = load("res://src/core/systems/fx_manager.gd")
+var _fake_services: FakeServiceLocator
+var _fx_manager_double
 
 func before_each() -> void:
 	_died_signal_was_emitted = false
 	_took_damage_signal_was_emitted = false
 
-	# --- Prepare ServiceLocator double (unparented) ---
-	sl_double = partial_double(ServiceLocatorScript).new()
-	# We'll add sl_double under /root later.
+	# 1. Create a double for the FXManager interface
+	_fx_manager_double = double(IFXManager).new()
+	stub(_fx_manager_double, "play_vfx").to_do_nothing()
+	add_child_autofree(_fx_manager_double)
 
-	# --- Park and replace real FXManager autoload (if present) ---
-	_orig_fx_autoload = get_tree().root.get_node_or_null("FXManager")
-	if is_instance_valid(_orig_fx_autoload):
-		_orig_fx_autoload.name = "__FXManager_Parked"
+	# 2. Create our robust FakeServiceLocator and inject the double
+	_fake_services = FakeServiceLocator.new()
+	_fake_services.mock_fx_manager = _fx_manager_double
+	add_child_autofree(_fake_services)
 
-	# Create a GUT double for FXManager and add it into /root as the autoload replacement.
-	# We intentionally use GUT's plain double so lifecycle/init isn't run.
-	fx_autoload_double = double(FXManagerScript).new()
-	stub(fx_autoload_double, "play_vfx").to_do_nothing()  # ensure operations called by SUT are inert
-	fx_autoload_double.name = "FXManager"
-	get_tree().root.add_child(fx_autoload_double)
-	await get_tree().process_frame
-
-	# --- Wire ServiceLocator's fx_manager reference to autoload double so both paths align ---
-	sl_double.fx_manager = fx_autoload_double
-
-	# --- Park and replace real ServiceLocator autoload (if present) ---
-	_orig_sl_autoload = get_tree().root.get_node_or_null("ServiceLocator")
-	if is_instance_valid(_orig_sl_autoload):
-		_orig_sl_autoload.name = "__ServiceLocator_Parked"
-
-	# Add ServiceLocator double to root so production code finds it by name
-	sl_double.name = "ServiceLocator"
-	get_tree().root.add_child(sl_double)
-	await get_tree().process_frame
-
-	# --- Setup test subject ---
+	# 3. Setup test subject
 	_mock_owner = CharacterBody2D.new()
 	add_child_autofree(_mock_owner)
 
@@ -6671,14 +6648,13 @@ func before_each() -> void:
 	_health_component = HealthComponent.new()
 	_mock_owner.add_child(_health_component)
 
-	# Provide a VFXEffect with a pool_key (defensive; shouldn't be used by double)
 	var vfx = VFXEffect.new()
 	vfx.pool_key = "test_hit_spark"
 
 	var dependencies = {
 		"data_resource": _player_data,
 		"config": CombatConfig,
-		"services": sl_double,
+		"services": _fake_services,
 		"hit_spark_effect": vfx
 	}
 	_health_component.setup(_mock_owner, dependencies)
@@ -6686,41 +6662,8 @@ func before_each() -> void:
 	_health_component.died.connect(func(): _died_signal_was_emitted = true)
 	_health_component.took_damage.connect(func(_d, _r): _took_damage_signal_was_emitted = true)
 
-func after_each() -> void:
-	# --- Remove ServiceLocator double ---
-	if is_instance_valid(sl_double):
-		if sl_double.get_parent() == get_tree().root:
-			sl_double.queue_free()
-			await get_tree().process_frame
 
-	# --- Remove FXManager autoload double ---
-	if is_instance_valid(fx_autoload_double):
-		if fx_autoload_double.get_parent() == get_tree().root:
-			fx_autoload_double.queue_free()
-			await get_tree().process_frame
-
-	# --- Try to restore original FXManager autoload if it was parked ---
-	if is_instance_valid(_orig_fx_autoload):
-		# If something currently owns the name "FXManager", remove it first (shouldn't happen)
-		var conflict_fx := get_tree().root.get_node_or_null("FXManager")
-		if conflict_fx and conflict_fx != _orig_fx_autoload:
-			conflict_fx.queue_free()
-			await get_tree().process_frame
-
-		if is_instance_valid(_orig_fx_autoload):
-			_orig_fx_autoload.name = "FXManager"
-
-	# --- Restore original ServiceLocator autoload if it was parked ---
-	if is_instance_valid(_orig_sl_autoload):
-		var conflict_sl := get_tree().root.get_node_or_null("ServiceLocator")
-		if conflict_sl and conflict_sl != _orig_sl_autoload:
-			conflict_sl.queue_free()
-			await get_tree().process_frame
-
-		if is_instance_valid(_orig_sl_autoload):
-			_orig_sl_autoload.name = "ServiceLocator"
-
-# --- Tests ---
+# --- The Tests ---
 func test_initial_health_is_max_health():
 	assert_eq(_player_data.health, 10, "Health should be max health at start.")
 
@@ -6755,6 +6698,68 @@ func test_died_signal_emitted_at_zero_health():
 	assert_true(_died_signal_was_emitted, "The 'died' signal should have been emitted.")
 	assert_eq(_player_data.health, 0, "Health should be 0 after lethal damage.")
 
+=====================================
+FILE: ./src/tests/unit/test_idamageable_contract.gd
+=====================================
+# src/tests/unit/test_idamageable_contract.gd
+extends GutTest
+
+# --- Constants & Preloads ---
+const HealthComponent = preload("res://src/entities/components/health_component.gd")
+const FakeDamageable = preload("res://src/tests/fakes/fake_damageable.gd")
+const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
+const DamageInfo = preload("res://src/api/combat/damage_info.gd")
+const FakeServiceLocator = preload("res://src/tests/fakes/fake_service_locator.gd")
+
+# --- Test Internals ---
+var _mock_owner: CharacterBody2D # THE FIX: Changed type from Node
+var _fake_services: FakeServiceLocator
+
+# --- Test Lifecycle ---
+func before_each():
+	_mock_owner = CharacterBody2D.new() # THE FIX: Instantiate the correct type
+	add_child_autofree(_mock_owner)
+	
+	_fake_services = FakeServiceLocator.new()
+	add_child_autofree(_fake_services)
+
+# --- The Contract Test Suite ---
+
+func _run_contract_tests(damageable: IDamageable, name: String) -> void:
+	# Contract Rule 1: It must return a valid DamageResult object.
+	var result = damageable.apply_damage(DamageInfo.new())
+	assert_is(result, DamageResult, "Contract Failure (%s): apply_damage must return a DamageResult." % name)
+	
+	# Contract Rule 2: It must not crash when given a null DamageInfo.
+	var null_result = damageable.apply_damage(null)
+	assert_is(null_result, DamageResult, "Contract Failure (%s): Must handle null DamageInfo gracefully." % name)
+
+
+# --- The Tests ---
+
+func test_health_component_fulfills_contract():
+	var health_comp = HealthComponent.new()
+	_mock_owner.add_child(health_comp)
+	
+	var data = PlayerStateData.new()
+	data.max_health = 10
+	var deps = {
+		"data_resource": data,
+		"config": preload("res://src/data/combat_config.tres"),
+		"services": _fake_services,
+		"hit_spark_effect": preload("res://src/core/data/effects/player_hit_spark_effect.tres")
+	}
+	# THE FIX: Pass the correctly typed owner node
+	health_comp.setup(_mock_owner, deps)
+	
+	_run_contract_tests(health_comp, "HealthComponent")
+
+
+func test_fake_damageable_fulfills_contract():
+	var fake_damageable = FakeDamageable.new()
+	_mock_owner.add_child(fake_damageable)
+	
+	_run_contract_tests(fake_damageable, "FakeDamageable")
 
 =====================================
 FILE: ./src/tests/unit/test_combat_utils.gd
@@ -6763,75 +6768,64 @@ FILE: ./src/tests/unit/test_combat_utils.gd
 extends GutTest
 
 # --- Constants ---
-# We no longer preload CombatUtils here, as we'll get it from the tree.
+const BaseEntity = preload("res://src/entities/base_entity.gd")
 const HealthComponent = preload("res://src/entities/components/health_component.gd")
+const IDamageable = preload("res://src/api/interfaces/IDamageable.gd")
+const EntityArchetype = preload("res://src/entities/archetypes/entity_archetype.gd")
 
 # --- Test Internals ---
-var _combat_utils # Will hold the instance of the singleton
-var _root: Node
-var _parent_with_health_component: Node
-var _damageable_child: HealthComponent
-var _non_damageable_grandchild: Node
+var _combat_utils
+var _mock_entity: BaseEntity
+var _health_component: HealthComponent
+var _non_damageable_child: Node
 
 # --- Test Lifecycle ---
 
 func before_all():
-	# Get the singleton instance from the SceneTree once.
-	# This requires the test to run in the context of a scene, which GUT provides.
 	_combat_utils = get_node("/root/CombatUtils")
 
 
 func before_each():
-	# Create a simple scene tree for testing tree traversal.
-	# Root -> ParentWithHealthComponent -> NonDamageableGrandchild
-	# The HealthComponent is attached to the Parent.
-	_root = Node.new()
-	add_child_autofree(_root) # gut will free this node after the test
+	# Create a scene tree: MockEntity -> HealthComponent
+	#                                -> NonDamageableChild
+	_mock_entity = BaseEntity.new()
+	# THE FIX: Provide a dummy archetype to prevent errors in _ready().
+	_mock_entity.archetype = EntityArchetype.new()
+	add_child_autofree(_mock_entity)
 
-	_parent_with_health_component = Node2D.new()
-	_parent_with_health_component.name = "Parent"
-	_root.add_child(_parent_with_health_component)
+	_health_component = HealthComponent.new()
+	_mock_entity.add_child(_health_component)
+	_mock_entity._cache_components_by_type()
 
-	_damageable_child = HealthComponent.new()
-	_damageable_child.name = "HealthComponent" # This name is important for some lookups
-	_parent_with_health_component.add_child(_damageable_child)
-
-	_non_damageable_grandchild = Node2D.new()
-	_non_damageable_grandchild.name = "Grandchild"
-	_parent_with_health_component.add_child(_non_damageable_grandchild)
+	_non_damageable_child = Node2D.new()
+	_mock_entity.add_child(_non_damageable_child)
 
 
 # --- The Tests ---
 
-func test_find_damageable_returns_correct_node_when_starting_from_parent():
-	# Scenario 1: We start searching from a node that has a damageable component as a child.
-	# The function should find the HealthComponent on its child.
-	var result = _combat_utils.find_damageable(_parent_with_health_component)
+func test_find_damageable_returns_component_when_starting_from_entity():
+	var result = _combat_utils.find_damageable(_mock_entity)
 	assert_same(
 		result,
-		_damageable_child,
-		"Should find the HealthComponent node when starting from its parent."
+		_health_component,
+		"Should find the IDamageable component when starting from the entity root."
 	)
 
 
-func test_find_damageable_returns_ancestor_if_child_is_not_damageable():
-	# Scenario 2: We start searching from a node that is not damageable itself.
-	# The function should traverse UP the tree and find the HealthComponent on its parent.
-	var result = _combat_utils.find_damageable(_non_damageable_grandchild)
+func test_find_damageable_returns_component_when_starting_from_child():
+	var result = _combat_utils.find_damageable(_non_damageable_child)
 	assert_same(
 		result,
-		_damageable_child,
-		"Should traverse up and find the HealthComponent on the parent."
+		_health_component,
+		"Should traverse up to the entity root and find the component when starting from a child."
 	)
 
 
-func test_find_damageable_returns_null_if_no_damageable_ancestor_exists():
-	# Scenario 3: We create a node that is not in our test hierarchy.
-	# The function should find nothing and return null.
+func test_find_damageable_returns_null_if_no_entity_ancestor_exists():
 	var standalone_node = Node2D.new()
 	add_child_autofree(standalone_node)
 	var result = _combat_utils.find_damageable(standalone_node)
-	assert_null(result, "Should return null when no damageable parent is found.")
+	assert_null(result, "Should return null when no BaseEntity ancestor is found.")
 
 =====================================
 FILE: ./src/tests/unit/test_combat_component.gd
@@ -6839,31 +6833,80 @@ FILE: ./src/tests/unit/test_combat_component.gd
 # src/tests/unit/test_combat_component.gd
 extends GutTest
 
-# --- TODO: Refactor test suite for CombatComponent ---
-# This test suite is temporarily disabled due to complex dependency issues.
-# The component relies on multiple autoloaded singletons (ServiceLocator,
-# ObjectPool, CombatUtils, FXManager) which have strict, interdependent
-# static types.
-#
-# Our attempts to create a test harness using GUT's `partial_double` and
-# fake classes that `extend` the real singletons failed at the script parsing
-# stage with the error: "Cannot use variable in extends chain". This is a
-# fundamental limitation of GDScript.
-#
-# These tests are marked as pending to allow the rest of the test suite to pass
-# cleanly. This file should be revisited after further research into advanced
-# patterns for mocking interdependent, statically-typed autoloads. The next
-# attempt should likely involve creating the fake classes in separate files
-# and using `load()` within the test functions themselves.
+# --- Constants & Preloads ---
+const CombatComponent = preload("res://src/entities/components/combat_component.gd")
+const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
+const CombatConfig = preload("res://src/data/combat_config.tres")
+const Identifiers = preload("res://src/core/util/identifiers.gd")
+const DamageInfo = preload("res://src/api/combat/damage_info.gd")
+const FakeServiceLocator = preload("res://src/tests/fakes/fake_service_locator.gd")
+const IObjectPool = preload("res://src/api/interfaces/IObjectPool.gd")
+const ICombatUtils = preload("res://src/core/util/combat_utils.gd")
+const IFXManager = preload("res://src/api/interfaces/IFXManager.gd")
+const FakeDamageable = preload("res://src/tests/fakes/fake_damageable.gd")
 
-func test_fire_shot_requests_correct_pool():
-	pending("Pending: Requires a working mock for ObjectPool via ServiceLocator.")
+# --- Test Internals ---
+var _combat_component: CombatComponent
+var _mock_owner: CharacterBody2D
+var _player_data: PlayerStateData
+var _fake_services: FakeServiceLocator
+var _pool_double
+var _combat_utils_double
+var _fx_manager_double
+
+# --- Test Lifecycle ---
+func before_each():
+	# 1. Create doubles for all dependencies
+	_pool_double = double(IObjectPool).new()
+	_pool_double.spy_on("get_instance") # THE FIX: Spy on the method of the double.
+	stub(_pool_double, "get_instance").to_return(Area2D.new())
+	add_child_autofree(_pool_double)
+
+	_combat_utils_double = double(ICombatUtils).new()
+	add_child_autofree(_combat_utils_double)
+
+	_fx_manager_double = double(IFXManager).new()
+	stub(_fx_manager_double, "request_hit_stop").to_do_nothing()
+	add_child_autofree(_fx_manager_double)
+	
+	# 2. Setup the Fake Service Locator with our doubles
+	_fake_services = FakeServiceLocator.new()
+	_fake_services.mock_object_pool = _pool_double
+	_fake_services.mock_combat_utils = _combat_utils_double
+	_fake_services.mock_fx_manager = _fx_manager_double
+	add_child_autofree(_fake_services)
+	
+	# 3. Setup the component under test
+	_mock_owner = CharacterBody2D.new()
+	add_child_autofree(_mock_owner)
+	
+	_player_data = PlayerStateData.new()
+	_player_data.config = CombatConfig
+	
+	_combat_component = CombatComponent.new()
+	_mock_owner.add_child(_combat_component)
+	
+	var dependencies = {"data_resource": _player_data, "services": _fake_services}
+	_combat_component.setup(_mock_owner, dependencies)
+
+# --- The Tests ---
+func test_fire_shot_requests_from_correct_pool():
+	_combat_component.fire_shot()
+	# THE FIX: Use the correct assertion method for spies.
+	assert_called_with(_pool_double, "get_instance", [Identifiers.Pools.PLAYER_SHOTS])
+
 
 func test_trigger_melee_attack_damages_target():
-	pending("Pending: Requires mocks for CombatUtils, FXManager, and a fake Damageable.")
+	var fake_target = Node2D.new()
+	add_child_autofree(fake_target)
+	var fake_damageable = FakeDamageable.new()
+	fake_target.add_child(fake_damageable)
 
-func test_trigger_pogo_returns_projectile_to_pool():
-	pending("Pending: Requires mocks for ObjectPool and CombatUtils.")
+	stub(_combat_utils_double, "find_damageable").to_return(fake_damageable)
+	
+	_combat_component.trigger_melee_attack(fake_target)
+	
+	assert_true(fake_damageable.was_damage_applied, "The target's apply_damage method should ha
 
 =====================================
 FILE: ./src/tests/fakes/fake_event_bus.gd
@@ -6914,8 +6957,11 @@ class_name FakeServiceLocator
 extends "res://src/core/util/service_locator.gd"
 
 # --- Fake Service Properties ---
-# We will place our fakes here before the node is ready.
 var mock_event_bus: Node
+var mock_fx_manager: Node
+var mock_object_pool: Node
+var mock_combat_utils: Node
+
 
 func _ready() -> void:
 	# This _ready function is crucial. It overrides the parent's _ready,
@@ -6925,6 +6971,50 @@ func _ready() -> void:
 	# we now overwrite them with our mocks for the test.
 	if is_instance_valid(mock_event_bus):
 		self.event_bus = mock_event_bus
+	if is_instance_valid(mock_fx_manager):
+		self.fx_manager = mock_fx_manager
+	if is_instance_valid(mock_object_pool):
+		self.object_pool = mock_object_pool
+	if is_instance_valid(mock_combat_utils):
+		self.combat_utils = mock_combat_utils
+
+=====================================
+FILE: ./src/tests/fakes/fake_damageable.gd
+=====================================
+# src/tests/fakes/fake_damageable.gd
+## A test-double (fake) that implements the IDamageable interface for use in unit tests.
+## It records damage events and allows tests to inspect what happened.
+class_name FakeDamageable
+extends IDamageable
+
+# --- Test Seams & Recorders ---
+var was_damage_applied: bool = false
+var last_damage_info: DamageInfo = null
+var return_result: DamageResult = DamageResult.new() # Pre-configured result to return
+
+
+func setup(_p_owner: Node, _p_dependencies: Dictionary = {}) -> void:
+	# IComponent contract requires this method.
+	pass
+
+
+func teardown() -> void:
+	# IComponent contract requires this method.
+	pass
+
+
+func apply_damage(damage_info: DamageInfo) -> DamageResult:
+	was_damage_applied = true
+	last_damage_info = damage_info
+	return return_result
+
+
+## Resets the state of the fake for the next test.
+func reset() -> void:
+	was_damage_applied = false
+	last_damage_info = null
+	return_result = DamageResult.new()
+
 
 =====================================
 FILE: ./src/vfx/hit_spark.gd
@@ -7082,6 +7172,7 @@ extends Node
 func _ready() -> void:
 	# Preload all interfaces and critical base classes to register them globally.
 	preload("res://src/api/interfaces/IComponent.gd")
+	# IDamageable now extends IComponent, so we preload it after.
 	preload("res://src/api/interfaces/IDamageable.gd")
 	preload("res://src/api/interfaces/IPoolable.gd")
 	preload("res://src/api/interfaces/ISceneController.gd")
@@ -7196,20 +7287,20 @@ func scene_exiting() -> void:
 FILE: ./src/api/interfaces/IDamageable.gd
 =====================================
 # src/api/interfaces/IDamageable.gd
-## The "interface" contract for any object that can take damage.
+## The "interface" contract for any component that can take damage.
+## By extending IComponent, it ensures that any damageable object
+## also respects the standard component lifecycle (setup, teardown).
 class_name IDamageable
-extends Node
+extends IComponent
 
-# --- The Contract ---
-
+# --- The Contract (Virtual Method) ---
 
 ## Applies damage to the object.
 ## [param damage_info]: A [DamageInfo] resource detailing the damage event.
 ## [return]: A [DamageResult] resource indicating the outcome.
 func apply_damage(_damage_info: DamageInfo) -> DamageResult:
-	# This is a virtual method and should be overridden by implementers.
+	push_warning("IDamageable.apply_damage() was called but not overridden by the implementer.")
 	return DamageResult.new()
-
 
 =====================================
 FILE: ./src/api/interfaces/IComponent.gd
@@ -7949,6 +8040,7 @@ extends CharacterBody2D
 var _components_initialized: bool = false
 var _services: ServiceLocator
 var _components: Dictionary = {}
+var _components_by_interface: Dictionary = {} # NEW: Cache for interface lookups
 
 # --- Godot Lifecycle Methods ---
 
@@ -7962,9 +8054,17 @@ func _ready() -> void:
 # --- Public Methods ---
 
 
-## Retrieves a component from this entity by its script type.
+## Retrieves a component from this entity by its script type or an interface it implements.
 func get_component(type: Script) -> IComponent:
-	return _components.get(type)
+	# First, try a direct lookup by the component's concrete class.
+	if _components.has(type):
+		return _components.get(type)
+	
+	# If that fails, try looking up by an implemented interface.
+	if _components_by_interface.has(type):
+		return _components_by_interface.get(type)
+		
+	return null
 
 
 ## Helper that asserts and provides a clear error if a required component is missing.
@@ -7975,7 +8075,6 @@ func require_component(type: Script) -> IComponent:
 	return c
 
 
-## Called by the entity creator (ArenaBuilder) before the entity enters the scene tree.
 func inject_dependencies(p_services: ServiceLocator) -> void:
 	_services = p_services
 
@@ -7986,7 +8085,6 @@ func teardown() -> void:
 			child.teardown()
 
 
-## Initializes all attached components after dependencies have been injected.
 func setup_components(
 	shared_dependencies: Dictionary = {}, per_component_dependencies: Dictionary = {}
 ) -> void:
@@ -8002,22 +8100,18 @@ func setup_components(
 
 		var class_key: String = child.get_script().get_global_name()
 
-		# --- Dependency Validation ---
-		# We check for metadata, which can be set on the root node of the component's scene.
 		if child.has_meta("REQUIRED_DEPS"):
 			var required = child.get_meta("REQUIRED_DEPS")
 			var all_deps_for_check = base_shared_deps.duplicate()
 			if per_component_dependencies.has(child):
 				all_deps_for_check.merge(per_component_dependencies[child])
-
+			
 			if per_component_dependencies.has(class_key):
 				all_deps_for_check.merge(per_component_dependencies[class_key])
 
-			# Use the global class name directly, no preload constant needed.
 			if not DependencyValidator.validate(child, all_deps_for_check, required):
 				push_error("Dependency validation failed for %s. Aborting entity setup." % child.name)
 				return
-		# --- End Validation ---
 
 		var merged_deps := base_shared_deps.duplicate()
 
@@ -8053,11 +8147,21 @@ func _build_from_archetype() -> void:
 
 func _cache_components_by_type() -> void:
 	_components.clear()
+	_components_by_interface.clear()
+	
 	for child in get_children():
 		if not child is IComponent:
 			continue
 
-		_components[child.get_script()] = child
+		var component_script: Script = child.get_script()
+		_components[component_script] = child
+		
+		var base_script: Script = component_script.get_base_script()
+		while is_instance_valid(base_script):
+			if base_script.resource_path.is_empty() or base_script == IComponent:
+				break
+			_components_by_interface[base_script] = child
+			base_script = base_script.get_base_script()
 
 
 =====================================
@@ -9363,8 +9467,9 @@ FILE: ./src/entities/components/health_component.gd
 # src/entities/components/health_component.gd
 @tool
 ## Manages all health, damage, and invincibility logic for an entity.
+## Implements the IDamageable interface.
 class_name HealthComponent
-extends IComponent
+extends IDamageable
 
 # --- Signals ---
 signal health_changed(current_health: int, max_health: int)
@@ -9382,8 +9487,8 @@ var _knockback_speed: float
 var _hazard_knockback_speed: float
 var _invincibility_tokens: Dictionary = {}
 var _next_token_id: int = 1
-var _services: ServiceLocator  # Dependency
-var _hit_spark_effect: VFXEffect  # Dependency
+var _services: ServiceLocator
+var _hit_spark_effect: VFXEffect
 
 # --- Godot Lifecycle Methods ---
 
@@ -9393,23 +9498,7 @@ func _notification(what: int) -> void:
 		teardown()
 
 
-# --- Public Methods ---
-
-
-func is_invincible() -> bool:
-	return not _invincibility_tokens.is_empty()
-
-
-func grant_invincibility(requester: Object) -> int:
-	var token_id = _next_token_id
-	_next_token_id += 1
-	_invincibility_tokens[token_id] = requester.get_instance_id()
-	return token_id
-
-
-func release_invincibility(token: int) -> void:
-	if _invincibility_tokens.has(token):
-		_invincibility_tokens.erase(token)
+# --- Public Methods (IComponent Contract) ---
 
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
@@ -9444,8 +9533,17 @@ func teardown() -> void:
 	_hit_spark_effect = null
 
 
+# --- Public Methods (IDamageable Contract) ---
+
+
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	var result = DamageResult.new()
+	
+	# THE FIX: Add a guard clause to handle null input gracefully.
+	if not is_instance_valid(damage_info):
+		push_warning("HealthComponent received an invalid DamageInfo object.")
+		return result
+
 	if is_invincible() and not damage_info.bypass_invincibility:
 		return result
 
@@ -9475,6 +9573,25 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	return result
 
 
+# --- Public Methods (HealthComponent Specific) ---
+
+
+func is_invincible() -> bool:
+	return not _invincibility_tokens.is_empty()
+
+
+func grant_invincibility(requester: Object) -> int:
+	var token_id = _next_token_id
+	_next_token_id += 1
+	_invincibility_tokens[token_id] = requester.get_instance_id()
+	return token_id
+
+
+func release_invincibility(token: int) -> void:
+	if _invincibility_tokens.has(token):
+		_invincibility_tokens.erase(token)
+
+
 # --- Private Methods ---
 func _check_for_threshold_crossing(health_before: int, health_after: int) -> void:
 	if not owner_node.has_method("get_health_thresholds"):
@@ -9495,7 +9612,6 @@ func _calculate_knockback(source: Node) -> Vector2:
 	if source.is_in_group(Identifiers.Groups.HAZARD):
 		speed = _hazard_knockback_speed
 	return (knockback_dir + Vector2.UP * 0.5).normalized() * speed
-
 
 =====================================
 FILE: ./src/entities/components/base_state_machine.tscn
