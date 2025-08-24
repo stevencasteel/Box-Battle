@@ -8,6 +8,9 @@ extends BaseEntity
 const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Configuration ---
+@export_group("Core Configuration")
+@export var behavior: MinionBehavior
+@export_group("Juice & Feedback")
 @export var hit_spark_effect: VFXEffect
 @export var dissolve_effect: ShaderEffect
 
@@ -26,6 +29,15 @@ var _is_dead: bool = false
 # --- Godot Lifecycle Methods ---
 
 
+func _get_configuration_warnings() -> PackedStringArray:
+	var warnings := PackedStringArray()
+	if not archetype:
+		warnings.append("This node requires an EntityArchetype resource.")
+	if not behavior:
+		warnings.append("This node requires a MinionBehavior resource to function.")
+	return warnings
+
+
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint():
@@ -36,6 +48,11 @@ func _ready() -> void:
 	_connect_signals()
 
 	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
+
+
+func _physics_process(_delta: float) -> void:
+	if not _is_dead:
+		move_and_slide()
 
 
 func _notification(what: int) -> void:
@@ -74,9 +91,16 @@ func _fire_at_player() -> void:
 	if not is_instance_valid(_player):
 		return
 
-	var shot = _services.object_pool.get_instance(Identifiers.Pools.TURRET_SHOTS)
+	var pool_key: StringName = entity_data.behavior.projectile_pool_key
+	var shot: Node = _services.object_pool.get_instance(pool_key)
 	if not is_instance_valid(shot):
+		push_error("Minion failed to get projectile from pool: '%s'" % pool_key)
 		return
+
+	# Look towards player before firing
+	var dir_to_player: float = _player.global_position.x - global_position.x
+	if not is_zero_approx(dir_to_player):
+		entity_data.facing_direction = sign(dir_to_player)
 
 	shot.direction = (self._player.global_position - self.global_position).normalized()
 	shot.global_position = self.global_position
@@ -106,23 +130,29 @@ func _initialize_data() -> void:
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
 	entity_data = MinionStateData.new()
 	assert(is_instance_valid(_services), "Minion requires a ServiceLocator.")
-	entity_data.config = _services.combat_config
+
+	assert(is_instance_valid(behavior), "Minion requires a valid MinionBehavior resource.")
+	entity_data.behavior = behavior
+	entity_data.max_health = behavior.max_health
+	# THE FIX: Provide the services to the shared state data.
+	entity_data.services = _services
 
 
 func _initialize_and_setup_components() -> void:
-	var circle_shape = CircleShape2D.new()
-	circle_shape.radius = entity_data.config.turret_detection_radius
+	var circle_shape := CircleShape2D.new()
+	circle_shape.radius = entity_data.behavior.detection_radius
 	range_detector_shape.shape = circle_shape
-
-	attack_timer.wait_time = entity_data.config.turret_fire_rate
 
 	var hc: HealthComponent = get_component(HealthComponent)
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	var fc: FXComponent = get_component(FXComponent)
 
-	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
+	var shared_deps := {
+		"data_resource": entity_data,
+		"config": _services.combat_config
+	}
 
-	var states = {
+	var states: Dictionary = {
 		Identifiers.MinionStates.IDLE:
 		load("res://src/entities/minions/states/state_minion_idle.gd").new(self, sm, entity_data),
 		Identifiers.MinionStates.ATTACK:

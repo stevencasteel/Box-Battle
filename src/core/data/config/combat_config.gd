@@ -55,10 +55,6 @@ extends Resource
 @export_group("Boss - Lunge Attack")
 @export_range(500, 3000, 50) var boss_lunge_speed: float = 1200.0
 
-@export_group("Minion - Turret")
-@export_range(0.5, 5.0, 0.1) var turret_fire_rate: float = 2.0
-@export_range(100, 1000, 10) var turret_detection_radius: float = 400.0
-
 @export_group("Projectiles")
 @export_range(1, 20, 1) var homing_shot_damage: int = 1
 @export_range(100, 1000, 10) var homing_shot_speed: float = 250.0

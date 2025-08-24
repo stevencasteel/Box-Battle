@@ -4,7 +4,8 @@ class_name MinionStateData
 extends Resource
 
 # --- Configuration Reference ---
-var config: CombatConfig
+var behavior: MinionBehavior
+var services: ServiceLocator
 
 # --- Health & Combat ---
 var max_health: int = 3
@@ -16,3 +17,6 @@ var is_invincible: bool = false
 
 # --- Targeting ---
 var is_player_in_range: bool = false
+
+# --- Physics & Movement ---
+var facing_direction: float = -1.0

@@ -35,6 +35,17 @@
 ║                                                                              ║
 ║                                                                              ║
 
+feat(Minions): Implement data-driven minion behavior framework
+
+Completes the P2 task to expand the use of Resource-driven design, refactoring the hard-coded Turret into a generic, compositional Minion system.
+
+- Renamed all "Turret" assets and code to a generic "Minion" to serve as a base for all future non-boss enemies.
+- Created a new `MovementLogic` Resource system (Strategy Pattern) to define interchangeable movement behaviors (e.g., Stationary, Patrol).
+- Created a new `MinionBehavior` Resource to act as a central "brain," combining stats, movement logic, and attack properties into a single configurable file.
+- The `Minion` entity is now fully data-driven. Its `_ready()` and state machine logic read from the assigned `MinionBehavior` resource, delegating all movement and attack decisions to the appropriate logic resources.
+- Removed now-redundant turret properties from the global `CombatConfig`, fully decoupling minion configuration from global settings.
+
+
 refactor(Minions): Rename Turret assets to generic Minion
 
 Initiates the elevated minion framework refactor.
