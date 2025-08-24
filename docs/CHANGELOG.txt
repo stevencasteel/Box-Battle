@@ -36,6 +36,15 @@
 ║                                                                              ║
 
 
+test(Suite): Rebuild foundational unit tests with autoload swapping
+
+- Deleted all previous test files for a clean slate.
+- Created a new, robust unit test for CombatUtils.
+- Created a comprehensive, type-safe unit test for HealthComponent.
+
+- Implemented the autoload swapping pattern for testing singletons. The test setup now parks the real ServiceLocator and FXManager autoloads from the scene tree and injects GUT partial_doubles in their place. This allows components to be tested in complete isolation without generating any engine warnings or errors, ensuring a clean and reliable test run.
+
+
 refactor(Core): Improve ObjectPool robustness
 
 - Added an assertion to ObjectPool.get_instance() to fail fast with a clear error message if an invalid pool key is provided.

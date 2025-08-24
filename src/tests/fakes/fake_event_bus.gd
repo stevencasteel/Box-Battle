@@ -13,7 +13,6 @@ var _emitted_events: Array[Dictionary] = []
 ## Records an emitted event for later inspection.
 func emit(event_name: StringName, payload = null) -> void:
 	_emitted_events.append({"name": event_name, "payload": payload})
-	print("FakeEventBus: Emitted '%s'" % event_name)  # TODO: Remove this print after verification
 
 
 ## A no-op implementation for the 'on' method.

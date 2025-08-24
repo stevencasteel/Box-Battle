@@ -2,50 +2,72 @@
 extends GutTest
 
 # --- Constants ---
-const CombatUtils = preload("res://src/core/util/combat_utils.gd")
+# We no longer preload CombatUtils here, as we'll get it from the tree.
 const HealthComponent = preload("res://src/entities/components/health_component.gd")
 
 # --- Test Internals ---
+var _combat_utils # Will hold the instance of the singleton
 var _root: Node
-var _parent: Node
-var _damageable_child: HealthComponent  # This IS the damageable node now
+var _parent_with_health_component: Node
+var _damageable_child: HealthComponent
 var _non_damageable_grandchild: Node
 
 # --- Test Lifecycle ---
 
+func before_all():
+	# Get the singleton instance from the SceneTree once.
+	# This requires the test to run in the context of a scene, which GUT provides.
+	_combat_utils = get_node("/root/CombatUtils")
+
 
 func before_each():
 	# Create a simple scene tree for testing tree traversal.
-	# Root -> Parent -> DamageableChild (HealthComponent) -> NonDamageableGrandchild
+	# Root -> ParentWithHealthComponent -> NonDamageableGrandchild
+	# The HealthComponent is attached to the Parent.
 	_root = Node.new()
-	add_child(_root)
+	add_child_autofree(_root) # gut will free this node after the test
 
-	_parent = Node2D.new()
-	_parent.name = "Parent"
-	_root.add_child(_parent)
+	_parent_with_health_component = Node2D.new()
+	_parent_with_health_component.name = "Parent"
+	_root.add_child(_parent_with_health_component)
 
 	_damageable_child = HealthComponent.new()
-	_damageable_child.name = "HealthComponent"
-	_parent.add_child(_damageable_child)
+	_damageable_child.name = "HealthComponent" # This name is important for some lookups
+	_parent_with_health_component.add_child(_damageable_child)
 
 	_non_damageable_grandchild = Node2D.new()
-	_non_damageable_grandchild.name = "NonDamageableGrandchild"
-	_damageable_child.add_child(_non_damageable_grandchild)
+	_non_damageable_grandchild.name = "Grandchild"
+	_parent_with_health_component.add_child(_non_damageable_grandchild)
 
 
-func test_find_damageable_returns_self_if_damageable():
-	var result = CombatUtils.find_damageable(_damageable_child)
-	assert_same(result, _damageable_child, "Should return the node itself if it's damageable.")
+# --- The Tests ---
+
+func test_find_damageable_returns_correct_node_when_starting_from_parent():
+	# Scenario 1: We start searching from a node that has a damageable component as a child.
+	# The function should find the HealthComponent on its child.
+	var result = _combat_utils.find_damageable(_parent_with_health_component)
+	assert_same(
+		result,
+		_damageable_child,
+		"Should find the HealthComponent node when starting from its parent."
+	)
 
 
 func test_find_damageable_returns_ancestor_if_child_is_not_damageable():
-	var result = CombatUtils.find_damageable(_non_damageable_grandchild)
+	# Scenario 2: We start searching from a node that is not damageable itself.
+	# The function should traverse UP the tree and find the HealthComponent on its parent.
+	var result = _combat_utils.find_damageable(_non_damageable_grandchild)
 	assert_same(
-		result, _damageable_child, "Should traverse up and find the ancestor HealthComponent."
+		result,
+		_damageable_child,
+		"Should traverse up and find the HealthComponent on the parent."
 	)
 
 
 func test_find_damageable_returns_null_if_no_damageable_ancestor_exists():
-	var standalone_node = autofree(Node2D.new())
-	var result = CombatUtils.find_damageable(standalone_node)
+	# Scenario 3: We create a node that is not in our test hierarchy.
+	# The function should find nothing and return null.
+	var standalone_node = Node2D.new()
+	add_child_autofree(standalone_node)
+	var result = _combat_utils.find_damageable(standalone_node)
 	assert_null(result, "Should return null when no damageable parent is found.")

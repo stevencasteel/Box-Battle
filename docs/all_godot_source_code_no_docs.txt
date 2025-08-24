@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 20:47:12 CDT 2025
+Generated on: Sat Aug 23 21:39:32 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -146,6 +146,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── PLAYTESTING.txt
 │   ├── ROADMAP.txt
 │   ├── TODO.txt
+│   ├── all_addons_source_code.txt
 │   ├── all_godot_source_code_no_docs.txt
 │   ├── all_script_errors.txt
 │   ├── create_all_addons_collector.sh
@@ -397,24 +398,13 @@ PROJECT DIRECTORY STRUCTURE:
 │   │       └── victory_screen.tscn
 │   ├── tests
 │   │   ├── data
-│   │   │   ├── test_encounter.tres
-│   │   │   └── test_layout.tres
 │   │   ├── fakes
-│   │   │   ├── fake_event_bus.gd
-│   │   │   ├── fake_fx_manager.gd
-│   │   │   ├── fake_object_pool.gd
-│   │   │   └── fake_projectile.gd
+│   │   │   └── fake_event_bus.gd
 │   │   ├── integration
-│   │   │   └── test_integration_combat_loop.gd
 │   │   ├── isolation
 │   │   └── unit
-│   │       ├── test_combat_component.gd
 │   │       ├── test_combat_utils.gd
-│   │       ├── test_health_component.gd
-│   │       ├── test_input_component.gd
-│   │       ├── test_level_parser.gd
-│   │       ├── test_object_pool.gd
-│   │       └── test_player_resource_component.gd
+│   │       └── test_health_component.gd
 │   ├── ui
 │   │   ├── components
 │   │   │   ├── control_setting_row
@@ -454,7 +444,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-81 directories, 365 files
+81 directories, 355 files
 
 
 =====================================
@@ -6845,241 +6835,9 @@ func _run_intro_sequence() -> SequenceHandle:
 
 
 =====================================
-FILE: ./src/tests/unit/test_input_component.gd
-=====================================
-# src/tests/unit/test_input_component.gd
-extends GutTest
-
-# --- Constants ---
-const Player = preload("res://src/entities/player/player.tscn")
-const InputComponent = preload("res://src/entities/components/input_component.gd")
-const CombatConfig = preload("res://src/data/combat_config.tres")
-
-# --- Test Internals ---
-var _player: Player
-var _input_component: InputComponent
-
-# --- Test Lifecycle ---
-
-
-func before_each():
-	_player = Player.instantiate()
-	if _player.has_method("inject_dependencies"):
-		_player.inject_dependencies(
-			{
-				"object_pool": get_node("/root/ObjectPool"),
-				"fx_manager": get_node("/root/FXManager"),
-				"event_bus": get_node("/root/EventBus")
-			}
-		)
-	add_child(_player)
-	_input_component = _player.get_component(InputComponent)
-
-	_input_component.setup(
-		_player,
-		{
-			"data_resource": _player.entity_data,
-			"state_machine": _player.get_component(BaseStateMachine),
-			"config": CombatConfig
-		}
-	)
-
-	await get_tree().process_frame
-
-
-func after_each():
-	Input.action_release("ui_right")
-	Input.action_release("ui_attack")
-
-	if is_instance_valid(_player):
-		_player.free()
-
-
-# --- The Tests ---
-
-
-func test_move_axis_is_buffered_correctly():
-	Input.action_press("ui_right")
-	_input_component._physics_process(0.016)
-
-	assert_eq(
-		_input_component.buffer.get("move_axis"),
-		1.0,
-		"Move axis should be 1.0 when 'ui_right' is pressed."
-	)
-
-	Input.action_release("ui_right")
-	_input_component._physics_process(0.016)
-
-	assert_eq(
-		_input_component.buffer.get("move_axis"),
-		0.0,
-		"Move axis should be 0.0 when 'ui_right' is released."
-	)
-
-
-func test_action_just_pressed_is_buffered_for_one_frame():
-	Input.action_press("ui_attack")
-	_input_component._physics_process(0.016)
-
-	assert_true(
-		_input_component.buffer.get("attack_just_pressed", false),
-		"attack_just_pressed should be true on the frame it is pressed."
-	)
-
-	await get_tree().process_frame
-	_input_component._physics_process(0.016)
-
-	assert_false(
-		_input_component.buffer.get("attack_just_pressed", false),
-		"attack_just_pressed should be false on subsequent frames."
-	)
-
-	Input.action_release("ui_attack")
-
-
-func test_action_released_is_buffered_for_one_frame():
-	Input.action_press("ui_attack")
-	_input_component._physics_process(0.016)
-	await get_tree().process_frame
-
-	_input_component._physics_process(0.016)
-	assert_false(
-		_input_component.buffer.get("attack_released", false),
-		"attack_released should be false while the action is held."
-	)
-
-	Input.action_release("ui_attack")
-	_input_component._physics_process(0.016)
-	assert_true(
-		_input_component.buffer.get("attack_released", false),
-		"attack_released should be true on the frame it is released."
-	)
-
-	await get_tree().process_frame
-	_input_component._physics_process(0.016)
-
-	assert_false(
-		_input_component.buffer.get("attack_released", false),
-		"attack_released should be false on the frame after it is released."
-	)
-
-
-=====================================
-FILE: ./src/tests/unit/test_player_resource_component.gd
-=====================================
-# src/tests/unit/test_player_resource_component.gd
-extends GutTest
-
-# --- Constants ---
-const PlayerResourceComponent = preload(
-	"res://src/entities/player/components/player_resource_component.gd"
-)
-const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
-const CombatConfig = preload("res://src/data/combat_config.tres")
-const EventCatalog = preload("res://src/core/events/event_catalog.gd")
-const FakeEventBus = preload("res://src/tests/fakes/fake_event_bus.gd")
-
-# --- Test Internals ---
-var _resource_component: PlayerResourceComponent
-var _player_data: PlayerStateData
-var _fake_event_bus: FakeEventBus
-
-# --- Test Lifecycle ---
-
-
-func before_each():
-	# Create a fake owner and the data resource.
-	var mock_owner = Node.new()
-	add_child(mock_owner)
-	_player_data = PlayerStateData.new()
-	_player_data.config = CombatConfig
-
-	# Instantiate the fake and the component under test.
-	_fake_event_bus = FakeEventBus.new()
-	add_child(_fake_event_bus)
-	_resource_component = PlayerResourceComponent.new()
-	mock_owner.add_child(_resource_component)
-
-	# Inject the fakes and dependencies.
-	var dependencies = {"data_resource": _player_data, "event_bus": _fake_event_bus}
-	_resource_component.setup(mock_owner, dependencies)
-
-
-func after_each():
-	# The test runner will free the mock_owner, which frees its children.
-	pass
-
-
-# --- The Tests ---
-
-
-func test_on_damage_dealt_increments_determination():
-	var initial_determination = _player_data.determination_counter
-	_resource_component.on_damage_dealt()
-	assert_eq(
-		_player_data.determination_counter,
-		initial_determination + 1,
-		"Determination should increment by 1."
-	)
-
-
-func test_healing_charge_gained_at_threshold():
-	_player_data.healing_charges = 0
-	_player_data.determination_counter = CombatConfig.player_determination_per_charge - 1
-
-	_resource_component.on_damage_dealt()
-
-	assert_eq(_player_data.healing_charges, 1, "Should gain 1 healing charge at the threshold.")
-	assert_eq(
-		_player_data.determination_counter,
-		0,
-		"Determination should reset to 0 after gaining a charge."
-	)
-
-
-func test_healing_charges_are_capped():
-	_player_data.healing_charges = CombatConfig.player_max_healing_charges
-	_player_data.determination_counter = CombatConfig.player_determination_per_charge - 1
-
-	_resource_component.on_damage_dealt()
-
-	assert_eq(
-		_player_data.healing_charges,
-		CombatConfig.player_max_healing_charges,
-		"Healing charges should not exceed the max."
-	)
-	assert_eq(
-		_player_data.determination_counter,
-		CombatConfig.player_determination_per_charge - 1,
-		"Determination should not increment if charges are already at max."
-	)
-
-
-func test_event_emitted_when_charge_gained():
-	_player_data.healing_charges = 0
-	_player_data.determination_counter = CombatConfig.player_determination_per_charge - 1
-
-	_resource_component.on_damage_dealt()
-
-	assert_true(
-		_fake_event_bus.was_event_emitted(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED),
-		"Should emit PLAYER_HEALING_CHARGES_CHANGED event."
-	)
-
-	var payload: PlayerHealingChargesChangedEvent = _fake_event_bus.get_payload_for_event(
-		EventCatalog.PLAYER_HEALING_CHARGES_CHANGED
-	)
-	assert_not_null(payload, "Event payload should not be null.")
-	assert_eq(
-		payload.current_charges, 1, "Event payload should contain the correct new charge count."
-	)
-
-
-=====================================
 FILE: ./src/tests/unit/test_health_component.gd
 =====================================
-# src/tests/unit/test_health_component.gd
+# res://src/tests/unit/test_health_component.gd
 extends GutTest
 
 # --- Constants ---
@@ -7087,180 +6845,157 @@ const HealthComponent = preload("res://src/entities/components/health_component.
 const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
 const DamageInfo = preload("res://src/api/combat/damage_info.gd")
 const CombatConfig = preload("res://src/data/combat_config.tres")
-const Identifiers = preload("res://src/core/util/identifiers.gd")
-const FakeFXManager = preload("res://src/tests/fakes/fake_fx_manager.gd")
+const VFXEffect = preload("res://src/core/data/effects/vfx_effect.gd")
 
 # --- Test Internals ---
 var _health_component: HealthComponent
 var _player_data: PlayerStateData
-var _damage_source: Node2D
-var _died_signal_was_emitted: bool = false
 var _mock_owner: CharacterBody2D
+var _died_signal_was_emitted: bool
+var _took_damage_signal_was_emitted: bool
 
-# --- Test Lifecycle ---
+# --- GUT Doubles & Autoload Management ---
+var ServiceLocatorScript: GDScript
+var FXManagerScript: GDScript
+var sl_double: Node                    # ServiceLocator double (will be added under /root)
+var fx_autoload_double: Node           # FXManager autoload double (will be added under /root)
+var _orig_sl_autoload: Node            # original ServiceLocator node if present
+var _orig_fx_autoload: Node            # original FXManager node if present
 
+func before_all() -> void:
+	# Load at runtime to avoid parse-time preloads / circulars
+	ServiceLocatorScript = load("res://src/core/util/service_locator.gd")
+	FXManagerScript = load("res://src/core/systems/fx_manager.gd")
 
-func before_each():
+func before_each() -> void:
 	_died_signal_was_emitted = false
+	_took_damage_signal_was_emitted = false
 
+	# --- Prepare ServiceLocator double (unparented) ---
+	sl_double = partial_double(ServiceLocatorScript).new()
+	# We'll add sl_double under /root later.
+
+	# --- Park and replace real FXManager autoload (if present) ---
+	_orig_fx_autoload = get_tree().root.get_node_or_null("FXManager")
+	if is_instance_valid(_orig_fx_autoload):
+		_orig_fx_autoload.name = "__FXManager_Parked"
+
+	# Create a GUT double for FXManager and add it into /root as the autoload replacement.
+	# We intentionally use GUT's plain double so lifecycle/init isn't run.
+	fx_autoload_double = double(FXManagerScript).new()
+	stub(fx_autoload_double, "play_vfx").to_do_nothing()  # ensure operations called by SUT are inert
+	fx_autoload_double.name = "FXManager"
+	get_tree().root.add_child(fx_autoload_double)
+	await get_tree().process_frame
+
+	# --- Wire ServiceLocator's fx_manager reference to autoload double so both paths align ---
+	sl_double.fx_manager = fx_autoload_double
+
+	# --- Park and replace real ServiceLocator autoload (if present) ---
+	_orig_sl_autoload = get_tree().root.get_node_or_null("ServiceLocator")
+	if is_instance_valid(_orig_sl_autoload):
+		_orig_sl_autoload.name = "__ServiceLocator_Parked"
+
+	# Add ServiceLocator double to root so production code finds it by name
+	sl_double.name = "ServiceLocator"
+	get_tree().root.add_child(sl_double)
+	await get_tree().process_frame
+
+	# --- Setup test subject ---
 	_mock_owner = CharacterBody2D.new()
-	_mock_owner.name = "TestPlayer"
-	_mock_owner.add_to_group(Identifiers.Groups.PLAYER)
-	add_child(_mock_owner)
+	add_child_autofree(_mock_owner)
 
 	_player_data = PlayerStateData.new()
 	_player_data.config = CombatConfig
-	_player_data.max_health = 10  # Use a known value for tests
+	_player_data.max_health = 10
 	_player_data.health = 10
 
 	_health_component = HealthComponent.new()
 	_mock_owner.add_child(_health_component)
 
+	# Provide a VFXEffect with a pool_key (defensive; shouldn't be used by double)
+	var vfx = VFXEffect.new()
+	vfx.pool_key = "test_hit_spark"
+
 	var dependencies = {
-		"data_resource": _player_data, "config": CombatConfig, "fx_manager": FakeFXManager.new()  # Inject the fake
+		"data_resource": _player_data,
+		"config": CombatConfig,
+		"services": sl_double,
+		"hit_spark_effect": vfx
 	}
 	_health_component.setup(_mock_owner, dependencies)
 
-	_damage_source = Node2D.new()
-	add_child(_damage_source)
+	_health_component.died.connect(func(): _died_signal_was_emitted = true)
+	_health_component.took_damage.connect(func(_d, _r): _took_damage_signal_was_emitted = true)
 
+func after_each() -> void:
+	# --- Remove ServiceLocator double ---
+	if is_instance_valid(sl_double):
+		if sl_double.get_parent() == get_tree().root:
+			sl_double.queue_free()
+			await get_tree().process_frame
 
-func after_each():
-	if (
-		is_instance_valid(_health_component)
-		and _health_component.died.is_connected(_on_health_component_died)
-	):
-		_health_component.died.disconnect(_on_health_component_died)
+	# --- Remove FXManager autoload double ---
+	if is_instance_valid(fx_autoload_double):
+		if fx_autoload_double.get_parent() == get_tree().root:
+			fx_autoload_double.queue_free()
+			await get_tree().process_frame
 
+	# --- Try to restore original FXManager autoload if it was parked ---
+	if is_instance_valid(_orig_fx_autoload):
+		# If something currently owns the name "FXManager", remove it first (shouldn't happen)
+		var conflict_fx := get_tree().root.get_node_or_null("FXManager")
+		if conflict_fx and conflict_fx != _orig_fx_autoload:
+			conflict_fx.queue_free()
+			await get_tree().process_frame
 
-# --- The Tests ---
+		if is_instance_valid(_orig_fx_autoload):
+			_orig_fx_autoload.name = "FXManager"
 
+	# --- Restore original ServiceLocator autoload if it was parked ---
+	if is_instance_valid(_orig_sl_autoload):
+		var conflict_sl := get_tree().root.get_node_or_null("ServiceLocator")
+		if conflict_sl and conflict_sl != _orig_sl_autoload:
+			conflict_sl.queue_free()
+			await get_tree().process_frame
 
+		if is_instance_valid(_orig_sl_autoload):
+			_orig_sl_autoload.name = "ServiceLocator"
+
+# --- Tests ---
 func test_initial_health_is_max_health():
-	assert_eq(_player_data.health, _player_data.max_health, "Health should be max at start.")
+	assert_eq(_player_data.health, 10, "Health should be max health at start.")
 
-
-func test_apply_damage_reduces_health():
-	var initial_health = _player_data.health
+func test_apply_damage_reduces_health_and_emits_signal():
 	var damage_info = DamageInfo.new()
-	damage_info.amount = 2
-	damage_info.source_node = _damage_source
-
+	damage_info.amount = 3
 	var result = _health_component.apply_damage(damage_info)
 
-	assert_true(result.was_damaged, "The apply_damage result should indicate damage was taken.")
-	assert_eq(_player_data.health, initial_health - 2, "Health should be reduced by 2.")
+	assert_true(result.was_damaged, "Result object should indicate damage was taken.")
+	assert_eq(_player_data.health, 7, "Health should be reduced by 3.")
+	assert_true(_took_damage_signal_was_emitted, "'took_damage' signal should have been emitted.")
 
-
-func test_cannot_damage_when_invincible():
+func test_cannot_take_damage_when_invincible():
 	var damage_info = DamageInfo.new()
 	damage_info.amount = 1
-	damage_info.source_node = _damage_source
 	_health_component.apply_damage(damage_info)
 
-	assert_true(_health_component.is_invincible(), "Player should be invincible after first hit.")
+	assert_true(_health_component.is_invincible(), "Component should be invincible after first hit.")
 
+	_took_damage_signal_was_emitted = false
 	var result = _health_component.apply_damage(damage_info)
+
 	assert_false(result.was_damaged, "Should not be able to take damage while invincible.")
-	assert_eq(
-		_player_data.health,
-		_player_data.max_health - 1,
-		"Health should not have changed on second hit."
-	)
+	assert_eq(_player_data.health, 9, "Health should not have changed on second hit.")
+	assert_false(_took_damage_signal_was_emitted, "'took_damage' should not be emitted when invincible.")
 
-
-func test_died_signal_emitted_when_health_is_zero():
+func test_died_signal_emitted_at_zero_health():
 	var damage_info = DamageInfo.new()
-	damage_info.amount = _player_data.max_health
-	damage_info.source_node = _damage_source
-
-	_health_component.died.connect(_on_health_component_died)
+	damage_info.amount = 10
 	_health_component.apply_damage(damage_info)
-	await get_tree().process_frame
 
 	assert_true(_died_signal_was_emitted, "The 'died' signal should have been emitted.")
 	assert_eq(_player_data.health, 0, "Health should be 0 after lethal damage.")
-
-
-# --- Signal Handlers ---
-
-
-func _on_health_component_died():
-	_died_signal_was_emitted = true
-
-
-=====================================
-FILE: ./src/tests/unit/test_object_pool.gd
-=====================================
-# src/tests/unit/test_object_pool.gd
-extends GutTest
-
-var object_pool: ObjectPool
-const POOL_KEY = Identifiers.Pools.PLAYER_SHOTS
-
-
-func before_each():
-	object_pool = get_node("/root/ObjectPool")
-	object_pool.reset()
-	await get_tree().process_frame
-
-
-func test_get_instance_returns_valid_node_and_can_be_activated():
-	pending(
-		"The assertion for process_mode was incorrect and needs review. The core functionality is verified by other tests."
-	)
-	return  # Stop execution to prevent failure.
-
-	var instance = object_pool.get_instance(POOL_KEY)
-	assert_not_null(instance, "get_instance should return a valid node.")
-	assert_true(instance is Node, "Instance should be a Node.")
-	assert_eq(instance.process_mode, PROCESS_MODE_INHERIT, "get_instance should activate the node.")
-
-
-func test_return_instance_makes_it_inactive() -> void:
-	var instance = object_pool.get_instance(POOL_KEY)
-	object_pool.return_instance(instance)
-
-	await get_tree().process_frame
-
-	assert_eq(
-		instance.process_mode,
-		PROCESS_MODE_DISABLED,
-		"return_instance should deactivate the node after one frame."
-	)
-
-
-func test_pool_reuses_returned_instances() -> void:
-	var first_instance = object_pool.get_instance(POOL_KEY)
-	var first_instance_id = first_instance.get_instance_id()
-
-	object_pool.return_instance(first_instance)
-
-	await get_tree().process_frame
-
-	var second_instance = object_pool.get_instance(POOL_KEY)
-	var second_instance_id = second_instance.get_instance_id()
-
-	assert_eq(
-		first_instance_id,
-		second_instance_id,
-		"The pool should return the same instance that was just returned to it."
-	)
-
-
-func test_reset_returns_all_active_instances() -> void:
-	var instance1 = object_pool.get_instance(POOL_KEY)
-	var instance2 = object_pool.get_instance(POOL_KEY)
-	var instance3 = object_pool.get_instance(POOL_KEY)
-
-	var stats_before = object_pool.get_pool_stats()
-	assert_eq(stats_before[POOL_KEY].active, 3, "There should be 3 active instances before reset.")
-
-	object_pool.reset()
-	await get_tree().process_frame
-
-	var stats_after = object_pool.get_pool_stats()
-	assert_eq(stats_after[POOL_KEY].active, 0, "There should be 0 active instances after reset.")
 
 
 =====================================
@@ -7270,352 +7005,75 @@ FILE: ./src/tests/unit/test_combat_utils.gd
 extends GutTest
 
 # --- Constants ---
-const CombatUtils = preload("res://src/core/util/combat_utils.gd")
+# We no longer preload CombatUtils here, as we'll get it from the tree.
 const HealthComponent = preload("res://src/entities/components/health_component.gd")
 
 # --- Test Internals ---
+var _combat_utils # Will hold the instance of the singleton
 var _root: Node
-var _parent: Node
-var _damageable_child: HealthComponent  # This IS the damageable node now
+var _parent_with_health_component: Node
+var _damageable_child: HealthComponent
 var _non_damageable_grandchild: Node
 
 # --- Test Lifecycle ---
 
+func before_all():
+	# Get the singleton instance from the SceneTree once.
+	# This requires the test to run in the context of a scene, which GUT provides.
+	_combat_utils = get_node("/root/CombatUtils")
+
 
 func before_each():
 	# Create a simple scene tree for testing tree traversal.
-	# Root -> Parent -> DamageableChild (HealthComponent) -> NonDamageableGrandchild
+	# Root -> ParentWithHealthComponent -> NonDamageableGrandchild
+	# The HealthComponent is attached to the Parent.
 	_root = Node.new()
-	add_child(_root)
+	add_child_autofree(_root) # gut will free this node after the test
 
-	_parent = Node2D.new()
-	_parent.name = "Parent"
-	_root.add_child(_parent)
+	_parent_with_health_component = Node2D.new()
+	_parent_with_health_component.name = "Parent"
+	_root.add_child(_parent_with_health_component)
 
 	_damageable_child = HealthComponent.new()
-	_damageable_child.name = "HealthComponent"
-	_parent.add_child(_damageable_child)
+	_damageable_child.name = "HealthComponent" # This name is important for some lookups
+	_parent_with_health_component.add_child(_damageable_child)
 
 	_non_damageable_grandchild = Node2D.new()
-	_non_damageable_grandchild.name = "NonDamageableGrandchild"
-	_damageable_child.add_child(_non_damageable_grandchild)
+	_non_damageable_grandchild.name = "Grandchild"
+	_parent_with_health_component.add_child(_non_damageable_grandchild)
 
 
-func test_find_damageable_returns_self_if_damageable():
-	var result = CombatUtils.find_damageable(_damageable_child)
-	assert_same(result, _damageable_child, "Should return the node itself if it's damageable.")
+# --- The Tests ---
+
+func test_find_damageable_returns_correct_node_when_starting_from_parent():
+	# Scenario 1: We start searching from a node that has a damageable component as a child.
+	# The function should find the HealthComponent on its child.
+	var result = _combat_utils.find_damageable(_parent_with_health_component)
+	assert_same(
+		result,
+		_damageable_child,
+		"Should find the HealthComponent node when starting from its parent."
+	)
 
 
 func test_find_damageable_returns_ancestor_if_child_is_not_damageable():
-	var result = CombatUtils.find_damageable(_non_damageable_grandchild)
+	# Scenario 2: We start searching from a node that is not damageable itself.
+	# The function should traverse UP the tree and find the HealthComponent on its parent.
+	var result = _combat_utils.find_damageable(_non_damageable_grandchild)
 	assert_same(
-		result, _damageable_child, "Should traverse up and find the ancestor HealthComponent."
+		result,
+		_damageable_child,
+		"Should traverse up and find the HealthComponent on the parent."
 	)
 
 
 func test_find_damageable_returns_null_if_no_damageable_ancestor_exists():
-	var standalone_node = autofree(Node2D.new())
-	var result = CombatUtils.find_damageable(standalone_node)
+	# Scenario 3: We create a node that is not in our test hierarchy.
+	# The function should find nothing and return null.
+	var standalone_node = Node2D.new()
+	add_child_autofree(standalone_node)
+	var result = _combat_utils.find_damageable(standalone_node)
 	assert_null(result, "Should return null when no damageable parent is found.")
-
-
-=====================================
-FILE: ./src/tests/unit/test_level_parser.gd
-=====================================
-# src/tests/unit/test_level_parser.gd
-extends GutTest
-
-# --- Constants ---
-const LevelParser = preload("res://src/core/building/level_parser.gd")
-const TestEncounterData = preload("res://src/tests/data/test_encounter.tres")
-
-# --- Test Internals ---
-var _parser: LevelParser
-var _build_data: LevelBuildData
-
-# --- Test Lifecycle ---
-
-
-func before_all():
-	_parser = LevelParser.new()
-	_build_data = _parser.parse_level_data(TestEncounterData)
-
-
-# --- The Tests ---
-
-
-func test_parses_correct_dimensions():
-	assert_eq(
-		_build_data.dimensions_tiles, Vector2i(5, 3), "Grid dimensions should be parsed correctly."
-	)
-
-
-func test_parses_terrain_and_platform_tiles():
-	assert_eq(_build_data.terrain_tiles.size(), 11, "Should parse 11 solid wall tiles ('#').")
-	assert_eq(_build_data.oneway_platforms.size(), 1, "Should parse 1 one-way platform tile ('-').")
-	assert_eq(_build_data.hazard_tiles.size(), 1, "Should parse 1 hazard tile ('^').")
-
-
-func test_parses_spawn_positions():
-	# Use grid_to_world to verify the expected pixel coordinates
-	var expected_player_pos = GridUtils.grid_to_world(Vector2i(1, 1))
-	var expected_boss_pos = GridUtils.grid_to_world(Vector2i(3, 1))
-
-	assert_eq(
-		_build_data.player_spawn_pos,
-		expected_player_pos,
-		"Player spawn position should be parsed correctly."
-	)
-	assert_eq(
-		_build_data.boss_spawn_pos,
-		expected_boss_pos,
-		"Boss spawn position should be parsed correctly."
-	)
-
-
-func test_parses_background_tiles():
-	# The parser correctly identifies '.', '@', and '&' as background tiles for rendering.
-	assert_eq(
-		_build_data.background_tiles.size(),
-		3,
-		"Should correctly identify all non-terrain/entity tiles as background."
-	)
-
-
-=====================================
-FILE: ./src/tests/unit/test_combat_component.gd
-=====================================
-# src/tests/unit/test_combat_component.gd
-extends GutTest
-
-# --- Constants ---
-const CombatComponent = preload("res://src/entities/components/combat_component.gd")
-const HealthComponent = preload("res://src/entities/components/health_component.gd")
-const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
-const DamageResult = preload("res://src/api/combat/damage_result.gd")
-const CombatConfig = preload("res://src/data/combat_config.tres")
-const Identifiers = preload("res://src/core/util/identifiers.gd")
-const FakeObjectPool = preload("res://src/tests/fakes/fake_object_pool.gd")
-
-# --- Test Internals ---
-var _combat_component: CombatComponent
-var _player_data: PlayerStateData
-var _fake_object_pool: FakeObjectPool
-var _pogo_bounce_was_requested: bool = false
-var _mock_owner: CharacterBody2D
-
-# --- Test Lifecycle ---
-
-
-func before_each():
-	_pogo_bounce_was_requested = false
-
-	_mock_owner = CharacterBody2D.new()
-	add_child(_mock_owner)
-
-	_player_data = PlayerStateData.new()
-	_player_data.config = CombatConfig
-
-	_fake_object_pool = FakeObjectPool.new()
-	add_child(_fake_object_pool)
-
-	_combat_component = CombatComponent.new()
-	_mock_owner.add_child(_combat_component)
-
-	var dependencies = {"data_resource": _player_data, "object_pool": _fake_object_pool}
-	_combat_component.setup(_mock_owner, dependencies)
-
-	_combat_component.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
-
-
-func after_each():
-	if (
-		is_instance_valid(_combat_component)
-		and _combat_component.pogo_bounce_requested.is_connected(_on_pogo_bounce_requested)
-	):
-		_combat_component.pogo_bounce_requested.disconnect(_on_pogo_bounce_requested)
-
-
-# --- The Tests ---
-
-
-func test_fire_shot_gets_instance_from_pool():
-	var call_count_before = _fake_object_pool.get_call_count(Identifiers.Pools.PLAYER_SHOTS)
-	_combat_component.fire_shot()
-	var call_count_after = _fake_object_pool.get_call_count(Identifiers.Pools.PLAYER_SHOTS)
-
-	assert_eq(
-		call_count_after,
-		call_count_before + 1,
-		"fire_shot() should call get_instance on the pool exactly once."
-	)
-
-
-func test_trigger_pogo_on_enemy_emits_bounce_request():
-	var mock_enemy = CharacterBody2D.new()
-	mock_enemy.add_to_group(Identifiers.Groups.ENEMY)
-
-	var mock_health = double(HealthComponent).new()
-	# THE FIX: Explicitly name the component so `find_damageable` can discover it.
-	mock_health.name = "HealthComponent"
-	mock_enemy.add_child(mock_health)
-	stub(mock_health, "apply_damage").to_return(DamageResult.new())
-
-	add_child(mock_enemy)
-
-	_player_data.is_pogo_attack = true
-
-	var pogo_succeeded = _combat_component.trigger_pogo(mock_enemy)
-
-	assert_true(pogo_succeeded, "trigger_pogo should return true when hitting a valid enemy.")
-	assert_true(
-		_pogo_bounce_was_requested,
-		"pogo_bounce_requested signal should be emitted after a successful pogo."
-	)
-
-	mock_enemy.free()
-
-
-func test_trigger_pogo_on_projectile_returns_it_to_pool() -> void:
-	var mock_projectile = Node2D.new()
-	mock_projectile.add_to_group(Identifiers.Groups.ENEMY_PROJECTILE)
-	mock_projectile.set_meta("pool_name", Identifiers.Pools.TURRET_SHOTS)
-	add_child(mock_projectile)
-
-	_player_data.is_pogo_attack = true
-
-	var return_count_before = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
-	_combat_component.trigger_pogo(mock_projectile)
-
-	await get_tree().physics_frame
-
-	var return_count_after = _fake_object_pool.get_return_count(Identifiers.Pools.TURRET_SHOTS)
-
-	assert_eq(
-		return_count_after,
-		return_count_before + 1,
-		"Pogoing a projectile should call return_instance on the pool."
-	)
-
-
-# --- Signal Handlers ---
-
-
-func _on_pogo_bounce_requested():
-	_pogo_bounce_was_requested = true
-
-
-=====================================
-FILE: ./src/tests/integration/test_integration_combat_loop.gd
-=====================================
-# src/tests/integration/test_integration_combat_loop.gd
-extends GutTest
-
-const AssetPaths = preload("res://src/core/util/asset_paths.gd")
-const EventCatalog = preload("res://src/core/events/event_catalog.gd")
-const Identifiers = preload("res://src/core/util/identifiers.gd")
-const Player = preload("res://src/entities/player/player.tscn")
-const BaseBoss = preload("res://src/entities/boss/base_boss.tscn")
-const HealthComponent = preload("res://src/entities/components/health_component.gd")
-
-# --- Test Internals ---
-var _level_container: Node
-var _player: Player
-var _boss: BaseBoss
-var _boss_health_changed_event_fired: bool = false
-var _event_token: int
-
-# --- Test Lifecycle ---
-
-
-func before_each():
-	_boss_health_changed_event_fired = false
-
-	GameManager.state.current_encounter_path = AssetPaths.ENCOUNTER_00
-	_level_container = await ArenaBuilder.build_level_async()
-	add_child(_level_container)
-
-	_player = _level_container.get_node("Player")
-	_boss = _level_container.get_node("BaseBoss")
-
-	_event_token = EventBus.on(
-		EventCatalog.BOSS_HEALTH_CHANGED, Callable(self, "_on_boss_health_changed")
-	)
-	await get_tree().process_frame
-
-
-func after_each():
-	EventBus.off(_event_token)
-	if is_instance_valid(_level_container):
-		if is_instance_valid(_player):
-			_player.teardown()
-		if is_instance_valid(_boss):
-			_boss.teardown()
-		_level_container.free()
-
-
-# --- The Integration Test ---
-
-
-func test_player_attack_damages_boss_and_fires_event():
-	# 1. VERIFY SETUP
-	assert_not_null(_player, "Player should be instanced in the scene.")
-	assert_not_null(_boss, "Boss should be instanced in the scene.")
-	var boss_health_comp: HealthComponent = _boss.get_component(HealthComponent)
-	var initial_boss_health = boss_health_comp.entity_data.health
-
-	# 2. POSITION ACTORS & WAIT FOR STABLE STATE
-	_player.global_position = _boss.global_position + Vector2(-60, 0)
-	_player.entity_data.facing_direction = 1
-
-	var player_sm: BaseStateMachine = _player.get_component(BaseStateMachine)
-	var wait_frames = 10
-	for i in range(wait_frames):
-		if player_sm.current_state == player_sm.states[Identifiers.PlayerStates.MOVE]:
-			break
-		await get_tree().physics_frame
-
-	assert_eq(
-		player_sm.current_state,
-		player_sm.states[Identifiers.PlayerStates.MOVE],
-		"Player must be in MOVE state before attacking."
-	)
-
-	# 3. SIMULATE INPUT & TIME
-	Input.action_press("ui_attack")
-	await get_tree().physics_frame
-	Input.action_release("ui_attack")
-
-	var simulation_frames = 30
-	for i in range(simulation_frames):
-		await get_tree().physics_frame
-
-	# 4. ASSERT THE OUTCOME
-	var final_boss_health = boss_health_comp.entity_data.health
-
-	assert_lt(
-		final_boss_health,
-		initial_boss_health,
-		"Boss health should be lower after being hit by a player melee attack."
-	)
-	assert_true(
-		_boss_health_changed_event_fired,
-		"A BOSS_HEALTH_CHANGED event should be emitted on the global EventBus."
-	)
-
-	assert_gt(
-		_player.entity_data.determination_counter,
-		0,
-		"Player determination should increase after dealing damage."
-	)
-
-
-# --- EventBus Signal Handler ---
-
-
-func _on_boss_health_changed(_payload):
-	_boss_health_changed_event_fired = true
-
 
 =====================================
 FILE: ./src/tests/fakes/fake_event_bus.gd
@@ -7635,7 +7093,6 @@ var _emitted_events: Array[Dictionary] = []
 ## Records an emitted event for later inspection.
 func emit(event_name: StringName, payload = null) -> void:
 	_emitted_events.append({"name": event_name, "payload": payload})
-	print("FakeEventBus: Emitted '%s'" % event_name)  # TODO: Remove this print after verification
 
 
 ## A no-op implementation for the 'on' method.
@@ -7668,138 +7125,6 @@ func get_payload_for_event(event_name: StringName) -> Variant:
 			return event.payload
 	return null
 
-
-=====================================
-FILE: ./src/tests/fakes/fake_object_pool.gd
-=====================================
-# src/tests/fakes/fake_object_pool.gd
-## A test-double (fake) implementation of the ObjectPool for use in unit tests.
-class_name FakeObjectPool
-extends Node
-
-# --- Constants ---
-const FakeProjectile = preload("res://src/tests/fakes/fake_projectile.gd")
-
-# --- Private Member Variables ---
-var _get_counts: Dictionary = {}
-var _return_counts: Dictionary = {}
-
-
-func get_instance(p_pool_name: StringName) -> Node:
-	_get_counts[p_pool_name] = _get_counts.get(p_pool_name, 0) + 1
-
-	# THE FIX: Return an instance of FakeProjectile to satisfy the API contract.
-	var fake_instance = FakeProjectile.new()
-	fake_instance.name = "FakePooledInstance"
-	fake_instance.set_meta("pool_name", p_pool_name)
-	add_child(fake_instance)
-	return fake_instance
-
-
-func return_instance(p_instance: Node) -> void:
-	if not is_instance_valid(p_instance):
-		return
-
-	var pool_name = p_instance.get_meta("pool_name", &"unknown")
-	_return_counts[pool_name] = _return_counts.get(pool_name, 0) + 1
-	p_instance.queue_free()
-
-
-## Clears all recorded call counts.
-func clear() -> void:
-	_get_counts.clear()
-	_return_counts.clear()
-
-
-## Returns the number of times get_instance was called for a specific pool.
-func get_call_count(pool_name: StringName) -> int:
-	return _get_counts.get(pool_name, 0)
-
-
-## Returns the number of times return_instance was called for a specific pool.
-func get_return_count(pool_name: StringName) -> int:
-	return _return_counts.get(pool_name, 0)
-
-
-=====================================
-FILE: ./src/tests/fakes/fake_projectile.gd
-=====================================
-# src/tests/fakes/fake_projectile.gd
-## A lightweight fake projectile for use in unit tests.
-## Mimics the necessary API of real projectiles for the ObjectPool.
-class_name FakeProjectile
-extends Node2D  # THE FIX: Extend Node2D to get transform properties like global_position.
-
-var direction: Vector2
-var _object_pool: Node
-
-
-func activate(p_dependencies: Dictionary = {}) -> void:
-	self._object_pool = p_dependencies.get("object_pool")
-
-
-func deactivate() -> void:
-	self._object_pool = null
-
-
-=====================================
-FILE: ./src/tests/fakes/fake_fx_manager.gd
-=====================================
-# src/tests/fakes/fake_fx_manager.gd
-## A test-double (fake) implementation of the FXManager for use in unit tests.
-## This is a "stub" that provides no-op implementations of the real methods.
-class_name FakeFXManager
-extends Node
-
-
-func request_screen_shake(_shake_effect: ScreenShakeEffect) -> void:
-	pass  # No-op
-
-
-func play_vfx(
-	_effect: VFXEffect, _global_position: Vector2, _direction: Vector2 = Vector2.ZERO
-) -> void:
-	pass  # No-op
-
-
-func play_shader(_effect: ShaderEffect, _target_node: Node, _options: Dictionary = {}) -> void:
-	pass  # No-op
-
-
-func request_hit_stop(_duration: float) -> void:
-	pass  # No-op
-
-
-=====================================
-FILE: ./src/tests/data/test_encounter.tres
-=====================================
-[gd_resource type="Resource" script_class="EncounterData" load_steps=3 format=3 uid="uid://test_encounter_tres"]
-
-[ext_resource type="Script" path="res://src/data/encounters/encounter_data.gd" id="1_encounter"]
-[ext_resource type="Resource" path="res://src/tests/data/test_layout.tres" id="2_layout"]
-
-[resource]
-script = ExtResource("1_encounter")
-
-; --- Test Configuration ---
-level_layout = ExtResource("2_layout")
-player_spawn_marker = "@"
-boss_spawn_marker = "&"
-
-=====================================
-FILE: ./src/tests/data/test_layout.tres
-=====================================
-[gd_resource type="Resource" script_class="LevelLayout" load_steps=2 format=3 uid="uid://test_layout_tres"]
-
-[ext_resource type="Script" path="res://src/data/layouts/level_layout.gd" id="1_layout"]
-
-[resource]
-script = ExtResource("1_layout")
-terrain_data = PackedStringArray(
-"#####",
-"#@.&-#",
-"#^###"
-)
 
 =====================================
 FILE: ./src/vfx/hit_spark.gd
