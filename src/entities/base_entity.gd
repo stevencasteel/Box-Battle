@@ -11,6 +11,7 @@ extends CharacterBody2D
 var _components_initialized: bool = false
 var _services: ServiceLocator
 var _components: Dictionary = {}
+var _components_by_interface: Dictionary = {} # NEW: Cache for interface lookups
 
 # --- Godot Lifecycle Methods ---
 
@@ -24,9 +25,17 @@ func _ready() -> void:
 # --- Public Methods ---
 
 
-## Retrieves a component from this entity by its script type.
+## Retrieves a component from this entity by its script type or an interface it implements.
 func get_component(type: Script) -> IComponent:
-	return _components.get(type)
+	# First, try a direct lookup by the component's concrete class.
+	if _components.has(type):
+		return _components.get(type)
+	
+	# If that fails, try looking up by an implemented interface.
+	if _components_by_interface.has(type):
+		return _components_by_interface.get(type)
+		
+	return null
 
 
 ## Helper that asserts and provides a clear error if a required component is missing.
@@ -37,7 +46,6 @@ func require_component(type: Script) -> IComponent:
 	return c
 
 
-## Called by the entity creator (ArenaBuilder) before the entity enters the scene tree.
 func inject_dependencies(p_services: ServiceLocator) -> void:
 	_services = p_services
 
@@ -48,7 +56,6 @@ func teardown() -> void:
 			child.teardown()
 
 
-## Initializes all attached components after dependencies have been injected.
 func setup_components(
 	shared_dependencies: Dictionary = {}, per_component_dependencies: Dictionary = {}
 ) -> void:
@@ -64,22 +71,18 @@ func setup_components(
 
 		var class_key: String = child.get_script().get_global_name()
 
-		# --- Dependency Validation ---
-		# We check for metadata, which can be set on the root node of the component's scene.
 		if child.has_meta("REQUIRED_DEPS"):
 			var required = child.get_meta("REQUIRED_DEPS")
 			var all_deps_for_check = base_shared_deps.duplicate()
 			if per_component_dependencies.has(child):
 				all_deps_for_check.merge(per_component_dependencies[child])
-
+			
 			if per_component_dependencies.has(class_key):
 				all_deps_for_check.merge(per_component_dependencies[class_key])
 
-			# Use the global class name directly, no preload constant needed.
 			if not DependencyValidator.validate(child, all_deps_for_check, required):
 				push_error("Dependency validation failed for %s. Aborting entity setup." % child.name)
 				return
-		# --- End Validation ---
 
 		var merged_deps := base_shared_deps.duplicate()
 
@@ -115,8 +118,18 @@ func _build_from_archetype() -> void:
 
 func _cache_components_by_type() -> void:
 	_components.clear()
+	_components_by_interface.clear()
+	
 	for child in get_children():
 		if not child is IComponent:
 			continue
 
-		_components[child.get_script()] = child
+		var component_script: Script = child.get_script()
+		_components[component_script] = child
+		
+		var base_script: Script = component_script.get_base_script()
+		while is_instance_valid(base_script):
+			if base_script.resource_path.is_empty() or base_script == IComponent:
+				break
+			_components_by_interface[base_script] = child
+			base_script = base_script.get_base_script()

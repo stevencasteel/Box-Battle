@@ -1,14 +1,15 @@
 # src/api/interfaces/IDamageable.gd
-## The "interface" contract for any object that can take damage.
+## The "interface" contract for any component that can take damage.
+## By extending IComponent, it ensures that any damageable object
+## also respects the standard component lifecycle (setup, teardown).
 class_name IDamageable
-extends Node
+extends IComponent
 
-# --- The Contract ---
-
+# --- The Contract (Virtual Method) ---
 
 ## Applies damage to the object.
 ## [param damage_info]: A [DamageInfo] resource detailing the damage event.
 ## [return]: A [DamageResult] resource indicating the outcome.
 func apply_damage(_damage_info: DamageInfo) -> DamageResult:
-	# This is a virtual method and should be overridden by implementers.
+	push_warning("IDamageable.apply_damage() was called but not overridden by the implementer.")
 	return DamageResult.new()

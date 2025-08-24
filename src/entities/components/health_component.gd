@@ -1,8 +1,9 @@
 # src/entities/components/health_component.gd
 @tool
 ## Manages all health, damage, and invincibility logic for an entity.
+## Implements the IDamageable interface.
 class_name HealthComponent
-extends IComponent
+extends IDamageable # THE FIX: Inherit from the interface contract.
 
 # --- Signals ---
 signal health_changed(current_health: int, max_health: int)
@@ -20,8 +21,8 @@ var _knockback_speed: float
 var _hazard_knockback_speed: float
 var _invincibility_tokens: Dictionary = {}
 var _next_token_id: int = 1
-var _services: ServiceLocator  # Dependency
-var _hit_spark_effect: VFXEffect  # Dependency
+var _services: ServiceLocator
+var _hit_spark_effect: VFXEffect
 
 # --- Godot Lifecycle Methods ---
 
@@ -31,23 +32,7 @@ func _notification(what: int) -> void:
 		teardown()
 
 
-# --- Public Methods ---
-
-
-func is_invincible() -> bool:
-	return not _invincibility_tokens.is_empty()
-
-
-func grant_invincibility(requester: Object) -> int:
-	var token_id = _next_token_id
-	_next_token_id += 1
-	_invincibility_tokens[token_id] = requester.get_instance_id()
-	return token_id
-
-
-func release_invincibility(token: int) -> void:
-	if _invincibility_tokens.has(token):
-		_invincibility_tokens.erase(token)
+# --- Public Methods (IComponent Contract) ---
 
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
@@ -82,6 +67,9 @@ func teardown() -> void:
 	_hit_spark_effect = null
 
 
+# --- Public Methods (IDamageable Contract) ---
+
+
 func apply_damage(damage_info: DamageInfo) -> DamageResult:
 	var result = DamageResult.new()
 	if is_invincible() and not damage_info.bypass_invincibility:
@@ -111,6 +99,25 @@ func apply_damage(damage_info: DamageInfo) -> DamageResult:
 		died.emit()
 
 	return result
+
+
+# --- Public Methods (HealthComponent Specific) ---
+
+
+func is_invincible() -> bool:
+	return not _invincibility_tokens.is_empty()
+
+
+func grant_invincibility(requester: Object) -> int:
+	var token_id = _next_token_id
+	_next_token_id += 1
+	_invincibility_tokens[token_id] = requester.get_instance_id()
+	return token_id
+
+
+func release_invincibility(token: int) -> void:
+	if _invincibility_tokens.has(token):
+		_invincibility_tokens.erase(token)
 
 
 # --- Private Methods ---

@@ -35,6 +35,32 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(core): formalize IDamageable contract and lookup logic
+
+Implements a key SOLID principle by transitioning the `IDamageable`
+contract from a conceptual interface to a formal, inherited class.
+This decouples combat systems from the concrete `HealthComponent`
+implementation, allowing them to depend on the abstraction instead.
+
+Key Changes:
+- **Formalized Interface:** `IDamageable.gd` now extends `IComponent`,
+  making it a formal part of the component system.
+- **Explicit Implementation:** `HealthComponent.gd` now formally
+  `extends IDamageable`, adopting the contract.
+- **Interface-Aware Lookups:** `BaseEntity.get_component()` has been
+  significantly enhanced. It can now find a component not only by its
+  direct script but also by any interface script in its inheritance
+  chain. This is the core of the LSP/DIP improvement.
+- **Robust `CombatUtils`:** The `find_damageable()` utility has been
+  refactored to be safer and more aligned with the component architecture.
+  It no longer traverses the scene tree looking for a specific node name.
+  Instead, it finds the target's root `BaseEntity` and asks it for its
+  `IDamageable` component directly.
+- **Bugfix:** Resolved a shadowed variable warning in `BaseEntity` by
+  removing a redundant `DependencyValidator` constant.
+
+
+
 
 refactor(core): decouple ObjectPool via interface and adapter
 
