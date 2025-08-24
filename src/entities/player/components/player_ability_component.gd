@@ -7,8 +7,11 @@
 class_name PlayerAbilityComponent
 extends IComponent
 
+# --- Constants ---
+const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
+
 # --- Member Variables ---
-var owner_node: BaseEntity
+var owner_node: Player
 var p_data: PlayerStateData
 
 # --- Godot Lifecycle Methods ---
@@ -27,6 +30,30 @@ func _physics_process(_delta: float) -> void:
 
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
+
+	# --- Action Checks (Prioritized) ---
+
+	if input_component.buffer.get("jump_just_pressed"):
+		var is_holding_down = input_component.buffer.get("down", false)
+
+		# 1. Heal (Highest priority for this input combination)
+		if (
+			is_holding_down
+			and p_data.healing_charges > 0
+			and owner_node.is_on_floor()
+			and is_zero_approx(owner_node.velocity.x)
+		):
+			state_machine.change_state(Identifiers.PlayerStates.HEAL)
+			return # Stop further processing of this input
+
+		# 2. Platform Drop
+		if is_holding_down:
+			if JumpHelper.try_platform_drop(owner):
+				return # Stop further processing
+
+		# 3. Standard Jump
+		if JumpHelper.try_jump(owner, p_data):
+			return # Stop further processing
 
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
 		p_data.is_charging = true
@@ -54,7 +81,7 @@ func _physics_process(_delta: float) -> void:
 
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
-	self.owner_node = p_owner as BaseEntity
+	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
 
 

@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 19:04:47 CDT 2025
+Generated on: Sat Aug 23 19:18:09 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -10615,8 +10615,11 @@ FILE: ./src/entities/player/components/player_ability_component.gd
 class_name PlayerAbilityComponent
 extends IComponent
 
+# --- Constants ---
+const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
+
 # --- Member Variables ---
-var owner_node: BaseEntity
+var owner_node: Player
 var p_data: PlayerStateData
 
 # --- Godot Lifecycle Methods ---
@@ -10635,6 +10638,30 @@ func _physics_process(_delta: float) -> void:
 
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
+
+	# --- Action Checks (Prioritized) ---
+
+	if input_component.buffer.get("jump_just_pressed"):
+		var is_holding_down = input_component.buffer.get("down", false)
+
+		# 1. Heal (Highest priority for this input combination)
+		if (
+			is_holding_down
+			and p_data.healing_charges > 0
+			and owner_node.is_on_floor()
+			and is_zero_approx(owner_node.velocity.x)
+		):
+			state_machine.change_state(Identifiers.PlayerStates.HEAL)
+			return # Stop further processing of this input
+
+		# 2. Platform Drop
+		if is_holding_down:
+			if JumpHelper.try_platform_drop(owner):
+				return # Stop further processing
+
+		# 3. Standard Jump
+		if JumpHelper.try_jump(owner, p_data):
+			return # Stop further processing
 
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
 		p_data.is_charging = true
@@ -10662,7 +10689,7 @@ func _physics_process(_delta: float) -> void:
 
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
-	self.owner_node = p_owner as BaseEntity
+	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
 
 
@@ -10670,7 +10697,6 @@ func teardown() -> void:
 	set_physics_process(false)
 	owner_node = null
 	p_data = null
-
 
 =====================================
 FILE: ./src/entities/player/components/player_jump_helper.gd
@@ -10688,6 +10714,10 @@ extends RefCounted
 ## Checks all possible jump conditions in a prioritized order and executes one if valid.
 ## Returns true if a jump was successfully initiated, false otherwise.
 static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
+	# THE FIX: Add a guard clause to ensure the owner is valid before proceeding.
+	if not is_instance_valid(owner):
+		return false
+
 	var physics: PlayerPhysicsComponent = owner.get_component(PlayerPhysicsComponent)
 	var sm: BaseStateMachine = owner.get_component(BaseStateMachine)
 
@@ -10725,12 +10755,11 @@ static func try_platform_drop(owner: Player) -> bool:
 		is_instance_valid(floor_collider)
 		and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS)
 	):
-		owner.position.y += 2  # Nudge the player down to clear the platform
+		owner.position.y += 2 # Nudge the player down to clear the platform
 		owner.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.FALL)
 		return true
 
 	return false
-
 
 =====================================
 FILE: ./src/entities/player/components/player_physics_component.tscn
@@ -11262,15 +11291,11 @@ FILE: ./src/entities/player/states/state_move.gd
 ## Handles the player's grounded movement state.
 extends BaseState
 
-const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
-
 var _physics: PlayerPhysicsComponent
-var _input: InputComponent
 
 
 func enter(_msg := {}) -> void:
 	_physics = owner.get_component(PlayerPhysicsComponent)
-	_input = owner.get_component(InputComponent)
 	state_data.air_jumps_left = state_data.config.player_max_air_jumps
 	state_data.can_dash = true
 
@@ -11281,26 +11306,10 @@ func process_physics(delta: float) -> void:
 	_physics.apply_gravity(delta)
 	_physics.apply_horizontal_movement()
 
-	if _input.buffer.get("jump_just_pressed"):
-		var is_holding_down = _input.buffer.get("down", false)
-
-		var can_try_heal = (
-			is_holding_down and state_data.healing_charges > 0 and is_zero_approx(owner.velocity.x)
-		)
-		if can_try_heal:
-			state_machine.change_state(Identifiers.PlayerStates.HEAL)
-			return
-
-		if is_holding_down:
-			if JumpHelper.try_platform_drop(owner):
-				return
-
-		JumpHelper.try_jump(owner, state_data)
-		return
-
 	if not owner.is_on_floor():
 		state_machine.change_state(Identifiers.PlayerStates.FALL)
 		return
+
 
 
 =====================================

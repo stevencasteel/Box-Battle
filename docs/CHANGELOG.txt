@@ -35,6 +35,18 @@
 ║                                                                              ║
 ║                                                                              ║
 
+
+refactor(player): Centralize action logic in PlayerAbilityComponent.
+
+- Moved all player-initiated action checks (jump, heal, platform drop) from `state_move.gd` into `PlayerAbilityComponent`.
+- `PlayerAbilityComponent` is now the single source of truth for interpreting player input and commanding the state machine.
+- `state_move.gd` is now purely responsible for applying movement physics and checking for falls, greatly simplifying its logic.
+- Hardened `PlayerJumpHelper` with a guard clause to prevent a crash if the owner is freed.
+- This change improves separation of concerns and resolves an input race condition between components.
+
+
+
+
 fix(dialogue): Add signal safety and fix race condition in DialogueManager.
 
 - Implemented `_exit_tree` in `DialogueManager` to safely unsubscribe from the `EventBus` `SCENE_TRANSITION_STARTED` event, preventing potential memory leaks.

@@ -11,6 +11,10 @@ extends RefCounted
 ## Checks all possible jump conditions in a prioritized order and executes one if valid.
 ## Returns true if a jump was successfully initiated, false otherwise.
 static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
+	# THE FIX: Add a guard clause to ensure the owner is valid before proceeding.
+	if not is_instance_valid(owner):
+		return false
+
 	var physics: PlayerPhysicsComponent = owner.get_component(PlayerPhysicsComponent)
 	var sm: BaseStateMachine = owner.get_component(BaseStateMachine)
 
@@ -48,7 +52,7 @@ static func try_platform_drop(owner: Player) -> bool:
 		is_instance_valid(floor_collider)
 		and floor_collider.is_in_group(Identifiers.Groups.ONEWAY_PLATFORMS)
 	):
-		owner.position.y += 2  # Nudge the player down to clear the platform
+		owner.position.y += 2 # Nudge the player down to clear the platform
 		owner.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.FALL)
 		return true
 
