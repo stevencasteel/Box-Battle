@@ -74,20 +74,36 @@ func play_vfx(
 		vfx_instance.call("activate", direction)
 
 
-## Pauses the entire game tree for a short duration to add impact to an event.
+## Pauses specific gameplay nodes for a short duration to add impact to an event.
 func request_hit_stop(duration: float) -> void:
 	if _is_hit_stop_active:
 		return
 
 	_is_hit_stop_active = true
-	get_tree().paused = true
 
+	# 1. Find all nodes that should be affected by hit-stop.
+	var affected_nodes: Array[Node]
+	affected_nodes.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.PLAYER))
+	affected_nodes.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
+
+	# 2. Pause the nodes using call_deferred to avoid physics engine errors.
+	for node in affected_nodes:
+		if is_instance_valid(node):
+			node.set_deferred("process_mode", Node.PROCESS_MODE_DISABLED)
+
+	# 3. Create a timer that is not affected by time scale.
 	var timer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
-	if get_tree().paused and _is_hit_stop_active:
-		get_tree().paused = false
-		_is_hit_stop_active = false
+	# 4. Resume the nodes. Guard against scene changes during the await.
+	if not get_tree():
+		return
+
+	for node in affected_nodes:
+		if is_instance_valid(node):
+			node.set_deferred("process_mode", Node.PROCESS_MODE_INHERIT)
+
+	_is_hit_stop_active = false
 
 
 ## Pre-compiles a list of shaders by briefly rendering them off-screen.

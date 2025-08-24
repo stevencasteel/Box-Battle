@@ -19,7 +19,8 @@ var _current_state_key
 
 
 func _ready() -> void:
-	owner_node = get_parent()
+	# Run after the physics component.
+	process_priority = 0
 
 
 func _notification(what: int) -> void:
@@ -42,6 +43,7 @@ func _exit_tree() -> void:
 
 
 func setup(_p_owner: Node, p_dependencies: Dictionary = {}) -> void:
+	self.owner_node = _p_owner
 	assert(p_dependencies.has("states"), "StateMachine setup requires a 'states' dictionary.")
 	assert(
 		p_dependencies.has("initial_state_key"),

@@ -35,6 +35,17 @@
 ║                                                                              ║
 ║                                                                              ║
 
+
+feat(Core): Harden timing, hit-stop, and physics processing
+
+- Chore(Input): Set InputComponent process_priority to -100 to ensure it runs before dependent components, preventing frame-order race conditions.
+
+- Fix(FX): Replaced global get_tree().paused hit-stop with a safer, deferred process_mode change on Player/Enemy nodes. This prevents engine-wide freezes that affected UI and timers.
+
+- Refactor(Physics): Enforced component process order by setting explicit process_priority on PlayerPhysicsComponent, PlayerAbilityComponent, and BaseStateMachine to guarantee move_and_slide() is called before physics state checks.
+
+
+
 refactor(player): Centralize action logic in PlayerAbilityComponent.
 
 - Moved all player-initiated action checks (jump, heal, platform drop) from `state_move.gd` into `PlayerAbilityComponent`. This resolves a race condition and improves separation of concerns.

@@ -15,6 +15,12 @@ var p_data: PlayerStateData
 # --- Godot Lifecycle Methods ---
 
 
+func _ready() -> void:
+	# Run before other components to ensure move_and_slide() is called
+	# before any physics state checks like is_on_floor().
+	process_priority = -50
+
+
 func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
 		return  # Guard against post-teardown calls

@@ -17,6 +17,11 @@ var p_data: PlayerStateData
 # --- Godot Lifecycle Methods ---
 
 
+func _ready() -> void:
+	# Run after the physics component.
+	process_priority = 0
+
+
 func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
 		return

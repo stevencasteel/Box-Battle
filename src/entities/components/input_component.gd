@@ -19,6 +19,12 @@ var buffer: Dictionary = {}
 # --- Godot Lifecycle Methods ---
 
 
+func _ready() -> void:
+	# A lower number runs earlier in the physics step.
+	# This ensures the buffer is populated before other components try to read it.
+	process_priority = -100
+
+
 func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
 		return  # Guard against post-teardown calls
