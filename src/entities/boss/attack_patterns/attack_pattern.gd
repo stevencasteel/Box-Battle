@@ -14,6 +14,6 @@ extends Resource
 @export var cooldown: float = 1.5
 
 @export_group("Attack-Specific Data")
-# --- ProjectileLogic Data ---
+# THE FIX: These parameters now live in the AttackPattern, where they belong.
 @export var projectile_count: int = 1
 @export var volley_delay: float = 0.2

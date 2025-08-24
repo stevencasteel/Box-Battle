@@ -1,17 +1,13 @@
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://y6g5o6f7h8i9"]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://y6g5o6f7h8ja"]
 
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/combat/attack_logic/lunge_logic.tres" id="2_lunge_logic"]
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/combat/attack_logic/lunge_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-
-; --- Core Timings ---
+logic = ExtResource("2_logic")
 telegraph_duration = 0.8
 attack_duration = 0.5
 cooldown = 2.0
-
-; --- Logic-Specific Data ---
-logic = ExtResource("2_lunge_logic")
 projectile_count = 0
 volley_delay = 0.0

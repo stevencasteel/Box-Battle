@@ -1,4 +1,4 @@
-# src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
+# src/combat/attack_logic/homing_omni_burst_logic.gd
 @tool
 ## Concrete AttackLogic for a complex, multi-projectile homing attack.
 class_name HomingOmniBurstLogic
@@ -7,16 +7,16 @@ extends AttackLogic
 @export var projectile_count: int = 30
 
 
-func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
+func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
 	return {"size": Vector2(600, 600), "offset": Vector2.ZERO}
 
 
-func execute(owner: BaseBoss, _pattern: AttackPattern) -> Callable:
+func execute(owner: BaseEntity, _pattern: AttackPattern) -> Callable:
 	return Callable(self, "_fire_omni_burst").bind(owner)
 
 
 # --- Private Helper for Execution ---
-func _fire_omni_burst(owner: BaseBoss) -> void:
+func _fire_omni_burst(owner: BaseEntity) -> void:
 	if not is_instance_valid(owner):
 		return
 

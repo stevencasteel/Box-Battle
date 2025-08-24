@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 24 17:52:46 CDT 2025
+Generated on: Sun Aug 24 18:49:38 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -203,6 +203,15 @@ PROJECT DIRECTORY STRUCTURE:
 │   │       ├── IPoolable.gd
 │   │       └── ISceneController.gd
 │   ├── arenas
+│   ├── combat
+│   │   └── attack_logic
+│   │       ├── attack_logic.gd
+│   │       ├── homing_omni_burst_logic.gd
+│   │       ├── homing_omni_burst_logic.tres
+│   │       ├── lunge_logic.gd
+│   │       ├── lunge_logic.tres
+│   │       ├── projectile_logic.gd
+│   │       └── projectile_logic.tres
 │   ├── core
 │   │   ├── DEPRECATION.md
 │   │   ├── README.md
@@ -295,20 +304,12 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── base_entity.gd
 │   │   ├── boss
 │   │   │   ├── attack_patterns
-│   │   │   │   ├── attack_logic.gd
 │   │   │   │   ├── attack_pattern.gd
-│   │   │   │   ├── homing_omni_burst_logic.gd
-│   │   │   │   ├── homing_omni_burst_logic.tres
 │   │   │   │   ├── homing_omni_burst_pattern.tres
 │   │   │   │   ├── lunge_attack.tres
-│   │   │   │   ├── lunge_logic.gd
-│   │   │   │   ├── lunge_logic.tres
-│   │   │   │   ├── projectile_logic.gd
 │   │   │   │   ├── single_shot.tres
-│   │   │   │   ├── single_shot_logic.tres
 │   │   │   │   ├── volley_3_shot.tres
-│   │   │   │   ├── volley_5_shot.tres
-│   │   │   │   └── volley_shot_logic.tres
+│   │   │   │   └── volley_5_shot.tres
 │   │   │   ├── base_boss.gd
 │   │   │   ├── base_boss.tscn
 │   │   │   ├── boss_state_data.gd
@@ -465,7 +466,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-84 directories, 373 files
+86 directories, 372 files
 
 
 =====================================
@@ -6465,6 +6466,158 @@ func _run_intro_sequence() -> SequenceHandle:
 
 
 =====================================
+FILE: ./src/combat/attack_logic/lunge_logic.gd
+=====================================
+# src/combat/attack_logic/lunge_logic.gd
+@tool
+## Concrete AttackLogic for executing a high-speed, invulnerable dash.
+class_name LungeLogic
+extends AttackLogic
+
+
+func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
+	var lunge_width = 800.0
+	var owner_width = 60.0
+	var x_offset = (lunge_width / 2.0) + (owner_width / 2.0)
+	
+	return {"size": Vector2(lunge_width, 60), "offset": Vector2(x_offset, 0)}
+
+
+func execute(owner: BaseEntity, pattern: AttackPattern) -> Callable:
+	var boss_owner := owner as BaseBoss
+	if not is_instance_valid(boss_owner):
+		push_warning("LungeLogic can only be executed by a BaseBoss.")
+		return Callable()
+
+	var lunge_params = {"pattern": pattern}
+	var sm: BaseStateMachine = boss_owner.get_component(BaseStateMachine)
+	return sm.change_state.bind(Identifiers.BossStates.LUNGE, lunge_params)
+
+
+=====================================
+FILE: ./src/combat/attack_logic/projectile_logic.gd
+=====================================
+# src/combat/attack_logic/projectile_logic.gd
+@tool
+## Concrete AttackLogic for firing one or more projectiles.
+class_name ProjectileLogic
+extends AttackLogic
+
+
+func get_telegraph_info(owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
+	var facing_direction: float = owner.entity_data.facing_direction if "facing_direction" in owner.entity_data else 1.0
+	return {"size": Vector2(150, 150), "offset": Vector2(facing_direction * 100, 0)}
+
+
+func execute(owner: BaseEntity, pattern: AttackPattern) -> Callable:
+	if pattern.projectile_count <= 1:
+		return owner.fire_shot_at_player.bind()
+	else:
+		return owner.fire_volley.bind(pattern.projectile_count, pattern.volley_delay)
+
+=====================================
+FILE: ./src/combat/attack_logic/lunge_logic.tres
+=====================================
+[gd_resource type="Resource" script_class="LungeLogic" load_steps=2 format=3 uid="uid://b5o450wxs3d0w"]
+
+[ext_resource type="Script" path="res://src/combat/attack_logic/lunge_logic.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+
+=====================================
+FILE: ./src/combat/attack_logic/projectile_logic.tres
+=====================================
+[gd_resource type="Resource" script_class="ProjectileLogic" load_steps=2 format=3 uid="uid://c1w6fobw8biag"]
+
+[ext_resource type="Script" uid="uid://citr6cda6jkw0" path="res://src/combat/attack_logic/projectile_logic.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+
+
+=====================================
+FILE: ./src/combat/attack_logic/homing_omni_burst_logic.tres
+=====================================
+[gd_resource type="Resource" script_class="HomingOmniBurstLogic" load_steps=2 format=3 uid="uid://bwg6k1f2vxo7g"]
+
+[ext_resource type="Script" uid="uid://dte2j2bevwl44" path="res://src/combat/attack_logic/homing_omni_burst_logic.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+projectile_count = 30
+
+
+=====================================
+FILE: ./src/combat/attack_logic/attack_logic.gd
+=====================================
+# src/combat/attack_logic/attack_logic.gd
+@tool
+## The abstract base class for all boss attack execution logic.
+## This implements the Strategy Pattern for boss attacks.
+class_name AttackLogic
+extends Resource
+
+
+## Returns the visual information for this attack's telegraph.
+## The dictionary should contain: { "size": Vector2, "offset": Vector2 }
+## "offset" is the local position relative to the boss.
+func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
+	# Default to a simple square
+	var facing_direction: float = _owner.entity_data.get("facing_direction", 1.0)
+	return {
+		"size": Vector2(150, 150), "offset": Vector2(facing_direction * 100, 0)
+	}
+
+
+## Prepares and returns the attack action as a Callable.
+## This is the core of the Command Pattern implementation.
+func execute(_owner: BaseEntity, _pattern: AttackPattern) -> Callable:
+	push_warning("AttackLogic.execute() was called but not overridden.")
+	return Callable()  # Return an empty, safe callable
+
+=====================================
+FILE: ./src/combat/attack_logic/homing_omni_burst_logic.gd
+=====================================
+# src/combat/attack_logic/homing_omni_burst_logic.gd
+@tool
+## Concrete AttackLogic for a complex, multi-projectile homing attack.
+class_name HomingOmniBurstLogic
+extends AttackLogic
+
+@export var projectile_count: int = 30
+
+
+func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
+	return {"size": Vector2(600, 600), "offset": Vector2.ZERO}
+
+
+func execute(owner: BaseEntity, _pattern: AttackPattern) -> Callable:
+	return Callable(self, "_fire_omni_burst").bind(owner)
+
+
+# --- Private Helper for Execution ---
+func _fire_omni_burst(owner: BaseEntity) -> void:
+	if not is_instance_valid(owner):
+		return
+
+	var object_pool: IObjectPool = owner._services.object_pool
+	var angle_step = TAU / projectile_count
+	for i in range(projectile_count):
+		var shot: HomingBossShot = object_pool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
+		if not is_instance_valid(shot):
+			continue
+
+		shot.damage = owner.entity_data.config.homing_shot_damage
+		shot.speed = owner.entity_data.config.homing_shot_speed
+		shot.lifespan = owner.entity_data.config.homing_shot_lifespan
+
+		var angle = i * angle_step
+		shot.rotation = angle
+		shot.global_position = owner.global_position
+		shot.activate(owner._services)
+
+=====================================
 FILE: ./src/tests/unit/test_input_component.gd
 =====================================
 # src/tests/unit/test_input_component.gd
@@ -8221,145 +8374,75 @@ extends Resource
 
 
 =====================================
-FILE: ./src/entities/boss/attack_patterns/lunge_logic.gd
-=====================================
-# src/entities/boss/attack_patterns/lunge_logic.gd
-@tool
-## Concrete AttackLogic for executing a high-speed, invulnerable dash.
-class_name LungeLogic
-extends AttackLogic
-
-
-func get_telegraph_info(owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
-	var lunge_width = 800.0
-	var owner_width = owner.get_node("CollisionShape2D").shape.size.x
-	var x_offset = (lunge_width / 2.0) + (owner_width / 2.0)
-
-	return {"size": Vector2(lunge_width, 60), "offset": Vector2(x_offset, 0)}
-
-
-func execute(owner: BaseBoss, pattern: AttackPattern) -> Callable:
-	var lunge_params = {"pattern": pattern}
-	var sm: BaseStateMachine = owner.get_component(BaseStateMachine)
-	return sm.change_state.bind(Identifiers.BossStates.LUNGE, lunge_params)
-
-
-=====================================
 FILE: ./src/entities/boss/attack_patterns/lunge_attack.tres
 =====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://y6g5o6f7h8i9"]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://y6g5o6f7h8ja"]
 
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/lunge_logic.tres" id="2_lunge_logic"]
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" path="res://src/combat/attack_logic/lunge_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-
-; --- Core Timings ---
+logic = ExtResource("2_logic")
 telegraph_duration = 0.8
 attack_duration = 0.5
 cooldown = 2.0
-
-; --- Logic-Specific Data ---
-logic = ExtResource("2_lunge_logic")
 projectile_count = 0
 volley_delay = 0.0
+
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
 =====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://homing_omni_burst_tres"]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://dibqnlm2wg88d"]
 
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" uid="uid://homing_logic_tres" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.tres" id="2_logic"]
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" uid="uid://bwg6k1f2vxo7g" path="res://src/combat/attack_logic/homing_omni_burst_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-
-; --- Core Timings ---
+logic = ExtResource("2_logic")
 telegraph_duration = 1.2
 attack_duration = 1.0
 cooldown = 3.5
-
-; --- Logic-Specific Data ---
-logic = ExtResource("2_logic")
 projectile_count = 30
 volley_delay = 0.0
+
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/volley_3_shot.tres
 =====================================
 [gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://k3dglh3t1b4a"]
 
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot_logic.tres" id="2_logic"]
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" uid="uid://c1w6fobw8biag" path="res://src/combat/attack_logic/projectile_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-
-; --- Core Timings ---
+logic = ExtResource("2_logic")
 telegraph_duration = 0.7
 attack_duration = 0.6
 cooldown = 2.5
-
-; --- Logic-Specific Data ---
-logic = ExtResource("2_logic")
 projectile_count = 3
 volley_delay = 0.2
+
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/volley_5_shot.tres
 =====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://z1x2y3a4b5c6"]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://01x2y3a4b5c6"]
 
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/volley_shot_logic.tres" id="2_logic"]
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" uid="uid://c1w6fobw8biag" path="res://src/combat/attack_logic/projectile_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-
-; --- Core Timings ---
+logic = ExtResource("2_logic")
 telegraph_duration = 0.6
 attack_duration = 1.0
 cooldown = 2.5
-
-; --- Logic-Specific Data ---
-logic = ExtResource("2_logic")
 projectile_count = 5
 volley_delay = 0.15
-
-=====================================
-FILE: ./src/entities/boss/attack_patterns/projectile_logic.gd
-=====================================
-# src/entities/boss/attack_patterns/projectile_logic.gd
-@tool
-## Concrete AttackLogic for firing one or more projectiles.
-class_name ProjectileLogic
-extends AttackLogic
-
-
-func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
-	return {"size": Vector2(150, 150), "offset": Vector2(100, 0)}
-
-
-func execute(owner: BaseBoss, pattern: AttackPattern) -> Callable:
-	if pattern.projectile_count <= 1:
-		return owner.fire_shot_at_player.bind()
-	else:
-		return owner.fire_volley.bind(pattern.projectile_count, pattern.volley_delay)
-
-
-=====================================
-FILE: ./src/entities/boss/attack_patterns/volley_shot_logic.tres
-=====================================
-[gd_resource type="Resource" script_class="ProjectileLogic" load_steps=2 format=3]
-
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/projectile_logic.gd" id="1_projectile_logic"]
-
-[resource]
-script = ExtResource("1_projectile_logic")
-projectile_count = 3
-volley_delay = 0.2
 
 
 =====================================
@@ -8381,136 +8464,26 @@ extends Resource
 @export var cooldown: float = 1.5
 
 @export_group("Attack-Specific Data")
-# --- ProjectileLogic Data ---
+# THE FIX: These parameters now live in the AttackPattern, where they belong.
 @export var projectile_count: int = 1
 @export var volley_delay: float = 0.2
-
-
-=====================================
-FILE: ./src/entities/boss/attack_patterns/lunge_logic.tres
-=====================================
-[gd_resource type="Resource" script_class="LungeLogic" load_steps=2 format=3 uid="uid://lunge_logic_tres_id"]
-
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/lunge_logic.gd" id="1_lunge_logic"]
-
-[resource]
-script = ExtResource("1_lunge_logic")
-
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/single_shot.tres
 =====================================
 [gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://bve7t5ucr1k"]
 
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot_logic.tres" id="2_logic"]
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" uid="uid://c1w6fobw8biag" path="res://src/combat/attack_logic/projectile_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
-
-; --- Core Timings ---
+logic = ExtResource("2_logic")
 telegraph_duration = 0.5
 attack_duration = 0.1
 cooldown = 1.5
-
-; --- Logic-Specific Data ---
-logic = ExtResource("2_logic")
 projectile_count = 1
-volley_delay = 0.2
-
-=====================================
-FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_logic.tres
-=====================================
-[gd_resource type="Resource" script_class="HomingOmniBurstLogic" load_steps=2 format=3 uid="uid://homing_logic_tres"]
-
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd" id="1_logic_script"]
-
-[resource]
-script = ExtResource("1_logic_script")
-projectile_count = 30
-projectile_speed = 250.0
-
-=====================================
-FILE: ./src/entities/boss/attack_patterns/single_shot_logic.tres
-=====================================
-[gd_resource type="Resource" script_class="ProjectileLogic" load_steps=2 format=3]
-
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/projectile_logic.gd" id="1_projectile_logic"]
-
-[resource]
-script = ExtResource("1_projectile_logic")
-projectile_count = 1
-volley_delay = 0.2
-
-
-=====================================
-FILE: ./src/entities/boss/attack_patterns/attack_logic.gd
-=====================================
-# src/entities/boss/attack_patterns/attack_logic.gd
-@tool
-## The abstract base class for all boss attack execution logic.
-## This implements the Strategy Pattern for boss attacks.
-class_name AttackLogic
-extends Resource
-
-
-## Returns the visual information for this attack's telegraph.
-## The dictionary should contain: { "size": Vector2, "offset": Vector2 }
-## "offset" is the local position relative to the boss.
-func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
-	# Default to a simple square
-	return {
-		"size": Vector2(150, 150), "offset": Vector2(_owner.entity_data.facing_direction * 100, 0)
-	}
-
-
-## Prepares and returns the attack action as a Callable.
-## This is the core of the Command Pattern implementation.
-func execute(_owner: BaseBoss, _pattern: AttackPattern) -> Callable:
-	push_warning("AttackLogic.execute() was called but not overridden.")
-	return Callable()  # Return an empty, safe callable
-
-
-=====================================
-FILE: ./src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
-=====================================
-# src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
-@tool
-## Concrete AttackLogic for a complex, multi-projectile homing attack.
-class_name HomingOmniBurstLogic
-extends AttackLogic
-
-@export var projectile_count: int = 30
-
-
-func get_telegraph_info(_owner: BaseBoss, _pattern: AttackPattern) -> Dictionary:
-	return {"size": Vector2(600, 600), "offset": Vector2.ZERO}
-
-
-func execute(owner: BaseBoss, _pattern: AttackPattern) -> Callable:
-	return Callable(self, "_fire_omni_burst").bind(owner)
-
-
-# --- Private Helper for Execution ---
-func _fire_omni_burst(owner: BaseBoss) -> void:
-	if not is_instance_valid(owner):
-		return
-
-	var object_pool: IObjectPool = owner._services.object_pool
-	var angle_step = TAU / projectile_count
-	for i in range(projectile_count):
-		var shot: HomingBossShot = object_pool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
-		if not is_instance_valid(shot):
-			continue
-
-		shot.damage = owner.entity_data.config.homing_shot_damage
-		shot.speed = owner.entity_data.config.homing_shot_speed
-		shot.lifespan = owner.entity_data.config.homing_shot_lifespan
-
-		var angle = i * angle_step
-		shot.rotation = angle
-		shot.global_position = owner.global_position
-		shot.activate(owner._services)
+volley_delay = 0.0
 
 
 =====================================
@@ -8551,7 +8524,7 @@ FILE: ./src/entities/boss/base_boss.tscn
 [ext_resource type="Script" uid="uid://bsmqi0p5h8urh" path="res://src/entities/boss/states/state_boss_patrol.gd" id="15_state_patrol"]
 [ext_resource type="Script" uid="uid://b47bmwcdrdd8d" path="res://src/entities/boss/states/state_boss_lunge.gd" id="16_state_lunge"]
 [ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="17_dissolve_effect"]
-[ext_resource type="Resource" uid="uid://cg1t62pkbrpeq" path="res://src/entities/boss/data/default_boss_behavior.tres" id="18_default_behavior"]
+[ext_resource type="Resource" uid="uid://cypy26d84f23b" path="res://src/entities/boss/data/default_boss_behavior.tres" id="18_default_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
@@ -9048,7 +9021,7 @@ func _on_health_component_died() -> void:
 =====================================
 FILE: ./src/entities/boss/data/default_boss_behavior.tres
 =====================================
-[gd_resource type="Resource" script_class="BossBehavior" load_steps=8 format=3 uid="uid://cg1t62pkbrpeq"]
+[gd_resource type="Resource" script_class="BossBehavior" load_steps=8 format=3 uid="uid://cypy26d84f23b"]
 
 [ext_resource type="Script" uid="uid://dni2it8b687id" path="res://src/entities/boss/data/boss_behavior.gd" id="1_behavior_script"]
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_pfqfc"]
@@ -9056,7 +9029,7 @@ FILE: ./src/entities/boss/data/default_boss_behavior.tres
 [ext_resource type="Resource" uid="uid://k3dglh3t1b4a" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="3_pattern_volley3"]
 [ext_resource type="Resource" uid="uid://y6g5o6f7h8ja" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="4_pattern_lunge"]
 [ext_resource type="Resource" uid="uid://01x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_5_shot.tres" id="5_pattern_volley5"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres" id="6_pattern_homing"]
+[ext_resource type="Resource" uid="uid://dibqnlm2wg88d" path="res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres" id="6_pattern_homing"]
 
 [resource]
 script = ExtResource("1_behavior_script")

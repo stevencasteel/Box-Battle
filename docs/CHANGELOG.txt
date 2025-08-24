@@ -35,6 +35,19 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(Combat): Elevate AttackPattern to be fully data-driven
+
+Implements a major architectural refinement to the AttackLogic system, adhering to the DRY and Open/Closed principles.
+
+- Attack-specific parameters (e.g., `projectile_count`, `volley_delay`) have been moved from `AttackLogic` resources into the `AttackPattern` resource.
+- `AttackLogic` scripts are now pure, stateless strategies that receive all necessary data from the `AttackPattern` passed into their `execute` method.
+- Redundant logic resources (e.g., `volley_shot_logic`, `single_shot_logic`) have been consolidated into a single, shared `projectile_logic.tres`.
+- All `AttackPattern` resources (`.tres` files) were rebuilt from scratch to ensure correct UIDs and dependencies after the structural changes.
+
+This refactor allows multiple AttackPatterns to share the same logic while defining their own unique parameters, making the creation of new, varied attacks a data-only task.
+
+
+
 refactor(Combat): Unify AttackLogic into a shared directory
 
 Implements the second task of the minion framework refactor.

@@ -1,8 +1,0 @@
-[gd_resource type="Resource" script_class="ProjectileLogic" load_steps=2 format=3]
-
-[ext_resource type="Script" path="res://src/combat/attack_logic/projectile_logic.gd" id="1_projectile_logic"]
-
-[resource]
-script = ExtResource("1_projectile_logic")
-projectile_count = 3
-volley_delay = 0.2

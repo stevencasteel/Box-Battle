@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BossBehavior" load_steps=8 format=3 uid="uid://cg1t62pkbrpeq"]
+[gd_resource type="Resource" script_class="BossBehavior" load_steps=8 format=3 uid="uid://cypy26d84f23b"]
 
 [ext_resource type="Script" uid="uid://dni2it8b687id" path="res://src/entities/boss/data/boss_behavior.gd" id="1_behavior_script"]
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_pfqfc"]
@@ -6,7 +6,7 @@
 [ext_resource type="Resource" uid="uid://k3dglh3t1b4a" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="3_pattern_volley3"]
 [ext_resource type="Resource" uid="uid://y6g5o6f7h8ja" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="4_pattern_lunge"]
 [ext_resource type="Resource" uid="uid://01x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_5_shot.tres" id="5_pattern_volley5"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres" id="6_pattern_homing"]
+[ext_resource type="Resource" uid="uid://dibqnlm2wg88d" path="res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres" id="6_pattern_homing"]
 
 [resource]
 script = ExtResource("1_behavior_script")

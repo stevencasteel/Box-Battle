@@ -1,8 +1,7 @@
-[gd_resource type="Resource" script_class="HomingOmniBurstLogic" load_steps=2 format=3 uid="uid://homing_logic_tres"]
+[gd_resource type="Resource" script_class="HomingOmniBurstLogic" load_steps=2 format=3 uid="uid://bwg6k1f2vxo7g"]
 
-[ext_resource type="Script" path="res://src/combat/attack_logic/homing_omni_burst_logic.gd" id="1_logic_script"]
+[ext_resource type="Script" uid="uid://dte2j2bevwl44" path="res://src/combat/attack_logic/homing_omni_burst_logic.gd" id="1_script"]
 
 [resource]
-script = ExtResource("1_logic_script")
+script = ExtResource("1_script")
 projectile_count = 30
-projectile_speed = 250.0
