@@ -8,9 +8,8 @@ extends Node
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Service References ---
-# These are populated by the engine at startup based on the autoload order.
+var fx_manager: IFXManager
 @onready var object_pool: ObjectPool = get_node("/root/ObjectPool")
-@onready var fx_manager: FXManager = get_node("/root/FXManager")
 @onready var event_bus: EventBus = get_node("/root/EventBus")
 @onready var sequencer: Sequencer = get_node("/root/Sequencer")
 @onready var combat_utils: CombatUtils = get_node("/root/CombatUtils")
@@ -18,3 +17,10 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Public Properties ---
 var combat_config: CombatConfig = COMBAT_CONFIG
+
+
+func _ready() -> void:
+	# Instantiate and register the adapter for the FXManager.
+	# Components will now depend on the IFXManager interface, not the global singleton.
+	fx_manager = FXManagerAdapter.new()
+	add_child(fx_manager)

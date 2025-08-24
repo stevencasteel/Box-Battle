@@ -35,6 +35,30 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(core): decouple FXManager via interface and adapter
+
+Introduces an abstraction layer for the FXManager to break the direct
+coupling between components and the global autoload singleton. This is the
+first major step in applying the Dependency Inversion Principle.
+
+Changes:
+- Created `IFXManager.gd`, a new interface script that defines the
+  public contract for all FX-related services (e.g., `play_vfx`,
+  `request_screen_shake`).
+- Created `FXManagerAdapter.gd`, a concrete implementation of `IFXManager`
+  that acts as a thin wrapper, delegating all calls to the real
+  `/root/FXManager` autoload.
+- Updated `ServiceLocator` to instantiate and provide the `FXManagerAdapter`
+  under the `fx_manager` property.
+- Added the `IFXManager` interface to the `GlobalPreloader` to ensure its
+  `class_name` is registered early.
+
+This refactoring makes any component that uses the FX system significantly
+easier to test, as a mock `IFXManager` can now be injected instead of
+requiring the entire global singleton environment.
+
+
+
 feat(core): implement explicit dependency validation for components
 
 
