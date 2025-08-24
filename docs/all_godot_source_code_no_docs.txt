@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 22:08:28 CDT 2025
+Generated on: Sat Aug 23 22:44:27 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -404,6 +404,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── integration
 │   │   ├── isolation
 │   │   └── unit
+│   │       ├── test_combat_component.gd
 │   │       ├── test_combat_utils.gd
 │   │       ├── test_health_component.gd
 │   │       ├── test_input_component.gd
@@ -447,7 +448,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-81 directories, 358 files
+81 directories, 359 files
 
 
 =====================================
@@ -6852,15 +6853,15 @@ const GutInputSender = preload("res://addons/gut/input_sender.gd")
 # --- Test Internals ---
 var _input_component: InputComponent
 var _input_sender: GutInputSender
-var _mock_owner: Node
+var _mock_owner: CharacterBody2D
 
 # --- Test Lifecycle ---
 func before_all() -> void:
 	# Create a single input sender that targets the global Input singleton.
 	_input_sender = GutInputSender.new(Input)
 
-func before_each() -> void:
-	_mock_owner = Node.new()
+func before_each():
+	_mock_owner = CharacterBody2D.new()
 	add_child_autofree(_mock_owner)
 
 	_input_component = InputComponent.new()
@@ -6880,10 +6881,8 @@ func after_each() -> void:
 
 # --- The Tests ---
 func test_move_axis_is_buffered_correctly() -> void:
-	# Send the input and wait for the engine to fully process it.
 	_input_sender.action_down("ui_right").wait_frames(1)
 	await _input_sender.idle
-	# Now that Input is updated, manually run our component's logic.
 	_input_component._physics_process(0.016)
 	assert_eq(_input_component.buffer.get("move_axis"), 1.0, "Move axis should be 1.0 for 'ui_right'.")
 
@@ -6903,21 +6902,23 @@ func test_action_just_pressed_is_buffered_for_one_frame() -> void:
 	_input_component._physics_process(0.016)
 	assert_true(_input_component.buffer.get("jump_just_pressed"), "'jump_just_pressed' should be true on the frame it is pressed.")
 
-	# Without new input, the next manual process call should see "just_pressed" as false.
-	_input_component._physics_process(0.016)
+	# Advance one physics frame so the "just_pressed" condition expires.
+	await wait_physics_frames(1)
+	# note: physics frame will call _physics_process automatically, so no manual call needed
 	assert_false(_input_component.buffer.get("jump_just_pressed", false), "'jump_just_pressed' should be false on subsequent frames.")
 
 func test_action_released_is_buffered_for_one_frame() -> void:
 	_input_sender.action_down("ui_attack").wait_frames(1)
 	await _input_sender.idle
-	_input_component._physics_process(0.016) # Process the "press" frame
+	_input_component._physics_process(0.016)
 
 	_input_sender.action_up("ui_attack").wait_frames(1)
 	await _input_sender.idle
-	_input_component._physics_process(0.016) # Process the "release" frame
+	_input_component._physics_process(0.016)
 	assert_true(_input_component.buffer.get("attack_released"), "'attack_released' should be true on the frame it is released.")
 
-	_input_component._physics_process(0.016) # Next frame
+	# Advance one physics frame so the "attack_released" condition expires.
+	await wait_physics_frames(1)
 	assert_false(_input_component.buffer.get("attack_released", false), "'attack_released' should be false on subsequent frames.")
 
 func test_action_held_persists_across_frames() -> void:
@@ -6926,12 +6927,13 @@ func test_action_held_persists_across_frames() -> void:
 	_input_component._physics_process(0.016)
 	assert_true(_input_component.buffer.get("jump_held"), "'jump_held' should be true on the first frame.")
 
-	# The sender is still holding the action down, so the next process call should still see it.
 	_input_component._physics_process(0.016)
 	assert_true(_input_component.buffer.get("jump_held"), "'jump_held' should remain true on subsequent frames.")
 
 	_input_sender.action_up("ui_jump").wait_frames(1)
-	await _input_send
+	await _input_sender.idle
+	_input_component._physics_process(0.016)
+	assert_false(_input_component.buffer.get("jump_held", false), "'jump_held' should be false after being released.")
 
 =====================================
 FILE: ./src/tests/unit/test_player_resource_component.gd
@@ -7265,6 +7267,38 @@ func test_find_damageable_returns_null_if_no_damageable_ancestor_exists():
 	add_child_autofree(standalone_node)
 	var result = _combat_utils.find_damageable(standalone_node)
 	assert_null(result, "Should return null when no damageable parent is found.")
+
+=====================================
+FILE: ./src/tests/unit/test_combat_component.gd
+=====================================
+# src/tests/unit/test_combat_component.gd
+extends GutTest
+
+# --- TODO: Refactor test suite for CombatComponent ---
+# This test suite is temporarily disabled due to complex dependency issues.
+# The component relies on multiple autoloaded singletons (ServiceLocator,
+# ObjectPool, CombatUtils, FXManager) which have strict, interdependent
+# static types.
+#
+# Our attempts to create a test harness using GUT's `partial_double` and
+# fake classes that `extend` the real singletons failed at the script parsing
+# stage with the error: "Cannot use variable in extends chain". This is a
+# fundamental limitation of GDScript.
+#
+# These tests are marked as pending to allow the rest of the test suite to pass
+# cleanly. This file should be revisited after further research into advanced
+# patterns for mocking interdependent, statically-typed autoloads. The next
+# attempt should likely involve creating the fake classes in separate files
+# and using `load()` within the test functions themselves.
+
+func test_fire_shot_requests_correct_pool():
+	pending("Pending: Requires a working mock for ObjectPool via ServiceLocator.")
+
+func test_trigger_melee_attack_damages_target():
+	pending("Pending: Requires mocks for CombatUtils, FXManager, and a fake Damageable.")
+
+func test_trigger_pogo_returns_projectile_to_pool():
+	pending("Pending: Requires mocks for ObjectPool and CombatUtils.")
 
 =====================================
 FILE: ./src/tests/fakes/fake_event_bus.gd
