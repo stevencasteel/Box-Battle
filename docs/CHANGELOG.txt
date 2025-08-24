@@ -35,6 +35,19 @@
 ║                                                                              ║
 ║                                                                              ║
 
+
+refactor(Pool): Harden ObjectPool lifecycle and cleanup
+
+Implements the second P0 task from the architectural audit.
+
+- Decoupled FXManager from direct VFX instance tracking. FXManager now queries the ObjectPool for debug stats, making the ObjectPool the single source of truth for active instance counts and removing a risky signal connection.
+
+- Formalized the IPoolable interface contract with documentation clarifying that `deactivate()` must release all external service references.
+
+- Verified that `ObjectPool.reset()` correctly calls `deactivate()` on all active pooled objects during a scene transition, ensuring proper cleanup and preventing resource leaks.
+
+
+
 refactor(DI): Complete explicit dependency injection for entities
 
 Implements the first P0 task from the architectural audit.

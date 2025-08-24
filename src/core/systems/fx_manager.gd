@@ -11,7 +11,6 @@ var _camera_shaker: CameraShaker = null
 var _services: ServiceLocator
 var _managed_effects: Dictionary = {}
 
-var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
 
 
@@ -111,9 +110,6 @@ func play_vfx(
 		push_error("FXManager: Failed to get instance for pool key '%s'." % effect.pool_key)
 		return
 
-	_active_vfx_count += 1
-	vfx_instance.tree_exited.connect(func(): _active_vfx_count -= 1, CONNECT_ONE_SHOT)
-
 	vfx_instance.global_position = global_position
 
 	if vfx_instance.has_method("activate"):
@@ -169,16 +165,25 @@ func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubVi
 
 
 func get_debug_stats() -> Dictionary:
+	var services = _get_services()
+	var pool_stats = services.object_pool.get_pool_stats()
+	var vfx_count = 0
+	
+	# THE FIX: Query the ObjectPool directly for the count of active VFX.
+	# This makes the ObjectPool the single source of truth and removes risky signal connections.
+	# TODO: In the future, we could formalize which pools are "VFX" pools.
+	if pool_stats.has(Identifiers.Pools.HIT_SPARKS):
+		vfx_count += pool_stats[Identifiers.Pools.HIT_SPARKS].active
+
 	return {
-		"active_vfx": _active_vfx_count,
+		"active_vfx": vfx_count,
 		"active_shaders": _active_shader_effects,
 	}
+
 
 # --- Private Methods ---
 
 
-# THE FIX: Use a lazy-loaded getter to acquire the ServiceLocator.
-# This avoids a dependency cycle during the engine's autoload _ready() phase.
 func _get_services() -> ServiceLocator:
 	if not is_instance_valid(_services):
 		_services = get_node("/root/ServiceLocator")

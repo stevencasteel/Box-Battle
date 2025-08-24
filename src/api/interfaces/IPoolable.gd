@@ -13,5 +13,10 @@ func activate(_dependencies: Dictionary = {}) -> void:
 
 
 ## Prepares the node to be returned to the pool's inactive list.
+##
+## CONTRACT: Any implementation of this method MUST release all external
+## references it holds, especially references to services obtained from the
+## ServiceLocator. This is critical for preventing memory leaks and crashes
+## during scene transitions.
 func deactivate() -> void:
 	pass
