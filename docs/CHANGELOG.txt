@@ -35,6 +35,11 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(Player): Decouple ability component via signals
+
+- PlayerAbilityComponent no longer calls state_machine.change_state() directly. It now emits a `state_change_requested` signal with the desired state key.
+- The Player node now listens for this signal and is responsible for commanding its own state machine. This adheres to the principle of the owner managing its components and reduces coupling between components.
+
 
 refactor(VFX): Decouple HitSpark from global ObjectPool
 

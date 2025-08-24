@@ -3,9 +3,13 @@
 ## Governs the activation logic for player abilities.
 ##
 ## Reads the input buffer and game state to determine if an action (like
-## dashing or healing) can be performed, then instructs the StateMachine.
+## dashing or healing) can be performed, then emits a signal to request a state change.
 class_name PlayerAbilityComponent
 extends IComponent
+
+# --- Signals ---
+## Emitted when this component determines a state change should occur.
+signal state_change_requested(state_key: StringName, msg: Dictionary)
 
 # --- Constants ---
 const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
@@ -26,12 +30,11 @@ func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
 		return
 
-	var state_machine: BaseStateMachine = owner_node.get_component(BaseStateMachine)
 	var input_component: InputComponent = owner_node.get_component(InputComponent)
-	if not is_instance_valid(state_machine) or not is_instance_valid(input_component):
+	if not is_instance_valid(input_component):
 		return
 
-	var current_state_key = state_machine._current_state_key
+	var current_state_key = owner_node.get_component(BaseStateMachine)._current_state_key
 
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
@@ -48,19 +51,19 @@ func _physics_process(_delta: float) -> void:
 			and owner_node.is_on_floor()
 			and is_zero_approx(owner_node.velocity.x)
 		):
-			state_machine.change_state(Identifiers.PlayerStates.HEAL)
+			state_change_requested.emit(Identifiers.PlayerStates.HEAL, {})
 			return # Stop further processing of this input
 
 		# 2. Platform Drop
 		if is_holding_down:
-			# THE FIX: Use the correct variable 'owner_node'.
 			if JumpHelper.try_platform_drop(owner_node):
-				return # Stop further processing
+				# The helper calls change_state directly for this one, so we just return.
+				return
 
 		# 3. Standard Jump (includes wall, ground, coyote, and air jumps)
-		# THE FIX: Use the correct variable 'owner_node'.
 		if JumpHelper.try_jump(owner_node, p_data):
-			return # Stop further processing
+			# The helper calls change_state directly, so we return.
+			return
 
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
 		p_data.is_charging = true
@@ -71,9 +74,9 @@ func _physics_process(_delta: float) -> void:
 			if p_data.charge_timer >= p_data.config.player_charge_time:
 				owner_node.get_component(CombatComponent).fire_shot()
 			elif input_component.buffer.get("down"):
-				state_machine.change_state(Identifiers.PlayerStates.POGO)
+				state_change_requested.emit(Identifiers.PlayerStates.POGO, {})
 			else:
-				state_machine.change_state(Identifiers.PlayerStates.ATTACK)
+				state_change_requested.emit(Identifiers.PlayerStates.ATTACK, {})
 			p_data.is_charging = false
 
 	if (
@@ -81,7 +84,7 @@ func _physics_process(_delta: float) -> void:
 		and p_data.can_dash
 		and p_data.dash_cooldown_timer <= 0
 	):
-		state_machine.change_state(Identifiers.PlayerStates.DASH)
+		state_change_requested.emit(Identifiers.PlayerStates.DASH, {})
 
 
 # --- Public Methods ---
