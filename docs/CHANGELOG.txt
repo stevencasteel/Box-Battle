@@ -35,6 +35,13 @@
 ║                                                                              ║
 ║                                                                              ║
 
+test(Component): Add unit test for PlayerResourceComponent
+
+- Created a new unit test for PlayerResourceComponent, verifying all core resource-management logic.
+- Implemented a FakeEventBus to enable testing of event emissions in isolation.
+- The new test suite successfully identified and led to a fix for a bug where determination was incorrectly incremented when healing charges were capped.
+
+
 
 test(Suite): Rebuild foundational unit tests with autoload swapping
 

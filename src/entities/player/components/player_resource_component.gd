@@ -31,7 +31,7 @@ func teardown() -> void:
 ## Called when the player successfully deals damage to an enemy.
 func on_damage_dealt() -> void:
 	if p_data.healing_charges >= p_data.config.player_max_healing_charges:
-		return
+		return # Do not increment determination if charges are already at max.
 
 	p_data.determination_counter += 1
 	if p_data.determination_counter >= p_data.config.player_determination_per_charge:
