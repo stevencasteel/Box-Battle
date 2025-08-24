@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="LungeLogic" load_steps=2 format=3 uid="uid://lunge_logic_tres_id"]
+
+[ext_resource type="Script" path="res://src/combat/attack_logic/lunge_logic.gd" id="1_lunge_logic"]
+
+[resource]
+script = ExtResource("1_lunge_logic")

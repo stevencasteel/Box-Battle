@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://bve7t5ucr1k"]
 
 [ext_resource type="Script" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" path="res://src/entities/boss/attack_patterns/single_shot_logic.tres" id="2_logic"]
+[ext_resource type="Resource" path="res://src/combat/attack_logic/single_shot_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")

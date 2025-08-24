@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="HomingOmniBurstLogic" load_steps=2 format=3 uid="uid://homing_logic_tres"]
 
-[ext_resource type="Script" path="res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd" id="1_logic_script"]
+[ext_resource type="Script" path="res://src/combat/attack_logic/homing_omni_burst_logic.gd" id="1_logic_script"]
 
 [resource]
 script = ExtResource("1_logic_script")

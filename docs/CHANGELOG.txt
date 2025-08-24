@@ -35,6 +35,17 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(Combat): Unify AttackLogic into a shared directory
+
+Implements the second task of the minion framework refactor.
+
+- Created a new shared directory `src/combat/attack_logic/`.
+- Relocated all boss-specific AttackLogic scripts (.gd) and resources (.tres) into this new shared directory.
+- Updated all AttackPattern resources to point to the new, centralized location of their associated AttackLogic.
+
+This structural change signifies that AttackLogic strategies are now globally reusable components for any entity, decoupling them from the boss and enabling minions to share the same attack behaviors.
+
+
 refactor(FX): Decouple hit-flash effect from entity scripts
 
 Implements the first part of the minion framework refactor, adhering to the DRY principle for effect handling.
