@@ -7,28 +7,27 @@
 class_name TerrainBuilder
 extends Node
 
-# --- Constants ---
-const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
-
 # --- Public Methods ---
 
 
 ## Asynchronously creates all terrain nodes defined in the [LevelBuildData].
-func build_terrain_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
+func build_terrain_async(
+	parent_node: Node, build_data: LevelBuildData, tree: SceneTree, services: ServiceLocator
+) -> void:
 	const BATCH_SIZE = 20
 
 	for i in range(build_data.terrain_tiles.size()):
-		_create_solid_tile(parent_node, build_data.terrain_tiles[i])
+		_create_solid_tile(parent_node, build_data.terrain_tiles[i], services)
 		if i % BATCH_SIZE == 0:
 			await tree.process_frame
 
 	for i in range(build_data.oneway_platforms.size()):
-		_create_oneway_platform(parent_node, build_data.oneway_platforms[i])
+		_create_oneway_platform(parent_node, build_data.oneway_platforms[i], services)
 		if i % BATCH_SIZE == 0:
 			await tree.process_frame
 
 	for i in range(build_data.hazard_tiles.size()):
-		_create_hazard_tile(parent_node, build_data.hazard_tiles[i])
+		_create_hazard_tile(parent_node, build_data.hazard_tiles[i], services)
 		if i % BATCH_SIZE == 0:
 			await tree.process_frame
 
@@ -36,15 +35,17 @@ func build_terrain_async(parent_node: Node, build_data: LevelBuildData, tree: Sc
 
 
 ## Procedurally fills the camera's viewport with background grid tiles.
-func fill_viewport(parent_node: Node, build_data: LevelBuildData, camera: Camera2D) -> void:
+func fill_viewport(
+	parent_node: Node, build_data: LevelBuildData, camera: Camera2D, services: ServiceLocator
+) -> void:
 	var view_transform = camera.get_viewport().get_canvas_transform().affine_inverse()
 	var world_top_left = view_transform.origin
 	var world_bottom_right = (
 		world_top_left + camera.get_viewport_rect().size * view_transform.get_scale()
 	)
 
-	var grid_top_left: Vector2i = GridUtilsScript.world_to_grid(world_top_left)
-	var grid_bottom_right: Vector2i = GridUtilsScript.world_to_grid(world_bottom_right)
+	var grid_top_left: Vector2i = services.grid_utils.world_to_grid(world_top_left)
+	var grid_bottom_right: Vector2i = services.grid_utils.world_to_grid(world_bottom_right)
 
 	var existing_bg_tiles = {}
 	for pos in build_data.background_tiles:
@@ -69,7 +70,7 @@ func _create_background_tile(parent_node: Node, grid_pos: Vector2i) -> void:
 	parent_node.move_child(visual_rect, 0)
 
 
-func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
+func _create_solid_tile(parent_node: Node, pos: Vector2, _services: ServiceLocator) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = PhysicsLayers.SOLID_WORLD
@@ -97,7 +98,7 @@ func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	parent_node.add_child(static_body)
 
 
-func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
+func _create_oneway_platform(parent_node: Node, pos: Vector2, _services: ServiceLocator) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = PhysicsLayers.PLATFORMS
@@ -131,7 +132,7 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	parent_node.add_child(static_body)
 
 
-func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
+func _create_hazard_tile(parent_node: Node, pos: Vector2, _services: ServiceLocator) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = PhysicsLayers.HAZARD | PhysicsLayers.SOLID_WORLD

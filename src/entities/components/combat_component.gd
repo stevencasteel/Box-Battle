@@ -8,14 +8,10 @@ extends IComponent
 signal damage_dealt
 signal pogo_bounce_requested
 
-# --- Constants ---
-# THE FIX: Preload the script with the static function.
-const CombatUtilsScript = preload("res://src/core/util/combat_utils.gd")
-
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
-var _services: ServiceLocator  # Dependency
+var _services: ServiceLocator # Dependency
 
 # --- Public Methods ---
 
@@ -61,8 +57,7 @@ func trigger_melee_attack(target_body: Node) -> void:
 		return
 
 	p_data.hit_targets_this_swing[target_id] = true
-	# THE FIX: Call the function statically on the preloaded script.
-	var damageable = CombatUtilsScript.find_damageable(target_body)
+	var damageable = _services.combat_utils.find_damageable(target_body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
 		damage_info.source_node = owner_node
@@ -70,9 +65,7 @@ func trigger_melee_attack(target_body: Node) -> void:
 		var is_close_range = distance <= p_data.config.player_close_range_threshold
 		damage_info.amount = 5 if is_close_range else 1
 		damage_info.impact_position = target_body.global_position
-		damage_info.impact_normal = (
-			(target_body.global_position - owner_node.global_position).normalized()
-		)
+		damage_info.impact_normal = (target_body.global_position - owner_node.global_position).normalized()
 
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
@@ -96,8 +89,7 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		should_bounce = true
 		_services.object_pool.return_instance.call_deferred(pogo_target)
 
-	# THE FIX: Call the function statically on the preloaded script.
-	var damageable = CombatUtilsScript.find_damageable(pogo_target)
+	var damageable = _services.combat_utils.find_damageable(pogo_target)
 	if is_instance_valid(damageable):
 		should_bounce = true
 		var damage_info = DamageInfo.new()

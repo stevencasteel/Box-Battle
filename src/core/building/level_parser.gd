@@ -7,14 +7,11 @@
 class_name LevelParser
 extends RefCounted
 
-# --- Constants ---
-const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
-
 # --- Public Methods ---
 
 
 ## Parses the provided [EncounterData] and returns a populated [LevelBuildData].
-func parse_level_data(encounter_data: EncounterData) -> LevelBuildData:
+func parse_level_data(encounter_data: EncounterData, services: ServiceLocator) -> LevelBuildData:
 	var data = LevelBuildData.new()
 	if not is_instance_valid(encounter_data):
 		push_error("LevelParser: Invalid EncounterData provided.")
@@ -41,7 +38,7 @@ func parse_level_data(encounter_data: EncounterData) -> LevelBuildData:
 		for x in range(row_string.length()):
 			var tile_char: String = row_string[x]
 			var tile_grid_pos = Vector2i(x, y)
-			var tile_world_pos = GridUtilsScript.grid_to_world(tile_grid_pos)
+			var tile_world_pos = services.grid_utils.grid_to_world(tile_grid_pos)
 
 			match tile_char:
 				"#":

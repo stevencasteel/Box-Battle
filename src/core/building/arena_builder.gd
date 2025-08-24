@@ -34,7 +34,7 @@ func build_level_async() -> Node:
 		return _current_level_container
 
 	var parser = LevelParser.new()
-	_current_build_data = parser.parse_level_data(encounter_data)
+	_current_build_data = parser.parse_level_data(encounter_data, ServiceLocator)
 	_current_build_data.encounter_data_resource = encounter_data
 	_current_level_container.set_meta("build_data", _current_build_data)
 
@@ -42,7 +42,7 @@ func build_level_async() -> Node:
 
 	var terrain_builder = TerrainBuilder.new()
 	await terrain_builder.build_terrain_async(
-		_current_level_container, _current_build_data, get_tree()
+		_current_level_container, _current_build_data, get_tree(), ServiceLocator
 	)
 
 	await _spawn_player_async()
@@ -65,7 +65,6 @@ func _inject_entity_services(instance: Node) -> void:
 	if not is_instance_valid(instance):
 		return
 	if instance.has_method("inject_dependencies"):
-		# THE FIX: Pass the ServiceLocator singleton directly.
 		instance.inject_dependencies(ServiceLocator)
 
 

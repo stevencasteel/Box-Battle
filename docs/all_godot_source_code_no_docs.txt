@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 19:18:09 CDT 2025
+Generated on: Sat Aug 23 19:52:15 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -130,6 +130,7 @@ PROJECT DIRECTORY STRUCTURE:
 │       ├── version_conversion.gd
 │       ├── version_numbers.gd
 │       └── warnings_manager.gd
+├── all_script_errors.txt
 ├── default_bus_layout.tres
 ├── docs
 │   ├── ARCHITECTURE.txt
@@ -453,7 +454,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-81 directories, 364 files
+81 directories, 365 files
 
 
 =====================================
@@ -679,6 +680,253 @@ FILE: ./materials/entity_hit_flash_material.tres
 shader = ExtResource("1_shader")
 shader_parameter/fx_progress = 0.0
 shader_parameter/tint_color = Color(1, 0, 0, 1)
+
+=====================================
+FILE: ./all_script_errors.txt
+=====================================
+WorkerThreadPool: 8 threads, 2 max low-priority.
+Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Devices:
+  #0: Apple Apple M1 (Apple7) - Supported, Integrated
+- Metal multiview supported:
+  max view count: 16
+  max instances: 4294967295
+Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
+Using "default" pen tablet driver...
+Shader 'CanvasSdfShaderRD' (group 0) SHA256: 97dc9fb2f592cd02d8b1f8fd33df8aec73849d2fbafcfeaa6e99b9c3678c221d
+Shader 'SkeletonShaderRD' (group 0) SHA256: a7e5115c09793f8e950720a2ab8906bff195e9b508eec01af7aeb363da2bf75b
+Shader 'SortShaderRD' (group 0) SHA256: e184fb752fd6b1f86c536cb9dff20977fee019403e1025080eca44e6bfa11ef1
+Shader 'ParticlesShaderRD' (group 0) SHA256: 9797916f926fab4024422fe6c75cc0d8d517705d90802882fb9efa6dda0af392
+Shader 'ParticlesCopyShaderRD' (group 0) SHA256: 1a312a6797c1ba217655b41d33ce357ac226cba8d65d4daab9278d88c57d6468
+Shader 'CanvasShaderRD' (group 0) SHA256: 908e609e1337d67f8799155a57f03a3de33fcdba22b574595e90da921079b33d
+Shader 'CanvasOcclusionShaderRD' (group 0) SHA256: f9d6c9d569cf2f40595061ee84efd5fe34d68284e1f7273f62a4ac36de8852ee
+Shader 'SceneForwardMobileShaderRD' (group 0) SHA256: 1c5d16b1f4d38d016026900999bd209a9f901f70f04136d9fdd669f9601e2db3
+Shader 'SkyShaderRD' (group 0) SHA256: 34c03a8e46624b5ab7488ca0527d4f733272c048f0dd61258a69b9bf419225bd
+Shader 'BokehDofRasterShaderRD' (group 0) SHA256: a5ed26e5b86fb1a016f61f719fa3ba45119a0bda505dcc038bfd26e718ef956d
+Shader 'BlurRasterShaderRD' (group 0) SHA256: 193d80f293dc88299ae7ef003640f13fa7cab1fd1a57de366b53029265639146
+Shader 'CopyShaderRD' (group 0) SHA256: aaaaf4bfa2e7bd72bdafaa25005b56152e2e738422178c95ce5ed4976f964862
+Shader 'CopyToFbShaderRD' (group 0) SHA256: f113ba1d923f38bcf263af4dbc168573e755be83c1d3616fc49b7588aa9fffa4
+Shader 'CubeToDpShaderRD' (group 0) SHA256: 37d76ea0432d00e86934ff9eab83ce63c9c7feffafd96809773e109c5a078e17
+Shader 'CubemapDownsamplerRasterShaderRD' (group 0) SHA256: 20c48704e5817755c17d80b22e7c39d99270bd1e95c54446d742753abc03db33
+Shader 'CubemapFilterRasterShaderRD' (group 0) SHA256: de06c7a642b6af01caa44a65e94daa5dfafbdda1a6111bdd975c28e8c1fe4c1a
+Shader 'CubemapRoughnessRasterShaderRD' (group 0) SHA256: 3efae0638df891d7ec5aaa17ead03d3243a3fdc9f5920d95e16f92a0aeccfd04
+Shader 'SpecularMergeShaderRD' (group 0) SHA256: 8d06f9bec87ae4177f0a49133608f41313ebad2d0d81a5c074db1541cd396ddc
+Shader 'ShadowFrustumShaderRD' (group 0) SHA256: b73466659c6c1252aff41d1d117370efac3ed69d2ee89bb6e036036557afb5bd
+Shader 'MotionVectorsShaderRD' (group 0) SHA256: 548f1c61370fbba7d8bacec2827d86adc6984d8874d31cb21b7bb5f78e6d4335
+Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e6003b5a0c97bd615d1990a7012076a61e11cb05df558
+Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
+Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
+CoreAudio: detected 2 channels
+CoreAudio: output sampling rate: 48000 Hz
+CoreAudio: output audio buffer frames: 512 calculated latency: 10ms
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
+Loading resource: res://default_bus_layout.tres
+CORE API HASH: 4052744068
+EDITOR API HASH: 910296392
+Loading resource: res://src/core/systems/game_manager.gd
+Loading resource: res://src/core/systems/scene_manager.gd
+Loading resource: res://src/core/systems/audio_manager.gd
+Loading resource: res://src/core/systems/fx_manager.gd
+Loading resource: res://src/core/systems/camera_manager.gd
+Loading resource: res://src/core/systems/cursor_manager.gd
+Loading resource: res://assets/sprites/ui/cursors/sprite_cursor_default.png
+Loading resource: res://.godot/imported/sprite_cursor_default.png-0ae11c7582bcce7f2e16760a505c9927.ctex
+Loading resource: res://assets/sprites/ui/cursors/sprite_cursor_pointer.png
+Loading resource: res://.godot/imported/sprite_cursor_pointer.png-6681326a5b7347271de62dd751fb3b83.ctex
+Loading resource: res://src/core/systems/dialogue_manager.gd
+Loading resource: res://src/ui/dialogue/dialogue_box.tscn
+Loading resource: res://src/ui/dialogue/dialogue_box.gd
+Loading resource: res://src/core/building/arena_builder.gd
+Loading resource: res://src/data/combat_config.tres
+Loading resource: res://src/core/data/config/combat_config.gd
+Loading resource: res://src/entities/player/data/forward_attack_shape.tres
+Loading resource: res://src/entities/player/data/upward_attack_shape.tres
+Loading resource: res://src/api/global_preloader.gd
+Loaded system CA certificates
+Loading resource: res://src/scenes/main/main.tscn
+Loading resource: res://src/scenes/main/main.gd
+Loading resource: res://src/projectiles/player_shot.tscn
+Loading resource: res://src/projectiles/player_shot.gd
+Loading resource: res://src/projectiles/boss_shot.tscn
+Loading resource: res://src/projectiles/boss_shot.gd
+Loading resource: res://src/projectiles/turret_shot.tscn
+Loading resource: res://src/projectiles/turret_shot.gd
+Loading resource: res://src/projectiles/homing_boss_shot.tscn
+Loading resource: res://src/projectiles/homing_boss_shot.gd
+Loading resource: res://src/vfx/hit_spark.tscn
+Loading resource: res://src/vfx/hit_spark.gd
+AssetPaths: Validating all asset paths...
+AssetPaths: All paths validated successfully.
+Loading resource: res://assets/audio/music/music_menu_loop.mp3
+Loading resource: res://.godot/imported/music_menu_loop.mp3-a3f890b5159e51d7cc53cdad36cfcd36.mp3str
+Loading resource: res://src/scenes/menus/title_screen.tscn
+Loading resource: res://src/scenes/menus/title_screen.gd
+Loading resource: res://assets/sprites/ui/icons/icon_ui_sound_on.png
+Loading resource: res://.godot/imported/icon_ui_sound_on.png-c97b0b59545c0dc177b96447a16e0a9f.ctex
+Loading resource: res://assets/sprites/ui/icons/icon_ui_sound_off.png
+Loading resource: res://.godot/imported/icon_ui_sound_off.png-3fb3ac644d936ac41f943fdd25d24217.ctex
+Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
+Loading resource: res://src/ui/components/logo_display/logo_display.tscn
+Loading resource: res://assets/sprites/ui/logos/newgrounds_logo.png
+Loading resource: res://.godot/imported/newgrounds_logo.png-2977cde893870d21b7f84cd17b13c225.ctex
+Loading resource: res://assets/sprites/ui/logos/godot_logo.png
+Loading resource: res://.godot/imported/godot_logo.png-2c4abc4be94a9a8ee3cb014f11b6a489.ctex
+Loading resource: res://assets/sprites/ui/logos/itch_logo.png
+Loading resource: res://.godot/imported/itch_logo.png-55a8cdb2f6f34f33f1968a45adf238ea.ctex
+Loading resource: res://assets/fonts/font_main_black.ttf
+Loading resource: res://.godot/imported/font_main_black.ttf-766d9cc0a208469438ff831535d8483c.fontdata
+Loading resource: res://src/ui/components/mute_button/mute_button.tscn
+Loading resource: res://assets/fonts/font_main_bold.ttf
+Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
+Loading resource: res://assets/audio/sfx/sfx_ui_move.mp3
+Loading resource: res://.godot/imported/sfx_ui_move.mp3-22d501a1c652a7c7f2af3e97d97a2b16.mp3str
+Loading resource: res://assets/audio/sfx/sfx_ui_select.mp3
+Loading resource: res://.godot/imported/sfx_ui_select.mp3-3073366784d3e7caa5d5c9691f71648c.mp3str
+Loading resource: res://src/scenes/loading/loading_screen.tscn
+Loading resource: res://src/scenes/loading/loading_screen.gd
+Loading resource: res://src/data/effects/entity_hit_flash_effect.tres
+Loading resource: res://materials/entity_hit_flash_material.tres
+Loading resource: res://shaders/entity/red_hit_flash_test.gdshader
+Starting shader pre-warming...
+Loading resource: res://src/entities/player/player.tscn
+Loading resource: res://src/entities/archetypes/player_archetype.tres
+Loading resource: res://src/entities/components/health_component.tscn
+Loading resource: res://src/entities/components/combat_component.tscn
+Loading resource: res://src/entities/components/input_component.tscn
+Loading resource: res://src/entities/components/base_state_machine.tscn
+Loading resource: res://src/entities/player/components/player_physics_component.tscn
+Loading resource: res://src/entities/player/components/player_physics_component.gd
+Loading resource: res://src/entities/player/components/player_ability_component.tscn
+Loading resource: res://src/entities/player/components/player_ability_component.gd
+Loading resource: res://src/entities/player/components/player_resource_component.tscn
+Loading resource: res://src/entities/components/fx_component.tscn
+Loading resource: res://src/core/data/effects/player_damage_shake.tres
+Loading resource: res://src/core/data/effects/player_hit_spark_effect.tres
+Loading resource: res://src/entities/player/states/state_move.gd
+Loading resource: res://src/entities/player/states/state_jump.gd
+Loading resource: res://src/entities/player/states/state_fall.gd
+Loading resource: res://src/entities/player/states/state_dash.gd
+Loading resource: res://src/entities/player/states/state_wall_slide.gd
+Loading resource: res://src/entities/player/states/state_attack.gd
+Loading resource: res://src/entities/player/states/state_hurt.gd
+Loading resource: res://src/entities/player/states/state_heal.gd
+Loading resource: res://src/entities/player/states/state_pogo.gd
+Loading resource: res://src/core/data/effects/dissolve_effect.tres
+Loading resource: res://materials/dissolve_material.tres
+Loading resource: res://shaders/entity/dissolve.gdshader
+Loading resource: res://assets/textures/noise_texture.tres
+Loading resource: res://src/entities/boss/base_boss.tscn
+Loading resource: res://src/entities/boss/attack_patterns/single_shot.tres
+Loading resource: res://src/entities/boss/attack_patterns/single_shot_logic.tres
+Loading resource: res://src/entities/boss/attack_patterns/projectile_logic.gd
+Loading resource: res://src/entities/boss/attack_patterns/volley_3_shot.tres
+Loading resource: res://src/entities/boss/attack_patterns/volley_shot_logic.tres
+Loading resource: res://src/entities/boss/attack_patterns/lunge_attack.tres
+Loading resource: res://src/entities/boss/attack_patterns/lunge_logic.tres
+Loading resource: res://src/entities/boss/attack_patterns/lunge_logic.gd
+Loading resource: res://src/entities/boss/attack_patterns/volley_5_shot.tres
+Loading resource: res://src/core/data/effects/boss_phase_change_shake.tres
+Loading resource: res://src/core/data/effects/boss_death_shake.tres
+Loading resource: res://src/entities/archetypes/boss_archetype.tres
+Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
+Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_logic.tres
+Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_logic.gd
+Loading resource: res://src/entities/boss/states/state_boss_idle.gd
+Loading resource: res://src/entities/boss/states/state_boss_attack.gd
+Loading resource: res://src/entities/components/telegraph_component.tscn
+Loading resource: res://src/entities/components/telegraph_component.gd
+Loading resource: res://src/entities/boss/states/state_boss_cooldown.gd
+Loading resource: res://src/entities/boss/states/state_boss_patrol.gd
+Loading resource: res://src/entities/boss/states/state_boss_lunge.gd
+Shader pre-warming complete.
+Loading resource: res://src/core/data/effects/dissolve_effect.tres
+Loading resource: res://materials/dissolve_material.tres
+Loading resource: res://shaders/entity/dissolve.gdshader
+Loading resource: res://assets/textures/noise_texture.tres
+FXManager: Starting shader pre-warm...
+FXManager: Shader pre-warm complete.
+Loading resource: res://src/data/encounters/encounter_00.tres
+Loading resource: res://src/entities/boss/base_boss.tscn
+Loading resource: res://src/entities/boss/attack_patterns/single_shot.tres
+Loading resource: res://src/entities/boss/attack_patterns/single_shot_logic.tres
+Loading resource: res://src/entities/boss/attack_patterns/volley_3_shot.tres
+Loading resource: res://src/entities/boss/attack_patterns/volley_shot_logic.tres
+Loading resource: res://src/entities/boss/attack_patterns/lunge_attack.tres
+Loading resource: res://src/entities/boss/attack_patterns/lunge_logic.tres
+Loading resource: res://src/entities/boss/attack_patterns/volley_5_shot.tres
+Loading resource: res://src/core/data/effects/boss_phase_change_shake.tres
+Loading resource: res://src/core/data/effects/boss_death_shake.tres
+Loading resource: res://src/core/data/effects/player_hit_spark_effect.tres
+Loading resource: res://src/entities/archetypes/boss_archetype.tres
+Loading resource: res://src/entities/components/health_component.tscn
+Loading resource: res://src/entities/components/base_state_machine.tscn
+Loading resource: res://src/entities/components/fx_component.tscn
+Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
+Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_logic.tres
+Loading resource: res://src/data/layouts/layout_00.tres
+Loading resource: res://src/entities/minions/turret.tscn
+Loading resource: res://src/entities/minions/turret.gd
+Loading resource: res://src/entities/archetypes/turret_archetype.tres
+Loading resource: res://src/entities/player/player.tscn
+Loading resource: res://src/entities/archetypes/player_archetype.tres
+Loading resource: res://src/entities/components/combat_component.tscn
+Loading resource: res://src/entities/components/input_component.tscn
+Loading resource: res://src/entities/player/components/player_physics_component.tscn
+Loading resource: res://src/entities/player/components/player_ability_component.tscn
+Loading resource: res://src/entities/player/components/player_resource_component.tscn
+Loading resource: res://src/core/data/effects/player_damage_shake.tres
+Loading resource: res://src/ui/game_hud/game_hud.tscn
+Loading resource: res://src/ui/game_hud/game_hud.gd
+Loading resource: res://src/scenes/game/encounter_scene.tscn
+Loading resource: res://src/scenes/game/encounter_scene.gd
+Loading resource: res://src/data/dialogue/test_conversation.tres
+Loading resource: res://src/entities/minions/states/state_turret_idle.gd
+Loading resource: res://src/entities/minions/states/state_turret_attack.gd
+Loading resource: res://src/core/systems/camera_shaker.tscn
+Loading resource: res://src/ui/dev/debug_overlay.tscn
+XR: Clearing primary interface
+XR: Removed interface "Native mobile"
+XR: Removed interface "OpenXR"
+Leaked instance: GDScriptNativeClass:9223372049924227761
+Leaked instance: GDScript:9223372077824738706 - Resource path: res://src/core/building/terrain_builder.gd
+Leaked instance: SceneTreeTimer:9223372117200865415
+Leaked instance: Node:125325805711 - Node path: 
+Leaked instance: Tween:9223372231235603156
+Leaked instance: Node:145508797204 - Node path: 
+Leaked instance: IntervalTweener:9223372231252381490
+Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
+Resource still in use: res://src/core/building/terrain_builder.gd (GDScript)
+Orphan StringName: _enter_tree (static: 0, total: 2)
+Orphan StringName: _set_path_cache (static: 0, total: 1)
+Orphan StringName: _reset_state (static: 0, total: 1)
+Orphan StringName: _unhandled_input (static: 0, total: 2)
+Orphan StringName: _ready (static: 0, total: 2)
+Orphan StringName: _exit_tree (static: 0, total: 2)
+Orphan StringName: _create_solid_tile (static: 0, total: 1)
+Orphan StringName: _setup_local_to_scene (static: 0, total: 1)
+Orphan StringName: _create_hazard_tile (static: 0, total: 1)
+Orphan StringName: telegraph_finished (static: 0, total: 1)
+Orphan StringName: finished (static: 0, total: 1)
+Orphan StringName: _input (static: 0, total: 2)
+Orphan StringName: _shortcut_input (static: 0, total: 2)
+Orphan StringName: timeout (static: 2, total: 3)
+Orphan StringName: _process (static: 0, total: 2)
+Orphan StringName: _create_oneway_platform (static: 0, total: 1)
+Orphan StringName: _create_background_tile (static: 0, total: 1)
+Orphan StringName: Node (static: 5, total: 6)
+Orphan StringName: _unhandled_key_input (static: 0, total: 2)
+Orphan StringName: build_terrain_async (static: 0, total: 1)
+Orphan StringName: _get_configuration_warnings (static: 0, total: 2)
+Orphan StringName: fill_viewport (static: 0, total: 1)
+Orphan StringName: _get_rid (static: 0, total: 1)
+Orphan StringName: TerrainBuilder (static: 0, total: 3)
+Orphan StringName: _physics_process (static: 0, total: 2)
+StringName: 25 unclaimed string names at exit.
+
 
 =====================================
 FILE: ./README.md
@@ -2685,7 +2933,7 @@ func _ready() -> void:
 			CameraManager.center_camera_on_arena(camera, build_data.dimensions_tiles)
 			await get_tree().process_frame
 			var terrain_builder = TerrainBuilder.new()
-			terrain_builder.fill_viewport(_level_container, build_data, camera)
+			terrain_builder.fill_viewport(_level_container, build_data, camera, ServiceLocator)
 
 	_initialize_camera_shaker()
 	_initialize_debug_inspector()
@@ -2815,7 +3063,6 @@ func _on_boss_died(payload: Dictionary) -> void:
 
 	if is_instance_valid(_death_sequence_handle):
 		SceneManager.go_to_victory()
-
 
 =====================================
 FILE: ./src/scenes/menus/options_screen.tscn
@@ -4213,13 +4460,11 @@ FILE: ./src/core/util/combat_utils.gd
 ## An autoloaded singleton containing static helper functions for combat logic.
 extends Node
 
-# --- Static Functions ---
-
 
 ## Traverses up the scene tree from a given node to find the first node that
 ## implements the IDamageable interface (i.e., has an `apply_damage` method).
 ## This is the canonical way to find a valid damage target from a collision.
-static func find_damageable(from_node: Node) -> Node:
+func find_damageable(from_node: Node) -> Node:
 	if not is_instance_valid(from_node):
 		return null
 
@@ -4236,7 +4481,6 @@ static func find_damageable(from_node: Node) -> Node:
 		current_node = current_node.get_parent()
 
 	return null
-
 
 =====================================
 FILE: ./src/core/util/service_locator.gd
@@ -4257,10 +4501,10 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 @onready var event_bus: EventBus = get_node("/root/EventBus")
 @onready var sequencer: Sequencer = get_node("/root/Sequencer")
 @onready var combat_utils: CombatUtils = get_node("/root/CombatUtils")
+@onready var grid_utils: GridUtils = get_node("/root/GridUtils")
 
 # --- Public Properties ---
 var combat_config: CombatConfig = COMBAT_CONFIG
-
 
 =====================================
 FILE: ./src/core/util/grid_utils.gd
@@ -4270,19 +4514,15 @@ FILE: ./src/core/util/grid_utils.gd
 ## between the logical tile grid and world-space pixel coordinates.
 extends Node
 
-# --- Static Functions ---
-
-
 ## Converts a grid coordinate (e.g., [Vector2i(2, 3)]) to a world position.
-static func grid_to_world(tile_pos: Vector2i, tile_size: int = Constants.TILE_SIZE) -> Vector2:
+func grid_to_world(tile_pos: Vector2i, tile_size: int = Constants.TILE_SIZE) -> Vector2:
 	var half_tile = tile_size / 2.0
 	return Vector2(tile_pos.x * tile_size + half_tile, tile_pos.y * tile_size + half_tile)
 
 
 ## Converts a world position (in pixels) to its corresponding grid coordinate.
-static func world_to_grid(world_pos: Vector2, tile_size: int = Constants.TILE_SIZE) -> Vector2i:
+func world_to_grid(world_pos: Vector2, tile_size: int = Constants.TILE_SIZE) -> Vector2i:
 	return Vector2i(floor(world_pos.x / tile_size), floor(world_pos.y / tile_size))
-
 
 =====================================
 FILE: ./src/core/util/physics_layers.gd
@@ -4997,6 +5237,7 @@ func _on_typing_finished() -> void:
 	var line = _current_data.lines[_current_index]
 	if line.wait_after > 0.0:
 		await get_tree().create_timer(line.wait_after).timeout
+
 
 =====================================
 FILE: ./src/core/systems/game_manager.gd
@@ -5830,14 +6071,11 @@ FILE: ./src/core/building/level_parser.gd
 class_name LevelParser
 extends RefCounted
 
-# --- Constants ---
-const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
-
 # --- Public Methods ---
 
 
 ## Parses the provided [EncounterData] and returns a populated [LevelBuildData].
-func parse_level_data(encounter_data: EncounterData) -> LevelBuildData:
+func parse_level_data(encounter_data: EncounterData, services: ServiceLocator) -> LevelBuildData:
 	var data = LevelBuildData.new()
 	if not is_instance_valid(encounter_data):
 		push_error("LevelParser: Invalid EncounterData provided.")
@@ -5864,7 +6102,7 @@ func parse_level_data(encounter_data: EncounterData) -> LevelBuildData:
 		for x in range(row_string.length()):
 			var tile_char: String = row_string[x]
 			var tile_grid_pos = Vector2i(x, y)
-			var tile_world_pos = GridUtilsScript.grid_to_world(tile_grid_pos)
+			var tile_world_pos = services.grid_utils.grid_to_world(tile_grid_pos)
 
 			match tile_char:
 				"#":
@@ -5902,28 +6140,27 @@ FILE: ./src/core/building/terrain_builder.gd
 class_name TerrainBuilder
 extends Node
 
-# --- Constants ---
-const GridUtilsScript = preload("res://src/core/util/grid_utils.gd")
-
 # --- Public Methods ---
 
 
 ## Asynchronously creates all terrain nodes defined in the [LevelBuildData].
-func build_terrain_async(parent_node: Node, build_data: LevelBuildData, tree: SceneTree) -> void:
+func build_terrain_async(
+	parent_node: Node, build_data: LevelBuildData, tree: SceneTree, services: ServiceLocator
+) -> void:
 	const BATCH_SIZE = 20
 
 	for i in range(build_data.terrain_tiles.size()):
-		_create_solid_tile(parent_node, build_data.terrain_tiles[i])
+		_create_solid_tile(parent_node, build_data.terrain_tiles[i], services)
 		if i % BATCH_SIZE == 0:
 			await tree.process_frame
 
 	for i in range(build_data.oneway_platforms.size()):
-		_create_oneway_platform(parent_node, build_data.oneway_platforms[i])
+		_create_oneway_platform(parent_node, build_data.oneway_platforms[i], services)
 		if i % BATCH_SIZE == 0:
 			await tree.process_frame
 
 	for i in range(build_data.hazard_tiles.size()):
-		_create_hazard_tile(parent_node, build_data.hazard_tiles[i])
+		_create_hazard_tile(parent_node, build_data.hazard_tiles[i], services)
 		if i % BATCH_SIZE == 0:
 			await tree.process_frame
 
@@ -5931,15 +6168,17 @@ func build_terrain_async(parent_node: Node, build_data: LevelBuildData, tree: Sc
 
 
 ## Procedurally fills the camera's viewport with background grid tiles.
-func fill_viewport(parent_node: Node, build_data: LevelBuildData, camera: Camera2D) -> void:
+func fill_viewport(
+	parent_node: Node, build_data: LevelBuildData, camera: Camera2D, services: ServiceLocator
+) -> void:
 	var view_transform = camera.get_viewport().get_canvas_transform().affine_inverse()
 	var world_top_left = view_transform.origin
 	var world_bottom_right = (
 		world_top_left + camera.get_viewport_rect().size * view_transform.get_scale()
 	)
 
-	var grid_top_left: Vector2i = GridUtilsScript.world_to_grid(world_top_left)
-	var grid_bottom_right: Vector2i = GridUtilsScript.world_to_grid(world_bottom_right)
+	var grid_top_left: Vector2i = services.grid_utils.world_to_grid(world_top_left)
+	var grid_bottom_right: Vector2i = services.grid_utils.world_to_grid(world_bottom_right)
 
 	var existing_bg_tiles = {}
 	for pos in build_data.background_tiles:
@@ -5964,7 +6203,7 @@ func _create_background_tile(parent_node: Node, grid_pos: Vector2i) -> void:
 	parent_node.move_child(visual_rect, 0)
 
 
-func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
+func _create_solid_tile(parent_node: Node, pos: Vector2, _services: ServiceLocator) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = PhysicsLayers.SOLID_WORLD
@@ -5992,7 +6231,7 @@ func _create_solid_tile(parent_node: Node, pos: Vector2) -> void:
 	parent_node.add_child(static_body)
 
 
-func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
+func _create_oneway_platform(parent_node: Node, pos: Vector2, _services: ServiceLocator) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = PhysicsLayers.PLATFORMS
@@ -6026,7 +6265,7 @@ func _create_oneway_platform(parent_node: Node, pos: Vector2) -> void:
 	parent_node.add_child(static_body)
 
 
-func _create_hazard_tile(parent_node: Node, pos: Vector2) -> void:
+func _create_hazard_tile(parent_node: Node, pos: Vector2, _services: ServiceLocator) -> void:
 	var static_body := StaticBody2D.new()
 	static_body.position = pos
 	static_body.collision_layer = PhysicsLayers.HAZARD | PhysicsLayers.SOLID_WORLD
@@ -6131,7 +6370,7 @@ func build_level_async() -> Node:
 		return _current_level_container
 
 	var parser = LevelParser.new()
-	_current_build_data = parser.parse_level_data(encounter_data)
+	_current_build_data = parser.parse_level_data(encounter_data, ServiceLocator)
 	_current_build_data.encounter_data_resource = encounter_data
 	_current_level_container.set_meta("build_data", _current_build_data)
 
@@ -6139,7 +6378,7 @@ func build_level_async() -> Node:
 
 	var terrain_builder = TerrainBuilder.new()
 	await terrain_builder.build_terrain_async(
-		_current_level_container, _current_build_data, get_tree()
+		_current_level_container, _current_build_data, get_tree(), ServiceLocator
 	)
 
 	await _spawn_player_async()
@@ -6162,7 +6401,6 @@ func _inject_entity_services(instance: Node) -> void:
 	if not is_instance_valid(instance):
 		return
 	if instance.has_method("inject_dependencies"):
-		# THE FIX: Pass the ServiceLocator singleton directly.
 		instance.inject_dependencies(ServiceLocator)
 
 
@@ -7705,9 +7943,6 @@ FILE: ./src/projectiles/base_projectile.gd
 class_name BaseProjectile
 extends Area2D
 
-# THE FIX: Preload the script with the static function.
-const CombatUtilsScript = preload("res://src/core/util/combat_utils.gd")
-
 # --- Node References ---
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var visual: ColorRect = $ColorRect
@@ -7743,10 +7978,7 @@ func _move(delta: float) -> void:
 
 func activate(p_services: ServiceLocator) -> void:
 	self._services = p_services
-	assert(
-		is_instance_valid(_services),
-		"%s requires a ServiceLocator dependency." % [self.get_class()]
-	)
+	assert(is_instance_valid(_services), "%s requires a ServiceLocator dependency." % [self.get_class()])
 
 	visible = true
 	_is_active = true
@@ -7768,16 +8000,13 @@ func deactivate() -> void:
 
 
 func _handle_collision(target: Node) -> void:
-	# THE FIX: Call the function statically on the preloaded script.
-	var damageable = CombatUtilsScript.find_damageable(target)
+	var damageable = _services.combat_utils.find_damageable(target)
 	if is_instance_valid(damageable):
 		var damage_info := DamageInfo.new()
 		damage_info.amount = damage
 		damage_info.source_node = self
 		damage_info.impact_position = global_position
-		damage_info.impact_normal = (
-			-direction.normalized() if not direction.is_zero_approx() else Vector2.ZERO
-		)
+		damage_info.impact_normal = -direction.normalized() if not direction.is_zero_approx() else Vector2.ZERO
 		damageable.apply_damage(damage_info)
 
 	if is_instance_valid(_services):
@@ -9326,14 +9555,10 @@ extends IComponent
 signal damage_dealt
 signal pogo_bounce_requested
 
-# --- Constants ---
-# THE FIX: Preload the script with the static function.
-const CombatUtilsScript = preload("res://src/core/util/combat_utils.gd")
-
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
-var _services: ServiceLocator  # Dependency
+var _services: ServiceLocator # Dependency
 
 # --- Public Methods ---
 
@@ -9379,8 +9604,7 @@ func trigger_melee_attack(target_body: Node) -> void:
 		return
 
 	p_data.hit_targets_this_swing[target_id] = true
-	# THE FIX: Call the function statically on the preloaded script.
-	var damageable = CombatUtilsScript.find_damageable(target_body)
+	var damageable = _services.combat_utils.find_damageable(target_body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
 		damage_info.source_node = owner_node
@@ -9388,9 +9612,7 @@ func trigger_melee_attack(target_body: Node) -> void:
 		var is_close_range = distance <= p_data.config.player_close_range_threshold
 		damage_info.amount = 5 if is_close_range else 1
 		damage_info.impact_position = target_body.global_position
-		damage_info.impact_normal = (
-			(target_body.global_position - owner_node.global_position).normalized()
-		)
+		damage_info.impact_normal = (target_body.global_position - owner_node.global_position).normalized()
 
 		var damage_result = damageable.apply_damage(damage_info)
 		if damage_result.was_damaged:
@@ -9414,8 +9636,7 @@ func trigger_pogo(pogo_target: Node) -> bool:
 		should_bounce = true
 		_services.object_pool.return_instance.call_deferred(pogo_target)
 
-	# THE FIX: Call the function statically on the preloaded script.
-	var damageable = CombatUtilsScript.find_damageable(pogo_target)
+	var damageable = _services.combat_utils.find_damageable(pogo_target)
 	if is_instance_valid(damageable):
 		should_bounce = true
 		var damage_info = DamageInfo.new()
@@ -10656,11 +10877,13 @@ func _physics_process(_delta: float) -> void:
 
 		# 2. Platform Drop
 		if is_holding_down:
-			if JumpHelper.try_platform_drop(owner):
+			# THE FIX: Use the correct variable 'owner_node'.
+			if JumpHelper.try_platform_drop(owner_node):
 				return # Stop further processing
 
-		# 3. Standard Jump
-		if JumpHelper.try_jump(owner, p_data):
+		# 3. Standard Jump (includes wall, ground, coyote, and air jumps)
+		# THE FIX: Use the correct variable 'owner_node'.
+		if JumpHelper.try_jump(owner_node, p_data):
 			return # Stop further processing
 
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
@@ -10714,7 +10937,6 @@ extends RefCounted
 ## Checks all possible jump conditions in a prioritized order and executes one if valid.
 ## Returns true if a jump was successfully initiated, false otherwise.
 static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
-	# THE FIX: Add a guard clause to ensure the owner is valid before proceeding.
 	if not is_instance_valid(owner):
 		return false
 
@@ -10731,7 +10953,7 @@ static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
 		return true
 
 	# 2. Ground Jump (includes coyote time)
-	if p_data.coyote_timer > 0:
+	if owner.is_on_floor() or p_data.coyote_timer > 0:
 		sm.change_state(Identifiers.PlayerStates.JUMP)
 		return true
 
@@ -10746,6 +10968,9 @@ static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
 ## Checks if the player is attempting to drop through a one-way platform.
 ## Returns true if the drop was successful, false otherwise.
 static func try_platform_drop(owner: Player) -> bool:
+	if not is_instance_valid(owner) or not owner is CharacterBody2D:
+		return false
+
 	var floor_col = owner.get_last_slide_collision()
 	if not floor_col:
 		return false

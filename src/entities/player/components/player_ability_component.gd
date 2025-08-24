@@ -48,11 +48,13 @@ func _physics_process(_delta: float) -> void:
 
 		# 2. Platform Drop
 		if is_holding_down:
-			if JumpHelper.try_platform_drop(owner):
+			# THE FIX: Use the correct variable 'owner_node'.
+			if JumpHelper.try_platform_drop(owner_node):
 				return # Stop further processing
 
-		# 3. Standard Jump
-		if JumpHelper.try_jump(owner, p_data):
+		# 3. Standard Jump (includes wall, ground, coyote, and air jumps)
+		# THE FIX: Use the correct variable 'owner_node'.
+		if JumpHelper.try_jump(owner_node, p_data):
 			return # Stop further processing
 
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:

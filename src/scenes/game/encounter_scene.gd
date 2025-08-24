@@ -43,7 +43,7 @@ func _ready() -> void:
 			CameraManager.center_camera_on_arena(camera, build_data.dimensions_tiles)
 			await get_tree().process_frame
 			var terrain_builder = TerrainBuilder.new()
-			terrain_builder.fill_viewport(_level_container, build_data, camera)
+			terrain_builder.fill_viewport(_level_container, build_data, camera, ServiceLocator)
 
 	_initialize_camera_shaker()
 	_initialize_debug_inspector()

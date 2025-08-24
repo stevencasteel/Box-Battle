@@ -35,6 +35,15 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(player): Centralize action logic in PlayerAbilityComponent.
+
+- Moved all player-initiated action checks (jump, heal, platform drop) from `state_move.gd` into `PlayerAbilityComponent`. This resolves a race condition and improves separation of concerns.
+- `state_move.gd` is now purely responsible for applying movement physics.
+- Fixed a critical bug in `PlayerAbilityComponent` where an incorrect variable (`owner` instead of `owner_node`) was passed to helper functions, preventing jumps.
+- Fixed a logical bug in `PlayerJumpHelper` where the direct `is_on_floor()` check for ground jumps was missing.
+
+
+
 
 refactor(player): Centralize action logic in PlayerAbilityComponent.
 

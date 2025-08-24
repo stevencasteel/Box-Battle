@@ -11,7 +11,6 @@ extends RefCounted
 ## Checks all possible jump conditions in a prioritized order and executes one if valid.
 ## Returns true if a jump was successfully initiated, false otherwise.
 static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
-	# THE FIX: Add a guard clause to ensure the owner is valid before proceeding.
 	if not is_instance_valid(owner):
 		return false
 
@@ -28,7 +27,7 @@ static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
 		return true
 
 	# 2. Ground Jump (includes coyote time)
-	if p_data.coyote_timer > 0:
+	if owner.is_on_floor() or p_data.coyote_timer > 0:
 		sm.change_state(Identifiers.PlayerStates.JUMP)
 		return true
 
@@ -43,6 +42,9 @@ static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
 ## Checks if the player is attempting to drop through a one-way platform.
 ## Returns true if the drop was successful, false otherwise.
 static func try_platform_drop(owner: Player) -> bool:
+	if not is_instance_valid(owner) or not owner is CharacterBody2D:
+		return false
+
 	var floor_col = owner.get_last_slide_collision()
 	if not floor_col:
 		return false

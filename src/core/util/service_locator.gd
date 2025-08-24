@@ -14,6 +14,7 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 @onready var event_bus: EventBus = get_node("/root/EventBus")
 @onready var sequencer: Sequencer = get_node("/root/Sequencer")
 @onready var combat_utils: CombatUtils = get_node("/root/CombatUtils")
+@onready var grid_utils: GridUtils = get_node("/root/GridUtils")
 
 # --- Public Properties ---
 var combat_config: CombatConfig = COMBAT_CONFIG
