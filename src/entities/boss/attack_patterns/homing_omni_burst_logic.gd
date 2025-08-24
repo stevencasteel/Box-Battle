@@ -20,16 +20,13 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 	if not is_instance_valid(owner):
 		return
 
-	print("Executing Homing Omni Burst!")
-
-	var object_pool: ObjectPool = owner._services.object_pool
+	var object_pool: IObjectPool = owner._services.object_pool
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
 		var shot: HomingBossShot = object_pool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
 		if not is_instance_valid(shot):
 			continue
 
-		# Configure the projectile from the central config
 		shot.damage = owner.entity_data.config.homing_shot_damage
 		shot.speed = owner.entity_data.config.homing_shot_speed
 		shot.lifespan = owner.entity_data.config.homing_shot_lifespan
@@ -37,5 +34,4 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 		var angle = i * angle_step
 		shot.rotation = angle
 		shot.global_position = owner.global_position
-		# THE FIX: Pass the ServiceLocator from the owner entity.
 		shot.activate(owner._services)

@@ -13,4 +13,5 @@ func _ready() -> void:
 	preload("res://src/api/interfaces/IPoolable.gd")
 	preload("res://src/api/interfaces/ISceneController.gd")
 	preload("res://src/api/interfaces/IFXManager.gd")
+	preload("res://src/api/interfaces/IObjectPool.gd")
 	preload("res://src/entities/base_entity.gd")

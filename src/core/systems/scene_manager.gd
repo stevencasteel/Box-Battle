@@ -48,7 +48,7 @@ func _switch_to_scene(path: String) -> void:
 		await current_scene.scene_exiting()
 
 	# 2. Reset global systems.
-	ObjectPool.reset()
+	ObjectPool.reset() # THE FIX: Call the global singleton directly for this core task.
 	Sequencer.cancel_all()
 
 	# 3. Change the scene.

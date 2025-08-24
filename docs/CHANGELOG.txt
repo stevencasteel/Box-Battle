@@ -35,6 +35,50 @@
 ║                                                                              ║
 ║                                                                              ║
 
+
+refactor(core): decouple ObjectPool via interface and adapter
+
+Completes the abstraction of core services by decoupling all game
+components from the global ObjectPool autoload. This change significantly
+improves the testability of any component that spawns or interacts with
+pooled objects, such as projectiles and combat systems.
+
+This commit also includes a significant bugfix and layout improvement for
+the debug overlay, which was instrumental in diagnosing the underlying issues.
+
+Changes:
+- Created `IObjectPool.gd`, a new interface script defining the public
+  contract for any object pooling system.
+- Created `ObjectPoolAdapter.gd` as a new autoload. This adapter
+  implements the `IObjectPool` interface and delegates all calls to the
+  real `ObjectPool` singleton, breaking the hard dependency.
+- Updated `ServiceLocator` to provide a reference to the `ObjectPoolAdapter`
+  instead of the concrete `ObjectPool` class.
+- Refactored all consumers (`FXManager`, `SceneManager`, `HomingOmniBurstLogic`,
+  `DebugOverlay`) to depend on the `IObjectPool` interface.
+
+Bugfixes & Debugging Journey:
+- **Fixed Missing Pool:** The `homing_boss_shots` pool was never being
+  created at startup. Added the missing initialization call to
+  `ObjectPool._ready()`.
+- **Fixed Projectile Pooling:** Corrected a logic error in `HomingBossShot`
+  where its unique tweening behavior prevented the `VisibleOnScreenNotifier2D`
+  from correctly detecting it, which broke the pooling cycle. The fix
+  defers the tween until the notifier has had a chance to register the object.
+- **Fixed Debug Overlay Layout:** The overlay was using a single-column layout
+  that was fragile and caused UI elements to jump when text changed length.
+  Refactored the `.tscn` to use a robust two-column layout, isolating
+  dynamic text and preventing layout shifts. This also fixed a rendering
+  bug where the `PoolsLabel` was being shrunk to a 1px height and becoming
+  invisible.
+
+This concludes a major refactoring sprint, resulting in a more modular,
+SOLID-compliant, and testable architecture for core game systems.
+
+
+
+
+
 refactor(fx): centralize shader effect logic in FXManager
 
 Improves SRP by moving the complex implementation of shader effects

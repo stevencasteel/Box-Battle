@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.15.0"
+config/version="0.14.0"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
@@ -39,6 +39,8 @@ CombatUtils="*res://src/core/util/combat_utils.gd"
 Identifiers="*res://src/core/util/identifiers.gd"
 Palette="*res://src/core/util/palette.gd"
 PhysicsLayers="*res://src/core/util/physics_layers.gd"
+FXManagerAdapter="*res://src/core/systems/fx_bindings/fx_manager_adapter.gd"
+ObjectPoolAdapter="*res://src/core/systems/pool_bindings/object_pool_adapter.gd"
 
 [display]
 

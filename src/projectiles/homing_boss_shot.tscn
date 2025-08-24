@@ -9,6 +9,7 @@ size = Vector2(20, 20)
 collision_layer = 16
 collision_mask = 65
 script = ExtResource("1_homing_shot_script")
+metadata/pool_name = &"homing_boss_shots"
 
 [node name="ColorRect" type="ColorRect" parent="."]
 unique_name_in_owner = true
@@ -30,5 +31,6 @@ one_shot = true
 
 [connection signal="area_entered" from="." to="." method="_on_area_entered"]
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="screen_entered" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_entered"]
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
 [connection signal="timeout" from="LifetimeTimer" to="." method="_on_lifetime_timer_timeout"]

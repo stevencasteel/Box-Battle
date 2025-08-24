@@ -1,8 +1,7 @@
 # src/core/systems/fx_bindings/fx_manager_adapter.gd
 ## An adapter that implements the IFXManager interface by delegating calls
-## to the real FXManager autoload singleton. This decouples our components
-## from the global scope, enabling easier testing and substitution.
-class_name FXManagerAdapter
+## to the real FXManager autoload singleton. This script is registered as an
+## autoload itself and should NOT have a matching class_name.
 extends IFXManager
 
 # --- Private Member Variables ---

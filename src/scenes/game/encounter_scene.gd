@@ -12,7 +12,7 @@ extends ISceneController
 
 # --- Private Member Variables ---
 var _level_container: Node = null
-var _debug_overlay: DebugOverlay = null
+var _debug_overlay: CanvasLayer = null # THE FIX: Use a more general type hint
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
 var _camera_shaker: CameraShaker = null
@@ -59,7 +59,6 @@ func _unhandled_input(_event: InputEvent) -> void:
 			_debug_overlay.visible = not _debug_overlay.visible
 
 	if Input.is_action_just_pressed("debug_dialogue"):
-		# THE FIX: Toggle the dialogue on/off.
 		if DialogueManager.is_conversation_active():
 			DialogueManager.end_conversation()
 		else:
@@ -117,6 +116,7 @@ func _initialize_camera_shaker() -> void:
 
 func _initialize_debug_inspector() -> void:
 	_debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
+	_debug_overlay.inject_dependencies(ServiceLocator)
 	add_child(_debug_overlay)
 	_debug_overlay.visible = false
 

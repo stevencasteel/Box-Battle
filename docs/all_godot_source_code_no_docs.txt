@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 24 09:44:53 CDT 2025
+Generated on: Sun Aug 24 12:51:22 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -198,6 +198,8 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   └── interfaces
 │   │       ├── IComponent.gd
 │   │       ├── IDamageable.gd
+│   │       ├── IFXManager.gd
+│   │       ├── IObjectPool.gd
 │   │       ├── IPoolable.gd
 │   │       └── ISceneController.gd
 │   ├── arenas
@@ -246,9 +248,12 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── cursor_manager.gd
 │   │   │   ├── dialogue_manager.gd
 │   │   │   ├── fx_bindings
+│   │   │   │   └── fx_manager_adapter.gd
 │   │   │   ├── fx_manager.gd
 │   │   │   ├── game_manager.gd
 │   │   │   ├── object_pool.gd
+│   │   │   ├── pool_bindings
+│   │   │   │   └── object_pool_adapter.gd
 │   │   │   └── scene_manager.gd
 │   │   └── util
 │   │       ├── asset_paths.gd
@@ -445,7 +450,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-79 directories, 358 files
+80 directories, 362 files
 
 
 =====================================
@@ -604,9 +609,15 @@ extends Control
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
-		# The FXComponent is a direct child in this tool scene, not built from an archetype.
-		# We can set it up directly.
-		fx_component.setup(test_subject, {"visual_node": test_subject})
+		# THE FIX: When running the scene, the ServiceLocator autoload is
+		# available globally. We must provide it to the component's setup
+		# method to satisfy its dependency contract.
+		var dependencies = {
+			"visual_node": test_subject,
+			"services": ServiceLocator,
+			"hit_effect": _hit_flash_effect # Provide a default hit effect
+		}
+		fx_component.setup(test_subject, dependencies)
 		test_subject.visible = true
 
 
@@ -918,7 +929,7 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.15.0"
+config/version="0.14.0"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
@@ -946,6 +957,8 @@ CombatUtils="*res://src/core/util/combat_utils.gd"
 Identifiers="*res://src/core/util/identifiers.gd"
 Palette="*res://src/core/util/palette.gd"
 PhysicsLayers="*res://src/core/util/physics_layers.gd"
+FXManagerAdapter="*res://src/core/systems/fx_bindings/fx_manager_adapter.gd"
+ObjectPoolAdapter="*res://src/core/systems/pool_bindings/object_pool_adapter.gd"
 
 [display]
 
@@ -2268,7 +2281,7 @@ unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
 offset_top = 10.0
-offset_right = 460.0
+offset_right = 910.0
 offset_bottom = 330.0
 mouse_filter = 2
 
@@ -2284,74 +2297,75 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer"]
+[node name="Columns" type="HBoxContainer" parent="Panel/MarginContainer"]
 layout_mode = 2
+theme_override_constants/separation = 20
 
-[node name="FPSLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "FPS:"
-
-[node name="HSeparator" type="HSeparator" parent="Panel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="StateLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
+[node name="EntityInfoColumn" type="VBoxContainer" parent="Panel/MarginContainer/Columns"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="StateLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
+unique_name_in_owner = true
+layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "State:"
 autowrap_mode = 2
 
-[node name="VelocityLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+[node name="VelocityLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Velocity:"
 
-[node name="FlagsLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+[node name="FlagsLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 20
 text = "Flags:"
 autowrap_mode = 2
 
-[node name="StateHistoryLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+[node name="StateHistoryLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 20
 text = "History:"
 autowrap_mode = 2
 
-[node name="HSeparator2" type="HSeparator" parent="Panel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="InputBufferLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+[node name="InputBufferLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 20
 text = "Input:"
 autowrap_mode = 2
 
-[node name="HSeparator3" type="HSeparator" parent="Panel/MarginContainer/VBoxContainer"]
+[node name="VSeparator" type="VSeparator" parent="Panel/MarginContainer/Columns"]
 layout_mode = 2
 
-[node name="ObjectPoolLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
+[node name="GlobalInfoColumn" type="VBoxContainer" parent="Panel/MarginContainer/Columns"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="FPSLabel" type="Label" parent="Panel/MarginContainer/Columns/GlobalInfoColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "FPS:"
+
+[node name="PoolsLabel" type="Label" parent="Panel/MarginContainer/Columns/GlobalInfoColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 20
 text = "Pools:"
 autowrap_mode = 2
 
-[node name="FXLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+[node name="FXLabel" type="Label" parent="Panel/MarginContainer/Columns/GlobalInfoColumn"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_font_sizes/font_size = 20
 text = "FX:"
 autowrap_mode = 2
@@ -2361,21 +2375,22 @@ FILE: ./src/ui/dev/debug_overlay.gd
 =====================================
 # src/ui/dev/debug_overlay.gd
 ## A toggleable overlay for displaying real-time developer debug information.
-class_name DebugOverlay
 extends CanvasLayer
 
 # --- Node References ---
+@onready var fps_label: Label = %FPSLabel
 @onready var state_label: Label = %StateLabel
 @onready var velocity_label: Label = %VelocityLabel
 @onready var flags_label: Label = %FlagsLabel
 @onready var state_history_label: Label = %StateHistoryLabel
 @onready var input_buffer_label: Label = %InputBufferLabel
-@onready var object_pool_label: Label = %ObjectPoolLabel
+@onready var pools_label: Label = %PoolsLabel
 @onready var fx_label: Label = %FXLabel
 @onready var panel: Panel = %Panel
 
 # --- Private Member Variables ---
 var _target_entity: Node = null
+var _services: ServiceLocator
 
 # --- Godot Lifecycle Methods ---
 
@@ -2390,31 +2405,26 @@ func _ready() -> void:
 	panel_style.border_color = Palette.COLOR_UI_ACCENT_PRIMARY
 	panel.add_theme_stylebox_override("panel", panel_style)
 
-	state_history_label.clip_text = true
-	input_buffer_label.clip_text = true
-	object_pool_label.clip_text = true
-
 
 func _process(_delta: float) -> void:
 	var fps_text = "FPS: %d" % Engine.get_frames_per_second()
+	fps_label.text = fps_text
 
 	if not is_instance_valid(_target_entity) or not _target_entity.has_method("get_component"):
-		state_label.text = "NO TARGET SELECTED"
-		velocity_label.text = fps_text
-		flags_label.text = ""
-		state_history_label.text = ""
-		input_buffer_label.text = ""
+		state_label.text = "State: NO TARGET"
+		velocity_label.text = "Velocity:"
+		flags_label.text = "Flags:"
+		state_history_label.text = "History:"
+		input_buffer_label.text = "Input:"
 	else:
-		velocity_label.text = "%s | %s" % [_target_entity.name, fps_text]
+		velocity_label.text = "Target: %s" % _target_entity.name
 
 		var state_machine: BaseStateMachine = _target_entity.get_component(BaseStateMachine)
 		var current_state_name = "N/A"
 		if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
 			current_state_name = state_machine.current_state.get_script().resource_path.get_file()
-
 		state_label.text = "State: %s" % current_state_name
 
-		# --- Flags ---
 		var health_comp: HealthComponent = _target_entity.get_component(HealthComponent)
 		var is_invincible_str = (
 			str(health_comp.is_invincible()) if is_instance_valid(health_comp) else "N/A"
@@ -2430,26 +2440,29 @@ func _process(_delta: float) -> void:
 				state_history_label.text = "History: " + ", ".join(state_machine.state_history)
 			_update_player_input_buffer()
 		else:
-			state_history_label.text = ""
-			input_buffer_label.text = ""
+			state_history_label.text = "History:"
+			input_buffer_label.text = "Input:"
 
 		flags_label.text = flags_text
 
-	# --- Global System Stats ---
-	var pool_stats: Dictionary = ObjectPool.get_pool_stats()
-	var pool_text_parts: Array[String] = []
-	for pool_name in pool_stats:
-		var stats = pool_stats[pool_name]
-		pool_text_parts.append("%s [%d/%d]" % [pool_name, stats.active, stats.total])
-	object_pool_label.text = "Pools: " + " ".join(pool_text_parts)
+	if is_instance_valid(_services):
+		var pool_stats: Dictionary = _services.object_pool.get_pool_stats()
+		var pool_text_parts: Array[String] = []
+		for pool_name in pool_stats:
+			var stats = pool_stats[pool_name]
+			pool_text_parts.append("%s [%d/%d]" % [pool_name, stats.active, stats.total])
+		pools_label.text = "Pools:\n" + "\n".join(pool_text_parts)
 
-	var fx_stats = FXManager.get_debug_stats()
-	fx_label.text = "FX: Shaders[%d] VFX[%d]" % [fx_stats.active_shaders, fx_stats.active_vfx]
+		var fx_stats = _services.fx_manager.get_debug_stats()
+		fx_label.text = "FX:\nShaders[%d] VFX[%d]" % [fx_stats.active_shaders, fx_stats.active_vfx]
 
 
 # --- Public Methods ---
 func set_target(entity: Node) -> void:
 	_target_entity = entity
+
+func inject_dependencies(p_services: ServiceLocator) -> void:
+	_services = p_services
 
 
 # --- Private Methods ---
@@ -2646,7 +2659,7 @@ extends ISceneController
 
 # --- Private Member Variables ---
 var _level_container: Node = null
-var _debug_overlay: DebugOverlay = null
+var _debug_overlay: CanvasLayer = null # THE FIX: Use a more general type hint
 var _boss_died_token: int = 0
 var _death_sequence_handle: SequenceHandle
 var _camera_shaker: CameraShaker = null
@@ -2693,7 +2706,6 @@ func _unhandled_input(_event: InputEvent) -> void:
 			_debug_overlay.visible = not _debug_overlay.visible
 
 	if Input.is_action_just_pressed("debug_dialogue"):
-		# THE FIX: Toggle the dialogue on/off.
 		if DialogueManager.is_conversation_active():
 			DialogueManager.end_conversation()
 		else:
@@ -2751,6 +2763,7 @@ func _initialize_camera_shaker() -> void:
 
 func _initialize_debug_inspector() -> void:
 	_debug_overlay = load(AssetPaths.SCENE_DEBUG_OVERLAY).instantiate()
+	_debug_overlay.inject_dependencies(ServiceLocator)
 	add_child(_debug_overlay)
 	_debug_overlay.visible = false
 
@@ -2807,6 +2820,7 @@ func _on_boss_died(payload: Dictionary) -> void:
 
 	if is_instance_valid(_death_sequence_handle):
 		SceneManager.go_to_victory()
+
 
 =====================================
 FILE: ./src/scenes/menus/options_screen.tscn
@@ -4239,9 +4253,8 @@ extends Node
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Service References ---
-# These are populated by the engine at startup based on the autoload order.
-@onready var object_pool: ObjectPool = get_node("/root/ObjectPool")
-@onready var fx_manager: FXManager = get_node("/root/FXManager")
+@onready var fx_manager: IFXManager = get_node("/root/FXManagerAdapter")
+@onready var object_pool: IObjectPool = get_node("/root/ObjectPoolAdapter")
 @onready var event_bus: EventBus = get_node("/root/EventBus")
 @onready var sequencer: Sequencer = get_node("/root/Sequencer")
 @onready var combat_utils: CombatUtils = get_node("/root/CombatUtils")
@@ -4249,6 +4262,7 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Public Properties ---
 var combat_config: CombatConfig = COMBAT_CONFIG
+
 
 =====================================
 FILE: ./src/core/util/grid_utils.gd
@@ -4886,6 +4900,36 @@ func center_camera_on_arena(camera: Camera2D, arena_size_tiles: Vector2i) -> voi
 
 
 =====================================
+FILE: ./src/core/systems/pool_bindings/object_pool_adapter.gd
+=====================================
+# src/core/systems/pool_bindings/object_pool_adapter.gd
+## An adapter that implements the IObjectPool interface by delegating calls
+## to the real ObjectPool autoload singleton.
+extends IObjectPool
+
+# --- Private Member Variables ---
+var _real_object_pool: Node
+
+# --- Godot Lifecycle Methods ---
+func _ready() -> void:
+	_real_object_pool = get_node("/root/ObjectPool")
+	assert(is_instance_valid(_real_object_pool), "ObjectPoolAdapter could not find /root/ObjectPool")
+
+# --- IObjectPool Implementation ---
+
+func get_instance(pool_name: StringName) -> Node:
+	return _real_object_pool.get_instance(pool_name)
+
+func return_instance(instance: Node) -> void:
+	_real_object_pool.return_instance(instance)
+
+func reset() -> void:
+	_real_object_pool.reset()
+
+func get_pool_stats() -> Dictionary:
+	return _real_object_pool.get_pool_stats()
+
+=====================================
 FILE: ./src/core/systems/dialogue_manager.gd
 =====================================
 # src/core/systems/dialogue_manager.gd
@@ -5092,12 +5136,11 @@ func _switch_to_scene(path: String) -> void:
 		await current_scene.scene_exiting()
 
 	# 2. Reset global systems.
-	ObjectPool.reset()
+	ObjectPool.reset() # THE FIX: Call the global singleton directly for this core task.
 	Sequencer.cancel_all()
 
 	# 3. Change the scene.
 	get_tree().call_deferred("change_scene_to_file", path)
-
 
 =====================================
 FILE: ./src/core/systems/object_pool.gd
@@ -5116,18 +5159,14 @@ var _pools: Dictionary = {}
 
 
 func _ready() -> void:
-	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, load(AssetPaths.SCENE_PLAYER_SHOT), 15)
-	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, load(AssetPaths.SCENE_BOSS_SHOT), 30)
-	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, load(AssetPaths.SCENE_TURRET_SHOT), 20)
-	_create_pool_for_scene(
-		Identifiers.Pools.HOMING_BOSS_SHOTS, load(AssetPaths.SCENE_HOMING_BOSS_SHOT), 40
-	)
-	_create_pool_for_scene(Identifiers.Pools.HIT_SPARKS, load(AssetPaths.SCENE_HIT_SPARK), 25)
+	_create_pool_from_path(Identifiers.Pools.PLAYER_SHOTS, AssetPaths.SCENE_PLAYER_SHOT, 15)
+	_create_pool_from_path(Identifiers.Pools.BOSS_SHOTS, AssetPaths.SCENE_BOSS_SHOT, 30)
+	_create_pool_from_path(Identifiers.Pools.TURRET_SHOTS, AssetPaths.SCENE_TURRET_SHOT, 20)
+	_create_pool_from_path(Identifiers.Pools.HOMING_BOSS_SHOTS, AssetPaths.SCENE_HOMING_BOSS_SHOT, 40)
+	_create_pool_from_path(Identifiers.Pools.HIT_SPARKS, AssetPaths.SCENE_HIT_SPARK, 25)
 
 
 func _exit_tree() -> void:
-	# When the game quits, forcefully free all pooled objects and their containers
-	# to ensure all associated rendering resources (RIDs) are released.
 	for i in range(get_child_count() - 1, -1, -1):
 		var child = get_child(i)
 		for j in range(child.get_child_count() - 1, -1, -1):
@@ -5139,7 +5178,6 @@ func _exit_tree() -> void:
 # --- Public Methods ---
 
 
-## Returns a dictionary containing the active/total counts for each pool.
 func get_pool_stats() -> Dictionary:
 	var stats: Dictionary = {}
 	for pool_name in _pools:
@@ -5150,7 +5188,6 @@ func get_pool_stats() -> Dictionary:
 	return stats
 
 
-## Returns all active instances in all pools to their inactive state.
 func reset() -> void:
 	for pool_name in _pools:
 		var pool = _pools[pool_name]
@@ -5163,9 +5200,10 @@ func reset() -> void:
 			return_instance.call_deferred(node)
 
 
-## Retrieves an inactive instance from the specified pool.
 func get_instance(p_pool_name: StringName) -> Node:
-	assert(_pools.has(p_pool_name), "ObjectPool: Pool '%s' does not exist." % p_pool_name)
+	if not _pools.has(p_pool_name):
+		push_error("ObjectPool: Attempted to get instance from a non-existent pool: '%s'" % p_pool_name)
+		return null
 
 	var pool = _pools[p_pool_name]
 	var instance: Node
@@ -5173,7 +5211,6 @@ func get_instance(p_pool_name: StringName) -> Node:
 	if not pool.inactive.is_empty():
 		instance = pool.inactive.pop_front()
 	else:
-		# TODO: Add a warning or limit here if pools grow excessively during gameplay.
 		instance = pool.scene.instantiate()
 		instance.set_meta("pool_name", p_pool_name)
 		pool.container.add_child(instance)
@@ -5181,28 +5218,33 @@ func get_instance(p_pool_name: StringName) -> Node:
 	return instance
 
 
-## Returns an active instance to its pool.
 func return_instance(p_instance: Node) -> void:
 	if not is_instance_valid(p_instance):
 		return
 
 	var pool_name = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
-		# This instance doesn't belong to a known pool, so we just free it.
 		p_instance.queue_free()
 		return
 
 	var pool = _pools[pool_name]
 	if not pool.inactive.has(p_instance):
-		# Only add it back if it's not already in the inactive list.
 		pool.inactive.push_front(p_instance)
 
-	# Safely call deactivate if the method exists.
 	if p_instance.has_method("deactivate"):
 		p_instance.deactivate()
 
 
 # --- Private Methods ---
+
+func _create_pool_from_path(p_pool_name: StringName, p_scene_path: String, p_initial_size: int) -> void:
+	var scene: PackedScene = load(p_scene_path)
+
+	if not is_instance_valid(scene):
+		push_error("ObjectPool: Failed to load scene for pool '%s' at path: %s" % [p_pool_name, p_scene_path])
+		return
+
+	_create_pool_for_scene(p_pool_name, scene, p_initial_size)
 
 
 func _create_pool_for_scene(
@@ -5224,6 +5266,7 @@ func _create_pool_for_scene(
 		if instance.has_method("deactivate"):
 			instance.deactivate()
 		_pools[p_pool_name].inactive.append(instance)
+
 
 =====================================
 FILE: ./src/core/systems/audio_manager.gd
@@ -5333,6 +5376,65 @@ func _on_audio_settings_changed() -> void:
 
 
 =====================================
+FILE: ./src/core/systems/fx_bindings/fx_manager_adapter.gd
+=====================================
+# src/core/systems/fx_bindings/fx_manager_adapter.gd
+## An adapter that implements the IFXManager interface by delegating calls
+## to the real FXManager autoload singleton. This script is registered as an
+## autoload itself and should NOT have a matching class_name.
+extends IFXManager
+
+# --- Private Member Variables ---
+var _real_fx_manager: Node
+
+# --- Godot Lifecycle Methods ---
+func _ready() -> void:
+	# Find the actual autoloaded singleton in the scene tree.
+	_real_fx_manager = get_node("/root/FXManager")
+	assert(is_instance_valid(_real_fx_manager), "FXManagerAdapter could not find /root/FXManager")
+
+# --- IFXManager Implementation ---
+
+func register_camera_shaker(shaker: CameraShaker) -> void:
+	_real_fx_manager.register_camera_shaker(shaker)
+
+func unregister_camera_shaker() -> void:
+	_real_fx_manager.unregister_camera_shaker()
+
+func is_camera_shaker_registered() -> bool:
+	return _real_fx_manager.is_camera_shaker_registered()
+
+func request_screen_shake(shake_effect: ScreenShakeEffect) -> void:
+	_real_fx_manager.request_screen_shake(shake_effect)
+
+func play_vfx(effect: VFXEffect, global_position: Vector2, direction: Vector2 = Vector2.ZERO) -> void:
+	_real_fx_manager.play_vfx(effect, global_position, direction)
+
+func request_hit_stop(duration: float) -> void:
+	_real_fx_manager.request_hit_stop(duration)
+
+func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubViewport) -> void:
+	await _real_fx_manager.prewarm_shaders_async(effects, prewarm_viewport)
+
+func get_debug_stats() -> Dictionary:
+	return _real_fx_manager.get_debug_stats()
+
+func increment_shader_count() -> void:
+	_real_fx_manager.increment_shader_count()
+
+func decrement_shader_count() -> void:
+	_real_fx_manager.decrement_shader_count()
+
+func apply_shader_effect(
+	target_node: CanvasItem, effect: ShaderEffect, overrides: Dictionary, opts: Dictionary
+) -> Tween:
+	return _real_fx_manager.apply_shader_effect(target_node, effect, overrides, opts)
+
+func cancel_effect_on_node(target_node: CanvasItem) -> void:
+	_real_fx_manager.cancel_effect_on_node(target_node)
+
+
+=====================================
 FILE: ./src/core/systems/camera_shaker.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://camera_shaker_scene_id"]
@@ -5405,6 +5507,7 @@ extends Node
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
 var _services: ServiceLocator
+var _managed_effects: Dictionary = {}
 
 var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
@@ -5417,32 +5520,75 @@ func _ready() -> void:
 # --- Public Methods ---
 
 
-## Increments the active shader counter. Called by external systems like FXComponent.
+func apply_shader_effect(
+	target_node: CanvasItem, effect: ShaderEffect, overrides: Dictionary, opts: Dictionary
+) -> Tween:
+	if not is_instance_valid(target_node) or not is_instance_valid(effect):
+		return null
+
+	var target_id = target_node.get_instance_id()
+	cancel_effect_on_node(target_node)
+
+	var material_instance := effect.material.duplicate(true) as ShaderMaterial
+	if not is_instance_valid(material_instance):
+		push_error("FXManager: effect.material is not a ShaderMaterial.")
+		return null
+
+	if not overrides.is_empty():
+		for param_name in overrides:
+			material_instance.set_shader_parameter(param_name, overrides[param_name])
+
+	_managed_effects[target_id] = {
+		"original_material": target_node.material,
+		"effect_material": material_instance
+	}
+	target_node.material = material_instance
+
+	increment_shader_count()
+
+	var tween = create_tween().set_parallel(false)
+	tween.tween_property(
+		material_instance, "shader_parameter/fx_progress", 1.0, effect.duration
+	)
+
+	var preserve_final_state = opts.get("preserve_final_state", false)
+	tween.tween_callback(_on_shader_effect_finished.bind(target_node, preserve_final_state))
+	_managed_effects[target_id]["active_tween"] = tween
+
+	return tween
+
+
+func cancel_effect_on_node(target_node: CanvasItem) -> void:
+	if not is_instance_valid(target_node):
+		return
+	var target_id = target_node.get_instance_id()
+	if _managed_effects.has(target_id):
+		var effect_data = _managed_effects[target_id]
+		if is_instance_valid(effect_data.active_tween):
+			effect_data.active_tween.kill()
+		_on_shader_effect_finished(target_node, false)
+
+
 func increment_shader_count() -> void:
 	_active_shader_effects += 1
 
 
-## Decrements the active shader counter. Called by external systems like FXComponent.
 func decrement_shader_count() -> void:
 	_active_shader_effects -= 1
 
 
-## Stores a reference to the active CameraShaker in the scene.
 func register_camera_shaker(shaker: CameraShaker) -> void:
 	_camera_shaker = shaker
 
 
-## Clears the reference to the CameraShaker when the scene changes.
 func unregister_camera_shaker() -> void:
 	_camera_shaker = null
 
 
-## Checks if a valid CameraShaker is currently registered.
 func is_camera_shaker_registered() -> bool:
 	return is_instance_valid(_camera_shaker)
 
 
-## The main public API for triggering a screen shake effect.
 func request_screen_shake(shake_effect: ScreenShakeEffect) -> void:
 	if is_instance_valid(_camera_shaker):
 		_camera_shaker.start_shake(shake_effect)
@@ -5450,7 +5596,6 @@ func request_screen_shake(shake_effect: ScreenShakeEffect) -> void:
 		push_warning("FXManager: request_screen_shake called, but no CameraShaker is registered.")
 
 
-## The main public API for spawning a visual effect from the object pool.
 func play_vfx(
 	effect: VFXEffect, global_position: Vector2, direction: Vector2 = Vector2.ZERO
 ) -> void:
@@ -5462,7 +5607,8 @@ func play_vfx(
 		push_warning("FXManager: VFXEffect resource is missing a 'pool_key'.")
 		return
 
-	var vfx_instance = ObjectPool.get_instance(effect.pool_key)
+	# THE FIX: Use the service locator's object pool interface.
+	var vfx_instance = _services.object_pool.get_instance(effect.pool_key)
 	if not is_instance_valid(vfx_instance):
 		push_error("FXManager: Failed to get instance for pool key '%s'." % effect.pool_key)
 		return
@@ -5477,28 +5623,23 @@ func play_vfx(
 		vfx_instance.call("activate", dependencies)
 
 
-## Pauses specific gameplay nodes for a short duration to add impact to an event.
 func request_hit_stop(duration: float) -> void:
 	if _is_hit_stop_active:
 		return
 
 	_is_hit_stop_active = true
 
-	# 1. Find all nodes that should be affected by hit-stop.
 	var affected_nodes: Array[Node]
 	affected_nodes.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.PLAYER))
 	affected_nodes.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
 
-	# 2. Pause the nodes using call_deferred to avoid physics engine errors.
 	for node in affected_nodes:
 		if is_instance_valid(node):
 			node.set_deferred("process_mode", Node.PROCESS_MODE_DISABLED)
 
-	# 3. Create a timer that is not affected by time scale.
 	var timer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
-	# 4. Resume the nodes. Guard against scene changes during the await.
 	if not get_tree():
 		return
 
@@ -5509,7 +5650,6 @@ func request_hit_stop(duration: float) -> void:
 	_is_hit_stop_active = false
 
 
-## Pre-compiles a list of shaders by briefly rendering them off-screen.
 func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubViewport) -> void:
 	if not is_instance_valid(prewarm_viewport):
 		push_error("FXManager: prewarm_shaders_async requires a valid SubViewport.")
@@ -5524,19 +5664,37 @@ func prewarm_shaders_async(effects: Array[ShaderEffect], prewarm_viewport: SubVi
 		temp_rect.material = effect.material.duplicate(true)
 		prewarm_viewport.add_child(temp_rect)
 
-		# Wait one frame for the renderer to process and compile the shader.
 		await get_tree().process_frame
 
 		temp_rect.queue_free()
 	print("FXManager: Shader pre-warm complete.")
 
 
-## Returns a dictionary of current FX stats for debugging purposes.
 func get_debug_stats() -> Dictionary:
 	return {
 		"active_vfx": _active_vfx_count,
 		"active_shaders": _active_shader_effects,
 	}
+
+# --- Private Methods ---
+
+func _on_shader_effect_finished(target_node: CanvasItem, preserve_final_state: bool) -> void:
+	decrement_shader_count()
+
+	if not is_instance_valid(target_node):
+		return
+
+	var target_id = target_node.get_instance_id()
+	if not _managed_effects.has(target_id):
+		return
+
+	var effect_data = _managed_effects[target_id]
+	var should_restore = not target_node.is_queued_for_deletion() and not preserve_final_state
+
+	if should_restore:
+		target_node.material = effect_data.original_material
+
+	_managed_effects.erase(target_id)
 
 
 =====================================
@@ -6927,8 +7085,41 @@ func _ready() -> void:
 	preload("res://src/api/interfaces/IDamageable.gd")
 	preload("res://src/api/interfaces/IPoolable.gd")
 	preload("res://src/api/interfaces/ISceneController.gd")
+	preload("res://src/api/interfaces/IFXManager.gd")
+	preload("res://src/api/interfaces/IObjectPool.gd")
 	preload("res://src/entities/base_entity.gd")
 
+=====================================
+FILE: ./src/api/interfaces/IFXManager.gd
+=====================================
+# src/api/interfaces/IFXManager.gd
+## The "interface" contract for a system that manages visual and feedback effects.
+## This script defines the public API, abstracting components from the concrete
+## implementation (e.g., the global FXManager autoload).
+class_name IFXManager
+extends Node
+
+# --- Virtual Methods (The Contract) ---
+
+func register_camera_shaker(_shaker: CameraShaker) -> void: pass
+func unregister_camera_shaker() -> void: pass
+func is_camera_shaker_registered() -> bool: return false
+func request_screen_shake(_shake_effect: ScreenShakeEffect) -> void: pass
+func play_vfx(_effect: VFXEffect, _global_position: Vector2, _direction: Vector2 = Vector2.ZERO) -> void: pass
+func request_hit_stop(_duration: float) -> void: pass
+func prewarm_shaders_async(_effects: Array[ShaderEffect], _prewarm_viewport: SubViewport) -> void: pass
+func get_debug_stats() -> Dictionary: return {}
+func increment_shader_count() -> void: pass
+func decrement_shader_count() -> void: pass
+
+## Applies a shader effect directly to a target CanvasItem.
+func apply_shader_effect(
+	_target_node: CanvasItem, _effect: ShaderEffect, _overrides: Dictionary, _opts: Dictionary
+) -> Tween:
+	return null
+
+## Cancels any active shader effect on a specific node.
+func cancel_effect_on_node(_target_node: CanvasItem) -> void: pass
 
 =====================================
 FILE: ./src/api/interfaces/IPoolable.gd
@@ -6950,6 +7141,35 @@ func activate(_dependencies: Dictionary = {}) -> void:
 ## Prepares the node to be returned to the pool's inactive list.
 func deactivate() -> void:
 	pass
+
+
+=====================================
+FILE: ./src/api/interfaces/IObjectPool.gd
+=====================================
+# src/api/interfaces/IObjectPool.gd
+## The "interface" contract for a system that manages pools of reusable nodes.
+## This decouples systems from the concrete ObjectPool autoload, enabling
+## substitution with fakes or mocks during testing.
+class_name IObjectPool
+extends Node
+
+# --- Virtual Methods (The Contract) ---
+
+## Retrieves an inactive instance from the specified pool.
+func get_instance(_pool_name: StringName) -> Node:
+	return null
+
+## Returns an active instance to its pool.
+func return_instance(_instance: Node) -> void:
+	pass
+
+## Returns all active instances in all pools to their inactive state.
+func reset() -> void:
+	pass
+
+## Returns a dictionary containing the active/total counts for each pool.
+func get_pool_stats() -> Dictionary:
+	return {}
 
 
 =====================================
@@ -7049,6 +7269,7 @@ rect = Rect2(-20, -20, 40, 40)
 
 [connection signal="area_entered" from="." to="." method="_on_area_entered"]
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="screen_entered" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_entered"]
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
 
 =====================================
@@ -7081,6 +7302,7 @@ shape = SubResource("RectangleShape2D_turretshot")
 rect = Rect2(-10, -10, 20, 20)
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="screen_entered" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_entered"]
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
 
 =====================================
@@ -7114,6 +7336,7 @@ rect = Rect2(-30, -30, 60, 60)
 
 [connection signal="area_entered" from="." to="." method="_on_area_entered"]
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="screen_entered" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_entered"]
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
 
 =====================================
@@ -7211,6 +7434,7 @@ size = Vector2(20, 20)
 collision_layer = 16
 collision_mask = 65
 script = ExtResource("1_homing_shot_script")
+metadata/pool_name = &"homing_boss_shots"
 
 [node name="ColorRect" type="ColorRect" parent="."]
 unique_name_in_owner = true
@@ -7232,25 +7456,29 @@ one_shot = true
 
 [connection signal="area_entered" from="." to="." method="_on_area_entered"]
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="screen_entered" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_entered"]
 [connection signal="screen_exited" from="VisibleOnScreenNotifier2D" to="." method="_on_screen_exited"]
 [connection signal="timeout" from="LifetimeTimer" to="." method="_on_lifetime_timer_timeout"]
 
 =====================================
 FILE: ./src/projectiles/homing_boss_shot.gd
 =====================================
-# homing_boss_shot.gd
+# src/projectiles/homing_boss_shot.gd
 class_name HomingBossShot
 extends "res://src/projectiles/base_projectile.gd"
 
 # --- Node References ---
 @onready var lifetime_timer: Timer = $LifetimeTimer
 
-# --- Exposed config (avoid depending on external COMBAT_CONFIG)
+# --- Exposed config
 @export var lifespan: float = 3.0
 
 # --- Private Member Variables ---
 var _player_ref: WeakRef
 var _active_tween: Tween
+var _pending_start_on_screen: bool = false
+
+const FALLBACK_WAIT_SECONDS := 0.05
 
 
 func _ready() -> void:
@@ -7258,7 +7486,6 @@ func _ready() -> void:
 	visual.color = Palette.COLOR_HAZARD_PRIMARY
 
 
-# Movement override
 func _move(delta: float) -> void:
 	if not _player_ref or not _player_ref.get_ref():
 		global_position += transform.x * speed * delta
@@ -7272,6 +7499,7 @@ func _move(delta: float) -> void:
 
 func activate(p_services: ServiceLocator) -> void:
 	super.activate(p_services)
+	print("[HOMING_SHOT] ACTIVATE called for instance:", self.get_instance_id())
 
 	var player_node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	_player_ref = weakref(player_node)
@@ -7281,10 +7509,12 @@ func activate(p_services: ServiceLocator) -> void:
 
 	if is_instance_valid(_active_tween):
 		_active_tween.kill()
+		_active_tween = null
 
-	_active_tween = create_tween()
-	_active_tween.tween_property(visual, "scale", Vector2.ZERO, lifespan)
-	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, lifespan)
+	visual.scale = Vector2.ONE
+	collision_shape.scale = Vector2.ONE
+
+	call_deferred("_maybe_schedule_shrink", lifespan)
 
 
 func deactivate() -> void:
@@ -7295,7 +7525,44 @@ func deactivate() -> void:
 	visual.scale = Vector2.ONE
 	collision_shape.scale = Vector2.ONE
 
+	_pending_start_on_screen = false
 	super.deactivate()
+
+
+func _maybe_schedule_shrink(p_lifespan: float) -> void:
+	if not _is_active:
+		return
+
+	await get_tree().process_frame
+
+	if not _is_active:
+		return
+
+	if _has_been_on_screen:
+		_start_shrink_tween(p_lifespan)
+		return
+
+	_pending_start_on_screen = true
+
+	var timer = get_tree().create_timer(FALLBACK_WAIT_SECONDS)
+	await timer.timeout
+
+	if _pending_start_on_screen and _is_active:
+		_pending_start_on_screen = false
+		_start_shrink_tween(p_lifespan)
+
+
+func _start_shrink_tween(p_lifespan: float) -> void:
+	if not _is_active:
+		return
+
+	if is_instance_valid(_active_tween):
+		_active_tween.kill()
+
+	_active_tween = create_tween()
+	_active_tween.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_IN_OUT)
+	_active_tween.tween_property(visual, "scale", Vector2.ZERO, p_lifespan)
+	_active_tween.tween_property(collision_shape, "scale", Vector2.ZERO, p_lifespan)
 
 
 func _on_lifetime_timer_timeout() -> void:
@@ -7303,6 +7570,14 @@ func _on_lifetime_timer_timeout() -> void:
 		return
 	if is_instance_valid(_services):
 		_services.object_pool.return_instance.call_deferred(self)
+
+
+func _on_screen_entered() -> void:
+	super._on_screen_entered()
+
+	if _pending_start_on_screen:
+		_pending_start_on_screen = false
+		_start_shrink_tween(lifespan)
 
 
 =====================================
@@ -7324,6 +7599,7 @@ var direction: Vector2 = Vector2.RIGHT
 # --- Private Member Variables ---
 var _services: ServiceLocator
 var _is_active: bool = false
+var _has_been_on_screen: bool = false
 
 # --- Godot Lifecycle ---
 
@@ -7348,7 +7624,8 @@ func _move(delta: float) -> void:
 func activate(p_services: ServiceLocator) -> void:
 	self._services = p_services
 	assert(is_instance_valid(_services), "%s requires a ServiceLocator dependency." % [self.get_class()])
-
+	
+	_has_been_on_screen = false
 	visible = true
 	_is_active = true
 	process_mode = PROCESS_MODE_INHERIT
@@ -7397,9 +7674,17 @@ func _on_area_entered(area: Area2D) -> void:
 	_handle_collision(area)
 
 
+func _on_screen_entered() -> void:
+	_has_been_on_screen = true
+
+
 func _on_screen_exited() -> void:
 	if not _is_active:
 		return
+	
+	if not _has_been_on_screen:
+		return
+		
 	if is_instance_valid(_services):
 		_services.object_pool.return_instance.call_deferred(self)
 
@@ -8131,16 +8416,13 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 	if not is_instance_valid(owner):
 		return
 
-	print("Executing Homing Omni Burst!")
-
-	var object_pool: ObjectPool = owner._services.object_pool
+	var object_pool: IObjectPool = owner._services.object_pool
 	var angle_step = TAU / projectile_count
 	for i in range(projectile_count):
 		var shot: HomingBossShot = object_pool.get_instance(Identifiers.Pools.HOMING_BOSS_SHOTS)
 		if not is_instance_valid(shot):
 			continue
 
-		# Configure the projectile from the central config
 		shot.damage = owner.entity_data.config.homing_shot_damage
 		shot.speed = owner.entity_data.config.homing_shot_speed
 		shot.lifespan = owner.entity_data.config.homing_shot_lifespan
@@ -8148,7 +8430,6 @@ func _fire_omni_burst(owner: BaseBoss) -> void:
 		var angle = i * angle_step
 		shot.rotation = angle
 		shot.global_position = owner.global_position
-		# THE FIX: Pass the ServiceLocator from the owner entity.
 		shot.activate(owner._services)
 
 
@@ -9386,22 +9667,19 @@ var _owner: Node
 var _visual_node: CanvasItem
 var _health_component: HealthComponent
 var _hit_effect: ShaderEffect  # Injected Dependency
-var _original_material: Material
-var _current_effect_name: String = "None"
-var _active_tween: Tween
-var _services: ServiceLocator
-
+var _services: IFXManager
 
 # --- Godot Lifecycle Methods ---
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
 		teardown()
 
-
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
-	self._services = p_dependencies.get("services")
-	assert(is_instance_valid(_services), "FXComponent requires a ServiceLocator.")
+	var service_locator: ServiceLocator = p_dependencies.get("services")
+	assert(is_instance_valid(service_locator), "FXComponent requires a ServiceLocator.")
+	self._services = service_locator.fx_manager
+	assert(is_instance_valid(_services), "FXComponent could not get IFXManager from ServiceLocator.")
 
 	assert(p_dependencies.has("visual_node"), "FXComponent requires a 'visual_node' dependency.")
 	_visual_node = p_dependencies.get("visual_node")
@@ -9410,9 +9688,6 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		"'visual_node' must be a valid CanvasItem."
 	)
 
-	_original_material = _visual_node.material
-
-	# THE FIX: Automatically discover the HealthComponent on the owner.
 	if _owner.has_method("get_component"):
 		_health_component = _owner.get_component(HealthComponent)
 
@@ -9426,108 +9701,35 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 			is_instance_valid(_hit_effect),
 			"Injected 'hit_effect' must be a valid ShaderEffect resource."
 		)
-		# Guard against double-connect
 		if not _health_component.took_damage.is_connected(_on_owner_took_damage):
 			_health_component.took_damage.connect(_on_owner_took_damage)
 
-
 func teardown() -> void:
-	if is_instance_valid(_active_tween):
-		_active_tween.kill()
-		_active_tween = null
+	if is_instance_valid(_services):
+		_services.cancel_effect_on_node(_visual_node)
 
 	if is_instance_valid(_health_component):
 		if _health_component.took_damage.is_connected(_on_owner_took_damage):
 			_health_component.took_damage.disconnect(_on_owner_took_damage)
-
-	if is_instance_valid(_visual_node):
-		_visual_node.material = _original_material
 
 	_visual_node = null
 	_owner = null
 	_health_component = null
 	_services = null
 
-
 # --- Public API ---
 
-
 func play_effect(effect: ShaderEffect, overrides: Dictionary = {}, opts: Dictionary = {}) -> Tween:
-	if not is_instance_valid(effect) or not is_instance_valid(effect.material):
-		push_error("FXComponent: play_effect called with an invalid effect or material.")
+	if not is_instance_valid(_visual_node):
+		push_warning("FXComponent cannot play effect: visual node is invalid.")
 		return null
-
-	if is_instance_valid(_active_tween):
-		_active_tween.kill()
-
-	_current_effect_name = effect.resource_path.get_file()
-
-	# CORE FIX: Always duplicate the material to prevent shared state bugs.
-	var material_instance := effect.material.duplicate(true) as ShaderMaterial
-	if not is_instance_valid(material_instance):
-		push_error("FXComponent: effect.material is not a ShaderMaterial.")
-		return null
-
-	# Apply runtime parameter overrides if any were provided.
-	if not overrides.is_empty():
-		for param_name in overrides:
-			material_instance.set_shader_parameter(param_name, overrides[param_name])
-
-	_visual_node.material = material_instance
-
-	# Report the effect start to the central manager.
-	_services.fx_manager.increment_shader_count()
-
-	_active_tween = create_tween().set_parallel(false)
-	_active_tween.tween_property(
-		material_instance, "shader_parameter/fx_progress", 1.0, effect.duration
-	)
-
-	# The final step in the tween is to call the cleanup function.
-	# This ensures cleanup happens even if the tween is killed.
-	_active_tween.tween_callback(_on_effect_finished.bind(opts.get("preserve_final_state", false)))
-
-	return _active_tween
-
-
-## Returns the filename of the currently playing effect.
-func get_current_effect_name() -> String:
-	return _current_effect_name
-
+	return _services.apply_shader_effect(_visual_node, effect, overrides, opts)
 
 # --- Signal Handlers ---
 
-
 func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(_hit_effect):
-		play_effect(_hit_effect, {})
-	else:
-		push_warning(
-			(
-				"FXComponent on '%s' received took_damage, but has no default_hit_effect assigned."
-				% [_owner.name]
-			)
-		)
-
-
-func _on_effect_finished(preserve_final_state: bool) -> void:
-	# Report the effect end to the central manager.
-	if is_instance_valid(_services):
-		_services.fx_manager.decrement_shader_count()
-
-	# Ensure the owner is still valid before trying to access it.
-	if not is_instance_valid(_owner):
-		return
-
-	# Do not restore the original material if the owner is being deleted
-	# or if the effect is meant to be permanent (like a dissolve).
-	var should_restore := not _owner.is_queued_for_deletion() and not preserve_final_state
-
-	if is_instance_valid(_visual_node) and should_restore:
-		_visual_node.material = _original_material
-
-	_current_effect_name = "None"
-	_active_tween = null
+		play_effect(_hit_effect)
 
 
 =====================================

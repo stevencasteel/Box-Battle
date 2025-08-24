@@ -12,18 +12,14 @@ var _pools: Dictionary = {}
 
 
 func _ready() -> void:
-	_create_pool_for_scene(Identifiers.Pools.PLAYER_SHOTS, load(AssetPaths.SCENE_PLAYER_SHOT), 15)
-	_create_pool_for_scene(Identifiers.Pools.BOSS_SHOTS, load(AssetPaths.SCENE_BOSS_SHOT), 30)
-	_create_pool_for_scene(Identifiers.Pools.TURRET_SHOTS, load(AssetPaths.SCENE_TURRET_SHOT), 20)
-	_create_pool_for_scene(
-		Identifiers.Pools.HOMING_BOSS_SHOTS, load(AssetPaths.SCENE_HOMING_BOSS_SHOT), 40
-	)
-	_create_pool_for_scene(Identifiers.Pools.HIT_SPARKS, load(AssetPaths.SCENE_HIT_SPARK), 25)
+	_create_pool_from_path(Identifiers.Pools.PLAYER_SHOTS, AssetPaths.SCENE_PLAYER_SHOT, 15)
+	_create_pool_from_path(Identifiers.Pools.BOSS_SHOTS, AssetPaths.SCENE_BOSS_SHOT, 30)
+	_create_pool_from_path(Identifiers.Pools.TURRET_SHOTS, AssetPaths.SCENE_TURRET_SHOT, 20)
+	_create_pool_from_path(Identifiers.Pools.HOMING_BOSS_SHOTS, AssetPaths.SCENE_HOMING_BOSS_SHOT, 40)
+	_create_pool_from_path(Identifiers.Pools.HIT_SPARKS, AssetPaths.SCENE_HIT_SPARK, 25)
 
 
 func _exit_tree() -> void:
-	# When the game quits, forcefully free all pooled objects and their containers
-	# to ensure all associated rendering resources (RIDs) are released.
 	for i in range(get_child_count() - 1, -1, -1):
 		var child = get_child(i)
 		for j in range(child.get_child_count() - 1, -1, -1):
@@ -35,7 +31,6 @@ func _exit_tree() -> void:
 # --- Public Methods ---
 
 
-## Returns a dictionary containing the active/total counts for each pool.
 func get_pool_stats() -> Dictionary:
 	var stats: Dictionary = {}
 	for pool_name in _pools:
@@ -46,7 +41,6 @@ func get_pool_stats() -> Dictionary:
 	return stats
 
 
-## Returns all active instances in all pools to their inactive state.
 func reset() -> void:
 	for pool_name in _pools:
 		var pool = _pools[pool_name]
@@ -59,9 +53,10 @@ func reset() -> void:
 			return_instance.call_deferred(node)
 
 
-## Retrieves an inactive instance from the specified pool.
 func get_instance(p_pool_name: StringName) -> Node:
-	assert(_pools.has(p_pool_name), "ObjectPool: Pool '%s' does not exist." % p_pool_name)
+	if not _pools.has(p_pool_name):
+		push_error("ObjectPool: Attempted to get instance from a non-existent pool: '%s'" % p_pool_name)
+		return null
 
 	var pool = _pools[p_pool_name]
 	var instance: Node
@@ -69,7 +64,6 @@ func get_instance(p_pool_name: StringName) -> Node:
 	if not pool.inactive.is_empty():
 		instance = pool.inactive.pop_front()
 	else:
-		# TODO: Add a warning or limit here if pools grow excessively during gameplay.
 		instance = pool.scene.instantiate()
 		instance.set_meta("pool_name", p_pool_name)
 		pool.container.add_child(instance)
@@ -77,28 +71,33 @@ func get_instance(p_pool_name: StringName) -> Node:
 	return instance
 
 
-## Returns an active instance to its pool.
 func return_instance(p_instance: Node) -> void:
 	if not is_instance_valid(p_instance):
 		return
 
 	var pool_name = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
-		# This instance doesn't belong to a known pool, so we just free it.
 		p_instance.queue_free()
 		return
 
 	var pool = _pools[pool_name]
 	if not pool.inactive.has(p_instance):
-		# Only add it back if it's not already in the inactive list.
 		pool.inactive.push_front(p_instance)
 
-	# Safely call deactivate if the method exists.
 	if p_instance.has_method("deactivate"):
 		p_instance.deactivate()
 
 
 # --- Private Methods ---
+
+func _create_pool_from_path(p_pool_name: StringName, p_scene_path: String, p_initial_size: int) -> void:
+	var scene: PackedScene = load(p_scene_path)
+
+	if not is_instance_valid(scene):
+		push_error("ObjectPool: Failed to load scene for pool '%s' at path: %s" % [p_pool_name, p_scene_path])
+		return
+
+	_create_pool_for_scene(p_pool_name, scene, p_initial_size)
 
 
 func _create_pool_for_scene(

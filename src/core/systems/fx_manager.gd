@@ -39,7 +39,7 @@ func apply_shader_effect(
 	if not overrides.is_empty():
 		for param_name in overrides:
 			material_instance.set_shader_parameter(param_name, overrides[param_name])
-	
+
 	_managed_effects[target_id] = {
 		"original_material": target_node.material,
 		"effect_material": material_instance
@@ -47,16 +47,16 @@ func apply_shader_effect(
 	target_node.material = material_instance
 
 	increment_shader_count()
-	
+
 	var tween = create_tween().set_parallel(false)
 	tween.tween_property(
 		material_instance, "shader_parameter/fx_progress", 1.0, effect.duration
 	)
-	
+
 	var preserve_final_state = opts.get("preserve_final_state", false)
 	tween.tween_callback(_on_shader_effect_finished.bind(target_node, preserve_final_state))
 	_managed_effects[target_id]["active_tween"] = tween
-	
+
 	return tween
 
 
@@ -109,7 +109,8 @@ func play_vfx(
 		push_warning("FXManager: VFXEffect resource is missing a 'pool_key'.")
 		return
 
-	var vfx_instance = ObjectPool.get_instance(effect.pool_key)
+	# THE FIX: Use the service locator's object pool interface.
+	var vfx_instance = _services.object_pool.get_instance(effect.pool_key)
 	if not is_instance_valid(vfx_instance):
 		push_error("FXManager: Failed to get instance for pool key '%s'." % effect.pool_key)
 		return
@@ -181,18 +182,18 @@ func get_debug_stats() -> Dictionary:
 
 func _on_shader_effect_finished(target_node: CanvasItem, preserve_final_state: bool) -> void:
 	decrement_shader_count()
-	
+
 	if not is_instance_valid(target_node):
 		return
-		
+
 	var target_id = target_node.get_instance_id()
 	if not _managed_effects.has(target_id):
 		return
-		
+
 	var effect_data = _managed_effects[target_id]
 	var should_restore = not target_node.is_queued_for_deletion() and not preserve_final_state
-	
+
 	if should_restore:
 		target_node.material = effect_data.original_material
-		
+
 	_managed_effects.erase(target_id)

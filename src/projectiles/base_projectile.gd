@@ -14,6 +14,7 @@ var direction: Vector2 = Vector2.RIGHT
 # --- Private Member Variables ---
 var _services: ServiceLocator
 var _is_active: bool = false
+var _has_been_on_screen: bool = false
 
 # --- Godot Lifecycle ---
 
@@ -38,7 +39,8 @@ func _move(delta: float) -> void:
 func activate(p_services: ServiceLocator) -> void:
 	self._services = p_services
 	assert(is_instance_valid(_services), "%s requires a ServiceLocator dependency." % [self.get_class()])
-
+	
+	_has_been_on_screen = false
 	visible = true
 	_is_active = true
 	process_mode = PROCESS_MODE_INHERIT
@@ -87,8 +89,16 @@ func _on_area_entered(area: Area2D) -> void:
 	_handle_collision(area)
 
 
+func _on_screen_entered() -> void:
+	_has_been_on_screen = true
+
+
 func _on_screen_exited() -> void:
 	if not _is_active:
 		return
+	
+	if not _has_been_on_screen:
+		return
+		
 	if is_instance_valid(_services):
 		_services.object_pool.return_instance.call_deferred(self)
