@@ -35,6 +35,18 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(FX): Decouple hit-flash effect from entity scripts
+
+Implements the first part of the minion framework refactor, adhering to the DRY principle for effect handling.
+
+- Removed the hard-coded `HIT_FLASH_EFFECT` constant from `BaseBoss.gd` and `Minion.gd`.
+- Added an `@export var hit_flash_effect: ShaderEffect` to both entity scripts, making the effect a configurable property.
+- Updated the `_initialize_and_setup_components` methods to inject this exported variable into the `FXComponent`'s dependency map.
+- Updated the corresponding `.tscn` files to link the `entity_hit_flash_effect.tres` resource to this new exported property.
+
+This change makes the `FXComponent` a pure "black box" for effects and removes duplicated code from the entity scripts.
+
+
 feat(Minions): Implement data-driven minion behavior framework
 
 Completes the P2 task to expand the use of Resource-driven design, refactoring the hard-coded Turret into a generic, compositional Minion system.

@@ -1,6 +1,7 @@
-[gd_scene load_steps=14 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=15 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" uid="uid://5bkyx4fguxor" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
+[ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="7_phase_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_death_shake.tres" id="8_death_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="9_hit_spark_effect"]
@@ -21,6 +22,7 @@ collision_layer = 12
 collision_mask = 131
 script = ExtResource("1_26qjf")
 behavior = ExtResource("18_default_behavior")
+hit_flash_effect = ExtResource("2_hit_flash")
 intro_shake_effect = ExtResource("7_phase_shake")
 phase_change_shake_effect = ExtResource("7_phase_shake")
 death_shake_effect = ExtResource("8_death_shake")

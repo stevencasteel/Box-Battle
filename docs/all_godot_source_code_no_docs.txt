@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 24 17:29:01 CDT 2025
+Generated on: Sun Aug 24 17:52:46 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -8537,9 +8537,10 @@ var facing_direction: float = -1.0
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=14 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=15 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" uid="uid://5bkyx4fguxor" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
+[ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="7_phase_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_death_shake.tres" id="8_death_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="9_hit_spark_effect"]
@@ -8560,6 +8561,7 @@ collision_layer = 12
 collision_mask = 131
 script = ExtResource("1_26qjf")
 behavior = ExtResource("18_default_behavior")
+hit_flash_effect = ExtResource("2_hit_flash")
 intro_shake_effect = ExtResource("7_phase_shake")
 phase_change_shake_effect = ExtResource("7_phase_shake")
 death_shake_effect = ExtResource("8_death_shake")
@@ -8774,14 +8776,12 @@ FILE: ./src/entities/boss/base_boss.gd
 class_name BaseBoss
 extends BaseEntity
 
-# --- Constants ---
-const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
-
 # --- Editor Configuration ---
 @export_group("Core Configuration")
-# THE FIX: Replace individual pattern arrays with a single behavior resource.
 @export var behavior: BossBehavior
 @export_group("Juice & Feedback")
+# THE FIX: The hit flash effect is now a configurable property, not a constant.
+@export var hit_flash_effect: ShaderEffect
 @export var intro_shake_effect: ScreenShakeEffect
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
@@ -8816,7 +8816,6 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
 	if not archetype:
 		warnings.append("This node requires an EntityArchetype resource.")
-	# THE FIX: Update the warning to check for the new behavior resource.
 	if not behavior:
 		warnings.append("This node requires a BossBehavior resource.")
 	elif is_instance_valid(behavior) and behavior.phase_1_patterns.is_empty():
@@ -8883,7 +8882,6 @@ func teardown() -> void:
 
 
 func get_health_thresholds() -> Array[float]:
-	# THE FIX: Read thresholds directly from the behavior resource.
 	if is_instance_valid(behavior):
 		return [behavior.phase_2_threshold, behavior.phase_3_threshold]
 	return []
@@ -8947,7 +8945,6 @@ func _die() -> void:
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
-	# THE FIX: Initialize the first set of attacks from the behavior resource.
 	if is_instance_valid(behavior):
 		current_attack_patterns = behavior.phase_1_patterns
 	entity_data = BossStateData.new()
@@ -8972,7 +8969,8 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.BossStates.COOLDOWN},
-		fc: {"visual_node": visual_sprite, "hit_effect": HIT_FLASH_EFFECT},
+		# THE FIX: Pass the exported variable to the FXComponent's dependencies.
+		fc: {"visual_node": visual_sprite, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 
@@ -9877,13 +9875,12 @@ FILE: ./src/entities/minions/minion.gd
 class_name Minion
 extends BaseEntity
 
-# --- Constants ---
-const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
-
 # --- Editor Configuration ---
 @export_group("Core Configuration")
 @export var behavior: MinionBehavior
 @export_group("Juice & Feedback")
+# THE FIX: The hit flash effect is now a configurable property, not a constant.
+@export var hit_flash_effect: ShaderEffect
 @export var hit_spark_effect: VFXEffect
 @export var dissolve_effect: ShaderEffect
 
@@ -10007,7 +10004,6 @@ func _initialize_data() -> void:
 	assert(is_instance_valid(behavior), "Minion requires a valid MinionBehavior resource.")
 	entity_data.behavior = behavior
 	entity_data.max_health = behavior.max_health
-	# THE FIX: Provide the services to the shared state data.
 	entity_data.services = _services
 
 
@@ -10034,7 +10030,8 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.MinionStates.IDLE},
-		fc: {"visual_node": visual, "hit_effect": HIT_FLASH_EFFECT},
+		# THE FIX: Pass the exported variable to the FXComponent's dependencies.
+		fc: {"visual_node": visual, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 
@@ -10180,13 +10177,14 @@ var facing_direction: float = -1.0
 =====================================
 FILE: ./src/entities/minions/minion.tscn
 =====================================
-[gd_scene load_steps=8 format=3 uid="uid://c7d8faf0g1h2i"]
+[gd_scene load_steps=9 format=3 uid="uid://c7d8faf0g1h2i"]
 
 [ext_resource type="Script" uid="uid://4xepmjomesfc" path="res://src/entities/minions/minion.gd" id="1_minion_script"]
-[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="2_hit_spark_effect"]
-[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="3_archetype"]
-[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="4_dissolve_effect"]
-[ext_resource type="Resource" path="res://src/entities/minions/data/turret_behavior.tres" id="5_turret_behavior"]
+[ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="3_hit_spark_effect"]
+[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="4_archetype"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="5_dissolve_effect"]
+[ext_resource type="Resource" path="res://src/entities/minions/data/turret_behavior.tres" id="6_turret_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
 size = Vector2(50, 50)
@@ -10198,10 +10196,11 @@ radius = 400.0
 collision_layer = 4
 collision_mask = 131
 script = ExtResource("1_minion_script")
-behavior = ExtResource("5_turret_behavior")
-hit_spark_effect = ExtResource("2_hit_spark_effect")
-dissolve_effect = ExtResource("4_dissolve_effect")
-archetype = ExtResource("3_archetype")
+behavior = ExtResource("6_turret_behavior")
+hit_flash_effect = ExtResource("2_hit_flash")
+hit_spark_effect = ExtResource("3_hit_spark_effect")
+dissolve_effect = ExtResource("5_dissolve_effect")
+archetype = ExtResource("4_archetype")
 
 [node name="Visual" type="Polygon2D" parent="."]
 color = Color(0.490196, 0.490196, 0.490196, 1)

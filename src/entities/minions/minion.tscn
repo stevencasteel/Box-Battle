@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3 uid="uid://c7d8faf0g1h2i"]
+[gd_scene load_steps=9 format=3 uid="uid://c7d8faf0g1h2i"]
 
 [ext_resource type="Script" uid="uid://4xepmjomesfc" path="res://src/entities/minions/minion.gd" id="1_minion_script"]
-[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="2_hit_spark_effect"]
-[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="3_archetype"]
-[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="4_dissolve_effect"]
-[ext_resource type="Resource" path="res://src/entities/minions/data/turret_behavior.tres" id="5_turret_behavior"]
+[ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="3_hit_spark_effect"]
+[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="4_archetype"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="5_dissolve_effect"]
+[ext_resource type="Resource" path="res://src/entities/minions/data/turret_behavior.tres" id="6_turret_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
 size = Vector2(50, 50)
@@ -16,10 +17,11 @@ radius = 400.0
 collision_layer = 4
 collision_mask = 131
 script = ExtResource("1_minion_script")
-behavior = ExtResource("5_turret_behavior")
-hit_spark_effect = ExtResource("2_hit_spark_effect")
-dissolve_effect = ExtResource("4_dissolve_effect")
-archetype = ExtResource("3_archetype")
+behavior = ExtResource("6_turret_behavior")
+hit_flash_effect = ExtResource("2_hit_flash")
+hit_spark_effect = ExtResource("3_hit_spark_effect")
+dissolve_effect = ExtResource("5_dissolve_effect")
+archetype = ExtResource("4_archetype")
 
 [node name="Visual" type="Polygon2D" parent="."]
 color = Color(0.490196, 0.490196, 0.490196, 1)

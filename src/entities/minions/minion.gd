@@ -4,13 +4,12 @@
 class_name Minion
 extends BaseEntity
 
-# --- Constants ---
-const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
-
 # --- Editor Configuration ---
 @export_group("Core Configuration")
 @export var behavior: MinionBehavior
 @export_group("Juice & Feedback")
+# THE FIX: The hit flash effect is now a configurable property, not a constant.
+@export var hit_flash_effect: ShaderEffect
 @export var hit_spark_effect: VFXEffect
 @export var dissolve_effect: ShaderEffect
 
@@ -134,7 +133,6 @@ func _initialize_data() -> void:
 	assert(is_instance_valid(behavior), "Minion requires a valid MinionBehavior resource.")
 	entity_data.behavior = behavior
 	entity_data.max_health = behavior.max_health
-	# THE FIX: Provide the services to the shared state data.
 	entity_data.services = _services
 
 
@@ -161,7 +159,8 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.MinionStates.IDLE},
-		fc: {"visual_node": visual, "hit_effect": HIT_FLASH_EFFECT},
+		# THE FIX: Pass the exported variable to the FXComponent's dependencies.
+		fc: {"visual_node": visual, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 

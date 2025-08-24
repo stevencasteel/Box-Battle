@@ -3,14 +3,12 @@
 class_name BaseBoss
 extends BaseEntity
 
-# --- Constants ---
-const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
-
 # --- Editor Configuration ---
 @export_group("Core Configuration")
-# THE FIX: Replace individual pattern arrays with a single behavior resource.
 @export var behavior: BossBehavior
 @export_group("Juice & Feedback")
+# THE FIX: The hit flash effect is now a configurable property, not a constant.
+@export var hit_flash_effect: ShaderEffect
 @export var intro_shake_effect: ScreenShakeEffect
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
@@ -45,7 +43,6 @@ func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
 	if not archetype:
 		warnings.append("This node requires an EntityArchetype resource.")
-	# THE FIX: Update the warning to check for the new behavior resource.
 	if not behavior:
 		warnings.append("This node requires a BossBehavior resource.")
 	elif is_instance_valid(behavior) and behavior.phase_1_patterns.is_empty():
@@ -112,7 +109,6 @@ func teardown() -> void:
 
 
 func get_health_thresholds() -> Array[float]:
-	# THE FIX: Read thresholds directly from the behavior resource.
 	if is_instance_valid(behavior):
 		return [behavior.phase_2_threshold, behavior.phase_3_threshold]
 	return []
@@ -176,7 +172,6 @@ func _die() -> void:
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual_sprite.color = Palette.COLOR_BOSS_PRIMARY
-	# THE FIX: Initialize the first set of attacks from the behavior resource.
 	if is_instance_valid(behavior):
 		current_attack_patterns = behavior.phase_1_patterns
 	entity_data = BossStateData.new()
@@ -201,7 +196,8 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.BossStates.COOLDOWN},
-		fc: {"visual_node": visual_sprite, "hit_effect": HIT_FLASH_EFFECT},
+		# THE FIX: Pass the exported variable to the FXComponent's dependencies.
+		fc: {"visual_node": visual_sprite, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 
