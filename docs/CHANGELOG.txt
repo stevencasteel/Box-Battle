@@ -35,6 +35,15 @@
 ║                                                                              ║
 ║                                                                              ║
 
+
+refactor(Core): Improve ObjectPool robustness
+
+- Added an assertion to ObjectPool.get_instance() to fail fast with a clear error message if an invalid pool key is provided.
+- Added a has_method('deactivate') check in ObjectPool.return_instance() to prevent crashes when returning nodes that do not conform to the IPoolable interface.
+- This makes the pooling system safer and easier to debug.
+
+
+
 refactor(Player): Decouple ability component via signals
 
 - PlayerAbilityComponent no longer calls state_machine.change_state() directly. It now emits a `state_change_requested` signal with the desired state key.

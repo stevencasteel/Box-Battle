@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sat Aug 23 19:52:15 CDT 2025
+Generated on: Sat Aug 23 20:47:12 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -719,8 +719,8 @@ Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e600
 Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
 Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
 CoreAudio: detected 2 channels
-CoreAudio: output sampling rate: 48000 Hz
-CoreAudio: output audio buffer frames: 512 calculated latency: 10ms
+CoreAudio: output sampling rate: 44100 Hz
+CoreAudio: output audio buffer frames: 512 calculated latency: 11ms
 
 TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
 CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
@@ -731,6 +731,10 @@ Loading resource: res://src/core/systems/game_manager.gd
 Loading resource: res://src/core/systems/scene_manager.gd
 Loading resource: res://src/core/systems/audio_manager.gd
 Loading resource: res://src/core/systems/fx_manager.gd
+Loading resource: res://src/data/combat_config.tres
+Loading resource: res://src/core/data/config/combat_config.gd
+Loading resource: res://src/entities/player/data/forward_attack_shape.tres
+Loading resource: res://src/entities/player/data/upward_attack_shape.tres
 Loading resource: res://src/core/systems/camera_manager.gd
 Loading resource: res://src/core/systems/cursor_manager.gd
 Loading resource: res://assets/sprites/ui/cursors/sprite_cursor_default.png
@@ -741,10 +745,6 @@ Loading resource: res://src/core/systems/dialogue_manager.gd
 Loading resource: res://src/ui/dialogue/dialogue_box.tscn
 Loading resource: res://src/ui/dialogue/dialogue_box.gd
 Loading resource: res://src/core/building/arena_builder.gd
-Loading resource: res://src/data/combat_config.tres
-Loading resource: res://src/core/data/config/combat_config.gd
-Loading resource: res://src/entities/player/data/forward_attack_shape.tres
-Loading resource: res://src/entities/player/data/upward_attack_shape.tres
 Loading resource: res://src/api/global_preloader.gd
 Loaded system CA certificates
 Loading resource: res://src/scenes/main/main.tscn
@@ -799,9 +799,7 @@ Loading resource: res://src/entities/components/combat_component.tscn
 Loading resource: res://src/entities/components/input_component.tscn
 Loading resource: res://src/entities/components/base_state_machine.tscn
 Loading resource: res://src/entities/player/components/player_physics_component.tscn
-Loading resource: res://src/entities/player/components/player_physics_component.gd
 Loading resource: res://src/entities/player/components/player_ability_component.tscn
-Loading resource: res://src/entities/player/components/player_ability_component.gd
 Loading resource: res://src/entities/player/components/player_resource_component.tscn
 Loading resource: res://src/entities/components/fx_component.tscn
 Loading resource: res://src/core/data/effects/player_damage_shake.tres
@@ -888,44 +886,412 @@ Loading resource: res://src/entities/minions/states/state_turret_idle.gd
 Loading resource: res://src/entities/minions/states/state_turret_attack.gd
 Loading resource: res://src/core/systems/camera_shaker.tscn
 Loading resource: res://src/ui/dev/debug_overlay.tscn
+Executing Homing Omni Burst!
+Loading resource: res://src/scenes/victory/victory_screen.tscn
+Loading resource: res://src/scenes/victory/victory_screen.gd
+Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
+Loading resource: res://assets/fonts/font_main_black.ttf
+Loading resource: res://.godot/imported/font_main_black.ttf-766d9cc0a208469438ff831535d8483c.fontdata
+Loading resource: res://assets/fonts/font_main_bold.ttf
+Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
+Loading resource: res://src/scenes/menus/title_screen.tscn
+Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
+Loading resource: res://src/ui/components/logo_display/logo_display.tscn
+Loading resource: res://assets/sprites/ui/logos/newgrounds_logo.png
+Loading resource: res://.godot/imported/newgrounds_logo.png-2977cde893870d21b7f84cd17b13c225.ctex
+Loading resource: res://assets/sprites/ui/logos/godot_logo.png
+Loading resource: res://.godot/imported/godot_logo.png-2c4abc4be94a9a8ee3cb014f11b6a489.ctex
+Loading resource: res://assets/sprites/ui/logos/itch_logo.png
+Loading resource: res://.godot/imported/itch_logo.png-55a8cdb2f6f34f33f1968a45adf238ea.ctex
+Loading resource: res://src/ui/components/mute_button/mute_button.tscn
+Loading resource: res://assets/fonts/font_main_bold.ttf
+Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
+Loading resource: res://assets/audio/sfx/sfx_ui_back.mp3
+Loading resource: res://.godot/imported/sfx_ui_back.mp3-358be61abf136e7b6152e5b6ad330de8.mp3str
 XR: Clearing primary interface
 XR: Removed interface "Native mobile"
 XR: Removed interface "OpenXR"
+Leaked instance: GDScriptNativeClass:9223372044941394312
+Leaked instance: GDScriptNativeClass:9223372045025280397
+Leaked instance: GDScriptNativeClass:9223372046686224880
 Leaked instance: GDScriptNativeClass:9223372049924227761
-Leaked instance: GDScript:9223372077824738706 - Resource path: res://src/core/building/terrain_builder.gd
-Leaked instance: SceneTreeTimer:9223372117200865415
-Leaked instance: Node:125325805711 - Node path: 
-Leaked instance: Tween:9223372231235603156
-Leaked instance: Node:145508797204 - Node path: 
-Leaked instance: IntervalTweener:9223372231252381490
+Leaked instance: GDScriptNativeClass:9223372051769721631
+Leaked instance: GDScriptNativeClass:9223372052356924226
+Leaked instance: GDScriptNativeClass:9223372052373701443
+Leaked instance: GDScriptNativeClass:9223372052692468566
+Leaked instance: GDScriptNativeClass:9223372054336635832
+Leaked instance: GDScript:9223372070627312989 - Resource path: res://src/core/systems/fx_manager.gd
+Leaked instance: GDScript:9223372066584003934 - Resource path: res://src/core/events/event_bus.gd
+Leaked instance: GDScript:9223372066701444447 - Resource path: res://src/core/systems/object_pool.gd
+Leaked instance: GDScript:9223372066818884960 - Resource path: res://src/core/sequencing/sequencer.gd
+Leaked instance: GDScript:9223372068395943275 - Resource path: res://src/core/sequencing/sequence_handle.gd
+Leaked instance: GDScript:9223372068513383788 - Resource path: res://src/core/sequencing/sequence_step.gd
+Leaked instance: GDScript:9223372071600391537 - Resource path: res://src/core/systems/camera_shaker.gd
+Leaked instance: GDScript:9223372071717832050 - Resource path: res://src/core/util/service_locator.gd
+Leaked instance: GDScript:9223372071835272563 - Resource path: res://src/core/data/effects/screen_shake_effect.gd
+Leaked instance: GDScript:9223372071952713076 - Resource path: res://src/core/data/effects/vfx_effect.gd
+Leaked instance: GDScript:9223372072070153589 - Resource path: res://src/core/data/effects/shader_effect.gd
+Leaked instance: GDScript:9223372072388920697 - Resource path: res://src/core/data/config/combat_config.gd
+Leaked instance: RectangleShape2D:9223372072674133372 - Resource path: res://src/entities/player/data/forward_attack_shape.tres
+Leaked instance: Resource:9223372072825128317 - Resource path: res://src/data/combat_config.tres
+Leaked instance: RectangleShape2D:9223372072774796670 - Resource path: res://src/entities/player/data/upward_attack_shape.tres
+Leaked instance: GDScript:9223372073798206848 - Resource path: res://src/core/util/combat_utils.gd
+Leaked instance: GDScript:9223372073915647361 - Resource path: res://src/core/util/grid_utils.gd
+Leaked instance: GDScript:9223372080358098324 - Resource path: res://src/core/building/level_build_data.gd
+Leaked instance: GDScript:9223372080458761621 - Resource path: 
+Leaked instance: GDScript:9223372080492316054 - Resource path: res://src/data/encounters/encounter_data.gd
+Leaked instance: GDScript:9223372080760751512 - Resource path: res://src/core/building/terrain_builder.gd
+Leaked instance: GDScript:9223372081331176860 - Resource path: res://src/data/layouts/level_layout.gd
+Leaked instance: AudioStreamPlaybackMP3:9223372109063915580
+Leaked instance: AudioStreamMP3:9223372109013583934 - Resource path: res://assets/audio/music/music_menu_loop.mp3
+Leaked instance: AudioStreamPlaybackMP3:9223372248566466632
+Leaked instance: AudioStreamPlaybackMP3:9223372248499357818
+Leaked instance: AudioStreamMP3:9223372248449026178 - Resource path: res://assets/audio/sfx/sfx_ui_back.mp3
+Leaked instance: AudioStreamMP3:9223372117955840132 - Resource path: res://assets/audio/sfx/sfx_ui_select.mp3
+Leaked instance: SceneTreeTimer:9223372118022948997
+Leaked instance: AudioStreamMP3:9223372117737736328 - Resource path: res://assets/audio/sfx/sfx_ui_move.mp3
+Leaked instance: Node:124352727177 - Node path: 
+Leaked instance: AudioStreamPlaybackMP3:9223372248264476863
+Leaked instance: AudioStreamPlaybackMP3:9223372248314808533
+Leaked instance: Node:144569273108 - Node path: 
+Leaked instance: SceneTreeTimer:9223372245412351910
 Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
+Resource still in use: res://src/core/events/event_bus.gd (GDScript)
+Resource still in use: res://src/core/systems/object_pool.gd (GDScript)
+Resource still in use: res://src/core/sequencing/sequencer.gd (GDScript)
+Resource still in use: res://src/core/sequencing/sequence_handle.gd (GDScript)
+Resource still in use: res://src/core/sequencing/sequence_step.gd (GDScript)
+Resource still in use: res://src/core/systems/fx_manager.gd (GDScript)
+Resource still in use: res://src/core/systems/camera_shaker.gd (GDScript)
+Resource still in use: res://src/core/util/service_locator.gd (GDScript)
+Resource still in use: res://src/core/data/effects/screen_shake_effect.gd (GDScript)
+Resource still in use: res://src/core/data/effects/vfx_effect.gd (GDScript)
+Resource still in use: res://src/core/data/effects/shader_effect.gd (GDScript)
+Resource still in use: res://src/core/data/config/combat_config.gd (GDScript)
+Resource still in use: res://src/entities/player/data/forward_attack_shape.tres (RectangleShape2D)
+Resource still in use: res://src/entities/player/data/upward_attack_shape.tres (RectangleShape2D)
+Resource still in use: res://src/data/combat_config.tres (Resource)
+Resource still in use: res://src/core/util/combat_utils.gd (GDScript)
+Resource still in use: res://src/core/util/grid_utils.gd (GDScript)
+Resource still in use: res://src/core/building/level_build_data.gd (GDScript)
+Resource still in use: res://src/data/encounters/encounter_data.gd (GDScript)
 Resource still in use: res://src/core/building/terrain_builder.gd (GDScript)
+Resource still in use: res://src/data/layouts/level_layout.gd (GDScript)
+Resource still in use: res://assets/audio/music/music_menu_loop.mp3 (AudioStreamMP3)
+Resource still in use: res://assets/audio/sfx/sfx_ui_move.mp3 (AudioStreamMP3)
+Resource still in use: res://assets/audio/sfx/sfx_ui_select.mp3 (AudioStreamMP3)
+Resource still in use: res://assets/audio/sfx/sfx_ui_back.mp3 (AudioStreamMP3)
+Orphan StringName: duration (static: 0, total: 11)
+Orphan StringName: @group_4_Behavior (static: 0, total: 2)
+Orphan StringName: decrement_shader_count (static: 0, total: 3)
+Orphan StringName: GridUtils (static: 0, total: 2)
+Orphan StringName: call (static: 0, total: 2)
+Orphan StringName: _mix (static: 0, total: 5)
+Orphan StringName: object_pool (static: 0, total: 3)
+Orphan StringName: @group_14_Player - Wall Interaction (static: 0, total: 3)
 Orphan StringName: _enter_tree (static: 0, total: 2)
-Orphan StringName: _set_path_cache (static: 0, total: 1)
-Orphan StringName: _reset_state (static: 0, total: 1)
+Orphan StringName: scene (static: 0, total: 8)
+Orphan StringName: cancel (static: 0, total: 4)
+Orphan StringName: dimensions_tiles (static: 0, total: 4)
+Orphan StringName: _set_path_cache (static: 0, total: 26)
+Orphan StringName: print (static: 0, total: 1)
+Orphan StringName: _reset_state (static: 0, total: 26)
+Orphan StringName: player_upward_attack_shape (static: 0, total: 5)
+Orphan StringName: @group_35_Boss - General (static: 0, total: 3)
+Orphan StringName: _execute_sequence (static: 0, total: 4)
+Orphan StringName: <anonymous lambda> (static: 0, total: 1)
+Orphan StringName: name (static: 0, total: 1)
+Orphan StringName: @terrain_data_setter (static: 0, total: 3)
 Orphan StringName: _unhandled_input (static: 0, total: 2)
-Orphan StringName: _ready (static: 0, total: 2)
-Orphan StringName: _exit_tree (static: 0, total: 2)
-Orphan StringName: _create_solid_tile (static: 0, total: 1)
-Orphan StringName: _setup_local_to_scene (static: 0, total: 1)
-Orphan StringName: _create_hazard_tile (static: 0, total: 1)
-Orphan StringName: telegraph_finished (static: 0, total: 1)
-Orphan StringName: finished (static: 0, total: 1)
+Orphan StringName: _ready (static: 0, total: 11)
+Orphan StringName: ServiceLocator (static: 0, total: 2)
+Orphan StringName: player_jump_buffer (static: 0, total: 6)
+Orphan StringName: homing_shot_speed (static: 0, total: 6)
+Orphan StringName: player_jump_release_dampener (static: 0, total: 6)
+Orphan StringName: player_determination_per_charge (static: 0, total: 6)
+Orphan StringName: _exit_tree (static: 0, total: 8)
+Orphan StringName: player_forward_attack_shape (static: 0, total: 5)
+Orphan StringName: priority (static: 0, total: 5)
+Orphan StringName: HealthComponent (static: 0, total: 1)
+Orphan StringName: _shake_amplitude (static: 0, total: 4)
+Orphan StringName: player_charge_time (static: 0, total: 6)
+Orphan StringName: _create_solid_tile (static: 0, total: 4)
+Orphan StringName: @group_0_Configuration (static: 0, total: 2)
+Orphan StringName: unregister_camera_shaker (static: 0, total: 3)
+Orphan StringName: SFX (static: 0, total: 8)
+Orphan StringName: player_heal_duration (static: 0, total: 6)
+Orphan StringName: pop_front (static: 0, total: 1)
+Orphan StringName: player_attack_duration (static: 0, total: 6)
+Orphan StringName: play_vfx (static: 0, total: 3)
+Orphan StringName: _stop (static: 0, total: 5)
+Orphan StringName: deactivate (static: 0, total: 4)
+Orphan StringName: Camera2D (static: 1, total: 5)
+Orphan StringName: _create_pool_for_scene (static: 0, total: 4)
+Orphan StringName: StaticBody2D (static: 1, total: 2)
+Orphan StringName: _next_id (static: 0, total: 4)
+Orphan StringName: _setup_local_to_scene (static: 0, total: 26)
+Orphan StringName: LevelLayout (static: 0, total: 4)
+Orphan StringName: get_parent (static: 0, total: 1)
+Orphan StringName: _noise_y_offset (static: 0, total: 4)
+Orphan StringName: _subscribers (static: 0, total: 3)
+Orphan StringName: terrain_data (static: 0, total: 4)
+Orphan StringName: @group_6_Player - Movement & Physics (static: 0, total: 3)
+Orphan StringName: _active_shader_effects (static: 0, total: 4)
+Orphan StringName: has_method (static: 0, total: 3)
+Orphan StringName: level_layout (static: 0, total: 4)
+Orphan StringName: _shake_timer (static: 0, total: 4)
+Orphan StringName: _get_beat_count (static: 0, total: 4)
+Orphan StringName: is_camera_shaker_registered (static: 0, total: 3)
+Orphan StringName: color (static: 0, total: 4)
+Orphan StringName: world (static: 0, total: 3)
+Orphan StringName: _mix_resampled (static: 0, total: 5)
+Orphan StringName: target_camera (static: 0, total: 4)
+Orphan StringName: Shape2D (static: 0, total: 4)
+Orphan StringName: SequenceStep (static: 0, total: 3)
+Orphan StringName: ShaderEffect (static: 0, total: 3)
+Orphan StringName: CameraShaker (static: 0, total: 5)
+Orphan StringName: push_warning (static: 0, total: 3)
+Orphan StringName: get_ref (static: 0, total: 1)
+Orphan StringName: Sequencer (static: 0, total: 2)
+Orphan StringName: turret_fire_rate (static: 0, total: 6)
+Orphan StringName: boss_health (static: 0, total: 6)
+Orphan StringName: player_coyote_time (static: 0, total: 6)
+Orphan StringName: process_mode (static: 0, total: 1)
+Orphan StringName: @group_0_Player - Health & Resources (static: 0, total: 3)
+Orphan StringName: res://src/data/encounters/encounter_data.gd (static: 0, total: 1)
+Orphan StringName: params (static: 0, total: 4)
+Orphan StringName: reset (static: 0, total: 3)
+Orphan StringName: player_jump_force (static: 0, total: 6)
+Orphan StringName: _create_hazard_tile (static: 0, total: 4)
+Orphan StringName: _active_vfx_count (static: 0, total: 4)
+Orphan StringName: increment_shader_count (static: 0, total: 3)
+Orphan StringName: polygon (static: 0, total: 3)
+Orphan StringName: boss_death_hit_stop_duration (static: 0, total: 6)
+Orphan StringName: ColorRect (static: 1, total: 2)
+Orphan StringName: get_pool_stats (static: 0, total: 3)
+Orphan StringName: player_knockback_duration (static: 0, total: 6)
+Orphan StringName: player_knockback_speed (static: 0, total: 6)
+Orphan StringName: activate (static: 0, total: 1)
+Orphan StringName: append (static: 0, total: 5)
+Orphan StringName: _get_stream_sampling_rate (static: 0, total: 5)
+Orphan StringName: _get_playback_position (static: 0, total: 5)
+Orphan StringName: offset (static: 0, total: 1)
+Orphan StringName: _noise (static: 0, total: 3)
+Orphan StringName: hit_sparks (static: 0, total: 1)
+Orphan StringName: minion_spawns (static: 0, total: 7)
+Orphan StringName: _get_stream_name (static: 0, total: 4)
+Orphan StringName: connect (static: 1, total: 3)
+Orphan StringName: SubViewport (static: 1, total: 3)
+Orphan StringName: emit (static: 0, total: 5)
+Orphan StringName: process_frame (static: 1, total: 3)
+Orphan StringName: grid_utils (static: 0, total: 4)
+Orphan StringName: SequenceHandle (static: 0, total: 6)
+Orphan StringName: player_damage_taken_hit_stop_duration (static: 0, total: 6)
+Orphan StringName: is_empty (static: 0, total: 2)
+Orphan StringName: res://src/core/data/effects/screen_shake_effect.gd (static: 0, total: 1)
+Orphan StringName: material (static: 0, total: 5)
+Orphan StringName: queue_free (static: 0, total: 1)
+Orphan StringName: get_children (static: 0, total: 1)
+Orphan StringName: player_invincibility_duration (static: 0, total: 6)
+Orphan StringName: one_way_collision (static: 0, total: 1)
+Orphan StringName: MinionSpawnData (static: 0, total: 4)
+Orphan StringName: request_hit_stop (static: 0, total: 3)
+Orphan StringName: res://src/core/building/level_build_data.gd (static: 0, total: 3)
+Orphan StringName: res://src/core/data/config/combat_config.gd (static: 0, total: 1)
+Orphan StringName: _get_parameter (static: 0, total: 5)
+Orphan StringName: sequencer (static: 0, total: 3)
+Orphan StringName: boss_shots (static: 0, total: 1)
+Orphan StringName: CombatConfig (static: 0, total: 4)
+Orphan StringName: res://src/core/sequencing/sequence_step.gd (static: 0, total: 2)
+Orphan StringName: apply_damage (static: 0, total: 1)
+Orphan StringName: encounter_data_resource (static: 0, total: 4)
+Orphan StringName: amplitude (static: 0, total: 6)
+Orphan StringName: finished (static: 0, total: 5)
+Orphan StringName: res://src/core/sequencing/sequencer.gd (static: 0, total: 5)
+Orphan StringName: hazard (static: 0, total: 1)
+Orphan StringName: _start (static: 0, total: 5)
+Orphan StringName: player (static: 0, total: 1)
 Orphan StringName: _input (static: 0, total: 2)
+Orphan StringName: get_instance (static: 0, total: 4)
+Orphan StringName: homing_boss_shots (static: 0, total: 1)
+Orphan StringName: combat_utils (static: 0, total: 3)
+Orphan StringName: oneway_platforms (static: 0, total: 5)
+Orphan StringName: turret_shots (static: 0, total: 1)
+Orphan StringName: res://src/core/util/grid_utils.gd (static: 0, total: 3)
+Orphan StringName: player_melee_close_range_hit_stop_duration (static: 0, total: 6)
+Orphan StringName: fx_manager (static: 0, total: 3)
+Orphan StringName: player_hazard_knockback_speed (static: 0, total: 6)
+Orphan StringName: get_child_count (static: 0, total: 2)
+Orphan StringName: Resource (static: 2, total: 14)
+Orphan StringName: is_running (static: 0, total: 5)
+Orphan StringName: res://src/core/systems/fx_manager.gd (static: 0, total: 13)
+Orphan StringName: boss_phase_change_hit_stop_duration (static: 0, total: 6)
+Orphan StringName: find_damageable (static: 0, total: 3)
+Orphan StringName: _has_loop (static: 0, total: 4)
+Orphan StringName: RectangleShape2D (static: 1, total: 2)
+Orphan StringName: _shake_frequency (static: 0, total: 4)
+Orphan StringName: boss_scene (static: 0, total: 4)
+Orphan StringName: player_spawn_pos (static: 0, total: 4)
+Orphan StringName: combat_config (static: 0, total: 4)
+Orphan StringName: call_deferred (static: 0, total: 1)
+Orphan StringName: _by_id (static: 0, total: 3)
+Orphan StringName: get (static: 0, total: 1)
+Orphan StringName: turret_detection_radius (static: 0, total: 6)
+Orphan StringName: id (static: 0, total: 3)
+Orphan StringName: get_debug_stats (static: 0, total: 3)
+Orphan StringName: on (static: 0, total: 3)
+Orphan StringName: root (static: 0, total: 7)
+Orphan StringName: prewarm_shaders_async (static: 0, total: 3)
+Orphan StringName: has (static: 0, total: 7)
+Orphan StringName: run_sequence (static: 0, total: 3)
+Orphan StringName: position (static: 0, total: 7)
+Orphan StringName: _is_playing (static: 0, total: 5)
+Orphan StringName: player_wall_slide_speed (static: 0, total: 6)
+Orphan StringName: Music (static: 0, total: 2)
+Orphan StringName: hazard_tiles (static: 0, total: 4)
+Orphan StringName: _get_bar_beats (static: 0, total: 4)
+Orphan StringName: background_tiles (static: 0, total: 4)
+Orphan StringName: get_node_or_null (static: 0, total: 1)
+Orphan StringName: callback (static: 0, total: 1)
+Orphan StringName: res://src/core/systems/object_pool.gd (static: 0, total: 8)
+Orphan StringName: @group_6_Minions (static: 0, total: 2)
+Orphan StringName: res://src/core/events/event_bus.gd (static: 0, total: 5)
+Orphan StringName: @group_3_Boss (static: 0, total: 2)
 Orphan StringName: _shortcut_input (static: 0, total: 2)
-Orphan StringName: timeout (static: 2, total: 3)
-Orphan StringName: _process (static: 0, total: 2)
-Orphan StringName: _create_oneway_platform (static: 0, total: 1)
-Orphan StringName: _create_background_tile (static: 0, total: 1)
-Orphan StringName: Node (static: 5, total: 6)
+Orphan StringName: timeout (static: 2, total: 5)
+Orphan StringName: push_error (static: 0, total: 3)
+Orphan StringName: coalesce_window (static: 0, total: 5)
+Orphan StringName: instantiate (static: 0, total: 1)
+Orphan StringName: @group_19_Player - Dash (static: 0, total: 3)
+Orphan StringName: player_max_air_jumps (static: 0, total: 6)
+Orphan StringName: homing_shot_damage (static: 0, total: 6)
+Orphan StringName: FastNoiseLite (static: 1, total: 4)
+Orphan StringName: player_shots (static: 0, total: 1)
+Orphan StringName: res://src/core/data/effects/shader_effect.gd (static: 0, total: 1)
+Orphan StringName: _init (static: 0, total: 3)
+Orphan StringName: _is_monophonic (static: 0, total: 4)
+Orphan StringName: res://src/core/building/terrain_builder.gd (static: 0, total: 7)
+Orphan StringName: event_bus (static: 0, total: 3)
+Orphan StringName: @group_50_Global - Juice & Feedback (Hit-Stop) (static: 0, total: 3)
+Orphan StringName: get_scale (static: 0, total: 1)
+Orphan StringName: global_position (static: 0, total: 1)
+Orphan StringName: res://src/core/sequencing/sequence_handle.gd (static: 0, total: 2)
+Orphan StringName: Polygon2D (static: 1, total: 2)
+Orphan StringName: push_front (static: 0, total: 1)
+Orphan StringName: @group_48_Global - Physics (static: 0, total: 3)
+Orphan StringName: _pools (static: 0, total: 3)
+Orphan StringName: EncounterData (static: 0, total: 4)
+Orphan StringName: execute (static: 0, total: 4)
+Orphan StringName: off (static: 0, total: 3)
+Orphan StringName: boss_lunge_speed (static: 0, total: 6)
+Orphan StringName: bind (static: 0, total: 1)
+Orphan StringName: player_fast_fall_gravity_multiplier (static: 0, total: 6)
+Orphan StringName: _camera_shaker (static: 0, total: 4)
+Orphan StringName: SceneTree (static: 1, total: 3)
+Orphan StringName: res://src/core/util/service_locator.gd (static: 0, total: 2)
+Orphan StringName: _process (static: 0, total: 5)
+Orphan StringName: ObjectPool (static: 0, total: 2)
+Orphan StringName: boss_invincibility_duration (static: 0, total: 6)
+Orphan StringName: LevelBuildData (static: 0, total: 5)
+Orphan StringName: add_child (static: 0, total: 2)
+Orphan StringName: player_dash_cooldown (static: 0, total: 6)
+Orphan StringName: noise_type (static: 0, total: 1)
+Orphan StringName: remove_at (static: 0, total: 2)
+Orphan StringName: _get_bpm (static: 0, total: 4)
+Orphan StringName: return_instance (static: 0, total: 4)
+Orphan StringName: pool_key (static: 0, total: 6)
+Orphan StringName: @group_23_Player - Combat (static: 0, total: 3)
+Orphan StringName: CollisionShape2D (static: 1, total: 2)
+Orphan StringName: ScreenShakeEffect (static: 0, total: 5)
+Orphan StringName: _create_oneway_platform (static: 0, total: 4)
+Orphan StringName: terrain_tiles (static: 0, total: 4)
+Orphan StringName: res://src/core/util/combat_utils.gd (static: 0, total: 2)
+Orphan StringName: _get_parameter_list (static: 0, total: 4)
+Orphan StringName: _instantiate_playback (static: 0, total: 4)
+Orphan StringName: player_dash_speed (static: 0, total: 6)
+Orphan StringName: duplicate (static: 0, total: 1)
+Orphan StringName: shape (static: 0, total: 3)
+Orphan StringName: _create_background_tile (static: 0, total: 4)
+Orphan StringName: _shake_duration (static: 0, total: 4)
+Orphan StringName: _is_hit_stop_active (static: 0, total: 4)
+Orphan StringName: ShaderMaterial (static: 1, total: 3)
+Orphan StringName: enemy (static: 0, total: 1)
+Orphan StringName: tree_exited (static: 0, total: 1)
+Orphan StringName: Node (static: 5, total: 57)
+Orphan StringName: CombatUtils (static: 0, total: 2)
+Orphan StringName: boss_spawn_pos (static: 0, total: 4)
+Orphan StringName: frequency (static: 0, total: 6)
 Orphan StringName: _unhandled_key_input (static: 0, total: 2)
-Orphan StringName: build_terrain_async (static: 0, total: 1)
-Orphan StringName: _get_configuration_warnings (static: 0, total: 2)
-Orphan StringName: fill_viewport (static: 0, total: 1)
-Orphan StringName: _get_rid (static: 0, total: 1)
+Orphan StringName: player_spawn_marker (static: 0, total: 5)
+Orphan StringName: _services (static: 0, total: 3)
+Orphan StringName: boss_spawn_marker (static: 0, total: 5)
+Orphan StringName: @implicit_ready (static: 0, total: 1)
+Orphan StringName: homing_shot_lifespan (static: 0, total: 6)
+Orphan StringName: @group_6_Performance (static: 0, total: 2)
+Orphan StringName: build_terrain_async (static: 0, total: 3)
+Orphan StringName: @group_39_Boss - Lunge Attack (static: 0, total: 3)
+Orphan StringName: player_speed (static: 0, total: 6)
+Orphan StringName: LevelBuildData.MinionSpawnData (static: 0, total: 1)
+Orphan StringName: FXManager (static: 0, total: 2)
+Orphan StringName: player_attack_cooldown (static: 0, total: 6)
+Orphan StringName: RefCounted (static: 2, total: 10)
+Orphan StringName: @group_44_Projectiles (static: 0, total: 3)
+Orphan StringName: register_camera_shaker (static: 0, total: 3)
+Orphan StringName: player_pogo_force (static: 0, total: 6)
+Orphan StringName: weakref (static: 0, total: 1)
+Orphan StringName: find (static: 0, total: 1)
+Orphan StringName: res://src/core/data/effects/vfx_effect.gd (static: 0, total: 1)
+Orphan StringName: grid_to_world (static: 0, total: 3)
+Orphan StringName: container (static: 0, total: 3)
+Orphan StringName: _set_parameter (static: 0, total: 5)
+Orphan StringName: player_max_health (static: 0, total: 6)
+Orphan StringName: boss_patrol_speed (static: 0, total: 6)
+Orphan StringName: _get_configuration_warnings (static: 0, total: 5)
+Orphan StringName: COMBAT_CONFIG (static: 0, total: 2)
+Orphan StringName: fill_viewport (static: 0, total: 3)
+Orphan StringName: player_attack_friction (static: 0, total: 6)
+Orphan StringName: _on_sequence_finished (static: 0, total: 4)
+Orphan StringName: request_screen_shake (static: 0, total: 3)
+Orphan StringName: pool_name (static: 0, total: 3)
+Orphan StringName: erase (static: 0, total: 2)
+Orphan StringName: seed (static: 0, total: 1)
+Orphan StringName: _active_handles (static: 0, total: 3)
+Orphan StringName: is_instance_valid (static: 0, total: 9)
+Orphan StringName: _tag_used_streams (static: 0, total: 5)
+Orphan StringName: @group_0_Layout (static: 0, total: 2)
+Orphan StringName: _seek (static: 0, total: 5)
+Orphan StringName: player_close_range_threshold (static: 0, total: 6)
+Orphan StringName: floor (static: 0, total: 1)
+Orphan StringName: origin (static: 0, total: 1)
+Orphan StringName: start_shake (static: 0, total: 4)
+Orphan StringName: PackedScene (static: 1, total: 11)
+Orphan StringName: player_wall_jump_force_x (static: 0, total: 6)
+Orphan StringName: player_wall_jump_force_y (static: 0, total: 6)
+Orphan StringName: set_meta (static: 0, total: 1)
+Orphan StringName: @implicit_new (static: 0, total: 19)
+Orphan StringName: _get_rid (static: 0, total: 26)
+Orphan StringName: get_child (static: 0, total: 1)
+Orphan StringName: cancel_all (static: 0, total: 3)
+Orphan StringName: _get_length (static: 0, total: 4)
+Orphan StringName: @group_41_Minion - Turret (static: 0, total: 3)
+Orphan StringName: size (static: 0, total: 6)
+Orphan StringName: player_wall_coyote_time (static: 0, total: 6)
+Orphan StringName: owner_weak (static: 0, total: 1)
+Orphan StringName: free (static: 0, total: 1)
+Orphan StringName: gravity (static: 0, total: 6)
 Orphan StringName: TerrainBuilder (static: 0, total: 3)
+Orphan StringName: _get_loop_count (static: 0, total: 5)
 Orphan StringName: _physics_process (static: 0, total: 2)
-StringName: 25 unclaimed string names at exit.
+Orphan StringName: player_max_healing_charges (static: 0, total: 6)
+Orphan StringName: VFXEffect (static: 0, total: 4)
+Orphan StringName: player_dash_duration (static: 0, total: 6)
+Orphan StringName: res://src/core/systems/camera_shaker.gd (static: 0, total: 4)
+Orphan StringName: world_to_grid (static: 0, total: 4)
+Orphan StringName: res://src/data/layouts/level_layout.gd (static: 0, total: 3)
+Orphan StringName: inactive (static: 0, total: 5)
+Orphan StringName: collision_layer (static: 0, total: 3)
+Orphan StringName: EventBus (static: 0, total: 2)
+StringName: 310 unclaimed string names at exit.
 
 
 =====================================
@@ -5398,9 +5764,7 @@ func reset() -> void:
 
 ## Retrieves an inactive instance from the specified pool.
 func get_instance(p_pool_name: StringName) -> Node:
-	if not _pools.has(p_pool_name):
-		push_error("ObjectPool: Pool '%s' does not exist." % p_pool_name)
-		return null
+	assert(_pools.has(p_pool_name), "ObjectPool: Pool '%s' does not exist." % p_pool_name)
 
 	var pool = _pools[p_pool_name]
 	var instance: Node
@@ -5408,6 +5772,7 @@ func get_instance(p_pool_name: StringName) -> Node:
 	if not pool.inactive.is_empty():
 		instance = pool.inactive.pop_front()
 	else:
+		# TODO: Add a warning or limit here if pools grow excessively during gameplay.
 		instance = pool.scene.instantiate()
 		instance.set_meta("pool_name", p_pool_name)
 		pool.container.add_child(instance)
@@ -5422,13 +5787,16 @@ func return_instance(p_instance: Node) -> void:
 
 	var pool_name = p_instance.get_meta("pool_name", "")
 	if pool_name == "" or not _pools.has(pool_name):
+		# This instance doesn't belong to a known pool, so we just free it.
 		p_instance.queue_free()
 		return
 
 	var pool = _pools[pool_name]
 	if not pool.inactive.has(p_instance):
+		# Only add it back if it's not already in the inactive list.
 		pool.inactive.push_front(p_instance)
 
+	# Safely call deactivate if the method exists.
 	if p_instance.has_method("deactivate"):
 		p_instance.deactivate()
 
@@ -5455,7 +5823,6 @@ func _create_pool_for_scene(
 		if instance.has_method("deactivate"):
 			instance.deactivate()
 		_pools[p_pool_name].inactive.append(instance)
-
 
 =====================================
 FILE: ./src/core/systems/audio_manager.gd
@@ -5636,9 +6003,15 @@ extends Node
 # --- Private Member Variables ---
 var _is_hit_stop_active: bool = false
 var _camera_shaker: CameraShaker = null
+var _services: ServiceLocator
 
 var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
+
+
+func _ready() -> void:
+	_services = get_node("/root/ServiceLocator")
+
 
 # --- Public Methods ---
 
@@ -5699,23 +6072,40 @@ func play_vfx(
 	vfx_instance.global_position = global_position
 
 	if vfx_instance.has_method("activate"):
-		vfx_instance.call("activate", direction)
+		var dependencies = {"services": _services, "direction": direction}
+		vfx_instance.call("activate", dependencies)
 
 
-## Pauses the entire game tree for a short duration to add impact to an event.
+## Pauses specific gameplay nodes for a short duration to add impact to an event.
 func request_hit_stop(duration: float) -> void:
 	if _is_hit_stop_active:
 		return
 
 	_is_hit_stop_active = true
-	get_tree().paused = true
 
+	# 1. Find all nodes that should be affected by hit-stop.
+	var affected_nodes: Array[Node]
+	affected_nodes.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.PLAYER))
+	affected_nodes.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
+
+	# 2. Pause the nodes using call_deferred to avoid physics engine errors.
+	for node in affected_nodes:
+		if is_instance_valid(node):
+			node.set_deferred("process_mode", Node.PROCESS_MODE_DISABLED)
+
+	# 3. Create a timer that is not affected by time scale.
 	var timer = get_tree().create_timer(duration, true, false, true)
 	await timer.timeout
 
-	if get_tree().paused and _is_hit_stop_active:
-		get_tree().paused = false
-		_is_hit_stop_active = false
+	# 4. Resume the nodes. Guard against scene changes during the await.
+	if not get_tree():
+		return
+
+	for node in affected_nodes:
+		if is_instance_valid(node):
+			node.set_deferred("process_mode", Node.PROCESS_MODE_INHERIT)
+
+	_is_hit_stop_active = false
 
 
 ## Pre-compiles a list of shaders by briefly rendering them off-screen.
@@ -7419,6 +7809,9 @@ FILE: ./src/vfx/hit_spark.gd
 class_name HitSpark
 extends GPUParticles2D
 
+var _services: ServiceLocator
+
+
 # --- Godot Lifecycle Methods ---
 
 
@@ -7430,7 +7823,11 @@ func _ready() -> void:
 
 
 ## Activates the particle effect.
-func activate(direction: Vector2 = Vector2.RIGHT) -> void:
+func activate(dependencies: Dictionary) -> void:
+	_services = dependencies.get("services")
+	assert(is_instance_valid(_services), "HitSpark requires a ServiceLocator dependency.")
+	var direction = dependencies.get("direction", Vector2.RIGHT)
+
 	process_mode = PROCESS_MODE_INHERIT
 	visible = true
 	self.rotation = direction.angle()
@@ -7441,14 +7838,18 @@ func activate(direction: Vector2 = Vector2.RIGHT) -> void:
 func deactivate() -> void:
 	process_mode = PROCESS_MODE_DISABLED
 	visible = false
+	_services = null
 
 
 # --- Signal Handlers ---
 
 
 func _on_finished() -> void:
-	ObjectPool.return_instance(self)
+	if not is_instance_valid(_services):
+		# This might happen if deactivated during a scene transition.
+		return
 
+	_services.object_pool.return_instance(self)
 
 =====================================
 FILE: ./src/vfx/hit_spark.tscn
@@ -7574,6 +7975,7 @@ extends Node
 
 
 ## Prepares the node for use after being retrieved from the pool.
+## Receives a dictionary of dependencies, which should include the ServiceLocator.
 func activate(_dependencies: Dictionary = {}) -> void:
 	pass
 
@@ -9417,7 +9819,8 @@ var _current_state_key
 
 
 func _ready() -> void:
-	owner_node = get_parent()
+	# Run after the physics component.
+	process_priority = 0
 
 
 func _notification(what: int) -> void:
@@ -9440,6 +9843,7 @@ func _exit_tree() -> void:
 
 
 func setup(_p_owner: Node, p_dependencies: Dictionary = {}) -> void:
+	self.owner_node = _p_owner
 	assert(p_dependencies.has("states"), "StateMachine setup requires a 'states' dictionary.")
 	assert(
 		p_dependencies.has("initial_state_key"),
@@ -9859,6 +10263,12 @@ var buffer: Dictionary = {}
 # --- Godot Lifecycle Methods ---
 
 
+func _ready() -> void:
+	# A lower number runs earlier in the physics step.
+	# This ensures the buffer is populated before other components try to read it.
+	process_priority = -100
+
+
 func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
 		return  # Guard against post-teardown calls
@@ -9902,7 +10312,6 @@ func teardown() -> void:
 	p_data = null
 	_config = null
 	buffer.clear()
-
 
 =====================================
 FILE: ./src/entities/components/combat_component.tscn
@@ -10615,6 +11024,11 @@ func teardown() -> void:
 		if sm.pogo_hitbox_toggled.is_connected(_enable_pogo_hitbox):
 			sm.pogo_hitbox_toggled.disconnect(_enable_pogo_hitbox)
 
+	var ac: PlayerAbilityComponent = get_component(PlayerAbilityComponent)
+	if is_instance_valid(ac):
+		if ac.state_change_requested.is_connected(_on_ability_state_change_requested):
+			ac.state_change_requested.disconnect(_on_ability_state_change_requested)
+
 	if is_instance_valid(healing_timer):
 		if healing_timer.timeout.is_connected(_on_healing_timer_timeout):
 			healing_timer.timeout.disconnect(_on_healing_timer_timeout)
@@ -10717,6 +11131,9 @@ func _connect_signals() -> void:
 	sm.melee_hitbox_toggled.connect(_enable_melee_hitbox)
 	sm.pogo_hitbox_toggled.connect(_enable_pogo_hitbox)
 
+	var ac: PlayerAbilityComponent = get_component(PlayerAbilityComponent)
+	ac.state_change_requested.connect(_on_ability_state_change_requested)
+
 	healing_timer.timeout.connect(_on_healing_timer_timeout)
 
 
@@ -10740,6 +11157,12 @@ func _update_timers(delta: float) -> void:
 
 
 # --- Signal Handlers ---
+
+
+func _on_ability_state_change_requested(state_key: StringName, msg: Dictionary = {}) -> void:
+	var sm: BaseStateMachine = get_component(BaseStateMachine)
+	if is_instance_valid(sm):
+		sm.change_state(state_key, msg)
 
 
 func _on_melee_hitbox_body_entered(body: Node) -> void:
@@ -10832,9 +11255,13 @@ FILE: ./src/entities/player/components/player_ability_component.gd
 ## Governs the activation logic for player abilities.
 ##
 ## Reads the input buffer and game state to determine if an action (like
-## dashing or healing) can be performed, then instructs the StateMachine.
+## dashing or healing) can be performed, then emits a signal to request a state change.
 class_name PlayerAbilityComponent
 extends IComponent
+
+# --- Signals ---
+## Emitted when this component determines a state change should occur.
+signal state_change_requested(state_key: StringName, msg: Dictionary)
 
 # --- Constants ---
 const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
@@ -10846,16 +11273,20 @@ var p_data: PlayerStateData
 # --- Godot Lifecycle Methods ---
 
 
+func _ready() -> void:
+	# Run after the physics component.
+	process_priority = 0
+
+
 func _physics_process(_delta: float) -> void:
 	if not is_instance_valid(owner_node):
 		return
 
-	var state_machine: BaseStateMachine = owner_node.get_component(BaseStateMachine)
 	var input_component: InputComponent = owner_node.get_component(InputComponent)
-	if not is_instance_valid(state_machine) or not is_instance_valid(input_component):
+	if not is_instance_valid(input_component):
 		return
 
-	var current_state_key = state_machine._current_state_key
+	var current_state_key = owner_node.get_component(BaseStateMachine)._current_state_key
 
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
@@ -10872,19 +11303,19 @@ func _physics_process(_delta: float) -> void:
 			and owner_node.is_on_floor()
 			and is_zero_approx(owner_node.velocity.x)
 		):
-			state_machine.change_state(Identifiers.PlayerStates.HEAL)
+			state_change_requested.emit(Identifiers.PlayerStates.HEAL, {})
 			return # Stop further processing of this input
 
 		# 2. Platform Drop
 		if is_holding_down:
-			# THE FIX: Use the correct variable 'owner_node'.
 			if JumpHelper.try_platform_drop(owner_node):
-				return # Stop further processing
+				# The helper calls change_state directly for this one, so we just return.
+				return
 
 		# 3. Standard Jump (includes wall, ground, coyote, and air jumps)
-		# THE FIX: Use the correct variable 'owner_node'.
 		if JumpHelper.try_jump(owner_node, p_data):
-			return # Stop further processing
+			# The helper calls change_state directly, so we return.
+			return
 
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
 		p_data.is_charging = true
@@ -10895,9 +11326,9 @@ func _physics_process(_delta: float) -> void:
 			if p_data.charge_timer >= p_data.config.player_charge_time:
 				owner_node.get_component(CombatComponent).fire_shot()
 			elif input_component.buffer.get("down"):
-				state_machine.change_state(Identifiers.PlayerStates.POGO)
+				state_change_requested.emit(Identifiers.PlayerStates.POGO, {})
 			else:
-				state_machine.change_state(Identifiers.PlayerStates.ATTACK)
+				state_change_requested.emit(Identifiers.PlayerStates.ATTACK, {})
 			p_data.is_charging = false
 
 	if (
@@ -10905,7 +11336,7 @@ func _physics_process(_delta: float) -> void:
 		and p_data.can_dash
 		and p_data.dash_cooldown_timer <= 0
 	):
-		state_machine.change_state(Identifiers.PlayerStates.DASH)
+		state_change_requested.emit(Identifiers.PlayerStates.DASH, {})
 
 
 # --- Public Methods ---
@@ -10920,6 +11351,7 @@ func teardown() -> void:
 	set_physics_process(false)
 	owner_node = null
 	p_data = null
+
 
 =====================================
 FILE: ./src/entities/player/components/player_jump_helper.gd
@@ -11014,6 +11446,12 @@ var owner_node: Player
 var p_data: PlayerStateData
 
 # --- Godot Lifecycle Methods ---
+
+
+func _ready() -> void:
+	# Run before other components to ensure move_and_slide() is called
+	# before any physics state checks like is_on_floor().
+	process_priority = -50
 
 
 func _physics_process(_delta: float) -> void:
@@ -11121,7 +11559,6 @@ func _check_for_contact_damage() -> void:
 			owner_node.velocity = damage_result.knockback_velocity
 			owner_node.get_component(BaseStateMachine).change_state(Identifiers.PlayerStates.HURT)
 		break
-
 
 =====================================
 FILE: ./src/entities/player/components/player_ability_component.tscn
