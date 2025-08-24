@@ -61,17 +61,11 @@ func build_level_async() -> Node:
 # --- Private Methods ---
 
 
-func _inject_entity_services(instance: Node) -> void:
-	if not is_instance_valid(instance):
-		return
-	if instance.has_method("inject_dependencies"):
-		instance.inject_dependencies(ServiceLocator)
-
-
 func _spawn_player_async() -> void:
 	var instance = load(AssetPaths.SCENE_PLAYER).instantiate()
 	instance.global_position = _current_build_data.player_spawn_pos
-	_inject_entity_services(instance)
+	# THE FIX: Explicitly inject dependencies before adding to the scene tree.
+	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 
@@ -82,7 +76,8 @@ func _spawn_boss_async() -> Node:
 		return null
 	var instance = boss_scene.instantiate()
 	instance.global_position = _current_build_data.boss_spawn_pos
-	_inject_entity_services(instance)
+	# THE FIX: Explicitly inject dependencies before adding to the scene tree.
+	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 	return instance
@@ -104,7 +99,8 @@ func _spawn_minions_async() -> void:
 		instance.name = "%s_%d" % [base_name, current_count]
 
 		instance.global_position = spawn_data.position
-		_inject_entity_services(instance)
+		# THE FIX: Explicitly inject dependencies before adding to the scene tree.
+		instance.inject_dependencies(ServiceLocator)
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame
 

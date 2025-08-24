@@ -30,11 +30,11 @@ func get_component(type: Script) -> IComponent:
 	# First, try a direct lookup by the component's concrete class.
 	if _components.has(type):
 		return _components.get(type)
-	
+
 	# If that fails, try looking up by an implemented interface.
 	if _components_by_interface.has(type):
 		return _components_by_interface.get(type)
-		
+
 	return null
 
 

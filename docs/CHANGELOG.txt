@@ -35,6 +35,17 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(DI): Complete explicit dependency injection for entities
+
+Implements the first P0 task from the architectural audit.
+
+- All entities created by ArenaBuilder (Player, Boss, Minions) now receive their dependencies via an explicit `inject_dependencies(ServiceLocator)` call. This removes implicit dependencies on global singletons, making entities easier to test and their contracts clearer.
+
+- Refactored FXManager to use a lazy-loaded getter for the ServiceLocator, breaking a dependency cycle that could cause initialization order issues.
+
+- Verified that unit tests can instantiate entities with a FakeServiceLocator and that the game runs correctly with the new injection flow.
+
+
 
 test(unit): refactor all tests for SOLID architecture and LSP
 

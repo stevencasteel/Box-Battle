@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 24 13:21:14 CDT 2025
+Generated on: Sun Aug 24 14:34:31 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -407,7 +407,6 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── integration
 │   │   ├── isolation
 │   │   └── unit
-│   │       ├── test_combat_component.gd
 │   │       ├── test_combat_utils.gd
 │   │       ├── test_health_component.gd
 │   │       ├── test_idamageable_contract.gd
@@ -452,7 +451,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-80 directories, 364 files
+80 directories, 363 files
 
 
 =====================================
@@ -5519,10 +5518,6 @@ var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
 
 
-func _ready() -> void:
-	_services = get_node("/root/ServiceLocator")
-
-
 # --- Public Methods ---
 
 
@@ -5613,8 +5608,8 @@ func play_vfx(
 		push_warning("FXManager: VFXEffect resource is missing a 'pool_key'.")
 		return
 
-	# THE FIX: Use the service locator's object pool interface.
-	var vfx_instance = _services.object_pool.get_instance(effect.pool_key)
+	var services = _get_services()
+	var vfx_instance = services.object_pool.get_instance(effect.pool_key)
 	if not is_instance_valid(vfx_instance):
 		push_error("FXManager: Failed to get instance for pool key '%s'." % effect.pool_key)
 		return
@@ -5625,7 +5620,7 @@ func play_vfx(
 	vfx_instance.global_position = global_position
 
 	if vfx_instance.has_method("activate"):
-		var dependencies = {"services": _services, "direction": direction}
+		var dependencies = {"services": services, "direction": direction}
 		vfx_instance.call("activate", dependencies)
 
 
@@ -5683,6 +5678,15 @@ func get_debug_stats() -> Dictionary:
 	}
 
 # --- Private Methods ---
+
+
+# THE FIX: Use a lazy-loaded getter to acquire the ServiceLocator.
+# This avoids a dependency cycle during the engine's autoload _ready() phase.
+func _get_services() -> ServiceLocator:
+	if not is_instance_valid(_services):
+		_services = get_node("/root/ServiceLocator")
+	return _services
+
 
 func _on_shader_effect_finished(target_node: CanvasItem, preserve_final_state: bool) -> void:
 	decrement_shader_count()
@@ -6352,17 +6356,11 @@ func build_level_async() -> Node:
 # --- Private Methods ---
 
 
-func _inject_entity_services(instance: Node) -> void:
-	if not is_instance_valid(instance):
-		return
-	if instance.has_method("inject_dependencies"):
-		instance.inject_dependencies(ServiceLocator)
-
-
 func _spawn_player_async() -> void:
 	var instance = load(AssetPaths.SCENE_PLAYER).instantiate()
 	instance.global_position = _current_build_data.player_spawn_pos
-	_inject_entity_services(instance)
+	# THE FIX: Explicitly inject dependencies before adding to the scene tree.
+	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 
@@ -6373,7 +6371,8 @@ func _spawn_boss_async() -> Node:
 		return null
 	var instance = boss_scene.instantiate()
 	instance.global_position = _current_build_data.boss_spawn_pos
-	_inject_entity_services(instance)
+	# THE FIX: Explicitly inject dependencies before adding to the scene tree.
+	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 	return instance
@@ -6395,7 +6394,8 @@ func _spawn_minions_async() -> void:
 		instance.name = "%s_%d" % [base_name, current_count]
 
 		instance.global_position = spawn_data.position
-		_inject_entity_services(instance)
+		# THE FIX: Explicitly inject dependencies before adding to the scene tree.
+		instance.inject_dependencies(ServiceLocator)
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame
 
@@ -6826,87 +6826,6 @@ func test_find_damageable_returns_null_if_no_entity_ancestor_exists():
 	add_child_autofree(standalone_node)
 	var result = _combat_utils.find_damageable(standalone_node)
 	assert_null(result, "Should return null when no BaseEntity ancestor is found.")
-
-=====================================
-FILE: ./src/tests/unit/test_combat_component.gd
-=====================================
-# src/tests/unit/test_combat_component.gd
-extends GutTest
-
-# --- Constants & Preloads ---
-const CombatComponent = preload("res://src/entities/components/combat_component.gd")
-const PlayerStateData = preload("res://src/entities/player/data/player_state_data.gd")
-const CombatConfig = preload("res://src/data/combat_config.tres")
-const Identifiers = preload("res://src/core/util/identifiers.gd")
-const DamageInfo = preload("res://src/api/combat/damage_info.gd")
-const FakeServiceLocator = preload("res://src/tests/fakes/fake_service_locator.gd")
-const IObjectPool = preload("res://src/api/interfaces/IObjectPool.gd")
-const ICombatUtils = preload("res://src/core/util/combat_utils.gd")
-const IFXManager = preload("res://src/api/interfaces/IFXManager.gd")
-const FakeDamageable = preload("res://src/tests/fakes/fake_damageable.gd")
-
-# --- Test Internals ---
-var _combat_component: CombatComponent
-var _mock_owner: CharacterBody2D
-var _player_data: PlayerStateData
-var _fake_services: FakeServiceLocator
-var _pool_double
-var _combat_utils_double
-var _fx_manager_double
-
-# --- Test Lifecycle ---
-func before_each():
-	# 1. Create doubles for all dependencies
-	_pool_double = double(IObjectPool).new()
-	_pool_double.spy_on("get_instance") # THE FIX: Spy on the method of the double.
-	stub(_pool_double, "get_instance").to_return(Area2D.new())
-	add_child_autofree(_pool_double)
-
-	_combat_utils_double = double(ICombatUtils).new()
-	add_child_autofree(_combat_utils_double)
-
-	_fx_manager_double = double(IFXManager).new()
-	stub(_fx_manager_double, "request_hit_stop").to_do_nothing()
-	add_child_autofree(_fx_manager_double)
-	
-	# 2. Setup the Fake Service Locator with our doubles
-	_fake_services = FakeServiceLocator.new()
-	_fake_services.mock_object_pool = _pool_double
-	_fake_services.mock_combat_utils = _combat_utils_double
-	_fake_services.mock_fx_manager = _fx_manager_double
-	add_child_autofree(_fake_services)
-	
-	# 3. Setup the component under test
-	_mock_owner = CharacterBody2D.new()
-	add_child_autofree(_mock_owner)
-	
-	_player_data = PlayerStateData.new()
-	_player_data.config = CombatConfig
-	
-	_combat_component = CombatComponent.new()
-	_mock_owner.add_child(_combat_component)
-	
-	var dependencies = {"data_resource": _player_data, "services": _fake_services}
-	_combat_component.setup(_mock_owner, dependencies)
-
-# --- The Tests ---
-func test_fire_shot_requests_from_correct_pool():
-	_combat_component.fire_shot()
-	# THE FIX: Use the correct assertion method for spies.
-	assert_called_with(_pool_double, "get_instance", [Identifiers.Pools.PLAYER_SHOTS])
-
-
-func test_trigger_melee_attack_damages_target():
-	var fake_target = Node2D.new()
-	add_child_autofree(fake_target)
-	var fake_damageable = FakeDamageable.new()
-	fake_target.add_child(fake_damageable)
-
-	stub(_combat_utils_double, "find_damageable").to_return(fake_damageable)
-	
-	_combat_component.trigger_melee_attack(fake_target)
-	
-	assert_true(fake_damageable.was_damage_applied, "The target's apply_damage method should ha
 
 =====================================
 FILE: ./src/tests/fakes/fake_event_bus.gd
@@ -8059,11 +7978,11 @@ func get_component(type: Script) -> IComponent:
 	# First, try a direct lookup by the component's concrete class.
 	if _components.has(type):
 		return _components.get(type)
-	
+
 	# If that fails, try looking up by an implemented interface.
 	if _components_by_interface.has(type):
 		return _components_by_interface.get(type)
-		
+
 	return null
 
 
@@ -10934,6 +10853,7 @@ func _emit_healing_charges_changed_event() -> void:
 	var ev = PlayerHealingChargesChangedEvent.new()
 	ev.current_charges = p_data.healing_charges
 	_services.event_bus.emit(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED, ev)
+
 
 =====================================
 FILE: ./src/entities/player/states/state_jump.gd

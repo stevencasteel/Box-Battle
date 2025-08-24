@@ -15,10 +15,6 @@ var _active_vfx_count: int = 0
 var _active_shader_effects: int = 0
 
 
-func _ready() -> void:
-	_services = get_node("/root/ServiceLocator")
-
-
 # --- Public Methods ---
 
 
@@ -109,8 +105,8 @@ func play_vfx(
 		push_warning("FXManager: VFXEffect resource is missing a 'pool_key'.")
 		return
 
-	# THE FIX: Use the service locator's object pool interface.
-	var vfx_instance = _services.object_pool.get_instance(effect.pool_key)
+	var services = _get_services()
+	var vfx_instance = services.object_pool.get_instance(effect.pool_key)
 	if not is_instance_valid(vfx_instance):
 		push_error("FXManager: Failed to get instance for pool key '%s'." % effect.pool_key)
 		return
@@ -121,7 +117,7 @@ func play_vfx(
 	vfx_instance.global_position = global_position
 
 	if vfx_instance.has_method("activate"):
-		var dependencies = {"services": _services, "direction": direction}
+		var dependencies = {"services": services, "direction": direction}
 		vfx_instance.call("activate", dependencies)
 
 
@@ -179,6 +175,15 @@ func get_debug_stats() -> Dictionary:
 	}
 
 # --- Private Methods ---
+
+
+# THE FIX: Use a lazy-loaded getter to acquire the ServiceLocator.
+# This avoids a dependency cycle during the engine's autoload _ready() phase.
+func _get_services() -> ServiceLocator:
+	if not is_instance_valid(_services):
+		_services = get_node("/root/ServiceLocator")
+	return _services
+
 
 func _on_shader_effect_finished(target_node: CanvasItem, preserve_final_state: bool) -> void:
 	decrement_shader_count()
