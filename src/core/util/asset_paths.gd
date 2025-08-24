@@ -26,8 +26,8 @@ const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
 const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
 const SCENE_HOMING_BOSS_SHOT = "res://src/projectiles/homing_boss_shot.tscn"
 const SCENE_TELEGRAPH_COMPONENT = "res://src/entities/components/telegraph_component.tscn"
-const SCENE_TURRET = "res://src/entities/minions/turret.tscn"
-const SCENE_TURRET_SHOT = "res://src/projectiles/turret_shot.tscn"
+const SCENE_MINION = "res://src/entities/minions/minion.tscn"
+const SCENE_MINION_SHOT = "res://src/projectiles/turret_shot.tscn" # This path is still correct
 
 # --- UI & SCENES ---
 const SCENE_GAME_HUD = "res://src/ui/game_hud/game_hud.tscn"
@@ -43,7 +43,7 @@ const SCENE_CREDITS_SCREEN = "res://src/scenes/menus/credits_screen.tscn"
 const SCENE_STYLED_MENU_ITEM = "res://src/ui/components/styled_menu_item/styled_menu_item.tscn"
 const SCENE_LOGO_DISPLAY = "res://src/ui/components/logo_display/logo_display.tscn"
 const SCENE_MUTE_BUTTON = "res://src/ui/components/mute_button/mute_button.tscn"
-const SCENE_CONTROL_SETTING_ROW = "res://src/ui/components/control_setting_row/control_setting_row.tscn"  # New Entry
+const SCENE_CONTROL_SETTING_ROW = "res://src/ui/components/control_setting_row/control_setting_row.tscn"
 
 # --- DEV TOOLS ---
 const SCENE_DEBUG_OVERLAY = "res://src/ui/dev/debug_overlay.tscn"

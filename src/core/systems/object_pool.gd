@@ -28,6 +28,7 @@ func _exit_tree() -> void:
 
 # --- Public Methods ---
 
+
 ## THE FIX: This new method contains the heavy initialization logic.
 ## It is now called explicitly by the BootManager.
 func initialize() -> void:
@@ -35,7 +36,8 @@ func initialize() -> void:
 		return
 	_create_pool_from_path(Identifiers.Pools.PLAYER_SHOTS, AssetPaths.SCENE_PLAYER_SHOT, 15)
 	_create_pool_from_path(Identifiers.Pools.BOSS_SHOTS, AssetPaths.SCENE_BOSS_SHOT, 30)
-	_create_pool_from_path(Identifiers.Pools.TURRET_SHOTS, AssetPaths.SCENE_TURRET_SHOT, 20)
+	# THE FIX: Use the new SCENE_MINION_SHOT constant.
+	_create_pool_from_path(Identifiers.Pools.TURRET_SHOTS, AssetPaths.SCENE_MINION_SHOT, 20)
 	_create_pool_from_path(Identifiers.Pools.HOMING_BOSS_SHOTS, AssetPaths.SCENE_HOMING_BOSS_SHOT, 40)
 	_create_pool_from_path(Identifiers.Pools.HIT_SPARKS, AssetPaths.SCENE_HIT_SPARK, 25)
 	_is_initialized = true

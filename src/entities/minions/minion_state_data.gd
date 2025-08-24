@@ -1,6 +1,6 @@
-# src/entities/minions/turret_state_data.gd
-## A Resource that holds all shared runtime state data for the Turret minion.
-class_name TurretStateData
+# src/entities/minions/minion_state_data.gd
+## A Resource that holds all shared runtime state data for a Minion.
+class_name MinionStateData
 extends Resource
 
 # --- Configuration Reference ---

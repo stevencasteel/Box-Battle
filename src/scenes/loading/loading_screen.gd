@@ -12,7 +12,8 @@ const SHADER_PREWARM_SCENES = [
 	AssetPaths.SCENE_BASE_BOSS,
 	AssetPaths.SCENE_PLAYER_SHOT,
 	AssetPaths.SCENE_BOSS_SHOT,
-	AssetPaths.SCENE_TURRET_SHOT,
+	# THE FIX: Use the new SCENE_MINION_SHOT constant.
+	AssetPaths.SCENE_MINION_SHOT,
 	AssetPaths.SCENE_HOMING_BOSS_SHOT,
 ]
 

@@ -50,7 +50,7 @@ class BossStates:
 	const LUNGE = &"lunge"
 
 
-## Container for all Turret state keys.
-class TurretStates:
+## Container for all Minion state keys.
+class MinionStates:
 	const IDLE = &"idle"
 	const ATTACK = &"attack"

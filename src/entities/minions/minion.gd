@@ -1,7 +1,7 @@
-# src/entities/minions/turret.gd
+# src/entities/minions/minion.gd
 @tool
-## A stationary enemy that detects and fires projectiles at the player.
-class_name Turret
+## A generic minion enemy, whose behavior is defined by a MinionBehavior resource.
+class_name Minion
 extends BaseEntity
 
 # --- Constants ---
@@ -17,7 +17,7 @@ const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect
 @onready var range_detector_shape: CollisionShape2D = $RangeDetector/CollisionShape2D
 
 # --- Public Member Variables ---
-var entity_data: TurretStateData
+var entity_data: MinionStateData
 
 # --- Private Member Variables ---
 var _player: CharacterBody2D
@@ -104,8 +104,8 @@ func _die() -> void:
 func _initialize_data() -> void:
 	add_to_group(Identifiers.Groups.ENEMY)
 	visual.color = Palette.COLOR_TERRAIN_SECONDARY
-	entity_data = TurretStateData.new()
-	assert(is_instance_valid(_services), "Turret requires a ServiceLocator.")
+	entity_data = MinionStateData.new()
+	assert(is_instance_valid(_services), "Minion requires a ServiceLocator.")
 	entity_data.config = _services.combat_config
 
 
@@ -123,14 +123,14 @@ func _initialize_and_setup_components() -> void:
 	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
 	var states = {
-		Identifiers.TurretStates.IDLE:
-		load("res://src/entities/minions/states/state_turret_idle.gd").new(self, sm, entity_data),
-		Identifiers.TurretStates.ATTACK:
-		load("res://src/entities/minions/states/state_turret_attack.gd").new(self, sm, entity_data)
+		Identifiers.MinionStates.IDLE:
+		load("res://src/entities/minions/states/state_minion_idle.gd").new(self, sm, entity_data),
+		Identifiers.MinionStates.ATTACK:
+		load("res://src/entities/minions/states/state_minion_attack.gd").new(self, sm, entity_data)
 	}
 
 	var per_component_deps := {
-		sm: {"states": states, "initial_state_key": Identifiers.TurretStates.IDLE},
+		sm: {"states": states, "initial_state_key": Identifiers.MinionStates.IDLE},
 		fc: {"visual_node": visual, "hit_effect": HIT_FLASH_EFFECT},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}

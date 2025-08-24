@@ -11,7 +11,7 @@
 [ext_resource type="Script" uid="uid://bsmqi0p5h8urh" path="res://src/entities/boss/states/state_boss_patrol.gd" id="15_state_patrol"]
 [ext_resource type="Script" uid="uid://b47bmwcdrdd8d" path="res://src/entities/boss/states/state_boss_lunge.gd" id="16_state_lunge"]
 [ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="17_dissolve_effect"]
-[ext_resource type="Resource" path="res://src/entities/boss/data/default_boss_behavior.tres" id="18_default_behavior"]
+[ext_resource type="Resource" uid="uid://cg1t62pkbrpeq" path="res://src/entities/boss/data/default_boss_behavior.tres" id="18_default_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)

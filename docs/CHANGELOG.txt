@@ -35,6 +35,16 @@
 ║                                                                              ║
 ║                                                                              ║
 
+refactor(Minions): Rename Turret assets to generic Minion
+
+Initiates the elevated minion framework refactor.
+
+- Performed a project-wide rename of all files, classes, and constants from "Turret" to "Minion" (e.g., `turret.gd` -> `minion.gd`, `TurretStateData` -> `MinionStateData`, `Identifiers.TurretStates` -> `Identifiers.MinionStates`).
+- Updated all associated scene files (.tscn), resource files (.tres), and script references (`AssetPaths.gd`, `ObjectPool.gd`, `encounter_00.tres`) to reflect the new naming convention and resource UIDs.
+
+This change establishes a generic base for all future minion types, preparing the codebase for the implementation of a compositional, data-driven behavior system.
+
+
 refactor(Boss): Decouple boss behavior into a Resource
 
 Implements the second P2 task from the architectural audit, fully embracing the Open/Closed Principle for boss design.

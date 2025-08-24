@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://co2urq51qk44e" path="res://src/data/encounters/encounter_data.gd" id="1_encounter"]
 [ext_resource type="PackedScene" uid="uid://dmej4a7ykn2q0" path="res://src/entities/boss/base_boss.tscn" id="2_boss_scene"]
 [ext_resource type="Resource" uid="uid://bst2lw60wetic" path="res://src/data/layouts/layout_00.tres" id="2_x64bm"]
-[ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/turret.tscn" id="3_turret_scene"]
+[ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/minion.tscn" id="3_turret_scene"]
 
 [resource]
 script = ExtResource("1_encounter")
