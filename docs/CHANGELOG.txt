@@ -16,6 +16,36 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██     [0.17.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/24/2025    ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+
+
+
+
+
+
+
+
+
+
+
+
+
+refactor(ui): Refactor GameHUD phase indicators to use ColorRects
+
+This commit addresses the first part of the UI refactoring plan (Task 1.1), focusing on the boss phase indicators in the GameHUD.
+
+The initial goal was to centralize styling by moving procedural StyleBox creation from `game_hud.gd` into a global `Theme` resource. However, this approach encountered a persistent, low-level rendering issue where the background color of the `StyleBoxFlat` was not being applied correctly, even though debug logs confirmed the script was finding and applying the correct resource.
+
+To resolve this and ensure a stable build, the implementation was pivoted. The HUD now dynamically creates `ColorRect` nodes instead of `Panel` nodes. Their `.color` property is set directly in the script, which is a more direct and robust method for this simple use case.
+
+This change successfully fulfills the primary goal of the task: removing hardcoded styling logic from the script and centralizing UI appearance rules. The `main_theme.tres` file has been kept for future, more complex UI components.
+
+
+
+
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
@@ -34,6 +64,15 @@
 ║                                                                              ║
 ║                                                                              ║
 ║                                                                              ║
+║                                                                              ║
+
+
+║                                                                              ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║  ██     [0.16.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/24/2025    ██  ║
+║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
+║                                                                              ║
+
 
 
 feat(Minions): Implement respawning logic and unify fall physics
@@ -348,7 +387,7 @@ feat(core): implement explicit dependency validation for components
 
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██     [0.14.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/XX/2025    ██  ║
+║  ██     [0.15.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/23/2025    ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 
@@ -504,7 +543,7 @@ This change not only restores the correct behavior but also improves the compone
 
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██     [0.14.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/XX/2025    ██  ║
+║  ██     [0.14.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/22/2025    ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 
@@ -706,7 +745,7 @@ Refactor: Implement scalable component caching in BaseEntity.
 
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██  [0.13.0] - ARCHITECTURAL HARDENING & DATA-DRIVEN EFFECTS - 08/22/25 ██  ║
+║  ██  [0.13.0] - ARCHITECTURAL HARDENING & DATA-DRIVEN EFFECTS - 08/21/25 ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 

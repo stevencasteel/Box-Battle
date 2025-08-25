@@ -9,29 +9,25 @@ extends CanvasLayer
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Node References ---
-@onready var player_health_value: Label = $PlayerInfo/PlayerHealthHBox/PlayerHealthValue
-@onready
-var player_heal_charges_value: Label = $PlayerInfo/PlayerHealChargesHBox/PlayerHealChargesValue
-@onready var boss_health_bar: ProgressBar = $BossHealthBar
-@onready var phase_indicators: HBoxContainer = $PhaseIndicators
+@onready var player_health_value: Label = %PlayerHealthValue
+@onready var player_heal_charges_value: Label = %PlayerHealChargesValue
+@onready var boss_health_bar: ProgressBar = %BossHealthBar
+@onready var phase_indicators: HBoxContainer = %PhaseIndicators
 
 # --- Private Member Variables ---
-var _phase_squares: Array[Panel] = []
+# THE FIX: We are now creating ColorRects, not Panels.
+var _phase_squares: Array[ColorRect] = []
 var _total_phases: int = 3
 var _player_health_token: int
 var _player_charges_token: int
 var _boss_health_token: int
 var _boss_phase_token: int
 var _boss_died_token: int
-var _filled_style: StyleBoxFlat
-var _empty_style: StyleBoxFlat
+
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	_subscribe_to_events()
-	_create_styles()
 	_initialize_ui_state()
 
 
@@ -40,8 +36,6 @@ func _exit_tree() -> void:
 
 
 # --- Private Methods ---
-
-
 func _subscribe_to_events() -> void:
 	_player_health_token = EventBus.on(EventCatalog.PLAYER_HEALTH_CHANGED, on_player_health_changed)
 	_player_charges_token = EventBus.on(
@@ -76,40 +70,28 @@ func _initialize_ui_state() -> void:
 	_create_phase_indicators()
 
 
-func _create_styles() -> void:
-	_filled_style = StyleBoxFlat.new()
-	_filled_style.bg_color = Palette.COLOR_HAZARD_PRIMARY
-	_filled_style.border_width_bottom = 3
-	_filled_style.border_width_left = 3
-	_filled_style.border_width_right = 3
-	_filled_style.border_width_top = 3
-	_filled_style.border_color = Palette.COLOR_UI_ACCENT_PRIMARY
-
-	_empty_style = _filled_style.duplicate()
-	_empty_style.bg_color = Palette.COLOR_BACKGROUND
-
-
 func _create_phase_indicators() -> void:
 	for i in range(_total_phases):
-		var panel = Panel.new()
-		panel.custom_minimum_size = Vector2(40, 40)
-		phase_indicators.add_child(panel)
-		_phase_squares.append(panel)
+		# THE FIX: Create a ColorRect instead of a Panel.
+		var square = ColorRect.new()
+		square.custom_minimum_size = Vector2(40, 40)
+		phase_indicators.add_child(square)
+		_phase_squares.append(square)
 	_update_phase_visuals(_total_phases)
 
 
 func _update_phase_visuals(phases_remaining: int) -> void:
 	for i in range(_phase_squares.size()):
-		var square = _phase_squares[i]
+		var square: ColorRect = _phase_squares[i]
+		
+		# THE FIX: Directly set the color property, bypassing themes entirely.
 		if i < phases_remaining:
-			square.add_theme_stylebox_override("panel", _filled_style)
+			square.color = Color.WHITE
 		else:
-			square.add_theme_stylebox_override("panel", _empty_style)
+			square.color = Color.BLACK
 
 
 # --- EventBus Callbacks ---
-
-
 func on_player_health_changed(payload: PlayerHealthChangedEvent) -> void:
 	player_health_value.text = str(payload.current_health) + " / " + str(payload.max_health)
 
