@@ -23,6 +23,23 @@
 
 
 
+refactor(srp): Decouple ArenaBuilder from intro sequence direction
+
+This commit completes the final refactoring task (Task 3.2), fully separating the responsibilities of the `ArenaBuilder` and the `EncounterScene`.
+
+Previously, the `ArenaBuilder` was responsible for both building the level and directing the gameplay intro sequence (waiting, then spawning the boss). This violated the Single Responsibility Principle.
+
+This has been refactored to a cleaner, data-driven, event-based pattern:
+- The concept of an "intro sequence" is now defined as an `Array[SequenceStep]` directly within the `EncounterData` resource.
+- The `encounter_00.tres` file now uses a `WaitStep` and an `EmitStep` to define the intro sequence as data.
+- A new event, `SPAWN_BOSS_REQUESTED`, has been added to the `EventCatalog`.
+- The `ArenaBuilder` is now a pure builder. It no longer runs any sequences and simply returns the constructed level. Its `spawn_boss_async` method is now a public utility.
+- The `EncounterScene` now takes on the role of director. It reads the intro sequence from the encounter data, tells the `Sequencer` to run it, and listens for the `SPAWN_BOSS_REQUESTED` event to trigger the boss spawn.
+
+This change makes the `ArenaBuilder`'s role clearer, makes encounter intros fully data-driven, and correctly places the responsibility of directing gameplay flow onto the gameplay scene controller.
+
+
+
 refactor(isp): Revert to unified IFXManager interface
 
 This commit finalizes Task 3.1 by reverting the attempt to segregate the IFXManager interface.

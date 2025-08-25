@@ -20,3 +20,7 @@ extends Resource
 ## The key is the character marker in the layout file (e.g., "T").
 ## The value is the PackedScene for that minion.
 @export var minion_spawns: Dictionary = {}
+
+@export_group("Sequencing")
+## An array of SequenceStep resources that run when the encounter begins.
+@export var intro_sequence: Array[SequenceStep] = []

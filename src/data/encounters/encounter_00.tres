@@ -1,24 +1,31 @@
-[gd_resource type="Resource" script_class="EncounterData" load_steps=6 format=3 uid="uid://4lptu40or7m1"]
+[gd_resource type="Resource" script_class="EncounterData" load_steps=8 format=3 uid="uid://4lptu40or7m1"]
 
 [ext_resource type="Script" uid="uid://co2urq51qk44e" path="res://src/data/encounters/encounter_data.gd" id="1_encounter"]
 [ext_resource type="PackedScene" uid="uid://dmej4a7ykn2q0" path="res://src/entities/boss/base_boss.tscn" id="2_boss_scene"]
 [ext_resource type="Resource" uid="uid://bst2lw60wetic" path="res://src/data/layouts/layout_00.tres" id="3_layout"]
 [ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/minion.tscn" id="4_turret_scene"]
 [ext_resource type="PackedScene" uid="uid://d9e8f7g6h5i4j" path="res://src/entities/spawners/patrolling_lancer_spawner.tscn" id="5_lancer_spawner"]
+[ext_resource type="Script" path="res://src/core/sequencing/sequence_step.gd" id="6_sequence_step"]
+[ext_resource type="Script" path="res://src/core/sequencing/steps/wait_step.gd" id="7_wait_step"]
+[ext_resource type="Script" path="res://src/core/sequencing/steps/emit_step.gd" id="8_emit_step"]
+
+[sub_resource type="Resource" id="Resource_8vxlc"]
+script = ExtResource("7_wait_step")
+duration = 0.7
+
+[sub_resource type="Resource" id="Resource_p5j6y"]
+script = ExtResource("8_emit_step")
+event_name = &"encounter.spawn_boss_requested"
+payload = null
 
 [resource]
 script = ExtResource("1_encounter")
-
-; --- Layout & Spawning ---
 level_layout = ExtResource("3_layout")
 player_spawn_marker = "@"
-boss_spawn_marker = "&"
-
-; --- Boss ---
 boss_scene = ExtResource("2_boss_scene")
-
-; --- Minions ---
+boss_spawn_marker = "&"
 minion_spawns = {
 "P": ExtResource("5_lancer_spawner"),
 "T": ExtResource("4_turret_scene")
 }
+intro_sequence = Array[ExtResource("6_sequence_step")]([SubResource("Resource_8vxlc"), SubResource("Resource_p5j6y")])

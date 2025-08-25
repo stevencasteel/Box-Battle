@@ -8,17 +8,12 @@ extends Node
 # --- Private Member Variables ---
 var _current_build_data: LevelBuildData
 var _current_level_container: Node
-var _intro_sequence_handle: SequenceHandle
 var _minion_spawn_counts: Dictionary = {}
 
 # --- Public Methods ---
 
-
 ## Asynchronously builds the entire level and returns the root node.
 func build_level_async() -> Node:
-	if is_instance_valid(_intro_sequence_handle):
-		_intro_sequence_handle.cancel()
-	_intro_sequence_handle = null
 	_minion_spawn_counts.clear()
 
 	_current_level_container = Node.new()
@@ -48,28 +43,16 @@ func build_level_async() -> Node:
 	await _spawn_player_async()
 	await _spawn_hud_async()
 	await _spawn_minions_async()
-
-	_intro_sequence_handle = _run_intro_sequence()
-	if is_instance_valid(_intro_sequence_handle):
-		await _intro_sequence_handle.finished
-
+	
+	# The builder's job is now done. It no longer runs the intro sequence.
 	await get_tree().process_frame
 
 	return _current_level_container
 
 
-# --- Private Methods ---
-
-
-func _spawn_player_async() -> void:
-	var instance: BaseEntity = load(AssetPaths.SCENE_PLAYER).instantiate()
-	instance.global_position = _current_build_data.player_spawn_pos
-	instance.inject_dependencies(ServiceLocator)
-	_current_level_container.add_child(instance)
-	await get_tree().process_frame
-
-
-func _spawn_boss_async() -> Node:
+## Spawns the boss defined in the current build data. Intended to be
+## called by a sequence step.
+func spawn_boss_async() -> Node:
 	var boss_scene: PackedScene = _current_build_data.encounter_data_resource.boss_scene
 	if not boss_scene:
 		return null
@@ -79,6 +62,15 @@ func _spawn_boss_async() -> Node:
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 	return instance
+
+
+# --- Private Methods ---
+func _spawn_player_async() -> void:
+	var instance: BaseEntity = load(AssetPaths.SCENE_PLAYER).instantiate()
+	instance.global_position = _current_build_data.player_spawn_pos
+	instance.inject_dependencies(ServiceLocator)
+	_current_level_container.add_child(instance)
+	await get_tree().process_frame
 
 
 func _spawn_hud_async() -> void:
@@ -99,18 +91,8 @@ func _spawn_minions_async() -> void:
 		if instance is Node2D:
 			instance.global_position = spawn_data.position
 		
-		# THE FIX: Only inject dependencies if the spawned node is an entity.
 		if instance is BaseEntity:
 			instance.inject_dependencies(ServiceLocator)
 			
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame
-
-
-func _run_intro_sequence() -> SequenceHandle:
-	var wait_step := WaitStep.new()
-	wait_step.duration = 0.5
-	var spawn_boss_step := CallableStep.new()
-	spawn_boss_step.callable = Callable(self, "_spawn_boss_async")
-	var intro_steps: Array[SequenceStep] = [wait_step, spawn_boss_step]
-	return Sequencer.run_sequence(intro_steps)

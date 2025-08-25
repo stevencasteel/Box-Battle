@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 25 14:22:21 CDT 2025
+Generated on: Mon Aug 25 14:43:14 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -130,7 +130,6 @@ PROJECT DIRECTORY STRUCTURE:
 │       ├── version_conversion.gd
 │       ├── version_numbers.gd
 │       └── warnings_manager.gd
-├── all_script_errors.txt
 ├── default_bus_layout.tres
 ├── docs
 │   ├── ARCHITECTURE.txt
@@ -481,7 +480,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-89 directories, 384 files
+89 directories, 383 files
 
 
 =====================================
@@ -713,269 +712,6 @@ FILE: ./materials/entity_hit_flash_material.tres
 shader = ExtResource("1_shader")
 shader_parameter/fx_progress = 0.0
 shader_parameter/tint_color = Color(1, 0, 0, 1)
-
-=====================================
-FILE: ./all_script_errors.txt
-=====================================
-WorkerThreadPool: 8 threads, 2 max low-priority.
-Godot Engine v4.4.1.stable.official.49a5bc7b6 - https://godotengine.org
-TextServer: Added interface "Dummy"
-TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
-Devices:
-  #0: Apple Apple M1 (Apple7) - Supported, Integrated
-- Metal multiview supported:
-  max view count: 16
-  max instances: 4294967295
-Metal 3.1 - Forward Mobile - Using Device #0: Apple - Apple M1 (Apple7)
-Using "default" pen tablet driver...
-Shader 'CanvasSdfShaderRD' (group 0) SHA256: 97dc9fb2f592cd02d8b1f8fd33df8aec73849d2fbafcfeaa6e99b9c3678c221d
-Shader 'SkeletonShaderRD' (group 0) SHA256: a7e5115c09793f8e950720a2ab8906bff195e9b508eec01af7aeb363da2bf75b
-Shader 'SortShaderRD' (group 0) SHA256: e184fb752fd6b1f86c536cb9dff20977fee019403e1025080eca44e6bfa11ef1
-Shader 'ParticlesShaderRD' (group 0) SHA256: 9797916f926fab4024422fe6c75cc0d8d517705d90802882fb9efa6dda0af392
-Shader 'ParticlesCopyShaderRD' (group 0) SHA256: 1a312a6797c1ba217655b41d33ce357ac226cba8d65d4daab9278d88c57d6468
-Shader 'CanvasShaderRD' (group 0) SHA256: 908e609e1337d67f8799155a57f03a3de33fcdba22b574595e90da921079b33d
-Shader 'CanvasOcclusionShaderRD' (group 0) SHA256: f9d6c9d569cf2f40595061ee84efd5fe34d68284e1f7273f62a4ac36de8852ee
-Shader 'SceneForwardMobileShaderRD' (group 0) SHA256: 1c5d16b1f4d38d016026900999bd209a9f901f70f04136d9fdd669f9601e2db3
-Shader 'SkyShaderRD' (group 0) SHA256: 34c03a8e46624b5ab7488ca0527d4f733272c048f0dd61258a69b9bf419225bd
-Shader 'BokehDofRasterShaderRD' (group 0) SHA256: a5ed26e5b86fb1a016f61f719fa3ba45119a0bda505dcc038bfd26e718ef956d
-Shader 'BlurRasterShaderRD' (group 0) SHA256: 193d80f293dc88299ae7ef003640f13fa7cab1fd1a57de366b53029265639146
-Shader 'CopyShaderRD' (group 0) SHA256: aaaaf4bfa2e7bd72bdafaa25005b56152e2e738422178c95ce5ed4976f964862
-Shader 'CopyToFbShaderRD' (group 0) SHA256: f113ba1d923f38bcf263af4dbc168573e755be83c1d3616fc49b7588aa9fffa4
-Shader 'CubeToDpShaderRD' (group 0) SHA256: 37d76ea0432d00e86934ff9eab83ce63c9c7feffafd96809773e109c5a078e17
-Shader 'CubemapDownsamplerRasterShaderRD' (group 0) SHA256: 20c48704e5817755c17d80b22e7c39d99270bd1e95c54446d742753abc03db33
-Shader 'CubemapFilterRasterShaderRD' (group 0) SHA256: de06c7a642b6af01caa44a65e94daa5dfafbdda1a6111bdd975c28e8c1fe4c1a
-Shader 'CubemapRoughnessRasterShaderRD' (group 0) SHA256: 3efae0638df891d7ec5aaa17ead03d3243a3fdc9f5920d95e16f92a0aeccfd04
-Shader 'SpecularMergeShaderRD' (group 0) SHA256: 8d06f9bec87ae4177f0a49133608f41313ebad2d0d81a5c074db1541cd396ddc
-Shader 'ShadowFrustumShaderRD' (group 0) SHA256: b73466659c6c1252aff41d1d117370efac3ed69d2ee89bb6e036036557afb5bd
-Shader 'MotionVectorsShaderRD' (group 0) SHA256: 548f1c61370fbba7d8bacec2827d86adc6984d8874d31cb21b7bb5f78e6d4335
-Shader 'LuminanceReduceRasterShaderRD' (group 0) SHA256: dcf85fa15135d7aecd1e6003b5a0c97bd615d1990a7012076a61e11cb05df558
-Shader 'TonemapShaderRD' (group 0) SHA256: 73e7046526ed4eb6328f66f868ec7b5209c4718b23c670b7d187840eef7d3448
-Shader 'BlitShaderRD' (group 0) SHA256: 07fdbb8db3418305063d813e1e5abdaea384f5dbf1ce1011ba48a3124d0a6d39
-CoreAudio: detected 2 channels
-CoreAudio: output sampling rate: 48000 Hz
-CoreAudio: output audio buffer frames: 512 calculated latency: 10ms
-
-TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
-CameraServer: Registered camera OBS Virtual Camera with ID 1 and position 0 at index 0
-Loading resource: res://default_bus_layout.tres
-CORE API HASH: 4052744068
-EDITOR API HASH: 910296392
-Loading resource: res://src/core/systems/game_manager.gd
-Loading resource: res://src/core/systems/scene_manager.gd
-Loading resource: res://src/core/systems/audio_manager.gd
-Loading resource: res://src/core/systems/fx_manager.gd
-Loading resource: res://src/data/combat_config.tres
-Loading resource: res://src/core/data/config/combat_config.gd
-Loading resource: res://src/entities/player/data/forward_attack_shape.tres
-Loading resource: res://src/entities/player/data/upward_attack_shape.tres
-Loading resource: res://src/core/systems/camera_manager.gd
-Loading resource: res://src/core/systems/cursor_manager.gd
-Loading resource: res://assets/sprites/ui/cursors/sprite_cursor_default.png
-Loading resource: res://.godot/imported/sprite_cursor_default.png-0ae11c7582bcce7f2e16760a505c9927.ctex
-Loading resource: res://assets/sprites/ui/cursors/sprite_cursor_pointer.png
-Loading resource: res://.godot/imported/sprite_cursor_pointer.png-6681326a5b7347271de62dd751fb3b83.ctex
-Loading resource: res://src/core/systems/dialogue_manager.gd
-Loading resource: res://src/ui/dialogue/dialogue_box.tscn
-Loading resource: res://src/ui/dialogue/dialogue_box.gd
-Loading resource: res://src/core/building/arena_builder.gd
-Loading resource: res://src/api/global_preloader.gd
-Loading resource: res://src/core/systems/fx_bindings/fx_manager_adapter.gd
-Loading resource: res://src/core/systems/pool_bindings/object_pool_adapter.gd
-Loaded system CA certificates
-Loading resource: res://src/scenes/main/main.tscn
-Loading resource: res://src/scenes/main/main.gd
-AssetPaths: Validating all asset paths...
-AssetPaths: All paths validated successfully.
-Loading resource: res://src/projectiles/player_shot.tscn
-Loading resource: res://src/projectiles/player_shot.gd
-Loading resource: res://src/projectiles/boss_shot.tscn
-Loading resource: res://src/projectiles/boss_shot.gd
-Loading resource: res://src/projectiles/turret_shot.tscn
-Loading resource: res://src/projectiles/turret_shot.gd
-Loading resource: res://src/projectiles/homing_boss_shot.tscn
-Loading resource: res://src/projectiles/homing_boss_shot.gd
-Loading resource: res://src/vfx/hit_spark.tscn
-Loading resource: res://src/vfx/hit_spark.gd
-Loading resource: res://assets/audio/music/music_menu_loop.mp3
-Loading resource: res://.godot/imported/music_menu_loop.mp3-a3f890b5159e51d7cc53cdad36cfcd36.mp3str
-Loading resource: res://src/scenes/menus/title_screen.tscn
-Loading resource: res://src/scenes/menus/title_screen.gd
-Loading resource: res://src/ui/components/styled_menu_item/styled_menu_item.tscn
-Loading resource: res://src/ui/components/logo_display/logo_display.tscn
-Loading resource: res://assets/sprites/ui/logos/newgrounds_logo.png
-Loading resource: res://.godot/imported/newgrounds_logo.png-2977cde893870d21b7f84cd17b13c225.ctex
-Loading resource: res://assets/sprites/ui/logos/godot_logo.png
-Loading resource: res://.godot/imported/godot_logo.png-2c4abc4be94a9a8ee3cb014f11b6a489.ctex
-Loading resource: res://assets/sprites/ui/logos/itch_logo.png
-Loading resource: res://.godot/imported/itch_logo.png-55a8cdb2f6f34f33f1968a45adf238ea.ctex
-Loading resource: res://assets/fonts/font_main_black.ttf
-Loading resource: res://.godot/imported/font_main_black.ttf-766d9cc0a208469438ff831535d8483c.fontdata
-Loading resource: res://src/ui/components/mute_button/mute_button.tscn
-Loading resource: res://assets/sprites/ui/icons/icon_ui_sound_off.png
-Loading resource: res://.godot/imported/icon_ui_sound_off.png-3fb3ac644d936ac41f943fdd25d24217.ctex
-Loading resource: res://src/ui/components/mute_button/mute_button.gd
-Loading resource: res://assets/sprites/ui/icons/icon_ui_sound_on.png
-Loading resource: res://.godot/imported/icon_ui_sound_on.png-c97b0b59545c0dc177b96447a16e0a9f.ctex
-Loading resource: res://assets/fonts/font_main_bold.ttf
-Loading resource: res://.godot/imported/font_main_bold.ttf-9c8e8c80d56466685f104c94b744fa18.fontdata
-Loading resource: res://assets/audio/sfx/sfx_ui_move.mp3
-Loading resource: res://.godot/imported/sfx_ui_move.mp3-22d501a1c652a7c7f2af3e97d97a2b16.mp3str
-Loading resource: res://assets/audio/sfx/sfx_ui_select.mp3
-Loading resource: res://.godot/imported/sfx_ui_select.mp3-3073366784d3e7caa5d5c9691f71648c.mp3str
-Loading resource: res://src/scenes/loading/loading_screen.tscn
-Loading resource: res://src/scenes/loading/loading_screen.gd
-Starting shader pre-warming...
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/entities/archetypes/player_archetype.tres
-Loading resource: res://src/entities/components/health_component.tscn
-Loading resource: res://src/entities/components/combat_component.tscn
-Loading resource: res://src/entities/components/input_component.tscn
-Loading resource: res://src/entities/components/base_state_machine.tscn
-Loading resource: res://src/entities/player/components/player_physics_component.tscn
-Loading resource: res://src/entities/player/components/player_physics_component.gd
-Loading resource: res://src/entities/player/components/player_ability_component.tscn
-Loading resource: res://src/entities/player/components/player_ability_component.gd
-Loading resource: res://src/entities/player/components/player_resource_component.tscn
-Loading resource: res://src/entities/components/fx_component.tscn
-Loading resource: res://src/data/effects/entity_hit_flash_effect.tres
-Loading resource: res://materials/entity_hit_flash_material.tres
-Loading resource: res://shaders/entity/red_hit_flash_test.gdshader
-Loading resource: res://src/core/data/effects/player_damage_shake.tres
-Loading resource: res://src/core/data/effects/player_hit_spark_effect.tres
-Loading resource: res://src/entities/player/states/state_move.gd
-Loading resource: res://src/entities/player/states/state_jump.gd
-Loading resource: res://src/entities/player/states/state_fall.gd
-Loading resource: res://src/entities/player/states/state_dash.gd
-Loading resource: res://src/entities/player/states/state_wall_slide.gd
-Loading resource: res://src/entities/player/states/state_attack.gd
-Loading resource: res://src/entities/player/states/state_hurt.gd
-Loading resource: res://src/entities/player/states/state_heal.gd
-Loading resource: res://src/entities/player/states/state_pogo.gd
-Loading resource: res://src/core/data/effects/dissolve_effect.tres
-Loading resource: res://materials/dissolve_material.tres
-Loading resource: res://shaders/entity/dissolve.gdshader
-Loading resource: res://assets/textures/noise_texture.tres
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/core/data/effects/boss_phase_change_shake.tres
-Loading resource: res://src/core/data/effects/boss_death_shake.tres
-Loading resource: res://src/entities/archetypes/boss_archetype.tres
-Loading resource: res://src/entities/boss/states/state_boss_idle.gd
-Loading resource: res://src/entities/boss/states/state_boss_attack.gd
-Loading resource: res://src/entities/components/telegraph_component.tscn
-Loading resource: res://src/entities/components/telegraph_component.gd
-Loading resource: res://src/entities/boss/states/state_boss_cooldown.gd
-Loading resource: res://src/entities/boss/states/state_boss_patrol.gd
-Loading resource: res://src/entities/boss/states/state_boss_lunge.gd
-Loading resource: res://src/entities/boss/data/default_boss_behavior.tres
-Loading resource: res://src/entities/boss/attack_patterns/single_shot.tres
-Loading resource: res://src/combat/attack_logic/projectile_logic.tres
-Loading resource: res://src/combat/attack_logic/projectile_logic.gd
-Loading resource: res://src/entities/boss/attack_patterns/volley_3_shot.tres
-Loading resource: res://src/combat/attack_logic/volley_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_attack.tres
-Loading resource: res://src/combat/attack_logic/lunge_logic.tres
-Loading resource: res://src/combat/attack_logic/lunge_logic.gd
-Loading resource: res://src/entities/boss/attack_patterns/volley_5_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
-Loading resource: res://src/combat/attack_logic/homing_omni_burst_logic.tres
-Loading resource: res://src/combat/attack_logic/homing_omni_burst_logic.gd
-Shader pre-warming complete.
-Loading resource: res://src/data/effects/entity_hit_flash_effect.tres
-Loading resource: res://materials/entity_hit_flash_material.tres
-Loading resource: res://shaders/entity/red_hit_flash_test.gdshader
-Loading resource: res://src/core/data/effects/dissolve_effect.tres
-Loading resource: res://materials/dissolve_material.tres
-Loading resource: res://shaders/entity/dissolve.gdshader
-Loading resource: res://assets/textures/noise_texture.tres
-FXManager: Starting shader pre-warm...
-FXManager: Shader pre-warm complete.
-Loading resource: res://src/data/encounters/encounter_00.tres
-Loading resource: res://src/entities/boss/base_boss.tscn
-Loading resource: res://src/core/data/effects/boss_phase_change_shake.tres
-Loading resource: res://src/core/data/effects/boss_death_shake.tres
-Loading resource: res://src/core/data/effects/player_hit_spark_effect.tres
-Loading resource: res://src/entities/archetypes/boss_archetype.tres
-Loading resource: res://src/entities/components/health_component.tscn
-Loading resource: res://src/entities/components/base_state_machine.tscn
-Loading resource: res://src/entities/components/fx_component.tscn
-Loading resource: res://src/entities/boss/data/default_boss_behavior.tres
-Loading resource: res://src/entities/boss/attack_patterns/single_shot.tres
-Loading resource: res://src/combat/attack_logic/projectile_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_3_shot.tres
-Loading resource: res://src/combat/attack_logic/volley_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/lunge_attack.tres
-Loading resource: res://src/combat/attack_logic/lunge_logic.tres
-Loading resource: res://src/entities/boss/attack_patterns/volley_5_shot.tres
-Loading resource: res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres
-Loading resource: res://src/combat/attack_logic/homing_omni_burst_logic.tres
-Loading resource: res://src/data/layouts/layout_00.tres
-Loading resource: res://src/entities/minions/minion.tscn
-Loading resource: res://src/entities/archetypes/minion_archetype.tres
-Loading resource: res://src/entities/minions/data/turret_behavior.tres
-Loading resource: res://src/entities/minions/movement_logic/stationary_movement.tres
-Loading resource: res://src/entities/minions/movement_logic/stationary_movement_logic.gd
-Loading resource: res://src/entities/spawners/patrolling_lancer_spawner.tscn
-Loading resource: res://src/entities/spawners/spawner.tscn
-Loading resource: res://src/entities/spawners/spawner.gd
-Loading resource: res://src/entities/minions/patrolling_lancer.tscn
-Loading resource: res://src/entities/minions/data/patrolling_lancer_behavior.tres
-Loading resource: res://src/entities/minions/movement_logic/patrol_movement.tres
-Loading resource: res://src/entities/minions/movement_logic/patrol_movement_logic.gd
-Loading resource: res://src/entities/player/player.tscn
-Loading resource: res://src/entities/archetypes/player_archetype.tres
-Loading resource: res://src/entities/components/combat_component.tscn
-Loading resource: res://src/entities/components/input_component.tscn
-Loading resource: res://src/entities/player/components/player_physics_component.tscn
-Loading resource: res://src/entities/player/components/player_ability_component.tscn
-Loading resource: res://src/entities/player/components/player_resource_component.tscn
-Loading resource: res://src/core/data/effects/player_damage_shake.tres
-Loading resource: res://src/ui/game_hud/game_hud.tscn
-Loading resource: res://src/ui/game_hud/game_hud.gd
-Loading resource: res://src/ui/themes/main_theme.tres
-Loading resource: res://src/scenes/game/encounter_scene.tscn
-Loading resource: res://src/scenes/game/encounter_scene.gd
-Loading resource: res://src/data/dialogue/test_conversation.tres
-Loading resource: res://src/entities/minions/states/state_minion_idle.gd
-Loading resource: res://src/entities/minions/states/state_minion_attack.gd
-Loading resource: res://src/entities/states/state_entity_fall.gd
-Loading resource: res://src/core/systems/camera_shaker.tscn
-Loading resource: res://src/ui/dev/debug_overlay.tscn
-Loading resource: res://src/ui/dev/debug_overlay.gd
-XR: Clearing primary interface
-XR: Removed interface "Native mobile"
-XR: Removed interface "OpenXR"
-Leaked instance: GDScriptNativeClass:9223372049924227761
-Leaked instance: GDScript:9223372083445106082 - Resource path: res://src/core/building/terrain_builder.gd
-Leaked instance: Node:132724557969 - Node path: 
-Leaked instance: SceneTreeTimer:9223372123693648018
-Leaked instance: Node:153578638134 - Node path: 
-Hint: Leaked instances typically happen when nodes are removed from the scene tree (with `remove_child()`) but not freed (with `free()` or `queue_free()`).
-Resource still in use: res://src/core/building/terrain_builder.gd (GDScript)
-Orphan StringName: _enter_tree (static: 0, total: 2)
-Orphan StringName: _set_path_cache (static: 0, total: 1)
-Orphan StringName: _reset_state (static: 0, total: 1)
-Orphan StringName: _unhandled_input (static: 0, total: 2)
-Orphan StringName: _ready (static: 0, total: 2)
-Orphan StringName: _exit_tree (static: 0, total: 2)
-Orphan StringName: _create_solid_tile (static: 0, total: 1)
-Orphan StringName: _setup_local_to_scene (static: 0, total: 1)
-Orphan StringName: _create_hazard_tile (static: 0, total: 1)
-Orphan StringName: _input (static: 0, total: 2)
-Orphan StringName: _shortcut_input (static: 0, total: 2)
-Orphan StringName: timeout (static: 1, total: 2)
-Orphan StringName: _process (static: 0, total: 2)
-Orphan StringName: _create_oneway_platform (static: 0, total: 1)
-Orphan StringName: _create_background_tile (static: 0, total: 1)
-Orphan StringName: Node (static: 5, total: 6)
-Orphan StringName: _unhandled_key_input (static: 0, total: 2)
-Orphan StringName: build_terrain_async (static: 0, total: 1)
-Orphan StringName: _get_configuration_warnings (static: 0, total: 2)
-Orphan StringName: fill_viewport (static: 0, total: 1)
-Orphan StringName: _get_rid (static: 0, total: 1)
-Orphan StringName: TerrainBuilder (static: 0, total: 3)
-Orphan StringName: _physics_process (static: 0, total: 2)
-StringName: 23 unclaimed string names at exit.
-
 
 =====================================
 FILE: ./README.md
@@ -2984,9 +2720,8 @@ FILE: ./src/scenes/game/encounter_scene.gd
 # src/scenes/game/encounter_scene.gd
 ## The main game scene controller.
 ##
-## Responsible for asynchronously building the level, spawning entities,
+## Responsible for orchestrating the level build, running intro sequences,
 ## managing the game camera, and handling victory/defeat sequences.
-## It also manages the developer debug overlay and target inspection.
 class_name EncounterScene
 extends ISceneController
 
@@ -2997,7 +2732,8 @@ extends ISceneController
 var _level_container: Node = null
 var _debug_overlay: CanvasLayer = null
 var _boss_died_token: int = 0
-var _death_sequence_handle: SequenceHandle
+var _spawn_boss_token: int = 0 # THE FIX: Token for the new event.
+var _sequence_handle: SequenceHandle
 var _camera_shaker: CameraShaker = null
 const TestConversation = preload("res://src/data/dialogue/test_conversation.tres")
 
@@ -3006,10 +2742,10 @@ var _inspectable_entities: Array[Node] = []
 var _current_inspect_index: int = 0
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
+	# THE FIX: Subscribe to the boss spawn event.
+	_spawn_boss_token = EventBus.on(EventCatalog.SPAWN_BOSS_REQUESTED, _on_spawn_boss_requested)
 
 	if is_instance_valid(GameManager.state.prebuilt_level):
 		_level_container = GameManager.state.prebuilt_level
@@ -3017,16 +2753,23 @@ func _ready() -> void:
 	else:
 		_level_container = await ArenaBuilder.build_level_async()
 
-	if is_instance_valid(_level_container):
-		add_child(_level_container)
-		await get_tree().process_frame
+	if not is_instance_valid(_level_container):
+		push_error("EncounterScene: Failed to get a valid level container.")
+		return
+		
+	add_child(_level_container)
+	await get_tree().process_frame
 
-		var build_data: LevelBuildData = _level_container.get_meta("build_data")
-		if build_data:
-			CameraManager.center_camera_on_arena(camera, build_data.dimensions_tiles)
-			await get_tree().process_frame
-			var terrain_builder := TerrainBuilder.new()
-			terrain_builder.fill_viewport(_level_container, build_data, camera, ServiceLocator)
+	var build_data: LevelBuildData = _level_container.get_meta("build_data")
+	if build_data:
+		CameraManager.center_camera_on_arena(camera, build_data.dimensions_tiles)
+		await get_tree().process_frame
+		var terrain_builder := TerrainBuilder.new()
+		terrain_builder.fill_viewport(_level_container, build_data, camera, ServiceLocator)
+		
+		if not build_data.encounter_data_resource.intro_sequence.is_empty():
+			_sequence_handle = Sequencer.run_sequence(build_data.encounter_data_resource.intro_sequence)
+			await _sequence_handle.finished
 
 	_initialize_camera_shaker()
 	_initialize_debug_inspector()
@@ -3053,30 +2796,24 @@ func _unhandled_input(_event: InputEvent) -> void:
 
 
 func _exit_tree() -> void:
-	# This is the safety net that catches exits not handled by SceneManager.
 	_cleanup_entities()
-
 	EventBus.off(_boss_died_token)
+	EventBus.off(_spawn_boss_token) # THE FIX: Unsubscribe from the event.
 	FXManager.unregister_camera_shaker()
-	if is_instance_valid(_death_sequence_handle):
-		_death_sequence_handle.cancel()
+	if is_instance_valid(_sequence_handle):
+		_sequence_handle.cancel()
 	if is_instance_valid(camera):
 		camera.offset = Vector2.ZERO
 	get_tree().paused = false
 
 
 # --- Public Methods (ISceneController Contract) ---
-
-
 func scene_exiting() -> void:
 	_cleanup_entities()
 
 
 # --- Private Methods ---
-
-
 func _cleanup_entities() -> void:
-	# This centralized function ensures all entities are properly torn down.
 	var player_node: Node = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 	if is_instance_valid(player_node) and player_node.has_method("teardown"):
 		player_node.teardown()
@@ -3130,6 +2867,13 @@ func _deactivate_all_minions() -> void:
 
 # --- Signal Handlers ---
 
+# THE FIX: New handler for the spawn event.
+func _on_spawn_boss_requested(_payload) -> void:
+	# This function is now responsible for the action.
+	# We don't await here because this is a fire-and-forget event.
+	# The ArenaBuilder's function is async, so it will complete in the background.
+	ArenaBuilder.spawn_boss_async()
+
 
 func _on_player_died() -> void:
 	SceneManager.go_to_game_over()
@@ -3147,13 +2891,13 @@ func _on_boss_died(payload: Dictionary) -> void:
 	wait_step.duration = 2.0
 	var death_sequence: Array[SequenceStep] = [wait_step]
 
-	_death_sequence_handle = Sequencer.run_sequence(death_sequence)
-	await _death_sequence_handle.finished
+	_sequence_handle = Sequencer.run_sequence(death_sequence)
+	await _sequence_handle.finished
 
 	if is_instance_valid(boss_node):
 		boss_node.queue_free()
 
-	if is_instance_valid(_death_sequence_handle):
+	if is_instance_valid(_sequence_handle):
 		SceneManager.go_to_victory()
 
 
@@ -5082,11 +4826,12 @@ const BOSS_PHASE_CHANGED = "boss.phase_changed"
 
 # --- Game State Events ---
 const SCENE_TRANSITION_STARTED = "scene.transition_started"
+# THE FIX: Add a dedicated event for the intro sequence to request the boss spawn.
+const SPAWN_BOSS_REQUESTED = "encounter.spawn_boss_requested"
 
 # --- UI State Events ---
 const MENU_OPENED = "ui.menu_opened"
 const MENU_CLOSED = "ui.menu_closed"
-
 
 =====================================
 FILE: ./src/core/systems/camera_shaker.gd
@@ -6583,17 +6328,12 @@ extends Node
 # --- Private Member Variables ---
 var _current_build_data: LevelBuildData
 var _current_level_container: Node
-var _intro_sequence_handle: SequenceHandle
 var _minion_spawn_counts: Dictionary = {}
 
 # --- Public Methods ---
 
-
 ## Asynchronously builds the entire level and returns the root node.
 func build_level_async() -> Node:
-	if is_instance_valid(_intro_sequence_handle):
-		_intro_sequence_handle.cancel()
-	_intro_sequence_handle = null
 	_minion_spawn_counts.clear()
 
 	_current_level_container = Node.new()
@@ -6623,28 +6363,16 @@ func build_level_async() -> Node:
 	await _spawn_player_async()
 	await _spawn_hud_async()
 	await _spawn_minions_async()
-
-	_intro_sequence_handle = _run_intro_sequence()
-	if is_instance_valid(_intro_sequence_handle):
-		await _intro_sequence_handle.finished
-
+	
+	# The builder's job is now done. It no longer runs the intro sequence.
 	await get_tree().process_frame
 
 	return _current_level_container
 
 
-# --- Private Methods ---
-
-
-func _spawn_player_async() -> void:
-	var instance: BaseEntity = load(AssetPaths.SCENE_PLAYER).instantiate()
-	instance.global_position = _current_build_data.player_spawn_pos
-	instance.inject_dependencies(ServiceLocator)
-	_current_level_container.add_child(instance)
-	await get_tree().process_frame
-
-
-func _spawn_boss_async() -> Node:
+## Spawns the boss defined in the current build data. Intended to be
+## called by a sequence step.
+func spawn_boss_async() -> Node:
 	var boss_scene: PackedScene = _current_build_data.encounter_data_resource.boss_scene
 	if not boss_scene:
 		return null
@@ -6654,6 +6382,15 @@ func _spawn_boss_async() -> Node:
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 	return instance
+
+
+# --- Private Methods ---
+func _spawn_player_async() -> void:
+	var instance: BaseEntity = load(AssetPaths.SCENE_PLAYER).instantiate()
+	instance.global_position = _current_build_data.player_spawn_pos
+	instance.inject_dependencies(ServiceLocator)
+	_current_level_container.add_child(instance)
+	await get_tree().process_frame
 
 
 func _spawn_hud_async() -> void:
@@ -6674,21 +6411,11 @@ func _spawn_minions_async() -> void:
 		if instance is Node2D:
 			instance.global_position = spawn_data.position
 		
-		# THE FIX: Only inject dependencies if the spawned node is an entity.
 		if instance is BaseEntity:
 			instance.inject_dependencies(ServiceLocator)
 			
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame
-
-
-func _run_intro_sequence() -> SequenceHandle:
-	var wait_step := WaitStep.new()
-	wait_step.duration = 0.5
-	var spawn_boss_step := CallableStep.new()
-	spawn_boss_step.callable = Callable(self, "_spawn_boss_async")
-	var intro_steps: Array[SequenceStep] = [wait_step, spawn_boss_step]
-	return Sequencer.run_sequence(intro_steps)
 
 
 =====================================
@@ -8343,30 +8070,37 @@ terrain_data = PackedStringArray("####################", "#..................#",
 =====================================
 FILE: ./src/data/encounters/encounter_00.tres
 =====================================
-[gd_resource type="Resource" script_class="EncounterData" load_steps=6 format=3 uid="uid://4lptu40or7m1"]
+[gd_resource type="Resource" script_class="EncounterData" load_steps=8 format=3 uid="uid://4lptu40or7m1"]
 
 [ext_resource type="Script" uid="uid://co2urq51qk44e" path="res://src/data/encounters/encounter_data.gd" id="1_encounter"]
 [ext_resource type="PackedScene" uid="uid://dmej4a7ykn2q0" path="res://src/entities/boss/base_boss.tscn" id="2_boss_scene"]
 [ext_resource type="Resource" uid="uid://bst2lw60wetic" path="res://src/data/layouts/layout_00.tres" id="3_layout"]
 [ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/minion.tscn" id="4_turret_scene"]
 [ext_resource type="PackedScene" uid="uid://d9e8f7g6h5i4j" path="res://src/entities/spawners/patrolling_lancer_spawner.tscn" id="5_lancer_spawner"]
+[ext_resource type="Script" path="res://src/core/sequencing/sequence_step.gd" id="6_sequence_step"]
+[ext_resource type="Script" path="res://src/core/sequencing/steps/wait_step.gd" id="7_wait_step"]
+[ext_resource type="Script" path="res://src/core/sequencing/steps/emit_step.gd" id="8_emit_step"]
+
+[sub_resource type="Resource" id="Resource_8vxlc"]
+script = ExtResource("7_wait_step")
+duration = 0.7
+
+[sub_resource type="Resource" id="Resource_p5j6y"]
+script = ExtResource("8_emit_step")
+event_name = &"encounter.spawn_boss_requested"
+payload = null
 
 [resource]
 script = ExtResource("1_encounter")
-
-; --- Layout & Spawning ---
 level_layout = ExtResource("3_layout")
 player_spawn_marker = "@"
-boss_spawn_marker = "&"
-
-; --- Boss ---
 boss_scene = ExtResource("2_boss_scene")
-
-; --- Minions ---
+boss_spawn_marker = "&"
 minion_spawns = {
 "P": ExtResource("5_lancer_spawner"),
 "T": ExtResource("4_turret_scene")
 }
+intro_sequence = Array[ExtResource("6_sequence_step")]([SubResource("Resource_8vxlc"), SubResource("Resource_p5j6y")])
 
 =====================================
 FILE: ./src/data/encounters/encounter_data.gd
@@ -8394,6 +8128,9 @@ extends Resource
 ## The value is the PackedScene for that minion.
 @export var minion_spawns: Dictionary = {}
 
+@export_group("Sequencing")
+## An array of SequenceStep resources that run when the encounter begins.
+@export var intro_sequence: Array[SequenceStep] = []
 
 =====================================
 FILE: ./src/data/effects/entity_hit_flash_effect.tres

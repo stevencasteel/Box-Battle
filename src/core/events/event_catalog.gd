@@ -17,6 +17,8 @@ const BOSS_PHASE_CHANGED = "boss.phase_changed"
 
 # --- Game State Events ---
 const SCENE_TRANSITION_STARTED = "scene.transition_started"
+# THE FIX: Add a dedicated event for the intro sequence to request the boss spawn.
+const SPAWN_BOSS_REQUESTED = "encounter.spawn_boss_requested"
 
 # --- UI State Events ---
 const MENU_OPENED = "ui.menu_opened"
