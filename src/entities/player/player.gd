@@ -49,8 +49,7 @@ func _ready() -> void:
 		return
 
 	add_to_group(Identifiers.Groups.PLAYER)
-	_initialize_and_setup_components()
-	_connect_signals()
+	EntityBuilder.build(self)
 
 	visual_sprite.color = Palette.COLOR_PLAYER
 	entity_data.healing_charges = 0
@@ -88,10 +87,11 @@ func teardown() -> void:
 		if sm.pogo_hitbox_toggled.is_connected(_enable_pogo_hitbox):
 			sm.pogo_hitbox_toggled.disconnect(_enable_pogo_hitbox)
 
-	var ac: PlayerAbilityComponent = get_component(PlayerAbilityComponent)
-	if is_instance_valid(ac):
-		if ac.state_change_requested.is_connected(_on_ability_state_change_requested):
-			ac.state_change_requested.disconnect(_on_ability_state_change_requested)
+	# THE FIX: No longer need to disconnect this signal.
+	# var ac: PlayerAbilityComponent = get_component(PlayerAbilityComponent)
+	# if is_instance_valid(ac):
+		# if ac.state_change_requested.is_connected(_on_ability_state_change_requested):
+			# ac.state_change_requested.disconnect(_on_ability_state_change_requested)
 
 	if is_instance_valid(healing_timer):
 		if healing_timer.timeout.is_connected(_on_healing_timer_timeout):
@@ -142,63 +142,6 @@ func _enable_pogo_hitbox(is_enabled: bool) -> void:
 	shape_node.set_deferred("disabled", not is_enabled)
 
 
-func _initialize_and_setup_components() -> void:
-	entity_data = PlayerStateData.new()
-	assert(is_instance_valid(_services), "Player requires a ServiceLocator.")
-	entity_data.config = _services.combat_config
-
-	var hc: HealthComponent = get_component(HealthComponent)
-	var sm: BaseStateMachine = get_component(BaseStateMachine)
-
-	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
-
-	var states: Dictionary = {
-		Identifiers.PlayerStates.MOVE: state_move_script.new(self, sm, entity_data),
-		Identifiers.PlayerStates.FALL: state_fall_script.new(self, sm, entity_data),
-		Identifiers.PlayerStates.JUMP: state_jump_script.new(self, sm, entity_data),
-		Identifiers.PlayerStates.DASH: state_dash_script.new(self, sm, entity_data),
-		Identifiers.PlayerStates.WALL_SLIDE: state_wall_slide_script.new(self, sm, entity_data),
-		Identifiers.PlayerStates.ATTACK: state_attack_script.new(self, sm, entity_data),
-		Identifiers.PlayerStates.HURT: state_hurt_script.new(self, sm, entity_data),
-		Identifiers.PlayerStates.HEAL: state_heal_script.new(self, sm, entity_data),
-		Identifiers.PlayerStates.POGO: state_pogo_script.new(self, sm, entity_data),
-	}
-
-	var per_component_deps := {
-		sm: {"states": states, "initial_state_key": Identifiers.PlayerStates.FALL},
-		get_component(FXComponent): {"visual_node": visual_sprite, "hit_effect": hit_flash_effect},
-		hc: {"hit_spark_effect": hit_spark_effect}
-	}
-
-	setup_components(shared_deps, per_component_deps)
-
-
-func _connect_signals() -> void:
-	melee_hitbox.body_entered.connect(_on_melee_hitbox_body_entered)
-	pogo_hitbox.body_entered.connect(_on_pogo_hitbox_body_entered)
-	melee_hitbox.area_entered.connect(_on_hitbox_area_entered)
-	pogo_hitbox.area_entered.connect(_on_hitbox_area_entered)
-	hurtbox.area_entered.connect(_on_hurtbox_area_entered)
-
-	var hc: HealthComponent = get_component(HealthComponent)
-	hc.health_changed.connect(_on_health_component_health_changed)
-	hc.died.connect(_on_health_component_died)
-
-	var cc: CombatComponent = get_component(CombatComponent)
-	var rc: PlayerResourceComponent = get_component(PlayerResourceComponent)
-	cc.damage_dealt.connect(rc.on_damage_dealt)
-	cc.pogo_bounce_requested.connect(_on_pogo_bounce_requested)
-
-	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	sm.melee_hitbox_toggled.connect(_enable_melee_hitbox)
-	sm.pogo_hitbox_toggled.connect(_enable_pogo_hitbox)
-
-	var ac: PlayerAbilityComponent = get_component(PlayerAbilityComponent)
-	ac.state_change_requested.connect(_on_ability_state_change_requested)
-
-	healing_timer.timeout.connect(_on_healing_timer_timeout)
-
-
 func _update_timers(delta: float) -> void:
 	if not is_instance_valid(entity_data):
 		return
@@ -219,10 +162,11 @@ func _update_timers(delta: float) -> void:
 
 
 # --- Signal Handlers ---
-func _on_ability_state_change_requested(state_key: StringName, msg: Dictionary = {}) -> void:
-	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	if is_instance_valid(sm):
-		sm.change_state(state_key, msg)
+# THE FIX: This signal handler is no longer needed.
+# func _on_ability_state_change_requested(state_key: StringName, msg: Dictionary = {}) -> void:
+# 	var sm: BaseStateMachine = get_component(BaseStateMachine)
+# 	if is_instance_valid(sm):
+# 		sm.change_state(state_key, msg)
 
 
 func _on_melee_hitbox_body_entered(body: Node) -> void:

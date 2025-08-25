@@ -36,11 +36,10 @@ func _ready() -> void:
 		return
 
 	_initialize_data()
-	_initialize_and_setup_components()
-	_connect_signals()
+	EntityBuilder.build(self)
 
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	if not _is_dead:
 		move_and_slide()
 
@@ -108,43 +107,6 @@ func _initialize_data() -> void:
 	entity_data.max_health = behavior.max_health
 	entity_data.projectile_pool_key = behavior.projectile_pool_key
 	entity_data.services = _services
-
-
-func _initialize_and_setup_components() -> void:
-	var circle_shape := CircleShape2D.new()
-	circle_shape.radius = entity_data.behavior.detection_radius
-	range_detector_shape.shape = circle_shape
-
-	var hc: HealthComponent = get_component(HealthComponent)
-	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	var fc: FXComponent = get_component(FXComponent)
-
-	var shared_deps := {
-		"data_resource": entity_data,
-		"config": _services.combat_config
-	}
-
-	var states: Dictionary = {
-		Identifiers.MinionStates.IDLE:
-		load("res://src/entities/minions/states/state_minion_idle.gd").new(self, sm, entity_data),
-		Identifiers.MinionStates.ATTACK:
-		load("res://src/entities/minions/states/state_minion_attack.gd").new(self, sm, entity_data),
-		Identifiers.MinionStates.FALL:
-		load("res://src/entities/states/state_entity_fall.gd").new(self, sm, entity_data),
-	}
-
-	var per_component_deps := {
-		sm: {"states": states, "initial_state_key": entity_data.behavior.initial_state_key},
-		fc: {"visual_node": visual, "hit_effect": hit_flash_effect},
-		hc: {"hit_spark_effect": hit_spark_effect}
-	}
-
-	setup_components(shared_deps, per_component_deps)
-
-
-func _connect_signals() -> void:
-	var hc: HealthComponent = get_component(HealthComponent)
-	hc.died.connect(_on_health_component_died)
 
 
 func _update_player_tracking() -> void:

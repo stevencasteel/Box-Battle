@@ -48,8 +48,7 @@ func _ready() -> void:
 		return
 
 	_initialize_data()
-	_initialize_and_setup_components()
-	_connect_signals()
+	EntityBuilder.build(self) # Replaces all old setup calls
 
 	if (
 		is_instance_valid(intro_shake_effect)
@@ -66,7 +65,7 @@ func _exit_tree() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if Engine.is_editor_hint():
+	if Engine.is_editor_hint() or not is_instance_valid(entity_data):
 		return
 	if not is_on_floor():
 		velocity.y += entity_data.config.gravity * delta
@@ -74,7 +73,7 @@ func _physics_process(delta: float) -> void:
 
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	if (
-		is_instance_valid(sm)
+		is_instance_valid(sm) and is_instance_valid(sm.current_state)
 		and sm.current_state == sm.states[Identifiers.BossStates.PATROL]
 		and is_on_wall()
 	):
@@ -143,37 +142,6 @@ func _initialize_data() -> void:
 	assert(is_instance_valid(_services), "BaseBoss requires a ServiceLocator.")
 	entity_data.config = _services.combat_config
 	entity_data.projectile_pool_key = behavior.projectile_pool_key
-
-
-func _initialize_and_setup_components() -> void:
-	var hc: HealthComponent = get_component(HealthComponent)
-	var sm: BaseStateMachine = get_component(BaseStateMachine)
-	var fc: FXComponent = get_component(FXComponent)
-
-	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
-
-	var states: Dictionary = {
-		Identifiers.BossStates.IDLE: state_idle_script.new(self, sm, entity_data),
-		Identifiers.BossStates.ATTACK: state_attack_script.new(self, sm, entity_data),
-		Identifiers.BossStates.COOLDOWN: state_cooldown_script.new(self, sm, entity_data),
-		Identifiers.BossStates.PATROL: state_patrol_script.new(self, sm, entity_data),
-		Identifiers.BossStates.LUNGE: state_lunge_script.new(self, sm, entity_data),
-	}
-
-	var per_component_deps := {
-		sm: {"states": states, "initial_state_key": Identifiers.BossStates.COOLDOWN},
-		fc: {"visual_node": visual_sprite, "hit_effect": hit_flash_effect},
-		hc: {"hit_spark_effect": hit_spark_effect}
-	}
-
-	setup_components(shared_deps, per_component_deps)
-
-
-func _connect_signals() -> void:
-	var hc: HealthComponent = get_component(HealthComponent)
-	hc.health_changed.connect(_on_health_component_health_changed)
-	hc.died.connect(_on_health_component_died)
-	hc.health_threshold_reached.connect(_on_health_threshold_reached)
 
 
 func _update_player_tracking() -> void:

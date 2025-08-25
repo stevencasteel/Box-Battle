@@ -3,13 +3,9 @@
 ## Governs the activation logic for player abilities.
 ##
 ## Reads the input buffer and game state to determine if an action (like
-## dashing or healing) can be performed, then emits a signal to request a state change.
+## dashing or healing) can be performed, then directly commands the state machine.
 class_name PlayerAbilityComponent
 extends IComponent
-
-# --- Signals ---
-## Emitted when this component determines a state change should occur.
-signal state_change_requested(state_key: StringName, msg: Dictionary)
 
 # --- Constants ---
 const JumpHelper = preload("res://src/entities/player/components/player_jump_helper.gd")
@@ -17,52 +13,44 @@ const JumpHelper = preload("res://src/entities/player/components/player_jump_hel
 # --- Member Variables ---
 var owner_node: Player
 var p_data: PlayerStateData
+var _state_machine: BaseStateMachine # Direct reference to the FSM
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
-	# Run after the physics component.
 	process_priority = 0
 
 
 func _physics_process(_delta: float) -> void:
-	if not is_instance_valid(owner_node):
+	if not is_instance_valid(owner_node) or not is_instance_valid(_state_machine):
 		return
 
 	var input_component: InputComponent = owner_node.get_component(InputComponent)
 	if not is_instance_valid(input_component):
 		return
 
-	var current_state_key = owner_node.get_component(BaseStateMachine)._current_state_key
+	var current_state_key = _state_machine._current_state_key
 
 	if not current_state_key in Player.ACTION_ALLOWED_STATES:
 		return
 
 	# --- Action Checks (Prioritized) ---
-
 	if input_component.buffer.get("jump_just_pressed"):
 		var is_holding_down = input_component.buffer.get("down", false)
 
-		# 1. Heal (Highest priority for this input combination)
 		if (
 			is_holding_down
 			and p_data.healing_charges > 0
 			and owner_node.is_on_floor()
 			and is_zero_approx(owner_node.velocity.x)
 		):
-			state_change_requested.emit(Identifiers.PlayerStates.HEAL, {})
-			return # Stop further processing of this input
+			_state_machine.change_state(Identifiers.PlayerStates.HEAL, {})
+			return
 
-		# 2. Platform Drop
 		if is_holding_down:
 			if JumpHelper.try_platform_drop(owner_node):
-				# The helper calls change_state directly for this one, so we just return.
 				return
 
-		# 3. Standard Jump (includes wall, ground, coyote, and air jumps)
 		if JumpHelper.try_jump(owner_node, p_data):
-			# The helper calls change_state directly, so we return.
 			return
 
 	if input_component.buffer.get("attack_just_pressed") and p_data.attack_cooldown_timer <= 0:
@@ -74,9 +62,9 @@ func _physics_process(_delta: float) -> void:
 			if p_data.charge_timer >= p_data.config.player_charge_time:
 				owner_node.get_component(CombatComponent).fire_shot()
 			elif input_component.buffer.get("down"):
-				state_change_requested.emit(Identifiers.PlayerStates.POGO, {})
+				_state_machine.change_state(Identifiers.PlayerStates.POGO, {})
 			else:
-				state_change_requested.emit(Identifiers.PlayerStates.ATTACK, {})
+				_state_machine.change_state(Identifiers.PlayerStates.ATTACK, {})
 			p_data.is_charging = false
 
 	if (
@@ -84,18 +72,20 @@ func _physics_process(_delta: float) -> void:
 		and p_data.can_dash
 		and p_data.dash_cooldown_timer <= 0
 	):
-		state_change_requested.emit(Identifiers.PlayerStates.DASH, {})
+		_state_machine.change_state(Identifiers.PlayerStates.DASH, {})
 
 
 # --- Public Methods ---
-
-
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
+	# THE FIX: Get a direct, permanent reference to the state machine.
+	self._state_machine = owner_node.get_component(BaseStateMachine)
+	assert(is_instance_valid(_state_machine), "PlayerAbilityComponent could not find the StateMachine.")
 
 
 func teardown() -> void:
 	set_physics_process(false)
 	owner_node = null
 	p_data = null
+	_state_machine = null

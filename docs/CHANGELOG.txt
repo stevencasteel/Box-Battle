@@ -17,11 +17,27 @@
 ║                                                                              ║
 ║                                                                              ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
-║  ██     [0.17.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/24/2025    ██  ║
+║  ██     [0.17.0] - UNTITLED AND UNDETERMINED TITLE STILL - 08/XX/2025    ██  ║
 ║  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  ║
 ║                                                                              ║
 
 
+
+
+
+refactor(entity): Create EntityBuilder to dismantle "god classes"
+
+This commit completes Task 2.1 of the refactoring plan, addressing the Single Responsibility Principle violation in the core entity scripts (`Player`, `BaseBoss`, `Minion`).
+
+These scripts previously handled both their runtime logic and the complex construction logic for all their components and states. This made them difficult to read and maintain.
+
+A new stateless utility, `EntityBuilder.gd`, has been introduced. Its sole responsibility is to take a newly instantiated entity and perform all necessary setup:
+- Creating the `entity_data` resource.
+- Building the `states` dictionary for the state machine.
+- Configuring and passing all dependencies to each component.
+- Connecting all intra-entity signals between components.
+
+The `_ready` functions in `Player.gd`, `BaseBoss.gd`, and `Minion.gd` have been drastically simplified, now just making a single call to `EntityBuilder.build(self)`. This cleanly separates the concern of "building" from the concern of "being," making the entity scripts significantly smaller and more focused on their runtime behavior.
 
 
 refactor(entity): Centralize common attack logic in BaseEntity

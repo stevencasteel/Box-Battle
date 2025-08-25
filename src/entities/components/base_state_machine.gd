@@ -4,7 +4,6 @@
 class_name BaseStateMachine
 extends IComponent
 
-# THE FIX: Add annotations to ignore the unused signal warnings.
 @warning_ignore("unused_signal")
 signal melee_hitbox_toggled(is_enabled: bool, is_up_attack: bool)
 @warning_ignore("unused_signal")
@@ -19,7 +18,6 @@ var _current_state_key
 
 
 func _ready() -> void:
-	# Run after the physics component.
 	process_priority = 0
 
 
@@ -49,6 +47,7 @@ func setup(_p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 		p_dependencies.has("initial_state_key"),
 		"StateMachine setup requires an 'initial_state_key'."
 	)
+	
 	self.states = p_dependencies["states"]
 	var initial_state_key = p_dependencies["initial_state_key"]
 	change_state(initial_state_key)
@@ -61,7 +60,6 @@ func teardown() -> void:
 	for state in states.values():
 		if is_instance_valid(state):
 			state.teardown()
-			# States are not nodes, they are Objects, so just free them.
 			state.free()
 
 	states.clear()
