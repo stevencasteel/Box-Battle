@@ -9,6 +9,7 @@ extends CanvasLayer
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Node References ---
+@onready var player_info: VBoxContainer = %PlayerInfo
 @onready var player_health_value: Label = %PlayerHealthValue
 @onready var player_heal_charges_value: Label = %PlayerHealChargesValue
 @onready var boss_health_bar: ProgressBar = %BossHealthBar

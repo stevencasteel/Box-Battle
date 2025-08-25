@@ -24,6 +24,15 @@
 
 
 
+refactor(display): Adapt UI layouts to 1000x1000 viewport
+
+Refactored the game's display settings and UI scenes to use a 1000x1000 viewport resolution. This change provides a consistent, square aspect ratio which is better suited for the arena combat design.
+
+- Updated `project.godot` to set the viewport to 1000x1000 and the stretch aspect to `keep`. This ensures the game scales correctly on non-square monitors by adding letterboxing/pillarboxing.
+- Adjusted the anchors and margins for all elements in `game_hud.tscn` to fit the new layout. The boss health bar now spans the width of the screen with a margin, while player info and boss phase indicators are inset from the top corners.
+- Repositioned the mute button in all main menu scenes to align correctly within the new square viewport.
+
+
 
 feat(fx): Enhance boss spawn and death visual feedback
 

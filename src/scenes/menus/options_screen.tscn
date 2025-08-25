@@ -101,7 +101,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 350
+theme_override_constants/margin_right = 40
 
 [node name="MuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
 layout_mode = 2

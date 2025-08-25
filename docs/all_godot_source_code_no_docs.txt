@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 25 15:57:16 CDT 2025
+Generated on: Mon Aug 25 16:36:07 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -231,6 +231,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── effects
 │   │   │   │   ├── boss_death_shake.tres
 │   │   │   │   ├── boss_phase_change_shake.tres
+│   │   │   │   ├── boss_spawn_shake.tres
 │   │   │   │   ├── dissolve_effect.tres
 │   │   │   │   ├── player_damage_shake.tres
 │   │   │   │   ├── player_hit_spark_effect.tres
@@ -481,7 +482,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-90 directories, 383 files
+90 directories, 384 files
 
 
 =====================================
@@ -984,7 +985,7 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.17.0"
+config/version="0.17.1"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
@@ -1017,7 +1018,7 @@ ObjectPoolAdapter="*res://src/core/systems/pool_bindings/object_pool_adapter.gd"
 
 [display]
 
-window/size/viewport_width=1800
+window/size/viewport_width=1000
 window/size/viewport_height=1000
 window/stretch/mode="canvas_items"
 
@@ -1148,6 +1149,7 @@ extends CanvasLayer
 const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 
 # --- Node References ---
+@onready var player_info: VBoxContainer = %PlayerInfo
 @onready var player_health_value: Label = %PlayerHealthValue
 @onready var player_heal_charges_value: Label = %PlayerHealChargesValue
 @onready var boss_health_bar: ProgressBar = %BossHealthBar
@@ -1277,14 +1279,11 @@ grow_vertical = 2
 theme = ExtResource("2_main_theme")
 
 [node name="PlayerInfo" type="VBoxContainer" parent="ThemeContainer"]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -100.0
-offset_right = 220.0
-offset_bottom = -20.0
-grow_vertical = 0
+unique_name_in_owner = true
+offset_left = 60.0
+offset_top = 60.0
+offset_right = 280.0
+offset_bottom = 140.0
 
 [node name="PlayerHealthHBox" type="HBoxContainer" parent="ThemeContainer/PlayerInfo"]
 layout_mode = 2
@@ -1318,9 +1317,9 @@ text = "0"
 unique_name_in_owner = true
 anchors_preset = 10
 anchor_right = 1.0
-offset_left = 250.0
+offset_left = 50.0
 offset_top = 20.0
-offset_right = -250.0
+offset_right = -50.0
 offset_bottom = 50.0
 grow_horizontal = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_1")
@@ -1335,10 +1334,10 @@ unique_name_in_owner = true
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -220.0
-offset_top = 20.0
-offset_right = -20.0
-offset_bottom = 60.0
+offset_left = -190.0
+offset_top = 60.0
+offset_right = -60.0
+offset_bottom = 100.0
 grow_horizontal = 0
 alignment = 2
 
@@ -2999,13 +2998,12 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 350
+theme_override_constants/margin_right = 40
 
 [node name="MuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
-
 
 =====================================
 FILE: ./src/scenes/menus/title_screen.tscn
@@ -3138,7 +3136,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 350
+theme_override_constants/margin_right = 40
 
 [node name="MuteButton" parent="MuteButtonContainer" instance=ExtResource("8_mute_button")]
 layout_mode = 2
@@ -3419,13 +3417,12 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 350
+theme_override_constants/margin_right = 40
 
 [node name="MuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
-
 
 =====================================
 FILE: ./src/scenes/menus/credits_screen.tscn
@@ -3508,7 +3505,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 350
+theme_override_constants/margin_right = 40
 
 [node name="MuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
 layout_mode = 2
@@ -3785,13 +3782,12 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme_override_constants/margin_top = 40
-theme_override_constants/margin_right = 350
+theme_override_constants/margin_right = 40
 
 [node name="MuteButton" parent="MuteButtonContainer" instance=ExtResource("4_mute_button")]
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
-
 
 =====================================
 FILE: ./src/scenes/game_over/game_over_screen.tscn
@@ -5904,6 +5900,20 @@ params = {
 
 
 =====================================
+FILE: ./src/core/data/effects/boss_spawn_shake.tres
+=====================================
+[gd_resource type="Resource" script_class="ScreenShakeEffect" load_steps=2 format=3 uid="uid://boss_spawn_shake_tres"]
+
+[ext_resource type="Script" path="res://src/core/data/effects/screen_shake_effect.gd" id="1_shake_effect"]
+
+[resource]
+script = ExtResource("1_shake_effect")
+amplitude = 20.0
+frequency = 20.0
+duration = 0.4
+
+
+=====================================
 FILE: ./src/core/data/effects/boss_death_shake.tres
 =====================================
 [gd_resource type="Resource" script_class="ScreenShakeEffect" load_steps=2 format=3 uid="uid://boss_death_shake_tres"]
@@ -5912,9 +5922,9 @@ FILE: ./src/core/data/effects/boss_death_shake.tres
 
 [resource]
 script = ExtResource("1_shake_effect")
-amplitude = 40.0
-frequency = 10.0
-duration = 1.2
+amplitude = 50.0
+frequency = 25.0
+duration = 1.0
 
 =====================================
 FILE: ./src/core/data/effects/player_hit_spark_effect.tres
@@ -6313,6 +6323,9 @@ FILE: ./src/core/building/arena_builder.gd
 ## builder sub-systems to spawn the terrain, entities, and UI.
 extends Node
 
+# --- Constants ---
+const BossSpawnShake = preload("res://src/core/data/effects/boss_spawn_shake.tres")
+
 # --- Private Member Variables ---
 var _current_build_data: LevelBuildData
 var _current_level_container: Node
@@ -6369,6 +6382,10 @@ func spawn_boss_async() -> Node:
 	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
+
+	if is_instance_valid(BossSpawnShake):
+		ServiceLocator.fx_manager.request_screen_shake(BossSpawnShake)
+
 	return instance
 
 
@@ -7993,8 +8010,7 @@ gravity = 1200.0
 player_melee_close_range_hit_stop_duration = 0.025
 player_damage_taken_hit_stop_duration = 0.04
 boss_phase_change_hit_stop_duration = 0.1
-boss_death_hit_stop_duration = 0.2
-
+boss_death_hit_stop_duration = 0.1
 
 =====================================
 FILE: ./src/data/layouts/level_layout.gd
