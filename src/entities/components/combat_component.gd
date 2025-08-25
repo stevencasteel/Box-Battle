@@ -11,29 +11,41 @@ signal pogo_bounce_requested
 # --- Member Variables ---
 var owner_node: CharacterBody2D
 var p_data: PlayerStateData
-var _services: ServiceLocator # Dependency
+var _object_pool: IObjectPool
+var _fx_manager: IFXManager
+var _combat_utils: CombatUtils
+var _services: ServiceLocator # THE FIX: Add the services dependency back.
 
 # --- Public Methods ---
-
-
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as CharacterBody2D
 	self.p_data = p_dependencies.get("data_resource")
-	self._services = p_dependencies.get("services")
+	
+	self._object_pool = p_dependencies.get("object_pool")
+	self._fx_manager = p_dependencies.get("fx_manager")
+	self._combat_utils = p_dependencies.get("combat_utils")
+	self._services = p_dependencies.get("services") # THE FIX: Get the services from dependencies.
+	
+	assert(is_instance_valid(_object_pool), "CombatComponent requires an IObjectPool.")
+	assert(is_instance_valid(_fx_manager), "CombatComponent requires an IFXManager.")
+	assert(is_instance_valid(_combat_utils), "CombatComponent requires a CombatUtils.")
 	assert(is_instance_valid(_services), "CombatComponent requires a ServiceLocator.")
 
 
 func teardown() -> void:
 	owner_node = null
 	p_data = null
-	_services = null
+	_object_pool = null
+	_fx_manager = null
+	_combat_utils = null
+	_services = null # THE FIX: Clean up the reference.
 
 
 ## Fires a player projectile from the object pool.
 func fire_shot() -> void:
 	p_data.attack_cooldown_timer = p_data.config.player_attack_cooldown
 
-	var shot = _services.object_pool.get_instance(Identifiers.Pools.PLAYER_SHOTS)
+	var shot = _object_pool.get_instance(Identifiers.Pools.PLAYER_SHOTS)
 	if not shot:
 		return
 
@@ -57,7 +69,7 @@ func trigger_melee_attack(target_body: Node) -> void:
 		return
 
 	p_data.hit_targets_this_swing[target_id] = true
-	var damageable = _services.combat_utils.find_damageable(target_body)
+	var damageable = _combat_utils.find_damageable(target_body)
 	if is_instance_valid(damageable):
 		var damage_info = DamageInfo.new()
 		damage_info.source_node = owner_node
@@ -71,7 +83,7 @@ func trigger_melee_attack(target_body: Node) -> void:
 		if damage_result.was_damaged:
 			damage_dealt.emit()
 			if is_close_range:
-				_services.fx_manager.request_hit_stop(
+				_fx_manager.request_hit_stop(
 					p_data.config.player_melee_close_range_hit_stop_duration
 				)
 
@@ -87,9 +99,9 @@ func trigger_pogo(pogo_target: Node) -> bool:
 
 	if pogo_target.is_in_group(Identifiers.Groups.ENEMY_PROJECTILE):
 		should_bounce = true
-		_services.object_pool.return_instance.call_deferred(pogo_target)
+		_object_pool.return_instance.call_deferred(pogo_target)
 
-	var damageable = _services.combat_utils.find_damageable(pogo_target)
+	var damageable = _combat_utils.find_damageable(pogo_target)
 	if is_instance_valid(damageable):
 		should_bounce = true
 		var damage_info = DamageInfo.new()

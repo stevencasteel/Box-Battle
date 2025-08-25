@@ -24,6 +24,20 @@
 
 
 
+refactor(DI): Decouple components from ServiceLocator via injection
+
+This commit completes Task 2.2 of the refactoring plan, focusing on the Dependency Inversion Principle.
+
+Previously, core components (`FXComponent`, `HealthComponent`, `CombatComponent`, etc.) were tightly coupled to the global `ServiceLocator` autoload, which they used to fetch their dependencies. This hid their true dependencies and made them difficult to test in isolation.
+
+This has been refactored to use a pure Dependency Injection pattern:
+- All components now declare their specific dependencies (e.g., `IFXManager`, `IObjectPool`, `EventBus`) and expect them to be provided during setup.
+- The `EntityBuilder` is now responsible for getting the necessary services from the `ServiceLocator` and "injecting" them into each component as it builds the entity.
+- Components no longer have any knowledge of the `ServiceLocator`, making them truly self-contained and reusable units.
+
+This change significantly improves the modularity and testability of the entity-component system, adhering more closely to SOLID principles.
+
+
 
 refactor(entity): Create EntityBuilder to dismantle "god classes"
 

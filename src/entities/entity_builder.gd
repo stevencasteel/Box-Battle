@@ -20,15 +20,21 @@ static func build(entity: BaseEntity) -> void:
 # --- Private Builder Methods ---
 
 static func _build_player(player: Player) -> void:
-	# --- Logic from _initialize_and_setup_components ---
 	player.entity_data = PlayerStateData.new()
 	assert(is_instance_valid(player._services), "Player requires a ServiceLocator.")
 	player.entity_data.config = player._services.combat_config
 
 	var hc: HealthComponent = player.get_component(HealthComponent)
 	var sm: BaseStateMachine = player.get_component(BaseStateMachine)
+	var fc: FXComponent = player.get_component(FXComponent)
+	var cc: CombatComponent = player.get_component(CombatComponent)
+	var rc: PlayerResourceComponent = player.get_component(PlayerResourceComponent)
 
-	var shared_deps := {"data_resource": player.entity_data, "config": player.entity_data.config}
+	var shared_deps := {
+		"data_resource": player.entity_data, 
+		"config": player.entity_data.config,
+		"services": player._services
+		}
 
 	var states: Dictionary = {
 		Identifiers.PlayerStates.MOVE: player.state_move_script.new(player, sm, player.entity_data),
@@ -39,19 +45,35 @@ static func _build_player(player: Player) -> void:
 		Identifiers.PlayerStates.ATTACK: player.state_attack_script.new(player, sm, player.entity_data),
 		Identifiers.PlayerStates.HURT: player.state_hurt_script.new(player, sm, player.entity_data),
 		Identifiers.PlayerStates.HEAL: player.state_heal_script.new(player, sm, player.entity_data),
-		# THE FIX: This line was missing.
 		Identifiers.PlayerStates.POGO: player.state_pogo_script.new(player, sm, player.entity_data),
 	}
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.PlayerStates.FALL},
-		player.get_component(FXComponent): {"visual_node": player.visual_sprite, "hit_effect": player.hit_flash_effect},
-		hc: {"hit_spark_effect": player.hit_spark_effect}
+		fc: {
+			"visual_node": player.visual_sprite, 
+			"hit_effect": player.hit_flash_effect,
+			"fx_manager": player._services.fx_manager
+			},
+		hc: {
+			"hit_spark_effect": player.hit_spark_effect,
+			"fx_manager": player._services.fx_manager,
+			"event_bus": player._services.event_bus
+			},
+		cc: {
+			"object_pool": player._services.object_pool,
+			"fx_manager": player._services.fx_manager,
+			"combat_utils": player._services.combat_utils,
+			# THE FIX: Provide the full service locator.
+			"services": player._services
+			},
+		rc: {
+			"event_bus": player._services.event_bus
+			}
 	}
 
 	player.setup_components(shared_deps, per_component_deps)
 
-	# --- Logic from _connect_signals ---
 	player.melee_hitbox.body_entered.connect(player._on_melee_hitbox_body_entered)
 	player.pogo_hitbox.body_entered.connect(player._on_pogo_hitbox_body_entered)
 	player.melee_hitbox.area_entered.connect(player._on_hitbox_area_entered)
@@ -61,8 +83,6 @@ static func _build_player(player: Player) -> void:
 	hc.health_changed.connect(player._on_health_component_health_changed)
 	hc.died.connect(player._on_health_component_died)
 
-	var cc: CombatComponent = player.get_component(CombatComponent)
-	var rc: PlayerResourceComponent = player.get_component(PlayerResourceComponent)
 	cc.damage_dealt.connect(rc.on_damage_dealt)
 	cc.pogo_bounce_requested.connect(player._on_pogo_bounce_requested)
 
@@ -77,7 +97,11 @@ static func _build_boss(boss: BaseBoss) -> void:
 	var sm: BaseStateMachine = boss.get_component(BaseStateMachine)
 	var fc: FXComponent = boss.get_component(FXComponent)
 
-	var shared_deps := {"data_resource": boss.entity_data, "config": boss.entity_data.config}
+	var shared_deps := {
+		"data_resource": boss.entity_data, 
+		"config": boss.entity_data.config,
+		"services": boss._services
+		}
 
 	var states: Dictionary = {
 		Identifiers.BossStates.IDLE: boss.state_idle_script.new(boss, sm, boss.entity_data),
@@ -89,8 +113,16 @@ static func _build_boss(boss: BaseBoss) -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.BossStates.COOLDOWN},
-		fc: {"visual_node": boss.visual_sprite, "hit_effect": boss.hit_flash_effect},
-		hc: {"hit_spark_effect": boss.hit_spark_effect}
+		fc: {
+			"visual_node": boss.visual_sprite, 
+			"hit_effect": boss.hit_flash_effect,
+			"fx_manager": boss._services.fx_manager
+			},
+		hc: {
+			"hit_spark_effect": boss.hit_spark_effect,
+			"fx_manager": boss._services.fx_manager,
+			"event_bus": boss._services.event_bus
+			}
 	}
 
 	boss.setup_components(shared_deps, per_component_deps)
@@ -111,7 +143,8 @@ static func _build_minion(minion: Minion) -> void:
 
 	var shared_deps := {
 		"data_resource": minion.entity_data,
-		"config": minion._services.combat_config
+		"config": minion._services.combat_config,
+		"services": minion._services
 	}
 
 	var states: Dictionary = {
@@ -125,8 +158,16 @@ static func _build_minion(minion: Minion) -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": minion.entity_data.behavior.initial_state_key},
-		fc: {"visual_node": minion.visual, "hit_effect": minion.hit_flash_effect},
-		hc: {"hit_spark_effect": minion.hit_spark_effect}
+		fc: {
+			"visual_node": minion.visual, 
+			"hit_effect": minion.hit_flash_effect,
+			"fx_manager": minion._services.fx_manager
+			},
+		hc: {
+			"hit_spark_effect": minion.hit_spark_effect,
+			"fx_manager": minion._services.fx_manager,
+			"event_bus": minion._services.event_bus
+			}
 	}
 
 	minion.setup_components(shared_deps, per_component_deps)

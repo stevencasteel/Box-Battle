@@ -4,3 +4,4 @@
 
 [node name="PlayerResourceComponent" type="Node"]
 script = ExtResource("1_res")
+metadata/REQUIRED_DEPS = PackedStringArray("data_resource", "event_bus")

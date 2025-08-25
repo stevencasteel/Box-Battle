@@ -2,8 +2,8 @@
 @tool
 ## A dedicated component for managing all entity-specific visual effects.
 ##
-## CONTRACT: This component requires a "visual_node" dependency and will
-## automatically discover a "HealthComponent" on its owner to trigger damage effects.
+## CONTRACT: This component requires a "visual_node" and an "fx_manager" dependency.
+## It will automatically discover a "HealthComponent" on its owner to trigger damage effects.
 class_name FXComponent
 extends IComponent
 
@@ -12,7 +12,7 @@ var _owner: Node
 var _visual_node: CanvasItem
 var _health_component: HealthComponent
 var _hit_effect: ShaderEffect  # Injected Dependency
-var _services: IFXManager
+var _fx_manager: IFXManager   # THE FIX: Now holds a direct reference to the service.
 
 # --- Godot Lifecycle Methods ---
 func _notification(what: int) -> void:
@@ -21,10 +21,11 @@ func _notification(what: int) -> void:
 
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
-	var service_locator: ServiceLocator = p_dependencies.get("services")
-	assert(is_instance_valid(service_locator), "FXComponent requires a ServiceLocator.")
-	self._services = service_locator.fx_manager
-	assert(is_instance_valid(_services), "FXComponent could not get IFXManager from ServiceLocator.")
+	
+	# THE FIX: Expect the fx_manager to be injected directly.
+	assert(p_dependencies.has("fx_manager"), "FXComponent requires an 'fx_manager' dependency.")
+	self._fx_manager = p_dependencies.get("fx_manager")
+	assert(is_instance_valid(_fx_manager), "Injected 'fx_manager' must be a valid IFXManager.")
 
 	assert(p_dependencies.has("visual_node"), "FXComponent requires a 'visual_node' dependency.")
 	_visual_node = p_dependencies.get("visual_node")
@@ -50,8 +51,8 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 			_health_component.took_damage.connect(_on_owner_took_damage)
 
 func teardown() -> void:
-	if is_instance_valid(_services):
-		_services.cancel_effect_on_node(_visual_node)
+	if is_instance_valid(_fx_manager):
+		_fx_manager.cancel_effect_on_node(_visual_node)
 
 	if is_instance_valid(_health_component):
 		if _health_component.took_damage.is_connected(_on_owner_took_damage):
@@ -60,18 +61,17 @@ func teardown() -> void:
 	_visual_node = null
 	_owner = null
 	_health_component = null
-	_services = null
+	_fx_manager = null
 
 # --- Public API ---
-
 func play_effect(effect: ShaderEffect, overrides: Dictionary = {}, opts: Dictionary = {}) -> Tween:
 	if not is_instance_valid(_visual_node):
 		push_warning("FXComponent cannot play effect: visual node is invalid.")
 		return null
-	return _services.apply_shader_effect(_visual_node, effect, overrides, opts)
+	# THE FIX: Call the service directly.
+	return _fx_manager.apply_shader_effect(_visual_node, effect, overrides, opts)
 
 # --- Signal Handlers ---
-
 func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(_hit_effect):
 		play_effect(_hit_effect)

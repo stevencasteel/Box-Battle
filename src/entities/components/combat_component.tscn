@@ -4,3 +4,4 @@
 
 [node name="CombatComponent" type="Node"]
 script = ExtResource("1_combat")
+metadata/REQUIRED_DEPS = PackedStringArray("data_resource", "object_pool", "fx_manager", "combat_utils", "services")
