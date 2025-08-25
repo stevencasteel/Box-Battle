@@ -87,12 +87,6 @@ func teardown() -> void:
 		if sm.pogo_hitbox_toggled.is_connected(_enable_pogo_hitbox):
 			sm.pogo_hitbox_toggled.disconnect(_enable_pogo_hitbox)
 
-	# THE FIX: No longer need to disconnect this signal.
-	# var ac: PlayerAbilityComponent = get_component(PlayerAbilityComponent)
-	# if is_instance_valid(ac):
-		# if ac.state_change_requested.is_connected(_on_ability_state_change_requested):
-			# ac.state_change_requested.disconnect(_on_ability_state_change_requested)
-
 	if is_instance_valid(healing_timer):
 		if healing_timer.timeout.is_connected(_on_healing_timer_timeout):
 			healing_timer.timeout.disconnect(_on_healing_timer_timeout)
@@ -162,13 +156,6 @@ func _update_timers(delta: float) -> void:
 
 
 # --- Signal Handlers ---
-# THE FIX: This signal handler is no longer needed.
-# func _on_ability_state_change_requested(state_key: StringName, msg: Dictionary = {}) -> void:
-# 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-# 	if is_instance_valid(sm):
-# 		sm.change_state(state_key, msg)
-
-
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	get_component(CombatComponent).trigger_melee_attack(body)
 

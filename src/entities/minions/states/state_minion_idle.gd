@@ -18,7 +18,6 @@ func process_physics(delta: float) -> void:
 	# --- State Transition Checks (Prioritized) ---
 
 	# 1. Check for falling (ONLY if the entity is not anchored).
-	# This is the definitive fix. An anchored entity should never fall.
 	if not state_data.behavior.is_anchored and not _minion.is_on_floor():
 		state_machine.change_state(Identifiers.MinionStates.FALL)
 		return

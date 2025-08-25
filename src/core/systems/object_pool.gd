@@ -34,7 +34,6 @@ func initialize() -> void:
 		return
 	_create_pool_from_path(Identifiers.Pools.PLAYER_SHOTS, AssetPaths.SCENE_PLAYER_SHOT, 15)
 	_create_pool_from_path(Identifiers.Pools.BOSS_SHOTS, AssetPaths.SCENE_BOSS_SHOT, 30)
-	# THE FIX: Use the new MINION_SHOTS constant.
 	_create_pool_from_path(Identifiers.Pools.MINION_SHOTS, AssetPaths.SCENE_MINION_SHOT, 20)
 	_create_pool_from_path(Identifiers.Pools.HOMING_BOSS_SHOTS, AssetPaths.SCENE_HOMING_BOSS_SHOT, 40)
 	_create_pool_from_path(Identifiers.Pools.HIT_SPARKS, AssetPaths.SCENE_HIT_SPARK, 25)

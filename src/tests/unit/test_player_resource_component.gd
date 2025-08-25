@@ -30,7 +30,7 @@ func before_each():
 	add_child_autofree(mock_owner)
 	_player_data = PlayerStateData.new()
 	_player_data.config = CombatConfig
-	# THE FIX: Explicitly set max charges for clarity in tests
+	# Explicitly set max charges for clarity in tests
 	_player_data.max_healing_charges = 3
 
 	_resource_component = PlayerResourceComponent.new()
@@ -73,7 +73,7 @@ func test_healing_charges_are_capped():
 	assert_false(_fake_event_bus.was_event_emitted(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED))
 
 func test_consume_charge_decrements_and_emits_event():
-	# THE FIX: Start with a valid number of charges (at max) and consume one.
+	# Start with a valid number of charges (at max) and consume one.
 	_player_data.healing_charges = _player_data.max_healing_charges # Starts at 3
 	_resource_component.consume_healing_charge()
 	assert_eq(_player_data.healing_charges, 2, "Healing charges should decrement by 1.")

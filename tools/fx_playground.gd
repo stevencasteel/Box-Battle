@@ -11,12 +11,12 @@ extends Control
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
-		# THE FIX: When running the scene, the ServiceLocator autoload is
+		# When running the scene, the ServiceLocator autoload is
 		# available globally. We must provide it to the component's setup
 		# method to satisfy its dependency contract.
 		var dependencies = {
 			"visual_node": test_subject,
-			"services": ServiceLocator,
+			"fx_manager": ServiceLocator.fx_manager,
 			"hit_effect": _hit_flash_effect # Provide a default hit effect
 		}
 		fx_component.setup(test_subject, dependencies)

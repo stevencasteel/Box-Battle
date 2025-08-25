@@ -12,7 +12,6 @@ const SHADER_PREWARM_SCENES = [
 	AssetPaths.SCENE_BASE_BOSS,
 	AssetPaths.SCENE_PLAYER_SHOT,
 	AssetPaths.SCENE_BOSS_SHOT,
-	# THE FIX: Use the new SCENE_MINION_SHOT constant.
 	AssetPaths.SCENE_MINION_SHOT,
 	AssetPaths.SCENE_HOMING_BOSS_SHOT,
 ]
@@ -63,7 +62,7 @@ func _prewarm_shaders() -> void:
 		var instance = load(scene_path).instantiate()
 
 		if instance.has_method("inject_dependencies"):
-			# THE FIX: Pass the ServiceLocator singleton directly.
+			# Pass the ServiceLocator singleton directly.
 			instance.inject_dependencies(ServiceLocator)
 
 		prewarm_viewport.add_child(instance)

@@ -15,7 +15,6 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 @onready var phase_indicators: HBoxContainer = %PhaseIndicators
 
 # --- Private Member Variables ---
-# THE FIX: We are now creating ColorRects, not Panels.
 var _phase_squares: Array[ColorRect] = []
 var _total_phases: int = 3
 var _player_health_token: int
@@ -72,7 +71,6 @@ func _initialize_ui_state() -> void:
 
 func _create_phase_indicators() -> void:
 	for i in range(_total_phases):
-		# THE FIX: Create a ColorRect instead of a Panel.
 		var square = ColorRect.new()
 		square.custom_minimum_size = Vector2(40, 40)
 		phase_indicators.add_child(square)
@@ -84,7 +82,6 @@ func _update_phase_visuals(phases_remaining: int) -> void:
 	for i in range(_phase_squares.size()):
 		var square: ColorRect = _phase_squares[i]
 		
-		# THE FIX: Directly set the color property, bypassing themes entirely.
 		if i < phases_remaining:
 			square.color = Color.WHITE
 		else:

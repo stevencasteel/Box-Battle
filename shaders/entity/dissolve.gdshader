@@ -8,7 +8,7 @@ uniform float border_width : hint_range(0.0, 0.1) = 0.02;
 
 void fragment() {
 	vec4 original_color = COLOR;
-	// THE FIX: Sample the noise texture using screen-space UVs, which are
+	// Sample the noise texture using screen-space UVs, which are
 	// always available, instead of local UVs, which Polygon2D does not have.
 	float noise_value = texture(noise_texture, SCREEN_UV).r;
 

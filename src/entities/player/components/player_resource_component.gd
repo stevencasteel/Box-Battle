@@ -7,14 +7,13 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: BaseEntity
 var p_data: PlayerStateData
-var _event_bus: EventBus # THE FIX: Direct dependency reference
+var _event_bus: EventBus
 
 # --- Public Methods ---
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
 	
-	# THE FIX: Receive dependency directly.
 	self._event_bus = p_dependencies.get("event_bus")
 	assert(is_instance_valid(_event_bus), "PlayerResourceComponent requires an EventBus.")
 

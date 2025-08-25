@@ -13,7 +13,7 @@ extends ISceneController
 var _level_container: Node = null
 var _debug_overlay: CanvasLayer = null
 var _boss_died_token: int = 0
-var _spawn_boss_token: int = 0 # THE FIX: Token for the new event.
+var _spawn_boss_token: int = 0
 var _sequence_handle: SequenceHandle
 var _camera_shaker: CameraShaker = null
 const TestConversation = preload("res://src/data/dialogue/test_conversation.tres")
@@ -25,7 +25,6 @@ var _current_inspect_index: int = 0
 # --- Godot Lifecycle Methods ---
 func _ready() -> void:
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
-	# THE FIX: Subscribe to the boss spawn event.
 	_spawn_boss_token = EventBus.on(EventCatalog.SPAWN_BOSS_REQUESTED, _on_spawn_boss_requested)
 
 	if is_instance_valid(GameManager.state.prebuilt_level):
@@ -79,7 +78,7 @@ func _unhandled_input(_event: InputEvent) -> void:
 func _exit_tree() -> void:
 	_cleanup_entities()
 	EventBus.off(_boss_died_token)
-	EventBus.off(_spawn_boss_token) # THE FIX: Unsubscribe from the event.
+	EventBus.off(_spawn_boss_token)
 	FXManager.unregister_camera_shaker()
 	if is_instance_valid(_sequence_handle):
 		_sequence_handle.cancel()
@@ -148,7 +147,6 @@ func _deactivate_all_minions() -> void:
 
 # --- Signal Handlers ---
 
-# THE FIX: New handler for the spawn event.
 func _on_spawn_boss_requested(_payload) -> void:
 	# This function is now responsible for the action.
 	# We don't await here because this is a fire-and-forget event.

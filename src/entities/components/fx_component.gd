@@ -12,7 +12,7 @@ var _owner: Node
 var _visual_node: CanvasItem
 var _health_component: HealthComponent
 var _hit_effect: ShaderEffect  # Injected Dependency
-var _fx_manager: IFXManager   # THE FIX: Now holds a direct reference to the service.
+var _fx_manager: IFXManager   # Holds a direct reference to the service.
 
 # --- Godot Lifecycle Methods ---
 func _notification(what: int) -> void:
@@ -22,7 +22,6 @@ func _notification(what: int) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
 	
-	# THE FIX: Expect the fx_manager to be injected directly.
 	assert(p_dependencies.has("fx_manager"), "FXComponent requires an 'fx_manager' dependency.")
 	self._fx_manager = p_dependencies.get("fx_manager")
 	assert(is_instance_valid(_fx_manager), "Injected 'fx_manager' must be a valid IFXManager.")
@@ -68,7 +67,6 @@ func play_effect(effect: ShaderEffect, overrides: Dictionary = {}, opts: Diction
 	if not is_instance_valid(_visual_node):
 		push_warning("FXComponent cannot play effect: visual node is invalid.")
 		return null
-	# THE FIX: Call the service directly.
 	return _fx_manager.apply_shader_effect(_visual_node, effect, overrides, opts)
 
 # --- Signal Handlers ---

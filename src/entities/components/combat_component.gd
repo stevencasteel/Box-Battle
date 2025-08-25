@@ -14,7 +14,7 @@ var p_data: PlayerStateData
 var _object_pool: IObjectPool
 var _fx_manager: IFXManager
 var _combat_utils: CombatUtils
-var _services: ServiceLocator # THE FIX: Add the services dependency back.
+var _services: ServiceLocator
 
 # --- Public Methods ---
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
@@ -24,7 +24,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._object_pool = p_dependencies.get("object_pool")
 	self._fx_manager = p_dependencies.get("fx_manager")
 	self._combat_utils = p_dependencies.get("combat_utils")
-	self._services = p_dependencies.get("services") # THE FIX: Get the services from dependencies.
+	self._services = p_dependencies.get("services")
 	
 	assert(is_instance_valid(_object_pool), "CombatComponent requires an IObjectPool.")
 	assert(is_instance_valid(_fx_manager), "CombatComponent requires an IFXManager.")
@@ -38,7 +38,7 @@ func teardown() -> void:
 	_object_pool = null
 	_fx_manager = null
 	_combat_utils = null
-	_services = null # THE FIX: Clean up the reference.
+	_services = null
 
 
 ## Fires a player projectile from the object pool.

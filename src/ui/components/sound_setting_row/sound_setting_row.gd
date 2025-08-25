@@ -34,7 +34,6 @@ func _ready() -> void:
 
 		mute_checkbox.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 		mute_checkbox.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		# THE FIX: Play the move sound when hovering the checkbox.
 		mute_checkbox.mouse_entered.connect(func(): AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE))
 
 

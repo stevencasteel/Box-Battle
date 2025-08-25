@@ -21,7 +21,7 @@ var _knockback_speed: float
 var _hazard_knockback_speed: float
 var _invincibility_tokens: Dictionary = {}
 var _next_token_id: int = 1
-var _fx_manager: IFXManager # THE FIX: Revert to the unified IFXManager.
+var _fx_manager: IFXManager
 var _event_bus: EventBus
 var _hit_spark_effect: VFXEffect
 
@@ -37,7 +37,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
     self.entity_data = p_dependencies.get("data_resource")
     var cfg: CombatConfig = p_dependencies.get("config")
     
-    self._fx_manager = p_dependencies.get("fx_manager") # THE FIX: Expect fx_manager.
+    self._fx_manager = p_dependencies.get("fx_manager")
     self._event_bus = p_dependencies.get("event_bus")
     self._hit_spark_effect = p_dependencies.get("hit_spark_effect")
 

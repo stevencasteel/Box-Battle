@@ -79,7 +79,7 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
-	# THE FIX: Get a direct, permanent reference to the state machine.
+	# Get a direct, permanent reference to the state machine.
 	self._state_machine = owner_node.get_component(BaseStateMachine)
 	assert(is_instance_valid(_state_machine), "PlayerAbilityComponent could not find the StateMachine.")
 

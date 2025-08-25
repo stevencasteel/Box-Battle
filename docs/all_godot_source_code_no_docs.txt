@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 25 14:43:14 CDT 2025
+Generated on: Mon Aug 25 15:57:16 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -324,6 +324,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │       ├── state_boss_idle.gd
 │   │   │       ├── state_boss_lunge.gd
 │   │   │       └── state_boss_patrol.gd
+│   │   ├── builders
 │   │   ├── components
 │   │   │   ├── base_state.gd
 │   │   │   ├── base_state_machine.gd
@@ -480,7 +481,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-89 directories, 383 files
+90 directories, 383 files
 
 
 =====================================
@@ -639,12 +640,12 @@ extends Control
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
-		# THE FIX: When running the scene, the ServiceLocator autoload is
+		# When running the scene, the ServiceLocator autoload is
 		# available globally. We must provide it to the component's setup
 		# method to satisfy its dependency contract.
 		var dependencies = {
 			"visual_node": test_subject,
-			"services": ServiceLocator,
+			"fx_manager": ServiceLocator.fx_manager,
 			"hit_effect": _hit_flash_effect # Provide a default hit effect
 		}
 		fx_component.setup(test_subject, dependencies)
@@ -930,7 +931,7 @@ uniform float border_width : hint_range(0.0, 0.1) = 0.02;
 
 void fragment() {
 	vec4 original_color = COLOR;
-	// THE FIX: Sample the noise texture using screen-space UVs, which are
+	// Sample the noise texture using screen-space UVs, which are
 	// always available, instead of local UVs, which Polygon2D does not have.
 	float noise_value = texture(noise_texture, SCREEN_UV).r;
 
@@ -1153,7 +1154,6 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 @onready var phase_indicators: HBoxContainer = %PhaseIndicators
 
 # --- Private Member Variables ---
-# THE FIX: We are now creating ColorRects, not Panels.
 var _phase_squares: Array[ColorRect] = []
 var _total_phases: int = 3
 var _player_health_token: int
@@ -1210,7 +1210,6 @@ func _initialize_ui_state() -> void:
 
 func _create_phase_indicators() -> void:
 	for i in range(_total_phases):
-		# THE FIX: Create a ColorRect instead of a Panel.
 		var square = ColorRect.new()
 		square.custom_minimum_size = Vector2(40, 40)
 		phase_indicators.add_child(square)
@@ -1222,7 +1221,6 @@ func _update_phase_visuals(phases_remaining: int) -> void:
 	for i in range(_phase_squares.size()):
 		var square: ColorRect = _phase_squares[i]
 		
-		# THE FIX: Directly set the color property, bypassing themes entirely.
 		if i < phases_remaining:
 			square.color = Color.WHITE
 		else:
@@ -1780,7 +1778,7 @@ func _ready() -> void:
 	focus_mode = FOCUS_ALL
 	mouse_filter = MOUSE_FILTER_STOP
 
-	# THE FIX: This component now manages its own cursor state.
+	# This component now manages its own cursor state.
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	resized.connect(queue_redraw)
@@ -1909,7 +1907,6 @@ func _animate_selection(p_is_selected: bool) -> void:
 func _on_mouse_entered() -> void:
 	is_hovered = true
 	grab_focus()
-	# THE FIX: Add cursor management.
 	if not Engine.is_editor_hint():
 		CursorManager.set_pointer_state(true)
 
@@ -1919,7 +1916,6 @@ func _on_mouse_exited() -> void:
 	if is_pressed:
 		is_pressed = false
 		queue_redraw()
-	# THE FIX: Add cursor management.
 	if not Engine.is_editor_hint():
 		CursorManager.set_pointer_state(false)
 
@@ -2012,7 +2008,6 @@ func _ready() -> void:
 
 		mute_checkbox.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
 		mute_checkbox.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-		# THE FIX: Play the move sound when hovering the checkbox.
 		mute_checkbox.mouse_entered.connect(func(): AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE))
 
 
@@ -2633,7 +2628,6 @@ const SHADER_PREWARM_SCENES = [
 	AssetPaths.SCENE_BASE_BOSS,
 	AssetPaths.SCENE_PLAYER_SHOT,
 	AssetPaths.SCENE_BOSS_SHOT,
-	# THE FIX: Use the new SCENE_MINION_SHOT constant.
 	AssetPaths.SCENE_MINION_SHOT,
 	AssetPaths.SCENE_HOMING_BOSS_SHOT,
 ]
@@ -2684,7 +2678,7 @@ func _prewarm_shaders() -> void:
 		var instance = load(scene_path).instantiate()
 
 		if instance.has_method("inject_dependencies"):
-			# THE FIX: Pass the ServiceLocator singleton directly.
+			# Pass the ServiceLocator singleton directly.
 			instance.inject_dependencies(ServiceLocator)
 
 		prewarm_viewport.add_child(instance)
@@ -2732,7 +2726,7 @@ extends ISceneController
 var _level_container: Node = null
 var _debug_overlay: CanvasLayer = null
 var _boss_died_token: int = 0
-var _spawn_boss_token: int = 0 # THE FIX: Token for the new event.
+var _spawn_boss_token: int = 0
 var _sequence_handle: SequenceHandle
 var _camera_shaker: CameraShaker = null
 const TestConversation = preload("res://src/data/dialogue/test_conversation.tres")
@@ -2744,7 +2738,6 @@ var _current_inspect_index: int = 0
 # --- Godot Lifecycle Methods ---
 func _ready() -> void:
 	_boss_died_token = EventBus.on(EventCatalog.BOSS_DIED, _on_boss_died)
-	# THE FIX: Subscribe to the boss spawn event.
 	_spawn_boss_token = EventBus.on(EventCatalog.SPAWN_BOSS_REQUESTED, _on_spawn_boss_requested)
 
 	if is_instance_valid(GameManager.state.prebuilt_level):
@@ -2798,7 +2791,7 @@ func _unhandled_input(_event: InputEvent) -> void:
 func _exit_tree() -> void:
 	_cleanup_entities()
 	EventBus.off(_boss_died_token)
-	EventBus.off(_spawn_boss_token) # THE FIX: Unsubscribe from the event.
+	EventBus.off(_spawn_boss_token)
 	FXManager.unregister_camera_shaker()
 	if is_instance_valid(_sequence_handle):
 		_sequence_handle.cancel()
@@ -2867,7 +2860,6 @@ func _deactivate_all_minions() -> void:
 
 # --- Signal Handlers ---
 
-# THE FIX: New handler for the spawn event.
 func _on_spawn_boss_requested(_payload) -> void:
 	# This function is now responsible for the action.
 	# We don't await here because this is a fire-and-forget event.
@@ -3189,7 +3181,7 @@ func _ready() -> void:
 
 		# --- Initialize Common Navigation & Feedback ---
 		var focusable_items: Array[Control] = [start_button, options_button, exit_button]
-		# THE FIX: Construct the array in a single statement to preserve its type.
+		# Construct the array in a single statement to preserve its type.
 		var all_items: Array[Control] = [
 			start_button, options_button, exit_button, 
 			newgrounds_logo, godot_logo, itch_logo
@@ -3253,7 +3245,7 @@ func setup_menu_navigation(focusable_items: Array[Control], all_interactive_item
 			credits_label.meta_hover_started.connect(func(_meta): CursorManager.set_pointer_state(true))
 			credits_label.meta_hover_ended.connect(func(_meta): CursorManager.set_pointer_state(false))
 			credits_label.meta_clicked.connect(func(_meta): _on_any_item_pressed())
-			# THE FIX: Use a lambda to absorb the 'meta' argument before calling the sound handler.
+			# Use a lambda to absorb the 'meta' argument before calling the sound handler.
 			credits_label.meta_hover_started.connect(func(_meta): _on_any_item_focused())
 
 # --- Private Signal Handlers ---
@@ -3908,8 +3900,7 @@ func _ready() -> void:
 	if OS.is_debug_build():
 		AssetPaths.validate_all_paths()
 
-	# THE FIX: Call the static method directly on the global class name.
-	# This removes the need for a local constant and resolves the warning.
+	# Call the static method directly on the global class name.
 	BootManager.initialize_systems()
 
 	AudioManager.play_music(AssetPaths.MUSIC_MENU_LOOP)
@@ -4487,7 +4478,6 @@ class Groups:
 class Pools:
 	const PLAYER_SHOTS = &"player_shots"
 	const BOSS_SHOTS = &"boss_shots"
-	# THE FIX: Rename the constant to be generic.
 	const MINION_SHOTS = &"minion_shots"
 	const HOMING_BOSS_SHOTS = &"homing_boss_shots"
 	const HIT_SPARKS = &"hit_sparks"
@@ -4826,7 +4816,7 @@ const BOSS_PHASE_CHANGED = "boss.phase_changed"
 
 # --- Game State Events ---
 const SCENE_TRANSITION_STARTED = "scene.transition_started"
-# THE FIX: Add a dedicated event for the intro sequence to request the boss spawn.
+# An event for the intro sequence to request the boss spawn.
 const SPAWN_BOSS_REQUESTED = "encounter.spawn_boss_requested"
 
 # --- UI State Events ---
@@ -5063,7 +5053,7 @@ func _on_dialogue_box_advance_requested() -> void:
 
 
 func _on_typing_finished() -> void:
-	# THE FIX: Add a guard clause to prevent crash during scene transitions.
+	# Add a guard clause to prevent crash during scene transitions.
 	if not is_instance_valid(_current_data):
 		return
 
@@ -5158,7 +5148,7 @@ func _switch_to_scene(path: String) -> void:
 		await current_scene.scene_exiting()
 
 	# 2. Reset global systems.
-	ObjectPool.reset() # THE FIX: Call the global singleton directly for this core task.
+	ObjectPool.reset()
 	Sequencer.cancel_all()
 
 	# 3. Change the scene.
@@ -5203,7 +5193,6 @@ func initialize() -> void:
 		return
 	_create_pool_from_path(Identifiers.Pools.PLAYER_SHOTS, AssetPaths.SCENE_PLAYER_SHOT, 15)
 	_create_pool_from_path(Identifiers.Pools.BOSS_SHOTS, AssetPaths.SCENE_BOSS_SHOT, 30)
-	# THE FIX: Use the new MINION_SHOTS constant.
 	_create_pool_from_path(Identifiers.Pools.MINION_SHOTS, AssetPaths.SCENE_MINION_SHOT, 20)
 	_create_pool_from_path(Identifiers.Pools.HOMING_BOSS_SHOTS, AssetPaths.SCENE_HOMING_BOSS_SHOT, 40)
 	_create_pool_from_path(Identifiers.Pools.HIT_SPARKS, AssetPaths.SCENE_HIT_SPARK, 25)
@@ -5414,7 +5403,6 @@ FILE: ./src/core/systems/fx_bindings/fx_manager_adapter.gd
 ## An adapter that implements multiple FX interfaces by delegating calls
 ## to the real FXManager autoload singleton. This script is registered as an
 ## autoload itself and should NOT have a matching class_name.
-# THE FIX: Extend the main interface to satisfy the static type checker.
 extends IFXManager
 
 # --- Private Member Variables ---
@@ -6433,7 +6421,6 @@ func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictiona
 	var owner_width = 60.0
 	var x_offset = (lunge_width / 2.0) + (owner_width / 2.0)
 	
-	# THE FIX: Reduced height from 60 to 50.
 	return {"size": Vector2(lunge_width, 50), "offset": Vector2(x_offset, 0)}
 
 
@@ -6477,7 +6464,6 @@ extends AttackLogic
 
 func get_telegraph_info(owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
 	var facing_direction: float = owner.entity_data.facing_direction if "facing_direction" in owner.entity_data else 1.0
-	# THE FIX: Reduced size from 150 to 100.
 	return {"size": Vector2(100, 100), "offset": Vector2(facing_direction * 75, 0)}
 
 
@@ -6573,7 +6559,6 @@ extends AttackLogic
 
 
 func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
-	# THE FIX: Reduced size to 100x100, which is slightly larger than the boss's 60x60 body.
 	return {"size": Vector2(100, 100), "offset": Vector2.ZERO}
 
 
@@ -6734,7 +6719,7 @@ func before_each():
 	add_child_autofree(mock_owner)
 	_player_data = PlayerStateData.new()
 	_player_data.config = CombatConfig
-	# THE FIX: Explicitly set max charges for clarity in tests
+	# Explicitly set max charges for clarity in tests
 	_player_data.max_healing_charges = 3
 
 	_resource_component = PlayerResourceComponent.new()
@@ -6777,7 +6762,7 @@ func test_healing_charges_are_capped():
 	assert_false(_fake_event_bus.was_event_emitted(EventCatalog.PLAYER_HEALING_CHARGES_CHANGED))
 
 func test_consume_charge_decrements_and_emits_event():
-	# THE FIX: Start with a valid number of charges (at max) and consume one.
+	# Start with a valid number of charges (at max) and consume one.
 	_player_data.healing_charges = _player_data.max_healing_charges # Starts at 3
 	_resource_component.consume_healing_charge()
 	assert_eq(_player_data.healing_charges, 2, "Healing charges should decrement by 1.")
@@ -6905,12 +6890,12 @@ const DamageInfo = preload("res://src/api/combat/damage_info.gd")
 const FakeServiceLocator = preload("res://src/tests/fakes/fake_service_locator.gd")
 
 # --- Test Internals ---
-var _mock_owner: CharacterBody2D # THE FIX: Changed type from Node
+var _mock_owner: CharacterBody2D
 var _fake_services: FakeServiceLocator
 
 # --- Test Lifecycle ---
 func before_each():
-	_mock_owner = CharacterBody2D.new() # THE FIX: Instantiate the correct type
+	_mock_owner = CharacterBody2D.new()
 	add_child_autofree(_mock_owner)
 	
 	_fake_services = FakeServiceLocator.new()
@@ -6942,7 +6927,6 @@ func test_health_component_fulfills_contract():
 		"services": _fake_services,
 		"hit_spark_effect": preload("res://src/core/data/effects/player_hit_spark_effect.tres")
 	}
-	# THE FIX: Pass the correctly typed owner node
 	health_comp.setup(_mock_owner, deps)
 	
 	_run_contract_tests(health_comp, "HealthComponent")
@@ -6982,7 +6966,7 @@ func before_each():
 	# Create a scene tree: MockEntity -> HealthComponent
 	#                                -> NonDamageableChild
 	_mock_entity = BaseEntity.new()
-	# THE FIX: Provide a dummy archetype to prevent errors in _ready().
+	# Provide a dummy archetype to prevent errors in _ready().
 	_mock_entity.archetype = EntityArchetype.new()
 	add_child_autofree(_mock_entity)
 
@@ -8267,7 +8251,6 @@ func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player):
 		return
 
-	# THE FIX: Access the property directly, not with .get().
 	var pool_key: StringName = self.entity_data.projectile_pool_key
 	if pool_key == &"":
 		push_warning("Entity '%s' tried to fire a shot but has no 'projectile_pool_key' in its data." % name)
@@ -8467,7 +8450,7 @@ static func _build_player(player: Player) -> void:
 			},
 		hc: {
 			"hit_spark_effect": player.hit_spark_effect,
-			"fx_manager": player._services.fx_manager, # THE FIX: Revert to injecting fx_manager
+			"fx_manager": player._services.fx_manager,
 			"event_bus": player._services.event_bus
 			},
 		cc: {
@@ -8529,7 +8512,7 @@ static func _build_boss(boss: BaseBoss) -> void:
 			},
 		hc: {
 			"hit_spark_effect": boss.hit_spark_effect,
-			"fx_manager": boss._services.fx_manager, # THE FIX
+			"fx_manager": boss._services.fx_manager,
 			"event_bus": boss._services.event_bus
 			}
 	}
@@ -8574,7 +8557,7 @@ static func _build_minion(minion: Minion) -> void:
 			},
 		hc: {
 			"hit_spark_effect": minion.hit_spark_effect,
-			"fx_manager": minion._services.fx_manager, # THE FIX
+			"fx_manager": minion._services.fx_manager,
 			"event_bus": minion._services.event_bus
 			}
 	}
@@ -8582,6 +8565,7 @@ static func _build_minion(minion: Minion) -> void:
 	minion.setup_components(shared_deps, per_component_deps)
 	
 	hc.died.connect(minion._on_health_component_died)
+
 
 =====================================
 FILE: ./src/entities/boss/attack_patterns/lunge_attack.tres
@@ -8674,7 +8658,7 @@ extends Resource
 @export var cooldown: float = 1.5
 
 @export_group("Attack-Specific Data")
-# THE FIX: These parameters now live in the AttackPattern, where they belong.
+# These parameters now live in the AttackPattern, where they belong.
 @export var projectile_count: int = 1
 @export var volley_delay: float = 0.2
 
@@ -8917,12 +8901,11 @@ func _start_telegraph_and_attack() -> void:
 		_current_pattern.telegraph_duration,
 		telegraph_size,
 		telegraph_position,
-		# THE FIX: Use a darker color from the palette.
 		Palette.COLOR_UI_PANEL_BG
 	)
 	await telegraph.telegraph_finished
 
-	# THE FIX: Use a robust check to ensure the owner wasn't freed during the await.
+	# Use a robust check to ensure the owner wasn't freed during the await.
 	if not is_instance_valid(_boss):
 		return
 
@@ -9469,7 +9452,7 @@ var p_data: PlayerStateData
 var _object_pool: IObjectPool
 var _fx_manager: IFXManager
 var _combat_utils: CombatUtils
-var _services: ServiceLocator # THE FIX: Add the services dependency back.
+var _services: ServiceLocator
 
 # --- Public Methods ---
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
@@ -9479,7 +9462,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._object_pool = p_dependencies.get("object_pool")
 	self._fx_manager = p_dependencies.get("fx_manager")
 	self._combat_utils = p_dependencies.get("combat_utils")
-	self._services = p_dependencies.get("services") # THE FIX: Get the services from dependencies.
+	self._services = p_dependencies.get("services")
 	
 	assert(is_instance_valid(_object_pool), "CombatComponent requires an IObjectPool.")
 	assert(is_instance_valid(_fx_manager), "CombatComponent requires an IFXManager.")
@@ -9493,7 +9476,7 @@ func teardown() -> void:
 	_object_pool = null
 	_fx_manager = null
 	_combat_utils = null
-	_services = null # THE FIX: Clean up the reference.
+	_services = null
 
 
 ## Fires a player projectile from the object pool.
@@ -9632,7 +9615,7 @@ var _knockback_speed: float
 var _hazard_knockback_speed: float
 var _invincibility_tokens: Dictionary = {}
 var _next_token_id: int = 1
-var _fx_manager: IFXManager # THE FIX: Revert to the unified IFXManager.
+var _fx_manager: IFXManager
 var _event_bus: EventBus
 var _hit_spark_effect: VFXEffect
 
@@ -9648,7 +9631,7 @@ func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
     self.entity_data = p_dependencies.get("data_resource")
     var cfg: CombatConfig = p_dependencies.get("config")
     
-    self._fx_manager = p_dependencies.get("fx_manager") # THE FIX: Expect fx_manager.
+    self._fx_manager = p_dependencies.get("fx_manager")
     self._event_bus = p_dependencies.get("event_bus")
     self._hit_spark_effect = p_dependencies.get("hit_spark_effect")
 
@@ -9924,7 +9907,7 @@ var _owner: Node
 var _visual_node: CanvasItem
 var _health_component: HealthComponent
 var _hit_effect: ShaderEffect  # Injected Dependency
-var _fx_manager: IFXManager   # THE FIX: Now holds a direct reference to the service.
+var _fx_manager: IFXManager   # Holds a direct reference to the service.
 
 # --- Godot Lifecycle Methods ---
 func _notification(what: int) -> void:
@@ -9934,7 +9917,6 @@ func _notification(what: int) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self._owner = p_owner
 	
-	# THE FIX: Expect the fx_manager to be injected directly.
 	assert(p_dependencies.has("fx_manager"), "FXComponent requires an 'fx_manager' dependency.")
 	self._fx_manager = p_dependencies.get("fx_manager")
 	assert(is_instance_valid(_fx_manager), "Injected 'fx_manager' must be a valid IFXManager.")
@@ -9980,7 +9962,6 @@ func play_effect(effect: ShaderEffect, overrides: Dictionary = {}, opts: Diction
 	if not is_instance_valid(_visual_node):
 		push_warning("FXComponent cannot play effect: visual node is invalid.")
 		return null
-	# THE FIX: Call the service directly.
 	return _fx_manager.apply_shader_effect(_visual_node, effect, overrides, opts)
 
 # --- Signal Handlers ---
@@ -10059,7 +10040,7 @@ func _spawn_instance() -> void:
 	if new_instance is BaseEntity:
 		new_instance.inject_dependencies(_services)
 
-	# THE FIX: Use call_deferred to prevent modifying the scene tree during _ready().
+	# Use call_deferred to prevent modifying the scene tree during _ready().
 	get_parent().call_deferred("add_child", new_instance)
 	if new_instance is Node2D:
 		new_instance.global_position = self.global_position
@@ -10351,7 +10332,7 @@ extends MovementLogic
 func execute(delta: float, minion: Minion, state_data: MinionStateData) -> Vector2:
 	var new_velocity := minion.velocity
 
-	# THE FIX: A patrolling entity is responsible for its own gravity.
+	# A patrolling entity is responsible for its own gravity.
 	if not minion.is_on_floor():
 		new_velocity.y += state_data.services.combat_config.gravity * delta
 	else:
@@ -10385,7 +10366,6 @@ var health: int = 3:
 		health = clamp(value, 0, max_health)
 
 var is_invincible: bool = false
-# THE FIX: Add this property back. It's needed by BaseEntity.
 var projectile_pool_key: StringName = &""
 
 # --- Targeting ---
@@ -10496,7 +10476,6 @@ func _start_telegraph_and_attack() -> void:
 		_current_pattern.telegraph_duration,
 		telegraph_size,
 		telegraph_position,
-		# THE FIX: Use a darker color from the palette.
 		Palette.COLOR_UI_PANEL_BG
 	)
 	await telegraph.telegraph_finished
@@ -10536,7 +10515,6 @@ func process_physics(delta: float) -> void:
 	# --- State Transition Checks (Prioritized) ---
 
 	# 1. Check for falling (ONLY if the entity is not anchored).
-	# This is the definitive fix. An anchored entity should never fall.
 	if not state_data.behavior.is_anchored and not _minion.is_on_floor():
 		state_machine.change_state(Identifiers.MinionStates.FALL)
 		return
@@ -10620,7 +10598,7 @@ extends Resource
 
 @export_group("State & Movement")
 @export var initial_state_key: StringName = &"fall"
-# THE FIX: Add a flag to determine if the entity should be immune to physics pushback.
+# A flag to determine if the entity should be immune to physics pushback.
 @export var is_anchored: bool = false
 @export var movement_logic: MovementLogic
 
@@ -10842,12 +10820,6 @@ func teardown() -> void:
 		if sm.pogo_hitbox_toggled.is_connected(_enable_pogo_hitbox):
 			sm.pogo_hitbox_toggled.disconnect(_enable_pogo_hitbox)
 
-	# THE FIX: No longer need to disconnect this signal.
-	# var ac: PlayerAbilityComponent = get_component(PlayerAbilityComponent)
-	# if is_instance_valid(ac):
-		# if ac.state_change_requested.is_connected(_on_ability_state_change_requested):
-			# ac.state_change_requested.disconnect(_on_ability_state_change_requested)
-
 	if is_instance_valid(healing_timer):
 		if healing_timer.timeout.is_connected(_on_healing_timer_timeout):
 			healing_timer.timeout.disconnect(_on_healing_timer_timeout)
@@ -10917,13 +10889,6 @@ func _update_timers(delta: float) -> void:
 
 
 # --- Signal Handlers ---
-# THE FIX: This signal handler is no longer needed.
-# func _on_ability_state_change_requested(state_key: StringName, msg: Dictionary = {}) -> void:
-# 	var sm: BaseStateMachine = get_component(BaseStateMachine)
-# 	if is_instance_valid(sm):
-# 		sm.change_state(state_key, msg)
-
-
 func _on_melee_hitbox_body_entered(body: Node) -> void:
 	get_component(CombatComponent).trigger_melee_attack(body)
 
@@ -11091,7 +11056,7 @@ func _physics_process(_delta: float) -> void:
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as Player
 	self.p_data = p_dependencies.get("data_resource")
-	# THE FIX: Get a direct, permanent reference to the state machine.
+	# Get a direct, permanent reference to the state machine.
 	self._state_machine = owner_node.get_component(BaseStateMachine)
 	assert(is_instance_valid(_state_machine), "PlayerAbilityComponent could not find the StateMachine.")
 
@@ -11131,19 +11096,16 @@ static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
 	# 1. Wall Jump (Highest Priority)
 	if p_data.wall_coyote_timer > 0:
 		physics.perform_wall_jump()
-		# THE FIX: Use the safe identifier instead of a raw string.
 		sm.change_state(Identifiers.PlayerStates.JUMP)
 		return true
 
 	# 2. Ground Jump (includes coyote time)
 	if owner.is_on_floor() or p_data.coyote_timer > 0:
-		# THE FIX: Use the safe identifier instead of a raw string.
 		sm.change_state(Identifiers.PlayerStates.JUMP)
 		return true
 
 	# 3. Air Jump
 	if p_data.air_jumps_left > 0:
-		# THE FIX: Use the safe identifier instead of a raw string.
 		sm.change_state(Identifiers.PlayerStates.JUMP, {"is_air_jump": true})
 		return true
 
@@ -11335,14 +11297,13 @@ extends IComponent
 # --- Member Variables ---
 var owner_node: BaseEntity
 var p_data: PlayerStateData
-var _event_bus: EventBus # THE FIX: Direct dependency reference
+var _event_bus: EventBus
 
 # --- Public Methods ---
 func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
 	self.owner_node = p_owner as BaseEntity
 	self.p_data = p_dependencies.get("data_resource")
 	
-	# THE FIX: Receive dependency directly.
 	self._event_bus = p_dependencies.get("event_bus")
 	assert(is_instance_valid(_event_bus), "PlayerResourceComponent requires an EventBus.")
 

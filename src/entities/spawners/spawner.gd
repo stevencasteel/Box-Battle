@@ -65,7 +65,7 @@ func _spawn_instance() -> void:
 	if new_instance is BaseEntity:
 		new_instance.inject_dependencies(_services)
 
-	# THE FIX: Use call_deferred to prevent modifying the scene tree during _ready().
+	# Use call_deferred to prevent modifying the scene tree during _ready().
 	get_parent().call_deferred("add_child", new_instance)
 	if new_instance is Node2D:
 		new_instance.global_position = self.global_position

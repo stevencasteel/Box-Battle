@@ -23,7 +23,7 @@ func before_each():
 	# Create a scene tree: MockEntity -> HealthComponent
 	#                                -> NonDamageableChild
 	_mock_entity = BaseEntity.new()
-	# THE FIX: Provide a dummy archetype to prevent errors in _ready().
+	# Provide a dummy archetype to prevent errors in _ready().
 	_mock_entity.archetype = EntityArchetype.new()
 	add_child_autofree(_mock_entity)
 

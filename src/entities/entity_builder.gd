@@ -57,7 +57,7 @@ static func _build_player(player: Player) -> void:
 			},
 		hc: {
 			"hit_spark_effect": player.hit_spark_effect,
-			"fx_manager": player._services.fx_manager, # THE FIX: Revert to injecting fx_manager
+			"fx_manager": player._services.fx_manager,
 			"event_bus": player._services.event_bus
 			},
 		cc: {
@@ -119,7 +119,7 @@ static func _build_boss(boss: BaseBoss) -> void:
 			},
 		hc: {
 			"hit_spark_effect": boss.hit_spark_effect,
-			"fx_manager": boss._services.fx_manager, # THE FIX
+			"fx_manager": boss._services.fx_manager,
 			"event_bus": boss._services.event_bus
 			}
 	}
@@ -164,7 +164,7 @@ static func _build_minion(minion: Minion) -> void:
 			},
 		hc: {
 			"hit_spark_effect": minion.hit_spark_effect,
-			"fx_manager": minion._services.fx_manager, # THE FIX
+			"fx_manager": minion._services.fx_manager,
 			"event_bus": minion._services.event_bus
 			}
 	}

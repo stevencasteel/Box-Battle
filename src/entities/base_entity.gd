@@ -115,7 +115,6 @@ func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player):
 		return
 
-	# THE FIX: Access the property directly, not with .get().
 	var pool_key: StringName = self.entity_data.projectile_pool_key
 	if pool_key == &"":
 		push_warning("Entity '%s' tried to fire a shot but has no 'projectile_pool_key' in its data." % name)

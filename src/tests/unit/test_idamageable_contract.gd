@@ -9,12 +9,12 @@ const DamageInfo = preload("res://src/api/combat/damage_info.gd")
 const FakeServiceLocator = preload("res://src/tests/fakes/fake_service_locator.gd")
 
 # --- Test Internals ---
-var _mock_owner: CharacterBody2D # THE FIX: Changed type from Node
+var _mock_owner: CharacterBody2D
 var _fake_services: FakeServiceLocator
 
 # --- Test Lifecycle ---
 func before_each():
-	_mock_owner = CharacterBody2D.new() # THE FIX: Instantiate the correct type
+	_mock_owner = CharacterBody2D.new()
 	add_child_autofree(_mock_owner)
 	
 	_fake_services = FakeServiceLocator.new()
@@ -46,7 +46,6 @@ func test_health_component_fulfills_contract():
 		"services": _fake_services,
 		"hit_spark_effect": preload("res://src/core/data/effects/player_hit_spark_effect.tres")
 	}
-	# THE FIX: Pass the correctly typed owner node
 	health_comp.setup(_mock_owner, deps)
 	
 	_run_contract_tests(health_comp, "HealthComponent")

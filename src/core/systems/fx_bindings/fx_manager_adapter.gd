@@ -2,7 +2,6 @@
 ## An adapter that implements multiple FX interfaces by delegating calls
 ## to the real FXManager autoload singleton. This script is registered as an
 ## autoload itself and should NOT have a matching class_name.
-# THE FIX: Extend the main interface to satisfy the static type checker.
 extends IFXManager
 
 # --- Private Member Variables ---

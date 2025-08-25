@@ -33,7 +33,7 @@ func setup_menu_navigation(focusable_items: Array[Control], all_interactive_item
 			credits_label.meta_hover_started.connect(func(_meta): CursorManager.set_pointer_state(true))
 			credits_label.meta_hover_ended.connect(func(_meta): CursorManager.set_pointer_state(false))
 			credits_label.meta_clicked.connect(func(_meta): _on_any_item_pressed())
-			# THE FIX: Use a lambda to absorb the 'meta' argument before calling the sound handler.
+			# Use a lambda to absorb the 'meta' argument before calling the sound handler.
 			credits_label.meta_hover_started.connect(func(_meta): _on_any_item_focused())
 
 # --- Private Signal Handlers ---

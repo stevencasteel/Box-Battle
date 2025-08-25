@@ -31,7 +31,7 @@ func _ready() -> void:
 
 		# --- Initialize Common Navigation & Feedback ---
 		var focusable_items: Array[Control] = [start_button, options_button, exit_button]
-		# THE FIX: Construct the array in a single statement to preserve its type.
+		# Construct the array in a single statement to preserve its type.
 		var all_items: Array[Control] = [
 			start_button, options_button, exit_button, 
 			newgrounds_logo, godot_logo, itch_logo

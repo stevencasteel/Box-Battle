@@ -10,7 +10,6 @@ func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictiona
 	var owner_width = 60.0
 	var x_offset = (lunge_width / 2.0) + (owner_width / 2.0)
 	
-	# THE FIX: Reduced height from 60 to 50.
 	return {"size": Vector2(lunge_width, 50), "offset": Vector2(x_offset, 0)}
 
 

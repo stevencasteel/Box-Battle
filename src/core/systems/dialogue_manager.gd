@@ -107,7 +107,7 @@ func _on_dialogue_box_advance_requested() -> void:
 
 
 func _on_typing_finished() -> void:
-	# THE FIX: Add a guard clause to prevent crash during scene transitions.
+	# Add a guard clause to prevent crash during scene transitions.
 	if not is_instance_valid(_current_data):
 		return
 

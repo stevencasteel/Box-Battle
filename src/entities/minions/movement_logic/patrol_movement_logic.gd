@@ -9,7 +9,7 @@ extends MovementLogic
 func execute(delta: float, minion: Minion, state_data: MinionStateData) -> Vector2:
 	var new_velocity := minion.velocity
 
-	# THE FIX: A patrolling entity is responsible for its own gravity.
+	# A patrolling entity is responsible for its own gravity.
 	if not minion.is_on_floor():
 		new_velocity.y += state_data.services.combat_config.gravity * delta
 	else:
