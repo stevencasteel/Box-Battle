@@ -1,19 +1,20 @@
-[gd_scene load_steps=16 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=17 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" uid="uid://bymbb3pjo71tf" path="res://src/entities/player/player.gd" id="1_4d1td"]
 [ext_resource type="Resource" path="res://src/entities/archetypes/player_archetype.tres" id="2_archetype"]
-[ext_resource type="Resource" path="res://src/core/data/effects/player_damage_shake.tres" id="3_shake_effect"]
-[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="4_hit_spark_effect"]
-[ext_resource type="Script" uid="uid://pyb4pd4uixxk" path="res://src/entities/player/states/state_move.gd" id="5_state_move"]
-[ext_resource type="Script" uid="uid://52jrtscsjy6s" path="res://src/entities/player/states/state_jump.gd" id="6_state_jump"]
-[ext_resource type="Script" uid="uid://dd6xefkcdr77e" path="res://src/entities/player/states/state_fall.gd" id="7_state_fall"]
-[ext_resource type="Script" uid="uid://11fbrak080kl" path="res://src/entities/player/states/state_dash.gd" id="8_state_dash"]
-[ext_resource type="Script" uid="uid://m3xnbhn5umv6" path="res://src/entities/player/states/state_wall_slide.gd" id="9_state_wall_slide"]
-[ext_resource type="Script" uid="uid://cem1wgbis0qlx" path="res://src/entities/player/states/state_attack.gd" id="10_state_attack"]
-[ext_resource type="Script" uid="uid://bxwc5vsj7qsw1" path="res://src/entities/player/states/state_hurt.gd" id="11_state_hurt"]
-[ext_resource type="Script" uid="uid://dv503l6b2cfqr" path="res://src/entities/player/states/state_heal.gd" id="12_state_heal"]
-[ext_resource type="Script" uid="uid://d1l7j3jqn4awq" path="res://src/entities/player/states/state_pogo.gd" id="13_state_pogo"]
-[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="14_dissolve_effect"]
+[ext_resource type="Resource" uid="uid://entity_hit_flash_effect" path="res://src/data/effects/entity_hit_flash_effect.tres" id="3_hit_flash"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_damage_shake.tres" id="4_shake_effect"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="5_hit_spark_effect"]
+[ext_resource type="Script" uid="uid://pyb4pd4uixxk" path="res://src/entities/player/states/state_move.gd" id="6_state_move"]
+[ext_resource type="Script" uid="uid://52jrtscsjy6s" path="res://src/entities/player/states/state_jump.gd" id="7_state_jump"]
+[ext_resource type="Script" uid="uid://dd6xefkcdr77e" path="res://src/entities/player/states/state_fall.gd" id="8_state_fall"]
+[ext_resource type="Script" uid="uid://11fbrak080kl" path="res://src/entities/player/states/state_dash.gd" id="9_state_dash"]
+[ext_resource type="Script" uid="uid://m3xnbhn5umv6" path="res://src/entities/player/states/state_wall_slide.gd" id="10_state_wall_slide"]
+[ext_resource type="Script" uid="uid://cem1wgbis0qlx" path="res://src/entities/player/states/state_attack.gd" id="11_state_attack"]
+[ext_resource type="Script" uid="uid://bxwc5vsj7qsw1" path="res://src/entities/player/states/state_hurt.gd" id="12_state_hurt"]
+[ext_resource type="Script" uid="uid://dv503l6b2cfqr" path="res://src/entities/player/states/state_heal.gd" id="13_state_heal"]
+[ext_resource type="Script" uid="uid://d1l7j3jqn4awq" path="res://src/entities/player/states/state_pogo.gd" id="14_state_pogo"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="15_dissolve_effect"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -21,18 +22,19 @@ size = Vector2(40, 40)
 [node name="Player" type="CharacterBody2D"]
 collision_mask = 142
 script = ExtResource("1_4d1td")
-damage_shake_effect = ExtResource("3_shake_effect")
-hit_spark_effect = ExtResource("4_hit_spark_effect")
-dissolve_effect = ExtResource("14_dissolve_effect")
-state_move_script = ExtResource("5_state_move")
-state_jump_script = ExtResource("6_state_jump")
-state_fall_script = ExtResource("7_state_fall")
-state_dash_script = ExtResource("8_state_dash")
-state_wall_slide_script = ExtResource("9_state_wall_slide")
-state_attack_script = ExtResource("10_state_attack")
-state_hurt_script = ExtResource("11_state_hurt")
-state_heal_script = ExtResource("12_state_heal")
-state_pogo_script = ExtResource("13_state_pogo")
+hit_flash_effect = ExtResource("3_hit_flash")
+damage_shake_effect = ExtResource("4_shake_effect")
+hit_spark_effect = ExtResource("5_hit_spark_effect")
+dissolve_effect = ExtResource("15_dissolve_effect")
+state_move_script = ExtResource("6_state_move")
+state_jump_script = ExtResource("7_state_jump")
+state_fall_script = ExtResource("8_state_fall")
+state_dash_script = ExtResource("9_state_dash")
+state_wall_slide_script = ExtResource("10_state_wall_slide")
+state_attack_script = ExtResource("11_state_attack")
+state_hurt_script = ExtResource("12_state_hurt")
+state_heal_script = ExtResource("13_state_heal")
+state_pogo_script = ExtResource("14_state_pogo")
 archetype = ExtResource("2_archetype")
 
 [node name="ColorRect" type="ColorRect" parent="."]

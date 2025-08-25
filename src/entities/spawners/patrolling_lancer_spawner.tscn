@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://d9e8f7g6h5i4j"]
+
+[ext_resource type="PackedScene" uid="uid://c5t6u7v8w9x0y" path="res://src/entities/spawners/spawner.tscn" id="1_base_spawner"]
+[ext_resource type="PackedScene" uid="uid://c0mbo7v8y9fg1" path="res://src/entities/minions/patrolling_lancer.tscn" id="2_lancer_scene"]
+
+[node name="PatrollingLancerSpawner" instance=ExtResource("1_base_spawner")]
+scene_to_spawn = ExtResource("2_lancer_scene")
+spawn_delay = 7.0
+max_spawned_instances = 5

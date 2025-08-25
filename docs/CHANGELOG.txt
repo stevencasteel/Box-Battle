@@ -35,6 +35,24 @@
 ║                                                                              ║
 ║                                                                              ║
 
+
+feat(Minions): Implement respawning logic and unify fall physics
+
+Implements a generic, reusable Spawner system and hardens entity physics by creating a unified Fall state, resolving several bugs.
+
+- Created a generic `Spawner.tscn` scene and `spawner.gd` script that can be configured to spawn any scene on a timer, up to a maximum limit.
+- Created a pre-configured `patrolling_lancer_spawner.tscn` to continuously spawn new lancers every 5 seconds.
+- Encounter data now places the spawner instead of a single minion instance.
+- Fixed a `call_deferred` race condition for spawners that activate on level start.
+
+- Created a generic `state_entity_fall.gd` to handle gravity for all non-player entities.
+- Refactored the Minion and BaseBoss to use this shared Fall state, removing scattered gravity calculations from other scripts.
+- Fixed a bug where stationary "anchored" minions could be displaced by player collision by adding a final velocity override in `_physics_process`.
+- Added `initial_state_key` to `MinionBehavior` resource, allowing data to define if a minion starts on the ground (`Idle`) or in the air (`Fall`).
+- Corrected various state transition bugs and misconfigured scene resources that were preventing minions from behaving as designed.
+
+
+
 feat(Entities): Implement compositional Minion framework and unified Fall State
 
 Implements a major architectural overhaul to refactor the hard-coded Turret into a flexible, data-driven, and compositional framework for all non-boss entities. Additionally, unifies core physics states for all entities to improve robustness and consistency.

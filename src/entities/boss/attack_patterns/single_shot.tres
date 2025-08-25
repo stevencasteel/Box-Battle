@@ -8,6 +8,6 @@ script = ExtResource("1_attack_pattern")
 logic = ExtResource("2_logic")
 telegraph_duration = 0.5
 attack_duration = 0.1
-cooldown = 1.5
+cooldown = 0.75
 projectile_count = 1
 volley_delay = 0.0

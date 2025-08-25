@@ -62,9 +62,8 @@ func build_level_async() -> Node:
 
 
 func _spawn_player_async() -> void:
-	var instance = load(AssetPaths.SCENE_PLAYER).instantiate()
+	var instance: BaseEntity = load(AssetPaths.SCENE_PLAYER).instantiate()
 	instance.global_position = _current_build_data.player_spawn_pos
-	# THE FIX: Explicitly inject dependencies before adding to the scene tree.
 	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
@@ -74,9 +73,8 @@ func _spawn_boss_async() -> Node:
 	var boss_scene: PackedScene = _current_build_data.encounter_data_resource.boss_scene
 	if not boss_scene:
 		return null
-	var instance = boss_scene.instantiate()
+	var instance: BaseEntity = boss_scene.instantiate()
 	instance.global_position = _current_build_data.boss_spawn_pos
-	# THE FIX: Explicitly inject dependencies before adding to the scene tree.
 	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
@@ -84,31 +82,35 @@ func _spawn_boss_async() -> Node:
 
 
 func _spawn_hud_async() -> void:
-	var instance = load(AssetPaths.SCENE_GAME_HUD).instantiate()
+	var instance: CanvasLayer = load(AssetPaths.SCENE_GAME_HUD).instantiate()
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 
 
 func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
-		var instance = spawn_data.scene.instantiate()
+		var instance: Node = spawn_data.scene.instantiate()
 
-		var base_name = instance.name
-		var current_count = _minion_spawn_counts.get(base_name, 0) + 1
+		var base_name: String = instance.name
+		var current_count: int = _minion_spawn_counts.get(base_name, 0) + 1
 		_minion_spawn_counts[base_name] = current_count
 		instance.name = "%s_%d" % [base_name, current_count]
-
-		instance.global_position = spawn_data.position
-		# THE FIX: Explicitly inject dependencies before adding to the scene tree.
-		instance.inject_dependencies(ServiceLocator)
+		
+		if instance is Node2D:
+			instance.global_position = spawn_data.position
+		
+		# THE FIX: Only inject dependencies if the spawned node is an entity.
+		if instance is BaseEntity:
+			instance.inject_dependencies(ServiceLocator)
+			
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame
 
 
 func _run_intro_sequence() -> SequenceHandle:
-	var wait_step = WaitStep.new()
+	var wait_step := WaitStep.new()
 	wait_step.duration = 0.5
-	var spawn_boss_step = CallableStep.new()
+	var spawn_boss_step := CallableStep.new()
 	spawn_boss_step.callable = Callable(self, "_spawn_boss_async")
 	var intro_steps: Array[SequenceStep] = [wait_step, spawn_boss_step]
 	return Sequencer.run_sequence(intro_steps)

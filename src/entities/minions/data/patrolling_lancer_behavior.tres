@@ -1,14 +1,16 @@
-[gd_resource type="Resource" script_class="MinionBehavior" load_steps=4 format=3 uid="uid://d2b4w7h1qxy5c"]
+[gd_resource type="Resource" script_class="MinionBehavior" load_steps=5 format=3 uid="uid://d2b4w7h1qxy5c"]
 
-[ext_resource type="Script" path="res://src/entities/minions/data/minion_behavior.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_nohdh"]
+[ext_resource type="Script" uid="uid://d2at2rq33qwur" path="res://src/entities/minions/data/minion_behavior.gd" id="1_script"]
 [ext_resource type="Resource" path="res://src/entities/minions/movement_logic/patrol_movement.tres" id="2_movement"]
-[ext_resource type="Resource" uid="uid://cihbnl4747m0a" path="res://src/combat/attack_logic/minion_volley_3_shot.tres" id="3_attack_pattern"]
+[ext_resource type="Resource" uid="uid://cihbnl4747m0a" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="3_attack_pattern"]
 
 [resource]
 script = ExtResource("1_script")
 max_health = 5
 initial_state_key = &"fall"
+is_anchored = false
 movement_logic = ExtResource("2_movement")
 detection_radius = 400.0
-projectile_pool_key = &"turret_shots"
-attack_patterns = [ExtResource("3_attack_pattern")]
+projectile_pool_key = &"minion_shots"
+attack_patterns = Array[ExtResource("1_nohdh")]([ExtResource("3_attack_pattern")])

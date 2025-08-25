@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dmej4a7ykn2q0" path="res://src/entities/boss/base_boss.tscn" id="2_boss_scene"]
 [ext_resource type="Resource" uid="uid://bst2lw60wetic" path="res://src/data/layouts/layout_00.tres" id="3_layout"]
 [ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/minion.tscn" id="4_turret_scene"]
-[ext_resource type="PackedScene" uid="uid://c0mbo7v8y9fg1" path="res://src/entities/minions/patrolling_lancer.tscn" id="5_lancer_scene"]
+[ext_resource type="PackedScene" uid="uid://d9e8f7g6h5i4j" path="res://src/entities/spawners/patrolling_lancer_spawner.tscn" id="5_lancer_spawner"]
 
 [resource]
 script = ExtResource("1_encounter")
@@ -19,6 +19,6 @@ boss_scene = ExtResource("2_boss_scene")
 
 ; --- Minions ---
 minion_spawns = {
-"P": ExtResource("5_lancer_scene"),
+"P": ExtResource("5_lancer_spawner"),
 "T": ExtResource("4_turret_scene")
 }

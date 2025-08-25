@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Sun Aug 24 18:49:38 CDT 2025
+Generated on: Sun Aug 24 20:45:18 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -210,8 +210,10 @@ PROJECT DIRECTORY STRUCTURE:
 │   │       ├── homing_omni_burst_logic.tres
 │   │       ├── lunge_logic.gd
 │   │       ├── lunge_logic.tres
+│   │       ├── minion_volley_3_shot.tres
 │   │       ├── projectile_logic.gd
-│   │       └── projectile_logic.tres
+│   │       ├── projectile_logic.tres
+│   │       └── volley_logic.tres
 │   ├── core
 │   │   ├── DEPRECATION.md
 │   │   ├── README.md
@@ -339,6 +341,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── minions
 │   │   │   ├── data
 │   │   │   │   ├── minion_behavior.gd
+│   │   │   │   ├── patrolling_lancer_behavior.tres
 │   │   │   │   └── turret_behavior.tres
 │   │   │   ├── minion.gd
 │   │   │   ├── minion.tscn
@@ -349,34 +352,41 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   │   ├── patrol_movement_logic.gd
 │   │   │   │   ├── stationary_movement.tres
 │   │   │   │   └── stationary_movement_logic.gd
+│   │   │   ├── patrolling_lancer.tscn
 │   │   │   └── states
 │   │   │       ├── state_minion_attack.gd
 │   │   │       └── state_minion_idle.gd
-│   │   └── player
-│   │       ├── components
-│   │       │   ├── player_ability_component.gd
-│   │       │   ├── player_ability_component.tscn
-│   │       │   ├── player_jump_helper.gd
-│   │       │   ├── player_physics_component.gd
-│   │       │   ├── player_physics_component.tscn
-│   │       │   ├── player_resource_component.gd
-│   │       │   └── player_resource_component.tscn
-│   │       ├── data
-│   │       │   ├── forward_attack_shape.tres
-│   │       │   ├── player_state_data.gd
-│   │       │   └── upward_attack_shape.tres
-│   │       ├── player.gd
-│   │       ├── player.tscn
-│   │       └── states
-│   │           ├── state_attack.gd
-│   │           ├── state_dash.gd
-│   │           ├── state_fall.gd
-│   │           ├── state_heal.gd
-│   │           ├── state_hurt.gd
-│   │           ├── state_jump.gd
-│   │           ├── state_move.gd
-│   │           ├── state_pogo.gd
-│   │           └── state_wall_slide.gd
+│   │   ├── player
+│   │   │   ├── components
+│   │   │   │   ├── player_ability_component.gd
+│   │   │   │   ├── player_ability_component.tscn
+│   │   │   │   ├── player_jump_helper.gd
+│   │   │   │   ├── player_physics_component.gd
+│   │   │   │   ├── player_physics_component.tscn
+│   │   │   │   ├── player_resource_component.gd
+│   │   │   │   └── player_resource_component.tscn
+│   │   │   ├── data
+│   │   │   │   ├── forward_attack_shape.tres
+│   │   │   │   ├── player_state_data.gd
+│   │   │   │   └── upward_attack_shape.tres
+│   │   │   ├── player.gd
+│   │   │   ├── player.tscn
+│   │   │   └── states
+│   │   │       ├── state_attack.gd
+│   │   │       ├── state_dash.gd
+│   │   │       ├── state_fall.gd
+│   │   │       ├── state_heal.gd
+│   │   │       ├── state_hurt.gd
+│   │   │       ├── state_jump.gd
+│   │   │       ├── state_move.gd
+│   │   │       ├── state_pogo.gd
+│   │   │       └── state_wall_slide.gd
+│   │   ├── spawners
+│   │   │   ├── patrolling_lancer_spawner.tscn
+│   │   │   ├── spawner.gd
+│   │   │   └── spawner.tscn
+│   │   └── states
+│   │       └── state_entity_fall.gd
 │   ├── projectiles
 │   │   ├── base_projectile.gd
 │   │   ├── boss_shot.gd
@@ -466,7 +476,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-86 directories, 372 files
+88 directories, 380 files
 
 
 =====================================
@@ -4521,7 +4531,8 @@ class Groups:
 class Pools:
 	const PLAYER_SHOTS = &"player_shots"
 	const BOSS_SHOTS = &"boss_shots"
-	const TURRET_SHOTS = &"turret_shots"
+	# THE FIX: Rename the constant to be generic.
+	const MINION_SHOTS = &"minion_shots"
 	const HOMING_BOSS_SHOTS = &"homing_boss_shots"
 	const HIT_SPARKS = &"hit_sparks"
 
@@ -4546,12 +4557,14 @@ class BossStates:
 	const COOLDOWN = &"cooldown"
 	const PATROL = &"patrol"
 	const LUNGE = &"lunge"
+	const FALL = &"fall"
 
 
 ## Container for all Minion state keys.
 class MinionStates:
 	const IDLE = &"idle"
 	const ATTACK = &"attack"
+	const FALL = &"fall"
 
 =====================================
 FILE: ./src/core/util/asset_paths.gd
@@ -5228,15 +5241,13 @@ func _exit_tree() -> void:
 # --- Public Methods ---
 
 
-## THE FIX: This new method contains the heavy initialization logic.
-## It is now called explicitly by the BootManager.
 func initialize() -> void:
 	if _is_initialized:
 		return
 	_create_pool_from_path(Identifiers.Pools.PLAYER_SHOTS, AssetPaths.SCENE_PLAYER_SHOT, 15)
 	_create_pool_from_path(Identifiers.Pools.BOSS_SHOTS, AssetPaths.SCENE_BOSS_SHOT, 30)
-	# THE FIX: Use the new SCENE_MINION_SHOT constant.
-	_create_pool_from_path(Identifiers.Pools.TURRET_SHOTS, AssetPaths.SCENE_MINION_SHOT, 20)
+	# THE FIX: Use the new MINION_SHOTS constant.
+	_create_pool_from_path(Identifiers.Pools.MINION_SHOTS, AssetPaths.SCENE_MINION_SHOT, 20)
 	_create_pool_from_path(Identifiers.Pools.HOMING_BOSS_SHOTS, AssetPaths.SCENE_HOMING_BOSS_SHOT, 40)
 	_create_pool_from_path(Identifiers.Pools.HIT_SPARKS, AssetPaths.SCENE_HIT_SPARK, 25)
 	_is_initialized = true
@@ -6413,9 +6424,8 @@ func build_level_async() -> Node:
 
 
 func _spawn_player_async() -> void:
-	var instance = load(AssetPaths.SCENE_PLAYER).instantiate()
+	var instance: BaseEntity = load(AssetPaths.SCENE_PLAYER).instantiate()
 	instance.global_position = _current_build_data.player_spawn_pos
-	# THE FIX: Explicitly inject dependencies before adding to the scene tree.
 	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
@@ -6425,9 +6435,8 @@ func _spawn_boss_async() -> Node:
 	var boss_scene: PackedScene = _current_build_data.encounter_data_resource.boss_scene
 	if not boss_scene:
 		return null
-	var instance = boss_scene.instantiate()
+	var instance: BaseEntity = boss_scene.instantiate()
 	instance.global_position = _current_build_data.boss_spawn_pos
-	# THE FIX: Explicitly inject dependencies before adding to the scene tree.
 	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
@@ -6435,31 +6444,35 @@ func _spawn_boss_async() -> Node:
 
 
 func _spawn_hud_async() -> void:
-	var instance = load(AssetPaths.SCENE_GAME_HUD).instantiate()
+	var instance: CanvasLayer = load(AssetPaths.SCENE_GAME_HUD).instantiate()
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
 
 
 func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
-		var instance = spawn_data.scene.instantiate()
+		var instance: Node = spawn_data.scene.instantiate()
 
-		var base_name = instance.name
-		var current_count = _minion_spawn_counts.get(base_name, 0) + 1
+		var base_name: String = instance.name
+		var current_count: int = _minion_spawn_counts.get(base_name, 0) + 1
 		_minion_spawn_counts[base_name] = current_count
 		instance.name = "%s_%d" % [base_name, current_count]
-
-		instance.global_position = spawn_data.position
-		# THE FIX: Explicitly inject dependencies before adding to the scene tree.
-		instance.inject_dependencies(ServiceLocator)
+		
+		if instance is Node2D:
+			instance.global_position = spawn_data.position
+		
+		# THE FIX: Only inject dependencies if the spawned node is an entity.
+		if instance is BaseEntity:
+			instance.inject_dependencies(ServiceLocator)
+			
 		_current_level_container.add_child(instance)
 		await get_tree().process_frame
 
 
 func _run_intro_sequence() -> SequenceHandle:
-	var wait_step = WaitStep.new()
+	var wait_step := WaitStep.new()
 	wait_step.duration = 0.5
-	var spawn_boss_step = CallableStep.new()
+	var spawn_boss_step := CallableStep.new()
 	spawn_boss_step.callable = Callable(self, "_spawn_boss_async")
 	var intro_steps: Array[SequenceStep] = [wait_step, spawn_boss_step]
 	return Sequencer.run_sequence(intro_steps)
@@ -6480,7 +6493,8 @@ func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictiona
 	var owner_width = 60.0
 	var x_offset = (lunge_width / 2.0) + (owner_width / 2.0)
 	
-	return {"size": Vector2(lunge_width, 60), "offset": Vector2(x_offset, 0)}
+	# THE FIX: Reduced height from 60 to 50.
+	return {"size": Vector2(lunge_width, 50), "offset": Vector2(x_offset, 0)}
 
 
 func execute(owner: BaseEntity, pattern: AttackPattern) -> Callable:
@@ -6495,6 +6509,24 @@ func execute(owner: BaseEntity, pattern: AttackPattern) -> Callable:
 
 
 =====================================
+FILE: ./src/combat/attack_logic/minion_volley_3_shot.tres
+=====================================
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://cihbnl4747m0a"]
+
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
+[ext_resource type="Resource" uid="uid://dw7h56g0o6aex" path="res://src/combat/attack_logic/volley_logic.tres" id="2_logic"]
+
+[resource]
+script = ExtResource("1_attack_pattern")
+logic = ExtResource("2_logic")
+telegraph_duration = 0.6
+attack_duration = 0.8
+cooldown = 3.0
+projectile_count = 3
+volley_delay = 0.2
+
+
+=====================================
 FILE: ./src/combat/attack_logic/projectile_logic.gd
 =====================================
 # src/combat/attack_logic/projectile_logic.gd
@@ -6506,7 +6538,8 @@ extends AttackLogic
 
 func get_telegraph_info(owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
 	var facing_direction: float = owner.entity_data.facing_direction if "facing_direction" in owner.entity_data else 1.0
-	return {"size": Vector2(150, 150), "offset": Vector2(facing_direction * 100, 0)}
+	# THE FIX: Reduced size from 150 to 100.
+	return {"size": Vector2(100, 100), "offset": Vector2(facing_direction * 75, 0)}
 
 
 func execute(owner: BaseEntity, pattern: AttackPattern) -> Callable:
@@ -6514,6 +6547,7 @@ func execute(owner: BaseEntity, pattern: AttackPattern) -> Callable:
 		return owner.fire_shot_at_player.bind()
 	else:
 		return owner.fire_volley.bind(pattern.projectile_count, pattern.volley_delay)
+
 
 =====================================
 FILE: ./src/combat/attack_logic/lunge_logic.tres
@@ -6546,6 +6580,17 @@ FILE: ./src/combat/attack_logic/homing_omni_burst_logic.tres
 [resource]
 script = ExtResource("1_script")
 projectile_count = 30
+
+
+=====================================
+FILE: ./src/combat/attack_logic/volley_logic.tres
+=====================================
+[gd_resource type="Resource" script_class="ProjectileLogic" load_steps=2 format=3 uid="uid://dw7h56g0o6aex"]
+
+[ext_resource type="Script" path="res://src/combat/attack_logic/projectile_logic.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
 
 
 =====================================
@@ -6589,7 +6634,8 @@ extends AttackLogic
 
 
 func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
-	return {"size": Vector2(600, 600), "offset": Vector2.ZERO}
+	# THE FIX: Reduced size to 100x100, which is slightly larger than the boss's 60x60 body.
+	return {"size": Vector2(100, 100), "offset": Vector2.ZERO}
 
 
 func execute(owner: BaseEntity, _pattern: AttackPattern) -> Callable:
@@ -8082,24 +8128,24 @@ FILE: ./src/data/layouts/layout_00.tres
 
 [resource]
 script = ExtResource("1_layout")
-terrain_data = PackedStringArray("####################", "#..................#", "#....@.............#", "#............&.....#", "#.........#--#.....#", "#.........#..#.....#", "#.........#--#.....#", "#.........#..#.....#", "#..T......#..#.....#", "#.........#..#.....#", "#..................#", "#..................#", "#.........####.....#", "#.........####.....#", "#.........####.....#", "####......####.....#", "####......####..T..#", "####...............#", "#..................#", "###############^^^##")
-
+terrain_data = PackedStringArray("####################", "#..................#", "#....@.............#", "#............&.....#", "#.........#--#.....#", "#.........#..#.....#", "#.........#--#.....#", "#.........#..#.....#", "#..P......#..#.....#", "#.........#..#.....#", "#..................#", "#..................#", "#.........####.....#", "#.........####.....#", "#.........####.....#", "####......####.....#", "####......####..T..#", "####...............#", "#..................#", "###############^^^##")
 
 =====================================
 FILE: ./src/data/encounters/encounter_00.tres
 =====================================
-[gd_resource type="Resource" script_class="EncounterData" load_steps=5 format=3 uid="uid://4lptu40or7m1"]
+[gd_resource type="Resource" script_class="EncounterData" load_steps=6 format=3 uid="uid://4lptu40or7m1"]
 
 [ext_resource type="Script" uid="uid://co2urq51qk44e" path="res://src/data/encounters/encounter_data.gd" id="1_encounter"]
 [ext_resource type="PackedScene" uid="uid://dmej4a7ykn2q0" path="res://src/entities/boss/base_boss.tscn" id="2_boss_scene"]
-[ext_resource type="Resource" uid="uid://bst2lw60wetic" path="res://src/data/layouts/layout_00.tres" id="2_x64bm"]
-[ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/minion.tscn" id="3_turret_scene"]
+[ext_resource type="Resource" uid="uid://bst2lw60wetic" path="res://src/data/layouts/layout_00.tres" id="3_layout"]
+[ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/minion.tscn" id="4_turret_scene"]
+[ext_resource type="PackedScene" uid="uid://d9e8f7g6h5i4j" path="res://src/entities/spawners/patrolling_lancer_spawner.tscn" id="5_lancer_spawner"]
 
 [resource]
 script = ExtResource("1_encounter")
 
 ; --- Layout & Spawning ---
-level_layout = ExtResource("2_x64bm")
+level_layout = ExtResource("3_layout")
 player_spawn_marker = "@"
 boss_spawn_marker = "&"
 
@@ -8108,7 +8154,8 @@ boss_scene = ExtResource("2_boss_scene")
 
 ; --- Minions ---
 minion_spawns = {
-"T": ExtResource("3_turret_scene")
+"P": ExtResource("5_lancer_spawner"),
+"T": ExtResource("4_turret_scene")
 }
 
 =====================================
@@ -8169,7 +8216,7 @@ extends CharacterBody2D
 var _components_initialized: bool = false
 var _services: ServiceLocator
 var _components: Dictionary = {}
-var _components_by_interface: Dictionary = {} # NEW: Cache for interface lookups
+var _components_by_interface: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
 
@@ -8185,11 +8232,9 @@ func _ready() -> void:
 
 ## Retrieves a component from this entity by its script type or an interface it implements.
 func get_component(type: Script) -> IComponent:
-	# First, try a direct lookup by the component's concrete class.
 	if _components.has(type):
 		return _components.get(type)
 
-	# If that fails, try looking up by an implemented interface.
 	if _components_by_interface.has(type):
 		return _components_by_interface.get(type)
 
@@ -8254,6 +8299,16 @@ func setup_components(
 			child.setup(self, merged_deps)
 
 	_components_initialized = true
+
+# THE FIX: Move generic attack implementations to the base class so any entity can use them.
+func fire_shot_at_player() -> void:
+	# This method needs to be implemented by child classes that can actually shoot.
+	push_warning("BaseEntity.fire_shot_at_player() was called but not implemented by the child class.")
+
+
+func fire_volley(_shot_count: int, _delay: float) -> void:
+	# This method needs to be implemented by child classes that can fire volleys.
+	push_warning("BaseEntity.fire_volley() was called but not implemented by the child class.")
 
 
 # --- Private Methods ---
@@ -8412,17 +8467,17 @@ volley_delay = 0.0
 =====================================
 FILE: ./src/entities/boss/attack_patterns/volley_3_shot.tres
 =====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://k3dglh3t1b4a"]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://cihbnl4747m0a"]
 
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
-[ext_resource type="Resource" uid="uid://c1w6fobw8biag" path="res://src/combat/attack_logic/projectile_logic.tres" id="2_logic"]
+[ext_resource type="Resource" uid="uid://dw7h56g0o6aex" path="res://src/combat/attack_logic/volley_logic.tres" id="2_logic"]
 
 [resource]
 script = ExtResource("1_attack_pattern")
 logic = ExtResource("2_logic")
-telegraph_duration = 0.7
-attack_duration = 0.6
-cooldown = 2.5
+telegraph_duration = 0.5
+attack_duration = 0.8
+cooldown = 1.5
 projectile_count = 3
 volley_delay = 0.2
 
@@ -8481,7 +8536,7 @@ script = ExtResource("1_attack_pattern")
 logic = ExtResource("2_logic")
 telegraph_duration = 0.5
 attack_duration = 0.1
-cooldown = 1.5
+cooldown = 0.75
 projectile_count = 1
 volley_delay = 0.0
 
@@ -8707,7 +8762,8 @@ func _start_telegraph_and_attack() -> void:
 		_current_pattern.telegraph_duration,
 		telegraph_size,
 		telegraph_position,
-		Palette.COLOR_HAZARD_PRIMARY
+		# THE FIX: Use a darker color from the palette.
+		Palette.COLOR_UI_PANEL_BG
 	)
 	await telegraph.telegraph_finished
 
@@ -9026,7 +9082,7 @@ FILE: ./src/entities/boss/data/default_boss_behavior.tres
 [ext_resource type="Script" uid="uid://dni2it8b687id" path="res://src/entities/boss/data/boss_behavior.gd" id="1_behavior_script"]
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_pfqfc"]
 [ext_resource type="Resource" uid="uid://bve7t5ucr1k" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="2_pattern_single"]
-[ext_resource type="Resource" uid="uid://k3dglh3t1b4a" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="3_pattern_volley3"]
+[ext_resource type="Resource" uid="uid://cihbnl4747m0a" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="3_pattern_volley3"]
 [ext_resource type="Resource" uid="uid://y6g5o6f7h8ja" path="res://src/entities/boss/attack_patterns/lunge_attack.tres" id="4_pattern_lunge"]
 [ext_resource type="Resource" uid="uid://01x2y3a4b5c6" path="res://src/entities/boss/attack_patterns/volley_5_shot.tres" id="5_pattern_volley5"]
 [ext_resource type="Resource" uid="uid://dibqnlm2wg88d" path="res://src/entities/boss/attack_patterns/homing_omni_burst_pattern.tres" id="6_pattern_homing"]
@@ -9840,6 +9896,154 @@ func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResul
 
 
 =====================================
+FILE: ./src/entities/spawners/spawner.gd
+=====================================
+# src/entities/spawners/spawner.gd
+## A generic, reusable spawner for instantiating scenes at runtime.
+##
+## Manages a timer, tracks the number of active instances it has spawned,
+## and ensures dependencies are injected into the newly created nodes.
+class_name Spawner
+extends Node2D
+
+@export_group("Configuration")
+## The scene that this spawner will instantiate.
+@export var scene_to_spawn: PackedScene
+## The delay in seconds between spawn attempts.
+@export_range(0.1, 60.0, 0.1) var spawn_delay: float = 10.0
+## The maximum number of active instances this spawner can manage at once.
+@export_range(1, 10, 1) var max_spawned_instances: int = 1
+## If true, the spawner will begin its timer as soon as it enters the scene.
+@export var autostart: bool = true
+## If true, the spawner will create its first instance immediately.
+@export var spawn_on_start: bool = true
+
+# --- Node References ---
+@onready var timer: Timer = $Timer
+
+# --- Private Member Variables ---
+var _spawned_instances: Array[Node] = []
+var _services: ServiceLocator
+
+# --- Godot Lifecycle Methods ---
+
+
+func _ready() -> void:
+	set_process(false)
+	set_physics_process(false)
+	
+	if not Engine.is_editor_hint():
+		_services = get_node("/root/ServiceLocator")
+		assert(is_instance_valid(_services), "Spawner could not find ServiceLocator.")
+		
+		timer.wait_time = spawn_delay
+		
+		if spawn_on_start:
+			_spawn_instance()
+		
+		if autostart:
+			timer.start()
+
+
+# --- Private Methods ---
+
+
+func _spawn_instance() -> void:
+	if not is_instance_valid(scene_to_spawn):
+		push_warning("Spawner has no valid 'scene_to_spawn' configured.")
+		return
+	
+	_spawned_instances = _spawned_instances.filter(
+		func(instance): return is_instance_valid(instance)
+	)
+
+	if _spawned_instances.size() >= max_spawned_instances:
+		return
+
+	var new_instance: Node = scene_to_spawn.instantiate()
+	
+	if new_instance is BaseEntity:
+		new_instance.inject_dependencies(_services)
+
+	# THE FIX: Use call_deferred to prevent modifying the scene tree during _ready().
+	get_parent().call_deferred("add_child", new_instance)
+	if new_instance is Node2D:
+		new_instance.global_position = self.global_position
+
+	_spawned_instances.append(new_instance)
+
+
+# --- Signal Handlers ---
+
+
+func _on_timer_timeout() -> void:
+	_spawn_instance()
+
+
+=====================================
+FILE: ./src/entities/spawners/spawner.tscn
+=====================================
+[gd_scene load_steps=2 format=3 uid="uid://c5t6u7v8w9x0y"]
+
+[ext_resource type="Script" path="res://src/entities/spawners/spawner.gd" id="1_spawner_script"]
+
+[node name="Spawner" type="Node2D"]
+script = ExtResource("1_spawner_script")
+
+[node name="Timer" type="Timer" parent="."]
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+
+
+=====================================
+FILE: ./src/entities/spawners/patrolling_lancer_spawner.tscn
+=====================================
+[gd_scene load_steps=3 format=3 uid="uid://d9e8f7g6h5i4j"]
+
+[ext_resource type="PackedScene" uid="uid://c5t6u7v8w9x0y" path="res://src/entities/spawners/spawner.tscn" id="1_base_spawner"]
+[ext_resource type="PackedScene" uid="uid://c0mbo7v8y9fg1" path="res://src/entities/minions/patrolling_lancer.tscn" id="2_lancer_scene"]
+
+[node name="PatrollingLancerSpawner" instance=ExtResource("1_base_spawner")]
+scene_to_spawn = ExtResource("2_lancer_scene")
+spawn_delay = 7.0
+max_spawned_instances = 5
+
+=====================================
+FILE: ./src/entities/states/state_entity_fall.gd
+=====================================
+# src/entities/states/state_entity_fall.gd
+## A generic, shared state for any BaseEntity that is airborne and affected by gravity.
+class_name StateEntityFall
+extends BaseState
+
+var _entity: BaseEntity
+
+
+func enter(_msg := {}) -> void:
+	self._entity = owner as BaseEntity
+
+
+func process_physics(delta: float) -> void:
+	if not is_instance_valid(_entity):
+		return
+
+	# Apply gravity
+	var gravity: float = _entity._services.combat_config.gravity
+	_entity.velocity.y += gravity * delta
+	
+	# Apply horizontal friction/drag
+	_entity.velocity.x = move_toward(_entity.velocity.x, 0, 100 * delta)
+
+	# Check for landing
+	if _entity.is_on_floor():
+		var idle_state_key = Identifiers.MinionStates.IDLE
+		if _entity is BaseBoss:
+			idle_state_key = Identifiers.BossStates.IDLE
+		
+		state_machine.change_state(idle_state_key)
+
+
+=====================================
 FILE: ./src/entities/minions/minion.gd
 =====================================
 # src/entities/minions/minion.gd
@@ -9852,7 +10056,6 @@ extends BaseEntity
 @export_group("Core Configuration")
 @export var behavior: MinionBehavior
 @export_group("Juice & Feedback")
-# THE FIX: The hit flash effect is now a configurable property, not a constant.
 @export var hit_flash_effect: ShaderEffect
 @export var hit_spark_effect: VFXEffect
 @export var dissolve_effect: ShaderEffect
@@ -9868,6 +10071,7 @@ var entity_data: MinionStateData
 # --- Private Member Variables ---
 var _player: CharacterBody2D
 var _is_dead: bool = false
+var _active_attack_tween: Tween
 
 # --- Godot Lifecycle Methods ---
 
@@ -9896,6 +10100,12 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if not _is_dead:
 		move_and_slide()
+
+		# THE FIX: After the physics engine has moved the body, if this minion
+		# is anchored, we forcefully reset its velocity to zero. This overrides
+		# any pushback from collisions.
+		if is_instance_valid(entity_data) and entity_data.behavior.is_anchored:
+			velocity = Vector2.ZERO
 
 
 func _notification(what: int) -> void:
@@ -9927,11 +10137,8 @@ func deactivate() -> void:
 	$RangeDetector.monitoring = false
 
 
-# --- Private Methods ---
-
-
-func _fire_at_player() -> void:
-	if not is_instance_valid(_player):
+func fire_shot_at_player() -> void:
+	if _is_dead or not is_instance_valid(_player):
 		return
 
 	var pool_key: StringName = entity_data.behavior.projectile_pool_key
@@ -9940,14 +10147,24 @@ func _fire_at_player() -> void:
 		push_error("Minion failed to get projectile from pool: '%s'" % pool_key)
 		return
 
-	# Look towards player before firing
-	var dir_to_player: float = _player.global_position.x - global_position.x
-	if not is_zero_approx(dir_to_player):
-		entity_data.facing_direction = sign(dir_to_player)
+	_update_player_tracking()
 
 	shot.direction = (self._player.global_position - self.global_position).normalized()
 	shot.global_position = self.global_position
 	shot.activate(_services)
+
+
+func fire_volley(shot_count: int, delay: float) -> void:
+	if is_instance_valid(_active_attack_tween):
+		_active_attack_tween.kill()
+	_active_attack_tween = get_tree().create_tween()
+	for i in range(shot_count):
+		_active_attack_tween.tween_callback(fire_shot_at_player)
+		if i < shot_count - 1:
+			_active_attack_tween.tween_interval(delay)
+
+
+# --- Private Methods ---
 
 
 func _die() -> void:
@@ -9958,6 +10175,9 @@ func _die() -> void:
 	collision_layer = 0
 	collision_mask = 0
 	deactivate()
+
+	if is_instance_valid(_active_attack_tween):
+		_active_attack_tween.kill()
 
 	var fc: FXComponent = get_component(FXComponent)
 	var death_tween: Tween = fc.play_effect(dissolve_effect)
@@ -9998,12 +10218,13 @@ func _initialize_and_setup_components() -> void:
 		Identifiers.MinionStates.IDLE:
 		load("res://src/entities/minions/states/state_minion_idle.gd").new(self, sm, entity_data),
 		Identifiers.MinionStates.ATTACK:
-		load("res://src/entities/minions/states/state_minion_attack.gd").new(self, sm, entity_data)
+		load("res://src/entities/minions/states/state_minion_attack.gd").new(self, sm, entity_data),
+		Identifiers.MinionStates.FALL:
+		load("res://src/entities/states/state_entity_fall.gd").new(self, sm, entity_data),
 	}
 
 	var per_component_deps := {
-		sm: {"states": states, "initial_state_key": Identifiers.MinionStates.IDLE},
-		# THE FIX: Pass the exported variable to the FXComponent's dependencies.
+		sm: {"states": states, "initial_state_key": entity_data.behavior.initial_state_key},
 		fc: {"visual_node": visual, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
@@ -10014,6 +10235,15 @@ func _initialize_and_setup_components() -> void:
 func _connect_signals() -> void:
 	var hc: HealthComponent = get_component(HealthComponent)
 	hc.died.connect(_on_health_component_died)
+
+
+func _update_player_tracking() -> void:
+	if not is_instance_valid(_player):
+		return
+
+	var dir_to_player: float = _player.global_position.x - global_position.x
+	if not is_zero_approx(dir_to_player):
+		entity_data.facing_direction = sign(dir_to_player)
 
 
 # --- Signal Handlers ---
@@ -10109,9 +10339,12 @@ extends MovementLogic
 func execute(delta: float, minion: Minion, state_data: MinionStateData) -> Vector2:
 	var new_velocity := minion.velocity
 
-	# THE FIX: Gravity is now handled by the movement strategy itself.
+	# THE FIX: A patrolling entity is responsible for its own gravity.
 	if not minion.is_on_floor():
 		new_velocity.y += state_data.services.combat_config.gravity * delta
+	else:
+		# Apply a small amount of downward velocity to keep it stuck to slopes.
+		new_velocity.y += 10
 
 	if minion.is_on_wall():
 		state_data.facing_direction *= -1.0
@@ -10157,7 +10390,7 @@ FILE: ./src/entities/minions/minion.tscn
 [ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="3_hit_spark_effect"]
 [ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="4_archetype"]
 [ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="5_dissolve_effect"]
-[ext_resource type="Resource" path="res://src/entities/minions/data/turret_behavior.tres" id="6_turret_behavior"]
+[ext_resource type="Resource" uid="uid://dp642amrtq5i3" path="res://src/entities/minions/data/turret_behavior.tres" id="6_turret_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
 size = Vector2(50, 50)
@@ -10200,33 +10433,78 @@ shape = SubResource("CircleShape2D_rangedetector")
 FILE: ./src/entities/minions/states/state_minion_attack.gd
 =====================================
 # src/entities/minions/states/state_minion_attack.gd
-## The state for when the minion is executing its attack.
+## A generic state that handles the telegraph and execution of a minion's attack.
 class_name MinionStateAttack
 extends BaseState
 
+# --- Constants ---
+const TelegraphScene = preload(AssetPaths.SCENE_TELEGRAPH_COMPONENT)
+
+# --- Private Member Variables ---
 var _minion: Minion
+var _current_pattern: AttackPattern
 
 
-func enter(_msg := {}) -> void:
+func enter(msg := {}) -> void:
 	self._minion = owner as Minion
 	if not is_instance_valid(_minion):
 		state_machine.change_state(Identifiers.MinionStates.IDLE)
 		return
-	
-	_minion.velocity = Vector2.ZERO
-	_minion._fire_at_player()
-	_minion.attack_timer.start(state_data.behavior.attack_cooldown)
-	
-	# This state is now transient; it immediately returns to Idle.
-	# The attack timer's cooldown will prevent it from attacking again right away.
-	state_machine.change_state(Identifiers.MinionStates.IDLE)
+
+	if not msg.has("pattern") or not msg.pattern is AttackPattern:
+		push_error("MinionStateAttack: No valid 'pattern' provided. Aborting.")
+		state_machine.change_state(Identifiers.MinionStates.IDLE)
+		return
+
+	_current_pattern = msg.get("pattern")
+	_start_telegraph_and_attack()
+
+
+func _start_telegraph_and_attack() -> void:
+	if not is_instance_valid(_current_pattern.logic):
+		push_warning("Minion's AttackPattern is missing its 'logic' resource.")
+		state_machine.change_state(Identifiers.MinionStates.IDLE)
+		return
+
+	var telegraph := TelegraphScene.instantiate()
+	_minion.add_child(telegraph)
+
+	var telegraph_info: Dictionary = _current_pattern.logic.get_telegraph_info(_minion, _current_pattern)
+	var telegraph_size: Vector2 = telegraph_info.get("size", Vector2.ONE * 100)
+	var relative_offset: Vector2 = telegraph_info.get("offset", Vector2.ZERO)
+
+	var directional_offset := Vector2(
+		relative_offset.x * _minion.entity_data.facing_direction, relative_offset.y
+	)
+	var telegraph_position: Vector2 = _minion.global_position + directional_offset
+
+	telegraph.start_telegraph(
+		_current_pattern.telegraph_duration,
+		telegraph_size,
+		telegraph_position,
+		# THE FIX: Use a darker color from the palette.
+		Palette.COLOR_UI_PANEL_BG
+	)
+	await telegraph.telegraph_finished
+
+	if not is_instance_valid(_minion):
+		return
+
+	var attack_command: Callable = _current_pattern.logic.execute(_minion, _current_pattern)
+	if attack_command.is_valid():
+		attack_command.call()
+
+	if state_machine.current_state == self:
+		_minion.attack_timer.wait_time = _current_pattern.cooldown
+		_minion.attack_timer.start()
+		state_machine.change_state(Identifiers.MinionStates.IDLE)
 
 =====================================
 FILE: ./src/entities/minions/states/state_minion_idle.gd
 =====================================
 # src/entities/minions/states/state_minion_idle.gd
 ## The default state for a minion. It handles movement via the assigned
-## MovementLogic and checks for conditions to transition to the attack state.
+## MovementLogic and checks for conditions to transition to other states.
 class_name MinionStateIdle
 extends BaseState
 
@@ -10241,19 +10519,74 @@ func process_physics(delta: float) -> void:
 	if not is_instance_valid(_minion):
 		return
 
-	# Delegate movement logic to the assigned strategy.
+	# --- State Transition Checks (Prioritized) ---
+
+	# 1. Check for falling (ONLY if the entity is not anchored).
+	# This is the definitive fix. An anchored entity should never fall.
+	if not state_data.behavior.is_anchored and not _minion.is_on_floor():
+		state_machine.change_state(Identifiers.MinionStates.FALL)
+		return
+
+	# 2. Check for attack conditions.
+	var can_attack: bool = (
+		state_data.is_player_in_range
+		and _minion.attack_timer.is_stopped()
+		and not state_data.behavior.attack_patterns.is_empty()
+	)
+	if can_attack:
+		state_machine.change_state(Identifiers.MinionStates.ATTACK, {"pattern": state_data.behavior.attack_patterns.pick_random()})
+		return
+
+	# --- Default Action: Execute Movement ---
 	if is_instance_valid(state_data.behavior.movement_logic):
 		var new_velocity: Vector2 = state_data.behavior.movement_logic.execute(
 			delta, _minion, state_data
 		)
 		_minion.velocity = new_velocity
-	
-	# THE FIX: The state machine no longer applies gravity. This is now the
-	# sole responsibility of the active MovementLogic resource.
 
-	# Check for attack conditions.
-	if state_data.is_player_in_range and _minion.attack_timer.is_stopped():
-		state_machine.change_state(Identifiers.MinionStates.ATTACK)
+=====================================
+FILE: ./src/entities/minions/patrolling_lancer.tscn
+=====================================
+[gd_scene load_steps=8 format=3 uid="uid://c0mbo7v80afg1"]
+
+[ext_resource type="Script" uid="uid://4xepmjomesfc" path="res://src/entities/minions/minion.gd" id="1_minion_script"]
+[ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="3_hit_spark_effect"]
+[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="4_archetype"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="5_dissolve_effect"]
+[ext_resource type="Resource" uid="uid://d2b4w7h1qxy5c" path="res://src/entities/minions/data/patrolling_lancer_behavior.tres" id="6_lancer_behavior"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
+size = Vector2(50, 50)
+
+[node name="PatrollingLancer" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 131
+script = ExtResource("1_minion_script")
+behavior = ExtResource("6_lancer_behavior")
+hit_flash_effect = ExtResource("2_hit_flash")
+hit_spark_effect = ExtResource("3_hit_spark_effect")
+dissolve_effect = ExtResource("5_dissolve_effect")
+archetype = ExtResource("4_archetype")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.9, 0.4, 0.4, 1)
+polygon = PackedVector2Array(-25, -25, 25, -25, 25, 25, -25, 25)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_minionbody")
+
+[node name="AttackTimer" type="Timer" parent="."]
+one_shot = true
+
+[node name="RangeDetector" type="Area2D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RangeDetector"]
+
+[connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
+[connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]
+
 
 =====================================
 FILE: ./src/entities/minions/data/minion_behavior.gd
@@ -10271,52 +10604,79 @@ extends Resource
 @export_group("Stats")
 @export_range(1, 100, 1) var max_health: int = 3
 
-@export_group("Movement")
+@export_group("State & Movement")
+@export var initial_state_key: StringName = &"fall"
+# THE FIX: Add a flag to determine if the entity should be immune to physics pushback.
+@export var is_anchored: bool = false
 @export var movement_logic: MovementLogic
 
 @export_group("Combat")
-# TODO: Implement a swappable AttackLogic system for minions.
-@export_range(0.1, 10.0, 0.1) var attack_cooldown: float = 2.0
 @export_range(50, 1000, 10) var detection_radius: float = 400.0
 @export var projectile_pool_key: StringName = &"turret_shots"
+@export var attack_patterns: Array[AttackPattern] = []
+
+=====================================
+FILE: ./src/entities/minions/data/patrolling_lancer_behavior.tres
+=====================================
+[gd_resource type="Resource" script_class="MinionBehavior" load_steps=5 format=3 uid="uid://d2b4w7h1qxy5c"]
+
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_nohdh"]
+[ext_resource type="Script" uid="uid://d2at2rq33qwur" path="res://src/entities/minions/data/minion_behavior.gd" id="1_script"]
+[ext_resource type="Resource" path="res://src/entities/minions/movement_logic/patrol_movement.tres" id="2_movement"]
+[ext_resource type="Resource" uid="uid://cihbnl4747m0a" path="res://src/entities/boss/attack_patterns/volley_3_shot.tres" id="3_attack_pattern"]
+
+[resource]
+script = ExtResource("1_script")
+max_health = 5
+initial_state_key = &"fall"
+is_anchored = false
+movement_logic = ExtResource("2_movement")
+detection_radius = 400.0
+projectile_pool_key = &"minion_shots"
+attack_patterns = Array[ExtResource("1_nohdh")]([ExtResource("3_attack_pattern")])
 
 
 =====================================
 FILE: ./src/entities/minions/data/turret_behavior.tres
 =====================================
-[gd_resource type="Resource" script_class="MinionBehavior" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="MinionBehavior" load_steps=5 format=3 uid="uid://dp642amrtq5i3"]
 
-[ext_resource type="Script" path="res://src/entities/minions/data/minion_behavior.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_s7dvt"]
+[ext_resource type="Script" uid="uid://d2at2rq33qwur" path="res://src/entities/minions/data/minion_behavior.gd" id="1_script"]
 [ext_resource type="Resource" path="res://src/entities/minions/movement_logic/stationary_movement.tres" id="2_movement"]
+[ext_resource type="Resource" uid="uid://bve7t5ucr1k" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="3_attack_pattern"]
 
 [resource]
 script = ExtResource("1_script")
 max_health = 3
+initial_state_key = &"idle"
+is_anchored = true
 movement_logic = ExtResource("2_movement")
-attack_cooldown = 2.0
 detection_radius = 400.0
-projectile_pool_key = &"turret_shots"
+projectile_pool_key = &"minion_shots"
+attack_patterns = Array[ExtResource("1_s7dvt")]([ExtResource("3_attack_pattern")])
 
 
 =====================================
 FILE: ./src/entities/player/player.tscn
 =====================================
-[gd_scene load_steps=16 format=3 uid="uid://c6vknl71ea1bo"]
+[gd_scene load_steps=17 format=3 uid="uid://c6vknl71ea1bo"]
 
 [ext_resource type="Script" uid="uid://bymbb3pjo71tf" path="res://src/entities/player/player.gd" id="1_4d1td"]
 [ext_resource type="Resource" path="res://src/entities/archetypes/player_archetype.tres" id="2_archetype"]
-[ext_resource type="Resource" path="res://src/core/data/effects/player_damage_shake.tres" id="3_shake_effect"]
-[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="4_hit_spark_effect"]
-[ext_resource type="Script" uid="uid://pyb4pd4uixxk" path="res://src/entities/player/states/state_move.gd" id="5_state_move"]
-[ext_resource type="Script" uid="uid://52jrtscsjy6s" path="res://src/entities/player/states/state_jump.gd" id="6_state_jump"]
-[ext_resource type="Script" uid="uid://dd6xefkcdr77e" path="res://src/entities/player/states/state_fall.gd" id="7_state_fall"]
-[ext_resource type="Script" uid="uid://11fbrak080kl" path="res://src/entities/player/states/state_dash.gd" id="8_state_dash"]
-[ext_resource type="Script" uid="uid://m3xnbhn5umv6" path="res://src/entities/player/states/state_wall_slide.gd" id="9_state_wall_slide"]
-[ext_resource type="Script" uid="uid://cem1wgbis0qlx" path="res://src/entities/player/states/state_attack.gd" id="10_state_attack"]
-[ext_resource type="Script" uid="uid://bxwc5vsj7qsw1" path="res://src/entities/player/states/state_hurt.gd" id="11_state_hurt"]
-[ext_resource type="Script" uid="uid://dv503l6b2cfqr" path="res://src/entities/player/states/state_heal.gd" id="12_state_heal"]
-[ext_resource type="Script" uid="uid://d1l7j3jqn4awq" path="res://src/entities/player/states/state_pogo.gd" id="13_state_pogo"]
-[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="14_dissolve_effect"]
+[ext_resource type="Resource" uid="uid://entity_hit_flash_effect" path="res://src/data/effects/entity_hit_flash_effect.tres" id="3_hit_flash"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_damage_shake.tres" id="4_shake_effect"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="5_hit_spark_effect"]
+[ext_resource type="Script" uid="uid://pyb4pd4uixxk" path="res://src/entities/player/states/state_move.gd" id="6_state_move"]
+[ext_resource type="Script" uid="uid://52jrtscsjy6s" path="res://src/entities/player/states/state_jump.gd" id="7_state_jump"]
+[ext_resource type="Script" uid="uid://dd6xefkcdr77e" path="res://src/entities/player/states/state_fall.gd" id="8_state_fall"]
+[ext_resource type="Script" uid="uid://11fbrak080kl" path="res://src/entities/player/states/state_dash.gd" id="9_state_dash"]
+[ext_resource type="Script" uid="uid://m3xnbhn5umv6" path="res://src/entities/player/states/state_wall_slide.gd" id="10_state_wall_slide"]
+[ext_resource type="Script" uid="uid://cem1wgbis0qlx" path="res://src/entities/player/states/state_attack.gd" id="11_state_attack"]
+[ext_resource type="Script" uid="uid://bxwc5vsj7qsw1" path="res://src/entities/player/states/state_hurt.gd" id="12_state_hurt"]
+[ext_resource type="Script" uid="uid://dv503l6b2cfqr" path="res://src/entities/player/states/state_heal.gd" id="13_state_heal"]
+[ext_resource type="Script" uid="uid://d1l7j3jqn4awq" path="res://src/entities/player/states/state_pogo.gd" id="14_state_pogo"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="15_dissolve_effect"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_playerbody"]
 size = Vector2(40, 40)
@@ -10324,18 +10684,19 @@ size = Vector2(40, 40)
 [node name="Player" type="CharacterBody2D"]
 collision_mask = 142
 script = ExtResource("1_4d1td")
-damage_shake_effect = ExtResource("3_shake_effect")
-hit_spark_effect = ExtResource("4_hit_spark_effect")
-dissolve_effect = ExtResource("14_dissolve_effect")
-state_move_script = ExtResource("5_state_move")
-state_jump_script = ExtResource("6_state_jump")
-state_fall_script = ExtResource("7_state_fall")
-state_dash_script = ExtResource("8_state_dash")
-state_wall_slide_script = ExtResource("9_state_wall_slide")
-state_attack_script = ExtResource("10_state_attack")
-state_hurt_script = ExtResource("11_state_hurt")
-state_heal_script = ExtResource("12_state_heal")
-state_pogo_script = ExtResource("13_state_pogo")
+hit_flash_effect = ExtResource("3_hit_flash")
+damage_shake_effect = ExtResource("4_shake_effect")
+hit_spark_effect = ExtResource("5_hit_spark_effect")
+dissolve_effect = ExtResource("15_dissolve_effect")
+state_move_script = ExtResource("6_state_move")
+state_jump_script = ExtResource("7_state_jump")
+state_fall_script = ExtResource("8_state_fall")
+state_dash_script = ExtResource("9_state_dash")
+state_wall_slide_script = ExtResource("10_state_wall_slide")
+state_attack_script = ExtResource("11_state_attack")
+state_hurt_script = ExtResource("12_state_hurt")
+state_heal_script = ExtResource("13_state_heal")
+state_pogo_script = ExtResource("14_state_pogo")
 archetype = ExtResource("2_archetype")
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -10389,15 +10750,15 @@ signal died
 
 # --- Constants ---
 const ACTION_ALLOWED_STATES = [
-	Identifiers.PlayerStates.MOVE,
-	Identifiers.PlayerStates.FALL,
-	Identifiers.PlayerStates.JUMP,
-	Identifiers.PlayerStates.WALL_SLIDE
+	&"move",
+	&"fall",
+	&"jump",
+	&"wall_slide"
 ]
-const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Properties ---
 @export_group("Juice & Feedback")
+@export var hit_flash_effect: ShaderEffect
 @export var damage_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
 @export var dissolve_effect: ShaderEffect
@@ -10541,7 +10902,8 @@ func _initialize_and_setup_components() -> void:
 
 	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
-	var states = {
+	# THE FIX: Ensure all dictionary keys are StringNames using '&' or constants.
+	var states: Dictionary = {
 		Identifiers.PlayerStates.MOVE: state_move_script.new(self, sm, entity_data),
 		Identifiers.PlayerStates.FALL: state_fall_script.new(self, sm, entity_data),
 		Identifiers.PlayerStates.JUMP: state_jump_script.new(self, sm, entity_data),
@@ -10555,7 +10917,7 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.PlayerStates.FALL},
-		get_component(FXComponent): {"visual_node": visual_sprite, "hit_effect": HIT_FLASH_EFFECT},
+		get_component(FXComponent): {"visual_node": visual_sprite, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 
@@ -10832,16 +11194,19 @@ static func try_jump(owner: Player, p_data: PlayerStateData) -> bool:
 	# 1. Wall Jump (Highest Priority)
 	if p_data.wall_coyote_timer > 0:
 		physics.perform_wall_jump()
+		# THE FIX: Use the safe identifier instead of a raw string.
 		sm.change_state(Identifiers.PlayerStates.JUMP)
 		return true
 
 	# 2. Ground Jump (includes coyote time)
 	if owner.is_on_floor() or p_data.coyote_timer > 0:
+		# THE FIX: Use the safe identifier instead of a raw string.
 		sm.change_state(Identifiers.PlayerStates.JUMP)
 		return true
 
 	# 3. Air Jump
 	if p_data.air_jumps_left > 0:
+		# THE FIX: Use the safe identifier instead of a raw string.
 		sm.change_state(Identifiers.PlayerStates.JUMP, {"is_air_jump": true})
 		return true
 

@@ -17,13 +17,11 @@ func process_physics(delta: float) -> void:
 
 	# --- State Transition Checks (Prioritized) ---
 
-	# 1. Check for falling (unless it's a stationary type).
-	if not _minion.is_on_floor():
-		var movement_logic = state_data.behavior.movement_logic
-		# Only non-stationary minions should fall.
-		if not (is_instance_valid(movement_logic) and movement_logic is StationaryMovementLogic):
-			state_machine.change_state(Identifiers.MinionStates.FALL)
-			return
+	# 1. Check for falling (ONLY if the entity is not anchored).
+	# This is the definitive fix. An anchored entity should never fall.
+	if not state_data.behavior.is_anchored and not _minion.is_on_floor():
+		state_machine.change_state(Identifiers.MinionStates.FALL)
+		return
 
 	# 2. Check for attack conditions.
 	var can_attack: bool = (
@@ -34,9 +32,8 @@ func process_physics(delta: float) -> void:
 	if can_attack:
 		state_machine.change_state(Identifiers.MinionStates.ATTACK, {"pattern": state_data.behavior.attack_patterns.pick_random()})
 		return
-		
+
 	# --- Default Action: Execute Movement ---
-	# If no state transition occurred, perform the default movement logic.
 	if is_instance_valid(state_data.behavior.movement_logic):
 		var new_velocity: Vector2 = state_data.behavior.movement_logic.execute(
 			delta, _minion, state_data

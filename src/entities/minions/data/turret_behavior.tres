@@ -9,7 +9,8 @@
 script = ExtResource("1_script")
 max_health = 3
 initial_state_key = &"idle"
+is_anchored = true
 movement_logic = ExtResource("2_movement")
 detection_radius = 400.0
-projectile_pool_key = &"turret_shots"
+projectile_pool_key = &"minion_shots"
 attack_patterns = Array[ExtResource("1_s7dvt")]([ExtResource("3_attack_pattern")])

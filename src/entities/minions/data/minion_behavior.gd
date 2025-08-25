@@ -12,8 +12,9 @@ extends Resource
 @export_range(1, 100, 1) var max_health: int = 3
 
 @export_group("State & Movement")
-# THE FIX: Allow behavior to define the starting state.
 @export var initial_state_key: StringName = &"fall"
+# THE FIX: Add a flag to determine if the entity should be immune to physics pushback.
+@export var is_anchored: bool = false
 @export var movement_logic: MovementLogic
 
 @export_group("Combat")

@@ -9,15 +9,15 @@ signal died
 
 # --- Constants ---
 const ACTION_ALLOWED_STATES = [
-	Identifiers.PlayerStates.MOVE,
-	Identifiers.PlayerStates.FALL,
-	Identifiers.PlayerStates.JUMP,
-	Identifiers.PlayerStates.WALL_SLIDE
+	&"move",
+	&"fall",
+	&"jump",
+	&"wall_slide"
 ]
-const HIT_FLASH_EFFECT = preload("res://src/data/effects/entity_hit_flash_effect.tres")
 
 # --- Editor Properties ---
 @export_group("Juice & Feedback")
+@export var hit_flash_effect: ShaderEffect
 @export var damage_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
 @export var dissolve_effect: ShaderEffect
@@ -161,7 +161,8 @@ func _initialize_and_setup_components() -> void:
 
 	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
-	var states = {
+	# THE FIX: Ensure all dictionary keys are StringNames using '&' or constants.
+	var states: Dictionary = {
 		Identifiers.PlayerStates.MOVE: state_move_script.new(self, sm, entity_data),
 		Identifiers.PlayerStates.FALL: state_fall_script.new(self, sm, entity_data),
 		Identifiers.PlayerStates.JUMP: state_jump_script.new(self, sm, entity_data),
@@ -175,7 +176,7 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.PlayerStates.FALL},
-		get_component(FXComponent): {"visual_node": visual_sprite, "hit_effect": HIT_FLASH_EFFECT},
+		get_component(FXComponent): {"visual_node": visual_sprite, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
 

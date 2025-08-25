@@ -53,6 +53,12 @@ func _physics_process(_delta: float) -> void:
 	if not _is_dead:
 		move_and_slide()
 
+		# THE FIX: After the physics engine has moved the body, if this minion
+		# is anchored, we forcefully reset its velocity to zero. This overrides
+		# any pushback from collisions.
+		if is_instance_valid(entity_data) and entity_data.behavior.is_anchored:
+			velocity = Vector2.ZERO
+
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_PREDELETE:
@@ -170,7 +176,6 @@ func _initialize_and_setup_components() -> void:
 	}
 
 	var per_component_deps := {
-		# THE FIX: Read the initial state from the behavior resource.
 		sm: {"states": states, "initial_state_key": entity_data.behavior.initial_state_key},
 		fc: {"visual_node": visual, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}

@@ -23,7 +23,8 @@ class Groups:
 class Pools:
 	const PLAYER_SHOTS = &"player_shots"
 	const BOSS_SHOTS = &"boss_shots"
-	const TURRET_SHOTS = &"turret_shots"
+	# THE FIX: Rename the constant to be generic.
+	const MINION_SHOTS = &"minion_shots"
 	const HOMING_BOSS_SHOTS = &"homing_boss_shots"
 	const HIT_SPARKS = &"hit_sparks"
 
