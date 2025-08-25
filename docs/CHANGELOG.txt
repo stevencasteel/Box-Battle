@@ -24,6 +24,19 @@
 
 
 
+refactor(entity): Centralize common attack logic in BaseEntity
+
+This commit completes Task 1.3 of the refactoring plan, addressing a significant violation of the DRY principle in the entity system.
+
+The `fire_volley` and `fire_shot_at_player` methods were duplicated with nearly identical logic in both `BaseBoss.gd` and `Minion.gd`. These methods have now been moved to the parent `BaseEntity.gd` class, creating a single, reusable implementation for any entity that can fire projectiles.
+
+To support this generalization:
+- A `projectile_pool_key` property was added to the `BossBehavior` resource and the runtime data objects (`BossStateData`, `MinionStateData`) to make the logic data-driven.
+- Default implementations for `_is_dead` and `_update_player_tracking` were added to `BaseEntity` to satisfy the dependencies of the moved code, and the redundant declarations were removed from all child classes.
+
+Additionally, this commit includes a fix for a bug where the `Minion.tscn` was missing its `EntityArchetype` resource, which prevented its components from being created.
+
+
 
 
 refactor(ui): Abstract common menu logic into BaseMenuScreen

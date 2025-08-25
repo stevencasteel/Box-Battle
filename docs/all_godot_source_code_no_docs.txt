@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 25 12:11:19 CDT 2025
+Generated on: Mon Aug 25 12:37:21 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -8158,24 +8158,28 @@ extends CharacterBody2D
 # --- Editor Properties ---
 @export var archetype: EntityArchetype
 
+# --- Public Member Variables ---
+var _is_dead: bool = false
+
 # --- Private Member Variables ---
 var _components_initialized: bool = false
 var _services: ServiceLocator
 var _components: Dictionary = {}
 var _components_by_interface: Dictionary = {}
+var _player: CharacterBody2D
+var _active_attack_tween: Tween
+
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	_build_from_archetype()
+	if not Engine.is_editor_hint():
+		_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
 
 # --- Public Methods ---
-
-
 ## Retrieves a component from this entity by its script type or an interface it implements.
 func get_component(type: Script) -> IComponent:
 	if _components.has(type):
@@ -8246,20 +8250,46 @@ func setup_components(
 
 	_components_initialized = true
 
-# THE FIX: Move generic attack implementations to the base class so any entity can use them.
+
+# --- Generic Attack Implementations ---
+func fire_volley(shot_count: int, delay: float) -> void:
+	if is_instance_valid(_active_attack_tween):
+		_active_attack_tween.kill()
+	_active_attack_tween = get_tree().create_tween()
+	for i in range(shot_count):
+		_active_attack_tween.tween_callback(fire_shot_at_player)
+		if i < shot_count - 1:
+			_active_attack_tween.tween_interval(delay)
+
+
 func fire_shot_at_player() -> void:
-	# This method needs to be implemented by child classes that can actually shoot.
-	push_warning("BaseEntity.fire_shot_at_player() was called but not implemented by the child class.")
+	if _is_dead or not is_instance_valid(_player):
+		return
+
+	# THE FIX: Access the property directly, not with .get().
+	var pool_key: StringName = self.entity_data.projectile_pool_key
+	if pool_key == &"":
+		push_warning("Entity '%s' tried to fire a shot but has no 'projectile_pool_key' in its data." % name)
+		return
+
+	var shot: Node = _services.object_pool.get_instance(pool_key)
+	if not shot:
+		return
+
+	_update_player_tracking()
+
+	shot.direction = (_player.global_position - global_position).normalized()
+	shot.global_position = global_position
+	shot.activate(_services)
 
 
-func fire_volley(_shot_count: int, _delay: float) -> void:
-	# This method needs to be implemented by child classes that can fire volleys.
-	push_warning("BaseEntity.fire_volley() was called but not implemented by the child class.")
+# --- Protected Virtual Methods (for children to override) ---
+## A virtual method for child classes to implement their own tracking logic.
+func _update_player_tracking() -> void:
+	pass # Default implementation does nothing.
 
 
 # --- Private Methods ---
-
-
 func _build_from_archetype() -> void:
 	if not is_instance_valid(archetype):
 		push_error("Entity '%s' is missing its Archetype resource." % name)
@@ -8292,7 +8322,6 @@ func _cache_components_by_type() -> void:
 				break
 			_components_by_interface[base_script] = child
 			base_script = base_script.get_base_script()
-
 
 =====================================
 FILE: ./src/entities/archetypes/player_archetype.tres
@@ -8503,10 +8532,10 @@ var max_health: int = 30
 var health: int = 30:
 	set(value):
 		health = clamp(value, 0, max_health)
+var projectile_pool_key: StringName = &""
 
 # --- Physics & Movement ---
 var facing_direction: float = -1.0
-
 
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
@@ -8755,7 +8784,6 @@ extends BaseEntity
 @export_group("Core Configuration")
 @export var behavior: BossBehavior
 @export_group("Juice & Feedback")
-# THE FIX: The hit flash effect is now a configurable property, not a constant.
 @export var hit_flash_effect: ShaderEffect
 @export var intro_shake_effect: ScreenShakeEffect
 @export var phase_change_shake_effect: ScreenShakeEffect
@@ -8779,14 +8807,7 @@ var current_attack_patterns: Array[AttackPattern] = []
 var phases_remaining: int = 3
 var entity_data: BossStateData
 
-# --- Private Member Variables ---
-var _player: CharacterBody2D = null
-var _active_attack_tween: Tween
-var _is_dead: bool = false
-
 # --- Godot Lifecycle Methods ---
-
-
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
 	if not archetype:
@@ -8806,7 +8827,6 @@ func _ready() -> void:
 	_initialize_data()
 	_initialize_and_setup_components()
 	_connect_signals()
-	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
 	if (
 		is_instance_valid(intro_shake_effect)
@@ -8839,8 +8859,6 @@ func _physics_process(delta: float) -> void:
 
 
 # --- Public Methods ---
-
-
 func teardown() -> void:
 	set_physics_process(false)
 	var hc: HealthComponent = get_component(HealthComponent)
@@ -8862,31 +8880,7 @@ func get_health_thresholds() -> Array[float]:
 	return []
 
 
-func fire_volley(shot_count: int, delay: float) -> void:
-	if is_instance_valid(_active_attack_tween):
-		_active_attack_tween.kill()
-	_active_attack_tween = get_tree().create_tween()
-	for i in range(shot_count):
-		_active_attack_tween.tween_callback(fire_shot_at_player)
-		if i < shot_count - 1:
-			_active_attack_tween.tween_interval(delay)
-
-
-func fire_shot_at_player() -> void:
-	if _is_dead or not is_instance_valid(_player):
-		return
-	var shot: Node = _services.object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
-	if not shot:
-		return
-	_update_player_tracking()
-	shot.direction = (_player.global_position - global_position).normalized()
-	shot.global_position = global_position
-	shot.activate(_services)
-
-
 # --- Private Methods ---
-
-
 func _die() -> void:
 	if _is_dead:
 		return
@@ -8925,6 +8919,7 @@ func _initialize_data() -> void:
 	entity_data = BossStateData.new()
 	assert(is_instance_valid(_services), "BaseBoss requires a ServiceLocator.")
 	entity_data.config = _services.combat_config
+	entity_data.projectile_pool_key = behavior.projectile_pool_key
 
 
 func _initialize_and_setup_components() -> void:
@@ -8944,7 +8939,6 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.BossStates.COOLDOWN},
-		# THE FIX: Pass the exported variable to the FXComponent's dependencies.
 		fc: {"visual_node": visual_sprite, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
@@ -8968,8 +8962,6 @@ func _update_player_tracking() -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_health_threshold_reached(health_percentage: float) -> void:
 	if not is_instance_valid(behavior):
 		return
@@ -9019,7 +9011,6 @@ func _on_health_component_health_changed(current: int, max_val: int) -> void:
 func _on_health_component_died() -> void:
 	_die()
 
-
 =====================================
 FILE: ./src/entities/boss/data/default_boss_behavior.tres
 =====================================
@@ -9037,10 +9028,10 @@ FILE: ./src/entities/boss/data/default_boss_behavior.tres
 script = ExtResource("1_behavior_script")
 phase_2_threshold = 0.7
 phase_3_threshold = 0.4
+projectile_pool_key = &"boss_shots"
 phase_1_patterns = Array[ExtResource("1_pfqfc")]([ExtResource("2_pattern_single")])
 phase_2_patterns = Array[ExtResource("1_pfqfc")]([ExtResource("3_pattern_volley3"), ExtResource("4_pattern_lunge")])
 phase_3_patterns = Array[ExtResource("1_pfqfc")]([ExtResource("5_pattern_volley5"), ExtResource("4_pattern_lunge"), ExtResource("6_pattern_homing")])
-
 
 =====================================
 FILE: ./src/entities/boss/data/boss_behavior.gd
@@ -9060,10 +9051,11 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var phase_3_threshold: float = 0.4
 
 @export_group("Attack Patterns")
+## The StringName key for the ObjectPool where this boss's projectiles are stored.
+@export var projectile_pool_key: StringName = &"boss_shots"
 @export var phase_1_patterns: Array[AttackPattern] = []
 @export var phase_2_patterns: Array[AttackPattern] = []
 @export var phase_3_patterns: Array[AttackPattern] = []
-
 
 =====================================
 FILE: ./src/entities/README.md
@@ -10014,14 +10006,7 @@ extends BaseEntity
 # --- Public Member Variables ---
 var entity_data: MinionStateData
 
-# --- Private Member Variables ---
-var _player: CharacterBody2D
-var _is_dead: bool = false
-var _active_attack_tween: Tween
-
 # --- Godot Lifecycle Methods ---
-
-
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings := PackedStringArray()
 	if not archetype:
@@ -10040,16 +10025,11 @@ func _ready() -> void:
 	_initialize_and_setup_components()
 	_connect_signals()
 
-	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
-
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if not _is_dead:
 		move_and_slide()
 
-		# THE FIX: After the physics engine has moved the body, if this minion
-		# is anchored, we forcefully reset its velocity to zero. This overrides
-		# any pushback from collisions.
 		if is_instance_valid(entity_data) and entity_data.behavior.is_anchored:
 			velocity = Vector2.ZERO
 
@@ -10060,8 +10040,6 @@ func _notification(what: int) -> void:
 
 
 # --- Public Methods ---
-
-
 func teardown() -> void:
 	var hc: HealthComponent = get_component(HealthComponent)
 	if is_instance_valid(hc):
@@ -10083,36 +10061,7 @@ func deactivate() -> void:
 	$RangeDetector.monitoring = false
 
 
-func fire_shot_at_player() -> void:
-	if _is_dead or not is_instance_valid(_player):
-		return
-
-	var pool_key: StringName = entity_data.behavior.projectile_pool_key
-	var shot: Node = _services.object_pool.get_instance(pool_key)
-	if not is_instance_valid(shot):
-		push_error("Minion failed to get projectile from pool: '%s'" % pool_key)
-		return
-
-	_update_player_tracking()
-
-	shot.direction = (self._player.global_position - self.global_position).normalized()
-	shot.global_position = self.global_position
-	shot.activate(_services)
-
-
-func fire_volley(shot_count: int, delay: float) -> void:
-	if is_instance_valid(_active_attack_tween):
-		_active_attack_tween.kill()
-	_active_attack_tween = get_tree().create_tween()
-	for i in range(shot_count):
-		_active_attack_tween.tween_callback(fire_shot_at_player)
-		if i < shot_count - 1:
-			_active_attack_tween.tween_interval(delay)
-
-
 # --- Private Methods ---
-
-
 func _die() -> void:
 	if _is_dead:
 		return
@@ -10143,6 +10092,7 @@ func _initialize_data() -> void:
 	assert(is_instance_valid(behavior), "Minion requires a valid MinionBehavior resource.")
 	entity_data.behavior = behavior
 	entity_data.max_health = behavior.max_health
+	entity_data.projectile_pool_key = behavior.projectile_pool_key
 	entity_data.services = _services
 
 
@@ -10193,8 +10143,6 @@ func _update_player_tracking() -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_range_detector_body_entered(body: Node) -> void:
 	if not entity_data:
 		return
@@ -10211,7 +10159,6 @@ func _on_range_detector_body_exited(body: Node) -> void:
 
 func _on_health_component_died() -> void:
 	_die()
-
 
 =====================================
 FILE: ./src/entities/minions/movement_logic/stationary_movement.tres
@@ -10319,6 +10266,8 @@ var health: int = 3:
 		health = clamp(value, 0, max_health)
 
 var is_invincible: bool = false
+# THE FIX: Add this property back. It's needed by BaseEntity.
+var projectile_pool_key: StringName = &""
 
 # --- Targeting ---
 var is_player_in_range: bool = false
@@ -10373,7 +10322,6 @@ shape = SubResource("CircleShape2D_rangedetector")
 
 [connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
 [connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]
-
 
 =====================================
 FILE: ./src/entities/minions/states/state_minion_attack.gd
@@ -10729,12 +10677,7 @@ const ACTION_ALLOWED_STATES = [
 # --- Data ---
 var entity_data: PlayerStateData
 
-# --- Private Member Variables ---
-var _is_dead: bool = false
-
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint():
@@ -10757,8 +10700,6 @@ func _physics_process(delta: float) -> void:
 
 
 # --- Public Methods ---
-
-
 func teardown() -> void:
 	var hc: HealthComponent = get_component(HealthComponent)
 	if is_instance_valid(hc):
@@ -10796,8 +10737,6 @@ func teardown() -> void:
 
 
 # --- Private Methods ---
-
-
 func _die() -> void:
 	if _is_dead:
 		return
@@ -10848,7 +10787,6 @@ func _initialize_and_setup_components() -> void:
 
 	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
-	# THE FIX: Ensure all dictionary keys are StringNames using '&' or constants.
 	var states: Dictionary = {
 		Identifiers.PlayerStates.MOVE: state_move_script.new(self, sm, entity_data),
 		Identifiers.PlayerStates.FALL: state_fall_script.new(self, sm, entity_data),
@@ -10916,8 +10854,6 @@ func _update_timers(delta: float) -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_ability_state_change_requested(state_key: StringName, msg: Dictionary = {}) -> void:
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	if is_instance_valid(sm):
@@ -10994,7 +10930,6 @@ func _cancel_heal() -> void:
 	if healing_timer.is_stopped():
 		return
 	healing_timer.stop()
-
 
 =====================================
 FILE: ./src/entities/player/components/player_resource_component.tscn

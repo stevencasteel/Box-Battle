@@ -14,6 +14,8 @@ var health: int = 3:
 		health = clamp(value, 0, max_health)
 
 var is_invincible: bool = false
+# THE FIX: Add this property back. It's needed by BaseEntity.
+var projectile_pool_key: StringName = &""
 
 # --- Targeting ---
 var is_player_in_range: bool = false

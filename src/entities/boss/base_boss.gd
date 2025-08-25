@@ -7,7 +7,6 @@ extends BaseEntity
 @export_group("Core Configuration")
 @export var behavior: BossBehavior
 @export_group("Juice & Feedback")
-# THE FIX: The hit flash effect is now a configurable property, not a constant.
 @export var hit_flash_effect: ShaderEffect
 @export var intro_shake_effect: ScreenShakeEffect
 @export var phase_change_shake_effect: ScreenShakeEffect
@@ -31,14 +30,7 @@ var current_attack_patterns: Array[AttackPattern] = []
 var phases_remaining: int = 3
 var entity_data: BossStateData
 
-# --- Private Member Variables ---
-var _player: CharacterBody2D = null
-var _active_attack_tween: Tween
-var _is_dead: bool = false
-
 # --- Godot Lifecycle Methods ---
-
-
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings = PackedStringArray()
 	if not archetype:
@@ -58,7 +50,6 @@ func _ready() -> void:
 	_initialize_data()
 	_initialize_and_setup_components()
 	_connect_signals()
-	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
 	if (
 		is_instance_valid(intro_shake_effect)
@@ -91,8 +82,6 @@ func _physics_process(delta: float) -> void:
 
 
 # --- Public Methods ---
-
-
 func teardown() -> void:
 	set_physics_process(false)
 	var hc: HealthComponent = get_component(HealthComponent)
@@ -114,31 +103,7 @@ func get_health_thresholds() -> Array[float]:
 	return []
 
 
-func fire_volley(shot_count: int, delay: float) -> void:
-	if is_instance_valid(_active_attack_tween):
-		_active_attack_tween.kill()
-	_active_attack_tween = get_tree().create_tween()
-	for i in range(shot_count):
-		_active_attack_tween.tween_callback(fire_shot_at_player)
-		if i < shot_count - 1:
-			_active_attack_tween.tween_interval(delay)
-
-
-func fire_shot_at_player() -> void:
-	if _is_dead or not is_instance_valid(_player):
-		return
-	var shot: Node = _services.object_pool.get_instance(Identifiers.Pools.BOSS_SHOTS)
-	if not shot:
-		return
-	_update_player_tracking()
-	shot.direction = (_player.global_position - global_position).normalized()
-	shot.global_position = global_position
-	shot.activate(_services)
-
-
 # --- Private Methods ---
-
-
 func _die() -> void:
 	if _is_dead:
 		return
@@ -177,6 +142,7 @@ func _initialize_data() -> void:
 	entity_data = BossStateData.new()
 	assert(is_instance_valid(_services), "BaseBoss requires a ServiceLocator.")
 	entity_data.config = _services.combat_config
+	entity_data.projectile_pool_key = behavior.projectile_pool_key
 
 
 func _initialize_and_setup_components() -> void:
@@ -196,7 +162,6 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.BossStates.COOLDOWN},
-		# THE FIX: Pass the exported variable to the FXComponent's dependencies.
 		fc: {"visual_node": visual_sprite, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
@@ -220,8 +185,6 @@ func _update_player_tracking() -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_health_threshold_reached(health_percentage: float) -> void:
 	if not is_instance_valid(behavior):
 		return

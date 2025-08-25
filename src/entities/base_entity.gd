@@ -7,24 +7,28 @@ extends CharacterBody2D
 # --- Editor Properties ---
 @export var archetype: EntityArchetype
 
+# --- Public Member Variables ---
+var _is_dead: bool = false
+
 # --- Private Member Variables ---
 var _components_initialized: bool = false
 var _services: ServiceLocator
 var _components: Dictionary = {}
 var _components_by_interface: Dictionary = {}
+var _player: CharacterBody2D
+var _active_attack_tween: Tween
+
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 	_build_from_archetype()
+	if not Engine.is_editor_hint():
+		_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
 
 # --- Public Methods ---
-
-
 ## Retrieves a component from this entity by its script type or an interface it implements.
 func get_component(type: Script) -> IComponent:
 	if _components.has(type):
@@ -95,20 +99,46 @@ func setup_components(
 
 	_components_initialized = true
 
-# THE FIX: Move generic attack implementations to the base class so any entity can use them.
+
+# --- Generic Attack Implementations ---
+func fire_volley(shot_count: int, delay: float) -> void:
+	if is_instance_valid(_active_attack_tween):
+		_active_attack_tween.kill()
+	_active_attack_tween = get_tree().create_tween()
+	for i in range(shot_count):
+		_active_attack_tween.tween_callback(fire_shot_at_player)
+		if i < shot_count - 1:
+			_active_attack_tween.tween_interval(delay)
+
+
 func fire_shot_at_player() -> void:
-	# This method needs to be implemented by child classes that can actually shoot.
-	push_warning("BaseEntity.fire_shot_at_player() was called but not implemented by the child class.")
+	if _is_dead or not is_instance_valid(_player):
+		return
+
+	# THE FIX: Access the property directly, not with .get().
+	var pool_key: StringName = self.entity_data.projectile_pool_key
+	if pool_key == &"":
+		push_warning("Entity '%s' tried to fire a shot but has no 'projectile_pool_key' in its data." % name)
+		return
+
+	var shot: Node = _services.object_pool.get_instance(pool_key)
+	if not shot:
+		return
+
+	_update_player_tracking()
+
+	shot.direction = (_player.global_position - global_position).normalized()
+	shot.global_position = global_position
+	shot.activate(_services)
 
 
-func fire_volley(_shot_count: int, _delay: float) -> void:
-	# This method needs to be implemented by child classes that can fire volleys.
-	push_warning("BaseEntity.fire_volley() was called but not implemented by the child class.")
+# --- Protected Virtual Methods (for children to override) ---
+## A virtual method for child classes to implement their own tracking logic.
+func _update_player_tracking() -> void:
+	pass # Default implementation does nothing.
 
 
 # --- Private Methods ---
-
-
 func _build_from_archetype() -> void:
 	if not is_instance_valid(archetype):
 		push_error("Entity '%s' is missing its Archetype resource." % name)

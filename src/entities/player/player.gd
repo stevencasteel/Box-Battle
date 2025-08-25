@@ -42,12 +42,7 @@ const ACTION_ALLOWED_STATES = [
 # --- Data ---
 var entity_data: PlayerStateData
 
-# --- Private Member Variables ---
-var _is_dead: bool = false
-
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	super._ready()
 	if Engine.is_editor_hint():
@@ -70,8 +65,6 @@ func _physics_process(delta: float) -> void:
 
 
 # --- Public Methods ---
-
-
 func teardown() -> void:
 	var hc: HealthComponent = get_component(HealthComponent)
 	if is_instance_valid(hc):
@@ -109,8 +102,6 @@ func teardown() -> void:
 
 
 # --- Private Methods ---
-
-
 func _die() -> void:
 	if _is_dead:
 		return
@@ -161,7 +152,6 @@ func _initialize_and_setup_components() -> void:
 
 	var shared_deps := {"data_resource": entity_data, "config": entity_data.config}
 
-	# THE FIX: Ensure all dictionary keys are StringNames using '&' or constants.
 	var states: Dictionary = {
 		Identifiers.PlayerStates.MOVE: state_move_script.new(self, sm, entity_data),
 		Identifiers.PlayerStates.FALL: state_fall_script.new(self, sm, entity_data),
@@ -229,8 +219,6 @@ func _update_timers(delta: float) -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_ability_state_change_requested(state_key: StringName, msg: Dictionary = {}) -> void:
 	var sm: BaseStateMachine = get_component(BaseStateMachine)
 	if is_instance_valid(sm):

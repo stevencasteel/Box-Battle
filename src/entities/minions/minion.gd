@@ -20,14 +20,7 @@ extends BaseEntity
 # --- Public Member Variables ---
 var entity_data: MinionStateData
 
-# --- Private Member Variables ---
-var _player: CharacterBody2D
-var _is_dead: bool = false
-var _active_attack_tween: Tween
-
 # --- Godot Lifecycle Methods ---
-
-
 func _get_configuration_warnings() -> PackedStringArray:
 	var warnings := PackedStringArray()
 	if not archetype:
@@ -46,16 +39,11 @@ func _ready() -> void:
 	_initialize_and_setup_components()
 	_connect_signals()
 
-	_player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER)
 
-
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if not _is_dead:
 		move_and_slide()
 
-		# THE FIX: After the physics engine has moved the body, if this minion
-		# is anchored, we forcefully reset its velocity to zero. This overrides
-		# any pushback from collisions.
 		if is_instance_valid(entity_data) and entity_data.behavior.is_anchored:
 			velocity = Vector2.ZERO
 
@@ -66,8 +54,6 @@ func _notification(what: int) -> void:
 
 
 # --- Public Methods ---
-
-
 func teardown() -> void:
 	var hc: HealthComponent = get_component(HealthComponent)
 	if is_instance_valid(hc):
@@ -89,36 +75,7 @@ func deactivate() -> void:
 	$RangeDetector.monitoring = false
 
 
-func fire_shot_at_player() -> void:
-	if _is_dead or not is_instance_valid(_player):
-		return
-
-	var pool_key: StringName = entity_data.behavior.projectile_pool_key
-	var shot: Node = _services.object_pool.get_instance(pool_key)
-	if not is_instance_valid(shot):
-		push_error("Minion failed to get projectile from pool: '%s'" % pool_key)
-		return
-
-	_update_player_tracking()
-
-	shot.direction = (self._player.global_position - self.global_position).normalized()
-	shot.global_position = self.global_position
-	shot.activate(_services)
-
-
-func fire_volley(shot_count: int, delay: float) -> void:
-	if is_instance_valid(_active_attack_tween):
-		_active_attack_tween.kill()
-	_active_attack_tween = get_tree().create_tween()
-	for i in range(shot_count):
-		_active_attack_tween.tween_callback(fire_shot_at_player)
-		if i < shot_count - 1:
-			_active_attack_tween.tween_interval(delay)
-
-
 # --- Private Methods ---
-
-
 func _die() -> void:
 	if _is_dead:
 		return
@@ -149,6 +106,7 @@ func _initialize_data() -> void:
 	assert(is_instance_valid(behavior), "Minion requires a valid MinionBehavior resource.")
 	entity_data.behavior = behavior
 	entity_data.max_health = behavior.max_health
+	entity_data.projectile_pool_key = behavior.projectile_pool_key
 	entity_data.services = _services
 
 
@@ -199,8 +157,6 @@ func _update_player_tracking() -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_range_detector_body_entered(body: Node) -> void:
 	if not entity_data:
 		return
