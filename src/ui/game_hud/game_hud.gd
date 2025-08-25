@@ -16,13 +16,16 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 @onready var phase_indicators: HBoxContainer = %PhaseIndicators
 
 # --- Private Member Variables ---
-var _phase_squares: Array[ColorRect] = []
+var _phase_squares: Array[Panel] = []
 var _total_phases: int = 3
 var _player_health_token: int
 var _player_charges_token: int
 var _boss_health_token: int
 var _boss_phase_token: int
 var _boss_died_token: int
+
+var _filled_phase_style: StyleBoxFlat
+var _empty_phase_style: StyleBoxFlat
 
 
 # --- Godot Lifecycle Methods ---
@@ -55,6 +58,19 @@ func _unsubscribe_from_events() -> void:
 
 
 func _initialize_ui_state() -> void:
+	# --- Create StyleBoxes for Phase Indicators ---
+	_filled_phase_style = StyleBoxFlat.new()
+	_filled_phase_style.bg_color = Color.WHITE
+
+	_empty_phase_style = StyleBoxFlat.new()
+	_empty_phase_style.bg_color = Color.TRANSPARENT
+	_empty_phase_style.border_width_left = 2
+	_empty_phase_style.border_width_top = 2
+	_empty_phase_style.border_width_right = 2
+	_empty_phase_style.border_width_bottom = 2
+	_empty_phase_style.border_color = Color.WHITE
+	
+	# --- Initialize Rest of UI ---
 	var max_health = COMBAT_CONFIG.player_max_health
 	player_health_value.text = "%d / %d" % [max_health, max_health]
 	player_heal_charges_value.text = "0"
@@ -72,7 +88,8 @@ func _initialize_ui_state() -> void:
 
 func _create_phase_indicators() -> void:
 	for i in range(_total_phases):
-		var square = ColorRect.new()
+		# Use Panel nodes instead of ColorRects to allow for custom styling.
+		var square = Panel.new()
 		square.custom_minimum_size = Vector2(40, 40)
 		phase_indicators.add_child(square)
 		_phase_squares.append(square)
@@ -81,12 +98,13 @@ func _create_phase_indicators() -> void:
 
 func _update_phase_visuals(phases_remaining: int) -> void:
 	for i in range(_phase_squares.size()):
-		var square: ColorRect = _phase_squares[i]
+		var square: Panel = _phase_squares[i]
 		
+		# Apply the appropriate style based on whether the phase is remaining or depleted.
 		if i < phases_remaining:
-			square.color = Color.WHITE
+			square.add_theme_stylebox_override("panel", _filled_phase_style)
 		else:
-			square.color = Color.BLACK
+			square.add_theme_stylebox_override("panel", _empty_phase_style)
 
 
 # --- EventBus Callbacks ---

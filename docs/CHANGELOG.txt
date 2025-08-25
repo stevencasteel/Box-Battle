@@ -23,6 +23,17 @@
 
 
 
+feat(ui): Improve boss phase indicators on HUD
+
+Updated the boss phase indicators on the Game HUD to provide clearer visual feedback when the boss transitions between phases.
+
+- Replaced the procedurally generated `ColorRect` nodes with `Panel` nodes.
+- Instead of changing the color from white to black, the HUD now applies one of two `StyleBoxFlat` resources:
+  - A solid white style for remaining phases.
+  - A transparent style with a white border for depleted phases.
+- This makes the state of each phase less ambiguous and enhances the overall visual polish of the UI.
+
+
 
 
 refactor(entities): Improve minion naming and fix debug overlay bugs

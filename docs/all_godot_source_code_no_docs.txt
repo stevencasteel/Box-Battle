@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 25 16:36:07 CDT 2025
+Generated on: Mon Aug 25 17:54:24 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -347,7 +347,6 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   │   ├── patrolling_lancer_behavior.tres
 │   │   │   │   └── turret_behavior.tres
 │   │   │   ├── minion.gd
-│   │   │   ├── minion.tscn
 │   │   │   ├── minion_state_data.gd
 │   │   │   ├── movement_logic
 │   │   │   │   ├── movement_logic.gd
@@ -356,9 +355,10 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   │   ├── stationary_movement.tres
 │   │   │   │   └── stationary_movement_logic.gd
 │   │   │   ├── patrolling_lancer.tscn
-│   │   │   └── states
-│   │   │       ├── state_minion_attack.gd
-│   │   │       └── state_minion_idle.gd
+│   │   │   ├── states
+│   │   │   │   ├── state_minion_attack.gd
+│   │   │   │   └── state_minion_idle.gd
+│   │   │   └── turret.tscn
 │   │   ├── player
 │   │   │   ├── components
 │   │   │   │   ├── player_ability_component.gd
@@ -985,7 +985,7 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.17.1"
+config/version="0.17.2"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
@@ -1087,7 +1087,22 @@ debug_cycle_target={
 }
 debug_dialogue={
 "deadzone": 0.5,
-"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":73,"key_label":0,"unicode":105,"location":0,"echo":false,"script":null)
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":72,"key_label":0,"unicode":104,"location":0,"echo":false,"script":null)
+]
+}
+debug_toggle_collision={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":79,"key_label":0,"unicode":111,"location":0,"echo":false,"script":null)
+]
+}
+debug_pause_game={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":80,"key_label":0,"unicode":112,"location":0,"echo":false,"script":null)
+]
+}
+debug_toggle_invincibility={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":76,"key_label":0,"unicode":108,"location":0,"echo":false,"script":null)
 ]
 }
 
@@ -1156,13 +1171,16 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 @onready var phase_indicators: HBoxContainer = %PhaseIndicators
 
 # --- Private Member Variables ---
-var _phase_squares: Array[ColorRect] = []
+var _phase_squares: Array[Panel] = []
 var _total_phases: int = 3
 var _player_health_token: int
 var _player_charges_token: int
 var _boss_health_token: int
 var _boss_phase_token: int
 var _boss_died_token: int
+
+var _filled_phase_style: StyleBoxFlat
+var _empty_phase_style: StyleBoxFlat
 
 
 # --- Godot Lifecycle Methods ---
@@ -1195,6 +1213,19 @@ func _unsubscribe_from_events() -> void:
 
 
 func _initialize_ui_state() -> void:
+	# --- Create StyleBoxes for Phase Indicators ---
+	_filled_phase_style = StyleBoxFlat.new()
+	_filled_phase_style.bg_color = Color.WHITE
+
+	_empty_phase_style = StyleBoxFlat.new()
+	_empty_phase_style.bg_color = Color.TRANSPARENT
+	_empty_phase_style.border_width_left = 2
+	_empty_phase_style.border_width_top = 2
+	_empty_phase_style.border_width_right = 2
+	_empty_phase_style.border_width_bottom = 2
+	_empty_phase_style.border_color = Color.WHITE
+	
+	# --- Initialize Rest of UI ---
 	var max_health = COMBAT_CONFIG.player_max_health
 	player_health_value.text = "%d / %d" % [max_health, max_health]
 	player_heal_charges_value.text = "0"
@@ -1212,7 +1243,8 @@ func _initialize_ui_state() -> void:
 
 func _create_phase_indicators() -> void:
 	for i in range(_total_phases):
-		var square = ColorRect.new()
+		# Use Panel nodes instead of ColorRects to allow for custom styling.
+		var square = Panel.new()
 		square.custom_minimum_size = Vector2(40, 40)
 		phase_indicators.add_child(square)
 		_phase_squares.append(square)
@@ -1221,12 +1253,13 @@ func _create_phase_indicators() -> void:
 
 func _update_phase_visuals(phases_remaining: int) -> void:
 	for i in range(_phase_squares.size()):
-		var square: ColorRect = _phase_squares[i]
+		var square: Panel = _phase_squares[i]
 		
+		# Apply the appropriate style based on whether the phase is remaining or depleted.
 		if i < phases_remaining:
-			square.color = Color.WHITE
+			square.add_theme_stylebox_override("panel", _filled_phase_style)
 		else:
-			square.color = Color.BLACK
+			square.add_theme_stylebox_override("panel", _empty_phase_style)
 
 
 # --- EventBus Callbacks ---
@@ -2308,107 +2341,197 @@ func _on_mouse_exited() -> void:
 =====================================
 FILE: ./src/ui/dev/debug_overlay.tscn
 =====================================
-[gd_scene load_steps=2 format=3 uid="uid://debug_overlay_scene_id"]
+[gd_scene load_steps=3 format=3 uid="uid://debug_overlay_scene_id"]
 
 [ext_resource type="Script" path="res://src/ui/dev/debug_overlay.gd" id="1_debug_script"]
+[ext_resource type="FontFile" path="res://addons/gut/fonts/AnonymousPro-Regular.ttf" id="2_font"]
 
 [node name="DebugOverlay" type="CanvasLayer"]
 layer = 100
 script = ExtResource("1_debug_script")
 
-[node name="Panel" type="Panel" parent="."]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 910.0
-offset_bottom = 330.0
-mouse_filter = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="Panel"]
-layout_mode = 1
+[node name="MainMargin" type="MarginContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="Columns" type="HBoxContainer" parent="Panel/MarginContainer"]
+[node name="HBox" type="HBoxContainer" parent="MainMargin"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 10
 
-[node name="EntityInfoColumn" type="VBoxContainer" parent="Panel/MarginContainer/Columns"]
+[node name="EntityPanel" type="PanelContainer" parent="MainMargin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(450, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="StateLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
-unique_name_in_owner = true
+[node name="Margin" type="MarginContainer" parent="MainMargin/HBox/EntityPanel"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "State:"
-autowrap_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
-[node name="VelocityLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
+[node name="EntityInfoVBox" type="VBoxContainer" parent="MainMargin/HBox/EntityPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TargetLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "Target: NONE"
+
+[node name="PositionLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "Position:"
+
+[node name="VelocityLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "Velocity:"
 
-[node name="FlagsLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
+[node name="HealthLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "Health:"
+
+[node name="StateLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "State:"
+
+[node name="FlagsLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "Flags:"
-autowrap_mode = 2
+autowrap_mode = 3
 
-[node name="StateHistoryLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
+[node name="TimersLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
-text = "History:"
-autowrap_mode = 2
+text = "Timers:"
+autowrap_mode = 3
 
-[node name="InputBufferLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
+[node name="InputBufferLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "Input:"
-autowrap_mode = 2
+autowrap_mode = 3
 
-[node name="VSeparator" type="VSeparator" parent="Panel/MarginContainer/Columns"]
+[node name="StateHistoryLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "History:"
+autowrap_mode = 3
 
-[node name="GlobalInfoColumn" type="VBoxContainer" parent="Panel/MarginContainer/Columns"]
+[node name="GlobalPanel" type="PanelContainer" parent="MainMargin/HBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="FPSLabel" type="Label" parent="Panel/MarginContainer/Columns/GlobalInfoColumn"]
+[node name="Margin" type="MarginContainer" parent="MainMargin/HBox/GlobalPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="GlobalInfoVBox" type="VBoxContainer" parent="MainMargin/HBox/GlobalPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FPSLabel" type="Label" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "FPS:"
 
-[node name="PoolsLabel" type="Label" parent="Panel/MarginContainer/Columns/GlobalInfoColumn"]
+[node name="FXLabel" type="Label" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 20
-text = "Pools:"
-autowrap_mode = 2
-
-[node name="FXLabel" type="Label" parent="Panel/MarginContainer/Columns/GlobalInfoColumn"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "FX:"
-autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+layout_mode = 2
+
+[node name="PoolsLabel" type="Label" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "Object Pools:"
+
+[node name="PoolsScroll" type="ScrollContainer" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PoolsVBox" type="VBoxContainer" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/PoolsScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HSeparator2" type="HSeparator" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+layout_mode = 2
+
+[node name="ButtonsGrid" type="GridContainer" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+layout_mode = 2
+columns = 2
+
+[node name="ToggleCollisionButton" type="Button" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "Shapes (O)"
+
+[node name="ToggleInvincibilityButton" type="Button" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "Player God (L)"
+
+[node name="PauseButton" type="Button" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "Pause (P)"
+
+[connection signal="toggled" from="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid/ToggleCollisionButton" to="." method="_on_toggle_collision_toggled"]
+[connection signal="toggled" from="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid/ToggleInvincibilityButton" to="." method="_on_toggle_invincibility_toggled"]
+[connection signal="toggled" from="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid/PauseButton" to="." method="_on_pause_toggled"]
 
 =====================================
 FILE: ./src/ui/dev/debug_overlay.gd
@@ -2418,114 +2541,174 @@ FILE: ./src/ui/dev/debug_overlay.gd
 extends CanvasLayer
 
 # --- Node References ---
-@onready var fps_label: Label = %FPSLabel
-@onready var state_label: Label = %StateLabel
+@onready var entity_panel: PanelContainer = %EntityPanel
+@onready var global_panel: PanelContainer = %GlobalPanel
+@onready var target_label: Label = %TargetLabel
+@onready var position_label: Label = %PositionLabel
 @onready var velocity_label: Label = %VelocityLabel
+@onready var health_label: Label = %HealthLabel
+@onready var state_label: Label = %StateLabel
 @onready var flags_label: Label = %FlagsLabel
-@onready var state_history_label: Label = %StateHistoryLabel
+@onready var timers_label: Label = %TimersLabel
 @onready var input_buffer_label: Label = %InputBufferLabel
-@onready var pools_label: Label = %PoolsLabel
+@onready var state_history_label: Label = %StateHistoryLabel
+@onready var fps_label: Label = %FPSLabel
 @onready var fx_label: Label = %FXLabel
-@onready var panel: Panel = %Panel
+@onready var pools_vbox: VBoxContainer = %PoolsVBox
+@onready var toggle_collision_button: Button = %ToggleCollisionButton
+@onready var pause_button: Button = %PauseButton
+@onready var toggle_invincibility_button: Button = %ToggleInvincibilityButton
 
 # --- Private Member Variables ---
 var _target_entity: Node = null
 var _services: ServiceLocator
+var _pool_labels: Dictionary = {}
+var _invincibility_debug_token: int = 0
 
 # --- Godot Lifecycle Methods ---
 
 
 func _ready() -> void:
+	# This node must always process so it can handle unpausing the game.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0, 0, 0, 0.6)
-	panel_style.border_width_left = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_bottom = 2
+	panel_style.bg_color = Color(0.1, 0.1, 0.1, 0.8)
+	panel_style.border_width_left = 1
+	panel_style.border_width_top = 1
+	panel_style.border_width_right = 1
+	panel_style.border_width_bottom = 1
 	panel_style.border_color = Palette.COLOR_UI_ACCENT_PRIMARY
-	panel.add_theme_stylebox_override("panel", panel_style)
+	entity_panel.add_theme_stylebox_override("panel", panel_style)
+	global_panel.add_theme_stylebox_override("panel", panel_style)
 
 
 func _process(_delta: float) -> void:
-	var fps_text = "FPS: %d" % Engine.get_frames_per_second()
-	fps_label.text = fps_text
+	_update_global_info()
+	_update_entity_info()
 
-	if not is_instance_valid(_target_entity) or not _target_entity.has_method("get_component"):
-		state_label.text = "State: NO TARGET"
-		velocity_label.text = "Velocity:"
-		flags_label.text = "Flags:"
-		state_history_label.text = "History:"
-		input_buffer_label.text = "Input:"
-	else:
-		velocity_label.text = "Target: %s" % _target_entity.name
 
-		var state_machine: BaseStateMachine = _target_entity.get_component(BaseStateMachine)
-		var current_state_name = "N/A"
-		if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
-			current_state_name = state_machine.current_state.get_script().resource_path.get_file()
-		state_label.text = "State: %s" % current_state_name
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("debug_toggle_collision"):
+		toggle_collision_button.button_pressed = not toggle_collision_button.button_pressed
+	
+	if event.is_action_pressed("debug_toggle_invincibility"):
+		toggle_invincibility_button.button_pressed = not toggle_invincibility_button.button_pressed
 
-		var health_comp: HealthComponent = _target_entity.get_component(HealthComponent)
-		var is_invincible_str = (
-			str(health_comp.is_invincible()) if is_instance_valid(health_comp) else "N/A"
-		)
-		var on_floor_str = (
-			str(_target_entity.is_on_floor()) if _target_entity is CharacterBody2D else "N/A"
-		)
-
-		var flags_text = "Flags: OnFloor(%s) Invincible(%s)" % [on_floor_str, is_invincible_str]
-		if _target_entity is Player:
-			flags_text += " CanDash(%s)" % _target_entity.entity_data.can_dash
-			if is_instance_valid(state_machine):
-				state_history_label.text = "History: " + ", ".join(state_machine.state_history)
-			_update_player_input_buffer()
-		else:
-			state_history_label.text = "History:"
-			input_buffer_label.text = "Input:"
-
-		flags_label.text = flags_text
-
-	if is_instance_valid(_services):
-		var pool_stats: Dictionary = _services.object_pool.get_pool_stats()
-		var pool_text_parts: Array[String] = []
-		for pool_name in pool_stats:
-			var stats = pool_stats[pool_name]
-			pool_text_parts.append("%s [%d/%d]" % [pool_name, stats.active, stats.total])
-		pools_label.text = "Pools:\n" + "\n".join(pool_text_parts)
-
-		var fx_stats = _services.fx_manager.get_debug_stats()
-		fx_label.text = "FX:\nShaders[%d] VFX[%d]" % [fx_stats.active_shaders, fx_stats.active_vfx]
+	if event.is_action_pressed("debug_pause_game"):
+		pause_button.button_pressed = not pause_button.button_pressed
 
 
 # --- Public Methods ---
 func set_target(entity: Node) -> void:
 	_target_entity = entity
 
+
 func inject_dependencies(p_services: ServiceLocator) -> void:
 	_services = p_services
 
 
-# --- Private Methods ---
-func _update_player_input_buffer() -> void:
-	var input_comp: InputComponent = _target_entity.get_component(InputComponent)
-	if not is_instance_valid(input_comp):
-		input_buffer_label.text = "Input: N/A"
+# --- Private Update Methods ---
+func _update_global_info() -> void:
+	fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
+
+	if is_instance_valid(_services):
+		var fx_stats = _services.fx_manager.get_debug_stats()
+		fx_label.text = "FX: Shaders[%d] VFX[%d]" % [fx_stats.active_shaders, fx_stats.active_vfx]
+
+		var pool_stats: Dictionary = _services.object_pool.get_pool_stats()
+		for pool_name in pool_stats:
+			if not _pool_labels.has(pool_name):
+				var new_label = Label.new()
+				new_label.add_theme_font_override("font", load("res://addons/gut/fonts/AnonymousPro-Regular.ttf"))
+				new_label.add_theme_font_size_override("font_size", 20)
+				pools_vbox.add_child(new_label)
+				_pool_labels[pool_name] = new_label
+			
+			var stats = pool_stats[pool_name]
+			_pool_labels[pool_name].text = "- %s [%d/%d]" % [pool_name, stats.active, stats.total]
+
+
+func _update_entity_info() -> void:
+	if not is_instance_valid(_target_entity) or not _target_entity.has_method("get_component"):
+		target_label.text = "Target: NONE"
+		position_label.text = "Position:"
+		velocity_label.text = "Velocity:"
+		health_label.text = "Health:"
+		state_label.text = "State:"
+		flags_label.text = "Flags:"
+		timers_label.text = "Timers:"
+		input_buffer_label.text = "Input:"
+		state_history_label.text = "History:"
 		return
 
-	var input_buffer: Dictionary = input_comp.buffer
-	var input_text_parts: Array[String] = []
-	for key in input_buffer:
-		var value = input_buffer[key]
-		var should_display = false
-		if value is bool and value == true:
-			should_display = true
-		elif value is float and not is_zero_approx(value):
-			should_display = true
+	target_label.text = "Target: %s (%s)" % [_target_entity.name, _target_entity.get_class()]
+	position_label.text = "Position: %s" % _target_entity.global_position.round()
+	velocity_label.text = "Velocity: %s" % _target_entity.velocity.round()
 
-		if should_display:
-			input_text_parts.append("%s: %s" % [key, value])
+	var state_machine: BaseStateMachine = _target_entity.get_component(BaseStateMachine)
+	var current_state_name = "N/A"
+	if is_instance_valid(state_machine) and is_instance_valid(state_machine.current_state):
+		current_state_name = state_machine.current_state.get_script().resource_path.get_file().trim_suffix(".gd")
+	state_label.text = "State: %s" % current_state_name
+	
+	var health_comp: HealthComponent = _target_entity.get_component(HealthComponent)
+	if is_instance_valid(health_comp):
+		health_label.text = "Health: %d / %d" % [health_comp.entity_data.health, health_comp.entity_data.max_health]
+		var is_invincible_str = str(health_comp.is_invincible())
+		flags_label.text = "Flags: OnFloor(%s) Invincible(%s)" % [str(_target_entity.is_on_floor()), is_invincible_str]
+	
+	if is_instance_valid(state_machine):
+		state_history_label.text = "History: %s" % ", ".join(state_machine.state_history)
 
-	input_buffer_label.text = "Input: " + ", ".join(input_text_parts)
+	if _target_entity is Player:
+		_update_player_specific_info()
+	else:
+		timers_label.text = "Timers:"
+		input_buffer_label.text = "Input:"
+
+
+func _update_player_specific_info() -> void:
+	var p_data = _target_entity.entity_data
+	var timers_text = "Timers: DashCD[%.2f] AtkCD[%.2f]" % [p_data.dash_cooldown_timer, p_data.attack_cooldown_timer]
+	timers_label.text = timers_text
+	
+	var input_comp: InputComponent = _target_entity.get_component(InputComponent)
+	if is_instance_valid(input_comp):
+		var input_buffer: Dictionary = input_comp.buffer
+		var input_text_parts: Array[String] = []
+		for key in input_buffer:
+			var value = input_buffer[key]
+			if (value is bool and value) or (value is float and not is_zero_approx(value)):
+				input_text_parts.append("%s:%s" % [key, str(value).pad_decimals(2)])
+		input_buffer_label.text = "Input: %s" % ", ".join(input_text_parts)
+
+
+# --- Signal Handlers ---
+func _on_toggle_collision_toggled(button_pressed: bool) -> void:
+	get_tree().debug_collisions_hint = button_pressed
+
+
+func _on_toggle_invincibility_toggled(button_pressed: bool) -> void:
+	var player: Player = get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER) as Player
+	if not is_instance_valid(player):
+		return
+
+	var health_comp: HealthComponent = player.get_component(HealthComponent)
+	if not is_instance_valid(health_comp):
+		return
+
+	if button_pressed:
+		if _invincibility_debug_token == 0:
+			_invincibility_debug_token = health_comp.grant_invincibility(self)
+	else:
+		if _invincibility_debug_token != 0:
+			health_comp.release_invincibility(_invincibility_debug_token)
+			_invincibility_debug_token = 0
+
+
+func _on_pause_toggled(button_pressed: bool) -> void:
+	get_tree().paused = button_pressed
 
 
 =====================================
@@ -2831,7 +3014,8 @@ func _initialize_debug_inspector() -> void:
 	add_child(_debug_overlay)
 	_debug_overlay.visible = false
 
-	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.PLAYER))
+	# Initial population. _cycle_debug_target will refresh this list live.
+	_inspectable_entities.append(get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER))
 	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
 
 	if not _inspectable_entities.is_empty():
@@ -2839,6 +3023,12 @@ func _initialize_debug_inspector() -> void:
 
 
 func _cycle_debug_target() -> void:
+	# This is the fix. We re-query the scene tree every time we cycle.
+	_inspectable_entities.clear()
+	_inspectable_entities.append(get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER))
+	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
+
+	# Filter out any nulls just in case
 	_inspectable_entities = _inspectable_entities.filter(func(e): return is_instance_valid(e))
 
 	if _inspectable_entities.is_empty():
@@ -4539,7 +4729,7 @@ const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
 const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
 const SCENE_HOMING_BOSS_SHOT = "res://src/projectiles/homing_boss_shot.tscn"
 const SCENE_TELEGRAPH_COMPONENT = "res://src/entities/components/telegraph_component.tscn"
-const SCENE_MINION = "res://src/entities/minions/minion.tscn"
+const SCENE_TURRET = "res://src/entities/minions/turret.tscn"
 const SCENE_MINION_SHOT = "res://src/projectiles/turret_shot.tscn" # This path is still correct
 
 # --- UI & SCENES ---
@@ -6365,7 +6555,6 @@ func build_level_async() -> Node:
 	await _spawn_hud_async()
 	await _spawn_minions_async()
 	
-	# The builder's job is now done. It no longer runs the intro sequence.
 	await get_tree().process_frame
 
 	return _current_level_container
@@ -6407,7 +6596,12 @@ func _spawn_hud_async() -> void:
 func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
 		var instance: Node = spawn_data.scene.instantiate()
-
+		
+		# Add the node to the tree FIRST. This is critical.
+		# Its name will be temporary (e.g., @CharacterBody2D@667).
+		_current_level_container.add_child(instance)
+		
+		# Now that it's in the tree, we can get its base name and assign a unique one.
 		var base_name: String = instance.name
 		var current_count: int = _minion_spawn_counts.get(base_name, 0) + 1
 		_minion_spawn_counts[base_name] = current_count
@@ -6419,7 +6613,6 @@ func _spawn_minions_async() -> void:
 		if instance is BaseEntity:
 			instance.inject_dependencies(ServiceLocator)
 			
-		_current_level_container.add_child(instance)
 		await get_tree().process_frame
 
 
@@ -8075,7 +8268,7 @@ FILE: ./src/data/encounters/encounter_00.tres
 [ext_resource type="Script" uid="uid://co2urq51qk44e" path="res://src/data/encounters/encounter_data.gd" id="1_encounter"]
 [ext_resource type="PackedScene" uid="uid://dmej4a7ykn2q0" path="res://src/entities/boss/base_boss.tscn" id="2_boss_scene"]
 [ext_resource type="Resource" uid="uid://bst2lw60wetic" path="res://src/data/layouts/layout_00.tres" id="3_layout"]
-[ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/minion.tscn" id="4_turret_scene"]
+[ext_resource type="PackedScene" uid="uid://c7d8faf0g1h2i" path="res://src/entities/minions/turret.tscn" id="4_turret_scene"]
 [ext_resource type="PackedScene" uid="uid://d9e8f7g6h5i4j" path="res://src/entities/spawners/patrolling_lancer_spawner.tscn" id="5_lancer_spawner"]
 [ext_resource type="Script" path="res://src/core/sequencing/sequence_step.gd" id="6_sequence_step"]
 [ext_resource type="Script" path="res://src/core/sequencing/steps/wait_step.gd" id="7_wait_step"]
@@ -10391,55 +10584,6 @@ var is_player_in_range: bool = false
 var facing_direction: float = -1.0
 
 =====================================
-FILE: ./src/entities/minions/minion.tscn
-=====================================
-[gd_scene load_steps=9 format=3 uid="uid://c7d8faf0g1h2i"]
-
-[ext_resource type="Script" uid="uid://4xepmjomesfc" path="res://src/entities/minions/minion.gd" id="1_minion_script"]
-[ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
-[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="3_hit_spark_effect"]
-[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="4_archetype"]
-[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="5_dissolve_effect"]
-[ext_resource type="Resource" uid="uid://dp642amrtq5i3" path="res://src/entities/minions/data/turret_behavior.tres" id="6_turret_behavior"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
-size = Vector2(50, 50)
-
-[sub_resource type="CircleShape2D" id="CircleShape2D_rangedetector"]
-radius = 400.0
-
-[node name="Minion" type="CharacterBody2D" groups=["enemy"]]
-collision_layer = 4
-collision_mask = 131
-script = ExtResource("1_minion_script")
-behavior = ExtResource("6_turret_behavior")
-hit_flash_effect = ExtResource("2_hit_flash")
-hit_spark_effect = ExtResource("3_hit_spark_effect")
-dissolve_effect = ExtResource("5_dissolve_effect")
-archetype = ExtResource("4_archetype")
-
-[node name="Visual" type="Polygon2D" parent="."]
-color = Color(0.490196, 0.490196, 0.490196, 1)
-polygon = PackedVector2Array(-25, -25, 25, -25, 25, 25, -25, 25)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("RectangleShape2D_minionbody")
-
-[node name="AttackTimer" type="Timer" parent="."]
-wait_time = 2.0
-one_shot = true
-
-[node name="RangeDetector" type="Area2D" parent="."]
-collision_layer = 0
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="RangeDetector"]
-shape = SubResource("CircleShape2D_rangedetector")
-
-[connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
-[connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]
-
-
-=====================================
 FILE: ./src/entities/minions/states/state_minion_attack.gd
 =====================================
 # src/entities/minions/states/state_minion_attack.gd
@@ -10555,7 +10699,7 @@ func process_physics(delta: float) -> void:
 =====================================
 FILE: ./src/entities/minions/patrolling_lancer.tscn
 =====================================
-[gd_scene load_steps=8 format=3 uid="uid://c0mbo7v80afg1"]
+[gd_scene load_steps=9 format=3 uid="uid://c0mbo7v80afg1"]
 
 [ext_resource type="Script" uid="uid://4xepmjomesfc" path="res://src/entities/minions/minion.gd" id="1_minion_script"]
 [ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
@@ -10566,6 +10710,9 @@ FILE: ./src/entities/minions/patrolling_lancer.tscn
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
 size = Vector2(50, 50)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rangedetector"]
+radius = 400.0
 
 [node name="PatrollingLancer" type="CharacterBody2D" groups=["enemy"]]
 collision_layer = 4
@@ -10591,6 +10738,56 @@ one_shot = true
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RangeDetector"]
+shape = SubResource("CircleShape2D_rangedetector")
+
+[connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
+[connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]
+
+
+=====================================
+FILE: ./src/entities/minions/turret.tscn
+=====================================
+[gd_scene load_steps=9 format=3 uid="uid://c7d8faf0g1h2i"]
+
+[ext_resource type="Script" uid="uid://4xepmjomesfc" path="res://src/entities/minions/minion.gd" id="1_minion_script"]
+[ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="3_hit_spark_effect"]
+[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="4_archetype"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="5_dissolve_effect"]
+[ext_resource type="Resource" uid="uid://dp642amrtq5i3" path="res://src/entities/minions/data/turret_behavior.tres" id="6_turret_behavior"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
+size = Vector2(50, 50)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rangedetector"]
+radius = 400.0
+
+[node name="Turret" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 131
+script = ExtResource("1_minion_script")
+behavior = ExtResource("6_turret_behavior")
+hit_flash_effect = ExtResource("2_hit_flash")
+hit_spark_effect = ExtResource("3_hit_spark_effect")
+dissolve_effect = ExtResource("5_dissolve_effect")
+archetype = ExtResource("4_archetype")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.490196, 0.490196, 0.490196, 1)
+polygon = PackedVector2Array(-25, -25, 25, -25, 25, 25, -25, 25)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_minionbody")
+
+[node name="AttackTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[node name="RangeDetector" type="Area2D" parent="."]
+collision_layer = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RangeDetector"]
+shape = SubResource("CircleShape2D_rangedetector")
 
 [connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
 [connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]
