@@ -25,8 +25,6 @@ signal mute_toggled(is_muted: bool)
 var is_muted: bool = false
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	if is_instance_valid(name_label):
 		name_label.text = setting_name
@@ -34,10 +32,13 @@ func _ready() -> void:
 		value_slider.value_changed.connect(_on_slider_value_changed)
 		mute_checkbox.pressed.connect(_on_mute_button_pressed)
 
+		mute_checkbox.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		mute_checkbox.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		# THE FIX: Play the move sound when hovering the checkbox.
+		mute_checkbox.mouse_entered.connect(func(): AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE))
+
 
 # --- Public Methods ---
-
-
 ## Sets the visual state of the slider without emitting a signal.
 func set_slider_value(value: float) -> void:
 	if is_instance_valid(value_slider):
@@ -59,8 +60,6 @@ func set_mute_state(p_is_muted: bool) -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_slider_value_changed(value: float) -> void:
 	if is_instance_valid(value_label):
 		value_label.text = str(int(value * 100))

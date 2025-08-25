@@ -1,10 +1,7 @@
 # src/scenes/menus/sound_screen.gd
 ## The controller for the sound options menu.
 @tool
-extends Control
-
-# --- Constants ---
-const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+extends "res://src/scenes/menus/base_menu_screen.gd"
 
 # --- Node References ---
 @onready var master_row: SoundSettingRow = %MasterRow
@@ -14,8 +11,6 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 @onready var mute_button: MuteButton = $MuteButtonContainer/MuteButton
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	back_button.text = "BACK"
 
@@ -34,17 +29,10 @@ func _ready() -> void:
 
 		back_button.pressed.connect(_on_back_button_pressed)
 
-		var menu_manager = MenuManagerScript.new()
-		add_child(menu_manager)
-		# NOTE: For now, only the back button is focusable with keyboard/controller.
-		menu_manager.setup_menu([back_button])
-
-		# --- Connect Feedback Handlers ---
-		menu_manager.selection_changed.connect(_on_any_item_focused)
-		var interactive_items: Array[Control] = [back_button, mute_button]
-		for item in interactive_items:
-			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		# --- Initialize Common Navigation & Feedback ---
+		var focusable_items: Array[Control] = [back_button]
+		var all_items: Array[Control] = [back_button, mute_button] # Sliders handled internally
+		setup_menu_navigation(focusable_items, all_items)
 
 		await get_tree().process_frame
 		back_button.grab_focus()
@@ -55,13 +43,8 @@ func _exit_tree() -> void:
 		if Settings.audio_settings_changed.is_connected(_update_ui_from_settings):
 			Settings.audio_settings_changed.disconnect(_update_ui_from_settings)
 
-
 # --- Private Methods ---
-
-
 func _update_ui_from_settings() -> void:
-	# This function now only tells the rows to update themselves.
-	# It doesn't know *how* they update.
 	if is_instance_valid(master_row):
 		master_row.set_slider_value(Settings.master_volume)
 		master_row.set_mute_state(Settings.master_muted)
@@ -72,14 +55,7 @@ func _update_ui_from_settings() -> void:
 		sfx_row.set_slider_value(Settings.sfx_volume)
 		sfx_row.set_mute_state(Settings.sfx_muted)
 
-
 # --- Signal Handlers ---
-
-
-func _on_any_item_focused() -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
-
-
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)

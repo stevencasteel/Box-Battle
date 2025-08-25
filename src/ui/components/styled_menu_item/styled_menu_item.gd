@@ -31,13 +31,12 @@ var _font: Font
 var _active_tween: Tween
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	_font = load(AssetPaths.FONT_MAIN_BOLD)
 	focus_mode = FOCUS_ALL
 	mouse_filter = MOUSE_FILTER_STOP
 
+	# THE FIX: This component now manages its own cursor state.
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	resized.connect(queue_redraw)
@@ -107,8 +106,6 @@ func _draw() -> void:
 
 
 # --- Public Setters ---
-
-
 func set_text(new_text: String) -> void:
 	if text != new_text:
 		text = new_text
@@ -132,8 +129,6 @@ func set_glow_alpha(value: float) -> void:
 
 
 # --- Private Methods ---
-
-
 func _show_keyboard_press_feedback() -> void:
 	is_pressed = true
 	queue_redraw()
@@ -167,11 +162,12 @@ func _animate_selection(p_is_selected: bool) -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_mouse_entered() -> void:
 	is_hovered = true
 	grab_focus()
+	# THE FIX: Add cursor management.
+	if not Engine.is_editor_hint():
+		CursorManager.set_pointer_state(true)
 
 
 func _on_mouse_exited() -> void:
@@ -179,6 +175,9 @@ func _on_mouse_exited() -> void:
 	if is_pressed:
 		is_pressed = false
 		queue_redraw()
+	# THE FIX: Add cursor management.
+	if not Engine.is_editor_hint():
+		CursorManager.set_pointer_state(false)
 
 
 func _on_focus_entered() -> void:

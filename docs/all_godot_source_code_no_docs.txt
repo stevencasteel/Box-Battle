@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 25 11:15:51 CDT 2025
+Generated on: Mon Aug 25 12:11:19 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -411,6 +411,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── main.gd
 │   │   │   └── main.tscn
 │   │   ├── menus
+│   │   │   ├── base_menu_screen.gd
 │   │   │   ├── controls_screen.gd
 │   │   │   ├── controls_screen.tscn
 │   │   │   ├── credits_screen.gd
@@ -478,7 +479,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-89 directories, 381 files
+89 directories, 382 files
 
 
 =====================================
@@ -981,7 +982,7 @@ config_version=5
 [application]
 
 config/name="BOX BATTLE"
-config/version="0.14.0"
+config/version="0.17.0"
 run/main_scene="res://src/scenes/main/main.tscn"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
@@ -1151,7 +1152,8 @@ const COMBAT_CONFIG = preload("res://src/data/combat_config.tres")
 @onready var phase_indicators: HBoxContainer = %PhaseIndicators
 
 # --- Private Member Variables ---
-var _phase_squares: Array[Panel] = []
+# THE FIX: We are now creating ColorRects, not Panels.
+var _phase_squares: Array[ColorRect] = []
 var _total_phases: int = 3
 var _player_health_token: int
 var _player_charges_token: int
@@ -1207,20 +1209,23 @@ func _initialize_ui_state() -> void:
 
 func _create_phase_indicators() -> void:
 	for i in range(_total_phases):
-		var panel = Panel.new()
-		panel.custom_minimum_size = Vector2(40, 40)
-		phase_indicators.add_child(panel)
-		_phase_squares.append(panel)
+		# THE FIX: Create a ColorRect instead of a Panel.
+		var square = ColorRect.new()
+		square.custom_minimum_size = Vector2(40, 40)
+		phase_indicators.add_child(square)
+		_phase_squares.append(square)
 	_update_phase_visuals(_total_phases)
 
 
 func _update_phase_visuals(phases_remaining: int) -> void:
 	for i in range(_phase_squares.size()):
-		var square = _phase_squares[i]
+		var square: ColorRect = _phase_squares[i]
+		
+		# THE FIX: Directly set the color property, bypassing themes entirely.
 		if i < phases_remaining:
-			square.add_theme_stylebox_override("panel", square.get_theme_stylebox(&"PhaseIndicatorFilled", &"Panel"))
+			square.color = Color.WHITE
 		else:
-			square.add_theme_stylebox_override("panel", square.get_theme_stylebox(&"PhaseIndicatorEmpty", &"Panel"))
+			square.color = Color.BLACK
 
 
 # --- EventBus Callbacks ---
@@ -1769,13 +1774,12 @@ var _font: Font
 var _active_tween: Tween
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	_font = load(AssetPaths.FONT_MAIN_BOLD)
 	focus_mode = FOCUS_ALL
 	mouse_filter = MOUSE_FILTER_STOP
 
+	# THE FIX: This component now manages its own cursor state.
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	resized.connect(queue_redraw)
@@ -1845,8 +1849,6 @@ func _draw() -> void:
 
 
 # --- Public Setters ---
-
-
 func set_text(new_text: String) -> void:
 	if text != new_text:
 		text = new_text
@@ -1870,8 +1872,6 @@ func set_glow_alpha(value: float) -> void:
 
 
 # --- Private Methods ---
-
-
 func _show_keyboard_press_feedback() -> void:
 	is_pressed = true
 	queue_redraw()
@@ -1905,11 +1905,12 @@ func _animate_selection(p_is_selected: bool) -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_mouse_entered() -> void:
 	is_hovered = true
 	grab_focus()
+	# THE FIX: Add cursor management.
+	if not Engine.is_editor_hint():
+		CursorManager.set_pointer_state(true)
 
 
 func _on_mouse_exited() -> void:
@@ -1917,6 +1918,9 @@ func _on_mouse_exited() -> void:
 	if is_pressed:
 		is_pressed = false
 		queue_redraw()
+	# THE FIX: Add cursor management.
+	if not Engine.is_editor_hint():
+		CursorManager.set_pointer_state(false)
 
 
 func _on_focus_entered() -> void:
@@ -1929,7 +1933,6 @@ func _on_focus_exited() -> void:
 	is_selected = false
 	_animate_selection(false)
 	queue_redraw()
-
 
 =====================================
 FILE: ./src/ui/components/sound_setting_row/sound_setting_row.tscn
@@ -1999,8 +2002,6 @@ signal mute_toggled(is_muted: bool)
 var is_muted: bool = false
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	if is_instance_valid(name_label):
 		name_label.text = setting_name
@@ -2008,10 +2009,13 @@ func _ready() -> void:
 		value_slider.value_changed.connect(_on_slider_value_changed)
 		mute_checkbox.pressed.connect(_on_mute_button_pressed)
 
+		mute_checkbox.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
+		mute_checkbox.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		# THE FIX: Play the move sound when hovering the checkbox.
+		mute_checkbox.mouse_entered.connect(func(): AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE))
+
 
 # --- Public Methods ---
-
-
 ## Sets the visual state of the slider without emitting a signal.
 func set_slider_value(value: float) -> void:
 	if is_instance_valid(value_slider):
@@ -2033,8 +2037,6 @@ func set_mute_state(p_is_muted: bool) -> void:
 
 
 # --- Signal Handlers ---
-
-
 func _on_slider_value_changed(value: float) -> void:
 	if is_instance_valid(value_label):
 		value_label.text = str(int(value * 100))
@@ -2045,7 +2047,6 @@ func _on_mute_button_pressed() -> void:
 	is_muted = not is_muted
 	set_mute_state(is_muted)
 	mute_toggled.emit(is_muted)
-
 
 =====================================
 FILE: ./src/ui/components/custom_slider/custom_slider.tscn
@@ -3149,10 +3150,7 @@ FILE: ./src/scenes/menus/title_screen.gd
 # src/scenes/menus/title_screen.gd
 ## The controller for the main title screen scene.
 @tool
-extends Control
-
-# --- Constants ---
-const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+extends "res://src/scenes/menus/base_menu_screen.gd"
 
 # --- Node References ---
 @onready var background_color: ColorRect = $BackgroundColor
@@ -3162,11 +3160,8 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 @onready var newgrounds_logo: LogoDisplay = %NewgroundsLogo
 @onready var godot_logo: LogoDisplay = %GodotLogo
 @onready var itch_logo: LogoDisplay = %ItchLogo
-@onready var mute_button: MuteButton = $MuteButtonContainer/MuteButton
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	background_color.color = Palette.COLOR_BACKGROUND
 
@@ -3175,7 +3170,7 @@ func _ready() -> void:
 	exit_button.text = "EXIT"
 
 	if not Engine.is_editor_hint():
-		# --- Connect Action Signals ---
+		# --- Connect Unique Action Signals ---
 		start_button.pressed.connect(_on_start_button_pressed)
 		options_button.pressed.connect(_on_options_button_pressed)
 		exit_button.pressed.connect(_on_exit_button_pressed)
@@ -3183,63 +3178,82 @@ func _ready() -> void:
 		godot_logo.pressed.connect(_on_logo_pressed)
 		itch_logo.pressed.connect(_on_logo_pressed)
 
-		# --- Connect All Items to Generic Feedback Handlers ---
-		var all_interactive_items: Array[Control] = [
-			start_button,
-			options_button,
-			exit_button,
-			newgrounds_logo,
-			godot_logo,
-			itch_logo,
+		# --- Initialize Common Navigation & Feedback ---
+		var focusable_items: Array[Control] = [start_button, options_button, exit_button]
+		# THE FIX: Construct the array in a single statement to preserve its type.
+		var all_items: Array[Control] = [
+			start_button, options_button, exit_button, 
+			newgrounds_logo, godot_logo, itch_logo
 		]
-		for item in all_interactive_items:
-			item.pressed.connect(_on_any_item_pressed)
-
-		var focusable_items: Array[StyledMenuItem] = [start_button, options_button, exit_button]
-		for item in focusable_items:
-			item.focus_entered.connect(_on_any_item_focused)
-			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-
-		# --- Initialize Menu Manager ---
-		var menu_manager = MenuManagerScript.new()
-		add_child(menu_manager)
-		var menu_items: Array[Control] = [start_button, options_button, exit_button]
-		menu_manager.setup_menu(menu_items)
-		menu_manager.selection_changed.connect(_on_any_item_focused)
+		setup_menu_navigation(focusable_items, all_items)
 
 		await get_tree().process_frame
 		start_button.grab_focus()
 
-
-# --- Signal Handlers ---
-
-
-func _on_any_item_pressed() -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
-
-
-func _on_any_item_focused() -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
-
-
+# --- Unique Signal Handlers ---
 func _on_start_button_pressed() -> void:
 	SceneManager.start_game(AssetPaths.ENCOUNTER_00)
 
-
 func _on_options_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
-
 
 func _on_exit_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	await get_tree().create_timer(0.2).timeout
 	get_tree().quit()
 
-
 func _on_logo_pressed(logo_name: String) -> void:
 	print("%s Pressed" % logo_name)
 
+
+=====================================
+FILE: ./src/scenes/menus/base_menu_screen.gd
+=====================================
+# src/scenes/menus/base_menu_screen.gd
+## A base class for all menu screens to inherit from.
+##
+## It provides a standardized way to set up keyboard navigation via the
+## MenuManager and handles common audio feedback for UI interactions.
+class_name BaseMenuScreen
+extends Control
+
+# --- Constants ---
+const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+
+# --- Protected Methods (for child classes to use) ---
+
+## Initializes the menu manager and connects common feedback signals.
+## [param focusable_items]: An array of Controls that can be navigated with the keyboard.
+## [param all_interactive_items]: An array of all Controls that should provide audio feedback.
+func setup_menu_navigation(focusable_items: Array[Control], all_interactive_items: Array[Control]) -> void:
+	if not Engine.is_editor_hint():
+		var menu_manager = MenuManagerScript.new()
+		add_child(menu_manager)
+		menu_manager.setup_menu(focusable_items)
+		menu_manager.selection_changed.connect(_on_any_item_focused)
+
+		for item in all_interactive_items:
+			if item.has_signal("pressed"):
+				item.pressed.connect(_on_any_item_pressed)
+			
+			if item.has_signal("mouse_entered"):
+				item.mouse_entered.connect(_on_any_item_focused)
+
+		var credits_label: RichTextLabel = find_child("CreditsLabel", true, false)
+		if is_instance_valid(credits_label):
+			credits_label.meta_hover_started.connect(func(_meta): CursorManager.set_pointer_state(true))
+			credits_label.meta_hover_ended.connect(func(_meta): CursorManager.set_pointer_state(false))
+			credits_label.meta_clicked.connect(func(_meta): _on_any_item_pressed())
+			# THE FIX: Use a lambda to absorb the 'meta' argument before calling the sound handler.
+			credits_label.meta_hover_started.connect(func(_meta): _on_any_item_focused())
+
+# --- Private Signal Handlers ---
+
+func _on_any_item_pressed() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
+
+func _on_any_item_focused() -> void:
+	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
 
 =====================================
 FILE: ./src/scenes/menus/credits_screen.gd
@@ -3247,10 +3261,9 @@ FILE: ./src/scenes/menus/credits_screen.gd
 # src/scenes/menus/credits_screen.gd
 ## The controller for the credits screen.
 @tool
-extends Control
+extends "res://src/scenes/menus/base_menu_screen.gd"
 
 # --- Constants ---
-const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 const CREDITS_BBCODE = """
 [center]A Game By Steven Casteel[/center]
 [center][url=https://www.stevencasteel.com/]www.stevencasteel.com[/url][/center]
@@ -3266,13 +3279,12 @@ const CREDITS_BBCODE = """
 @onready var back_button: StyledMenuItem = %BackButton
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	for c in credits_label_container.get_children():
 		c.queue_free()
 
 	var credits_label = RichTextLabel.new()
+	credits_label.name = "CreditsLabel" # Name for the base class to find it
 	credits_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	credits_label.bbcode_enabled = true
 	credits_label.mouse_filter = MOUSE_FILTER_PASS
@@ -3285,40 +3297,23 @@ func _ready() -> void:
 	back_button.text = "BACK"
 
 	if not Engine.is_editor_hint():
+		# --- Connect Unique Action Signals ---
 		back_button.pressed.connect(_on_back_button_pressed)
 		credits_label.meta_clicked.connect(_on_meta_clicked)
-		credits_label.meta_hover_started.connect(func(_meta): CursorManager.set_pointer_state(true))
-		credits_label.meta_hover_ended.connect(func(_meta): CursorManager.set_pointer_state(false))
 
-		var menu_manager = MenuManagerScript.new()
-		add_child(menu_manager)
-		menu_manager.setup_menu([back_button])
-
-		# --- Connect Feedback Handlers ---
-		menu_manager.selection_changed.connect(_on_any_item_focused)
-		back_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-		back_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		# --- Initialize Common Navigation & Feedback ---
+		setup_menu_navigation([back_button], [back_button])
 
 		await get_tree().process_frame
 		back_button.grab_focus()
 
-
-# --- Signal Handlers ---
-
-
-func _on_any_item_focused() -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
-
-
+# --- Unique Signal Handlers ---
 func _on_meta_clicked(meta) -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
 	OS.shell_open(str(meta))
-
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
-
 
 =====================================
 FILE: ./src/scenes/menus/sound_screen.tscn
@@ -3525,10 +3520,7 @@ FILE: ./src/scenes/menus/options_screen.gd
 # src/scenes/menus/options_screen.gd
 ## The controller for the main options menu scene.
 @tool
-extends Control
-
-# --- Constants ---
-const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+extends "res://src/scenes/menus/base_menu_screen.gd"
 
 # --- Node References ---
 @onready var sound_button: StyledMenuItem = %SoundButton
@@ -3537,8 +3529,6 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 @onready var back_button: StyledMenuItem = %BackButton
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	sound_button.text = "SOUND"
 	controls_button.text = "CONTROLS"
@@ -3546,63 +3536,34 @@ func _ready() -> void:
 	back_button.text = "BACK"
 
 	if not Engine.is_editor_hint():
-		# --- Connect Signals ---
+		# --- Connect Unique Action Signals ---
 		sound_button.pressed.connect(_on_sound_button_pressed)
 		controls_button.pressed.connect(_on_controls_button_pressed)
 		credits_button.pressed.connect(_on_credits_button_pressed)
 		back_button.pressed.connect(_on_back_button_pressed)
 
-		# --- Initialize Menu Manager ---
-		var menu_manager = MenuManagerScript.new()
-		add_child(menu_manager)
-		var menu_items: Array[Control] = [
+		# --- Initialize Common Navigation & Feedback ---
+		var all_items: Array[Control] = [
 			sound_button, controls_button, credits_button, back_button
 		]
-		menu_manager.setup_menu(menu_items)
-
-		# --- Connect Feedback Handlers ---
-		menu_manager.selection_changed.connect(_on_any_item_focused)
-		var generic_menu_items = [sound_button, controls_button, credits_button]
-		for item in generic_menu_items:
-			item.pressed.connect(_on_any_item_pressed)
-			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
-
-		# Connect feedback for the back button separately
-		back_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-		back_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		setup_menu_navigation(all_items, all_items)
 
 		await get_tree().process_frame
 		sound_button.grab_focus()
 
-
-# --- Signal Handlers ---
-
-
-func _on_any_item_pressed() -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_SELECT)
-
-
-func _on_any_item_focused() -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
-
-
+# --- Unique Signal Handlers ---
 func _on_sound_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_SOUND_SCREEN)
-
 
 func _on_controls_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_CONTROLS_SCREEN)
 
-
 func _on_credits_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_CREDITS_SCREEN)
-
 
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_TITLE_SCREEN)
-
 
 =====================================
 FILE: ./src/scenes/menus/sound_screen.gd
@@ -3610,10 +3571,7 @@ FILE: ./src/scenes/menus/sound_screen.gd
 # src/scenes/menus/sound_screen.gd
 ## The controller for the sound options menu.
 @tool
-extends Control
-
-# --- Constants ---
-const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+extends "res://src/scenes/menus/base_menu_screen.gd"
 
 # --- Node References ---
 @onready var master_row: SoundSettingRow = %MasterRow
@@ -3623,8 +3581,6 @@ const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
 @onready var mute_button: MuteButton = $MuteButtonContainer/MuteButton
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	back_button.text = "BACK"
 
@@ -3643,17 +3599,10 @@ func _ready() -> void:
 
 		back_button.pressed.connect(_on_back_button_pressed)
 
-		var menu_manager = MenuManagerScript.new()
-		add_child(menu_manager)
-		# NOTE: For now, only the back button is focusable with keyboard/controller.
-		menu_manager.setup_menu([back_button])
-
-		# --- Connect Feedback Handlers ---
-		menu_manager.selection_changed.connect(_on_any_item_focused)
-		var interactive_items: Array[Control] = [back_button, mute_button]
-		for item in interactive_items:
-			item.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-			item.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		# --- Initialize Common Navigation & Feedback ---
+		var focusable_items: Array[Control] = [back_button]
+		var all_items: Array[Control] = [back_button, mute_button] # Sliders handled internally
+		setup_menu_navigation(focusable_items, all_items)
 
 		await get_tree().process_frame
 		back_button.grab_focus()
@@ -3664,13 +3613,8 @@ func _exit_tree() -> void:
 		if Settings.audio_settings_changed.is_connected(_update_ui_from_settings):
 			Settings.audio_settings_changed.disconnect(_update_ui_from_settings)
 
-
 # --- Private Methods ---
-
-
 func _update_ui_from_settings() -> void:
-	# This function now only tells the rows to update themselves.
-	# It doesn't know *how* they update.
 	if is_instance_valid(master_row):
 		master_row.set_slider_value(Settings.master_volume)
 		master_row.set_mute_state(Settings.master_muted)
@@ -3681,14 +3625,7 @@ func _update_ui_from_settings() -> void:
 		sfx_row.set_slider_value(Settings.sfx_volume)
 		sfx_row.set_mute_state(Settings.sfx_muted)
 
-
 # --- Signal Handlers ---
-
-
-func _on_any_item_focused() -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
-
-
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
@@ -3700,44 +3637,29 @@ FILE: ./src/scenes/menus/controls_screen.gd
 # src/scenes/menus/controls_screen.gd
 ## The controller for the controls display screen.
 @tool
-extends Control
-
-# --- Constants ---
-const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+extends "res://src/scenes/menus/base_menu_screen.gd"
 
 # --- Node References ---
 @onready var back_button: StyledMenuItem = %BackButton
-
 
 # --- Godot Lifecycle Methods ---
 func _ready() -> void:
 	back_button.text = "BACK"
 
 	if not Engine.is_editor_hint():
+		# --- Connect Unique Action Signals ---
 		back_button.pressed.connect(_on_back_button_pressed)
 
-		var menu_manager = MenuManagerScript.new()
-		add_child(menu_manager)
-		menu_manager.setup_menu([back_button])
-
-		# --- Connect Feedback Handlers ---
-		menu_manager.selection_changed.connect(_on_any_item_focused)
-		back_button.mouse_entered.connect(CursorManager.set_pointer_state.bind(true))
-		back_button.mouse_exited.connect(CursorManager.set_pointer_state.bind(false))
+		# --- Initialize Common Navigation & Feedback ---
+		setup_menu_navigation([back_button], [back_button])
 
 		await get_tree().process_frame
 		back_button.grab_focus()
 
-
-# --- Signal Handlers ---
-func _on_any_item_focused() -> void:
-	AudioManager.play_sfx(AssetPaths.SFX_UI_MOVE)
-
-
+# --- Unique Signal Handlers ---
 func _on_back_button_pressed() -> void:
 	AudioManager.play_sfx(AssetPaths.SFX_UI_BACK)
 	SceneManager.go_to_scene(AssetPaths.SCENE_OPTIONS_SCREEN)
-
 
 =====================================
 FILE: ./src/scenes/menus/controls_screen.tscn
@@ -3931,37 +3853,28 @@ FILE: ./src/scenes/game_over/game_over_screen.gd
 # src/scenes/game_over/game_over_screen.gd
 ## The controller for the "Game Over" screen.
 @tool
-extends Control
-
-# --- Constants ---
-const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+extends "res://src/scenes/menus/base_menu_screen.gd"
 
 # --- Node References ---
 @onready var back_button: StyledMenuItem = %BackButton
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	back_button.text = "BACK TO TITLE"
 
 	if not Engine.is_editor_hint():
+		# --- Connect Unique Action Signals ---
 		back_button.pressed.connect(_on_back_button_pressed)
 
-		var menu_manager = MenuManagerScript.new()
-		add_child(menu_manager)
-		menu_manager.setup_menu([back_button])
+		# --- Initialize Common Navigation & Feedback ---
+		setup_menu_navigation([back_button], [back_button])
 
 		await get_tree().process_frame
 		back_button.grab_focus()
 
-
-# --- Signal Handlers ---
-
-
+# --- Unique Signal Handlers ---
 func _on_back_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_TITLE_SCREEN)
-
 
 =====================================
 FILE: ./src/scenes/main/main.tscn
@@ -4056,37 +3969,28 @@ FILE: ./src/scenes/victory/victory_screen.gd
 # src/scenes/victory/victory_screen.gd
 ## The controller for the "Victory" screen.
 @tool
-extends Control
-
-# --- Constants ---
-const MenuManagerScript = preload(AssetPaths.SCRIPT_MENU_MANAGER)
+extends "res://src/scenes/menus/base_menu_screen.gd"
 
 # --- Node References ---
 @onready var back_button: StyledMenuItem = %BackButton
 
 # --- Godot Lifecycle Methods ---
-
-
 func _ready() -> void:
 	back_button.text = "BACK TO TITLE"
 
 	if not Engine.is_editor_hint():
+		# --- Connect Unique Action Signals ---
 		back_button.pressed.connect(_on_back_button_pressed)
 
-		var menu_manager = MenuManagerScript.new()
-		add_child(menu_manager)
-		menu_manager.setup_menu([back_button])
+		# --- Initialize Common Navigation & Feedback ---
+		setup_menu_navigation([back_button], [back_button])
 
 		await get_tree().process_frame
 		back_button.grab_focus()
 
-
-# --- Signal Handlers ---
-
-
+# --- Unique Signal Handlers ---
 func _on_back_button_pressed() -> void:
 	SceneManager.go_to_scene(AssetPaths.SCENE_TITLE_SCREEN)
-
 
 =====================================
 FILE: ./src/core/sequencing/sequence_step.gd
@@ -6554,7 +6458,7 @@ func execute(owner: BaseEntity, pattern: AttackPattern) -> Callable:
 =====================================
 FILE: ./src/combat/attack_logic/minion_volley_3_shot.tres
 =====================================
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://cihbnl4747m0a"]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://cbc89272af394"]
 
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
 [ext_resource type="Resource" uid="uid://dw7h56g0o6aex" path="res://src/combat/attack_logic/volley_logic.tres" id="2_logic"]
@@ -6567,7 +6471,6 @@ attack_duration = 0.8
 cooldown = 3.0
 projectile_count = 3
 volley_delay = 0.2
-
 
 =====================================
 FILE: ./src/combat/attack_logic/projectile_logic.gd

@@ -26,7 +26,20 @@
 
 
 
+refactor(ui): Abstract common menu logic into BaseMenuScreen
 
+This commit completes Task 1.2 of the refactoring plan, addressing significant code duplication across all menu scenes.
+
+A new `BaseMenuScreen.gd` class has been created to encapsulate common functionality. All menu screen scripts (`title_screen`, `options_screen`, etc.) now extend this base class.
+
+Key changes:
+- Centralized the setup of the `MenuManager` for keyboard navigation.
+- Unified audio feedback for UI interactions (`_on_any_item_pressed`, `_on_any_item_focused`) in the base class.
+- Pushed responsibility for cursor state management down into the individual components (`StyledMenuItem`, `SoundSettingRow`) to improve encapsulation.
+- Added consistent hover sound effects to all interactive UI elements, including hyperlinks and checkboxes, for a better user experience.
+- Resolved several signal connection bugs related to argument mismatches by correctly using lambdas.
+
+This refactor significantly reduces boilerplate code in each menu scene, making them cleaner and easier to maintain.
 
 
 
