@@ -4,6 +4,6 @@
 
 [resource]
 script = ExtResource("1_shake_effect")
-amplitude = 40.0
-frequency = 10.0
-duration = 1.2
+amplitude = 50.0
+frequency = 25.0
+duration = 1.0

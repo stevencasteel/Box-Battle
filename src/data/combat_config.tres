@@ -47,4 +47,4 @@ gravity = 1200.0
 player_melee_close_range_hit_stop_duration = 0.025
 player_damage_taken_hit_stop_duration = 0.04
 boss_phase_change_hit_stop_duration = 0.1
-boss_death_hit_stop_duration = 0.2
+boss_death_hit_stop_duration = 0.1

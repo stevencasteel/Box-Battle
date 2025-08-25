@@ -5,6 +5,9 @@
 ## builder sub-systems to spawn the terrain, entities, and UI.
 extends Node
 
+# --- Constants ---
+const BossSpawnShake = preload("res://src/core/data/effects/boss_spawn_shake.tres")
+
 # --- Private Member Variables ---
 var _current_build_data: LevelBuildData
 var _current_level_container: Node
@@ -61,6 +64,10 @@ func spawn_boss_async() -> Node:
 	instance.inject_dependencies(ServiceLocator)
 	_current_level_container.add_child(instance)
 	await get_tree().process_frame
+
+	if is_instance_valid(BossSpawnShake):
+		ServiceLocator.fx_manager.request_screen_shake(BossSpawnShake)
+
 	return instance
 
 

@@ -23,6 +23,20 @@
 
 
 
+
+
+feat(fx): Enhance boss spawn and death visual feedback
+
+To improve the overall game feel of the boss encounter, several visual feedback effects have been added and adjusted. The goal is to make the boss's entrance and exit more impactful and satisfying for the player.
+
+- Halved the hit-stop duration on boss death (from 0.2s to 0.1s) in the main `CombatConfig`. This makes the transition to the death sequence feel quicker and less jarring.
+
+- Tuned the `boss_death_shake` effect to be more intense and impactful by increasing its amplitude and frequency.
+
+- Introduced a new `boss_spawn_shake` effect that triggers when the boss is first spawned into the arena. This provides immediate feedback and adds anticipation to the start of the fight. The effect is triggered by the `ArenaBuilder` after the boss is instanced.
+
+
+
 refactor(srp): Decouple ArenaBuilder from intro sequence direction
 
 This commit completes the final refactoring task (Task 3.2), fully separating the responsibilities of the `ArenaBuilder` and the `EncounterScene`.
