@@ -1,11 +1,11 @@
 
 ```
-██████╗  ██████╗ ██╗  ██╗    ██████╗  █████╗ ████████╗████████╗██╗     ███████╗
-██╔══██╗██╔═══██╗ ██╗██╔╝    ██╔══██╗██╔══██╗╚══██╔══╝╚══██╔══╝██║     ██╔════╝
-██████╔╝██║   ██║  ███╔╝     ██████╔╝███████║   ██║      ██║   ██║     █████╗  
-██╔══██╗██║   ██║ ██╔██╗     ██╔══██╗██╔══██║   ██║      ██║   ██║     ██╔══╝  
-██████╔╝╚██████╔╝██╔╝ ██╗    ██████╔╝██║  ██║   ██║      ██║   ███████╗███████╗
-╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝╚══════╝
+          ██████╗  ██████╗ ██╗  ██╗    ██████╗  █████╗ ████████╗████████╗██╗     ███████╗
+          ██╔══██╗██╔═══██╗ ██╗██╔╝    ██╔══██╗██╔══██╗╚══██╔══╝╚══██╔══╝██║     ██╔════╝
+          ██████╔╝██║   ██║  ███╔╝     ██████╔╝███████║   ██║      ██║   ██║     █████╗  
+          ██╔══██╗██║   ██║ ██╔██╗     ██╔══██╗██╔══██║   ██║      ██║   ██║     ██╔══╝  
+          ██████╔╝╚██████╔╝██╔╝ ██╗    ██████╔╝██║  ██║   ██║      ██║   ███████╗███████╗
+          ╚═════╝  ╚═════╝ ╚═╝  ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝      ╚═╝   ╚══════╝╚══════╝
 ```
 
 A combat-focused Mega Man / Hollow Knight-like Arena Battler built in Godot 4. This repository serves as a professional template for creating robust, scalable, and data-driven games, showcasing modern design patterns and a clean, testable architecture.
@@ -16,7 +16,7 @@ A combat-focused Mega Man / Hollow Knight-like Arena Battler built in Godot 4. T
 
 <!-- TODO: Add a high-quality gameplay GIF here -->
 
-## ► Core Philosophy & Architectural Highlights
+## ■ Core Philosophy & Architectural Highlights
 
 This project is built on a foundation of professional software design patterns, adapted for the Godot engine. The goal is a codebase that is easy to understand, maintain, and extend.
 
@@ -30,13 +30,13 @@ This project is built on a foundation of professional software design patterns, 
 
 -   **Robust & Testable:** The architecture emphasizes testability, with a suite of unit tests, fakes for core systems (`FakeEventBus`), and a clear dependency injection pattern that makes components easy to test in isolation.
 
-## ► Getting Started
+## ■ Getting Started
 
 1.  **Install Godot 4.4** or newer.
 2.  **Clone** this repository.
 3.  Open the project in Godot and run the main scene: `res://src/scenes/main/main.tscn`.
 
-## ► Controls
+## ■ Controls
 
 The controls are designed for keyboard and mouse, reflecting the in-game controls menu.
 
@@ -47,7 +47,7 @@ The controls are designed for keyboard and mouse, reflecting the in-game control
 -   **Heal:** Down + Jump (on ground)
 -   **Pause / Menu:** Enter / P / Escape
 
-## ► Project Structure
+## ■ Project Structure
 
 The repository is organized to separate engine code, game logic, and data, making it easy to navigate.
 
@@ -67,7 +67,7 @@ The repository is organized to separate engine code, game logic, and data, makin
     -   `ui/` - All UI-related scenes and components (HUD, menus, debug overlay).
     -   `vfx/` - Visual effect scenes, like `hit_spark.tscn`.
 
-## ► Key Systems Overview
+## ■ Key Systems Overview
 
 The game's architecture is managed by a suite of decoupled, autoloaded singletons.
 
@@ -80,6 +80,6 @@ The game's architecture is managed by a suite of decoupled, autoloaded singleton
 
 For a deeper dive into the architecture, please see the documents in the `docs/` folder, especially `docs/ARCHITECTURE.txt`.
 
-## ► License
+## ■ License
 
 This project is licensed under the terms of the license agreement. Please see the `LICENSE` file for full details.
