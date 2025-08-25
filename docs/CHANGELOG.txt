@@ -35,6 +35,19 @@
 ║                                                                              ║
 ║                                                                              ║
 
+feat(Minions): Implement compositional minion behavior framework
+
+Completes the full refactor of the minion system to be data-driven and compositional, enabling the creation of diverse enemies without new code.
+
+- Created a `MovementLogic` strategy pattern system to define interchangeable movement behaviors (e.g., Stationary, Patrol) as `Resource` files.
+- Created a `MinionBehavior` resource to act as a "character sheet," combining stats and linking to `MovementLogic` and `AttackPattern` resources.
+- The `Minion`'s state machine is now fully generic, delegating all movement and attack execution to the logic resources defined in its assigned `MinionBehavior`.
+- Created two distinct minion types using this system:
+  1. `Sentry Turret`: Uses `StationaryMovementLogic` and a single-shot `AttackPattern`.
+  2. `Patrolling Lancer`: Uses `PatrolMovementLogic` and a 3-shot volley `AttackPattern`.
+- Updated the level encounter to spawn both new minion types, verifying the system's flexibility.
+
+
 refactor(Combat): Elevate AttackPattern to be fully data-driven
 
 Implements a major architectural refinement to the AttackLogic system, adhering to the DRY and Open/Closed principles.

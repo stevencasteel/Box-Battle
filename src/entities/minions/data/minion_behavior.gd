@@ -15,7 +15,8 @@ extends Resource
 @export var movement_logic: MovementLogic
 
 @export_group("Combat")
-# TODO: Implement a swappable AttackLogic system for minions.
-@export_range(0.1, 10.0, 0.1) var attack_cooldown: float = 2.0
 @export_range(50, 1000, 10) var detection_radius: float = 400.0
+# THE FIX: Add the projectile pool key back. This defines WHAT projectile the
+# minion fires, while the AttackPattern defines HOW it's fired.
 @export var projectile_pool_key: StringName = &"turret_shots"
+@export var attack_patterns: Array[AttackPattern] = []

@@ -11,7 +11,7 @@ extends CharacterBody2D
 var _components_initialized: bool = false
 var _services: ServiceLocator
 var _components: Dictionary = {}
-var _components_by_interface: Dictionary = {} # NEW: Cache for interface lookups
+var _components_by_interface: Dictionary = {}
 
 # --- Godot Lifecycle Methods ---
 
@@ -27,11 +27,9 @@ func _ready() -> void:
 
 ## Retrieves a component from this entity by its script type or an interface it implements.
 func get_component(type: Script) -> IComponent:
-	# First, try a direct lookup by the component's concrete class.
 	if _components.has(type):
 		return _components.get(type)
 
-	# If that fails, try looking up by an implemented interface.
 	if _components_by_interface.has(type):
 		return _components_by_interface.get(type)
 
@@ -96,6 +94,16 @@ func setup_components(
 			child.setup(self, merged_deps)
 
 	_components_initialized = true
+
+# THE FIX: Move generic attack implementations to the base class so any entity can use them.
+func fire_shot_at_player() -> void:
+	# This method needs to be implemented by child classes that can actually shoot.
+	push_warning("BaseEntity.fire_shot_at_player() was called but not implemented by the child class.")
+
+
+func fire_volley(_shot_count: int, _delay: float) -> void:
+	# This method needs to be implemented by child classes that can fire volleys.
+	push_warning("BaseEntity.fire_volley() was called but not implemented by the child class.")
 
 
 # --- Private Methods ---

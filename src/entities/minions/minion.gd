@@ -8,7 +8,6 @@ extends BaseEntity
 @export_group("Core Configuration")
 @export var behavior: MinionBehavior
 @export_group("Juice & Feedback")
-# THE FIX: The hit flash effect is now a configurable property, not a constant.
 @export var hit_flash_effect: ShaderEffect
 @export var hit_spark_effect: VFXEffect
 @export var dissolve_effect: ShaderEffect
@@ -24,6 +23,7 @@ var entity_data: MinionStateData
 # --- Private Member Variables ---
 var _player: CharacterBody2D
 var _is_dead: bool = false
+var _active_attack_tween: Tween
 
 # --- Godot Lifecycle Methods ---
 
@@ -82,12 +82,9 @@ func deactivate() -> void:
 	set_physics_process(false)
 	$RangeDetector.monitoring = false
 
-
-# --- Private Methods ---
-
-
-func _fire_at_player() -> void:
-	if not is_instance_valid(_player):
+# THE FIX: Add the concrete implementation of the attack functions.
+func fire_shot_at_player() -> void:
+	if _is_dead or not is_instance_valid(_player):
 		return
 
 	var pool_key: StringName = entity_data.behavior.projectile_pool_key
@@ -95,15 +92,25 @@ func _fire_at_player() -> void:
 	if not is_instance_valid(shot):
 		push_error("Minion failed to get projectile from pool: '%s'" % pool_key)
 		return
-
-	# Look towards player before firing
-	var dir_to_player: float = _player.global_position.x - global_position.x
-	if not is_zero_approx(dir_to_player):
-		entity_data.facing_direction = sign(dir_to_player)
+	
+	_update_player_tracking()
 
 	shot.direction = (self._player.global_position - self.global_position).normalized()
 	shot.global_position = self.global_position
 	shot.activate(_services)
+
+
+func fire_volley(shot_count: int, delay: float) -> void:
+	if is_instance_valid(_active_attack_tween):
+		_active_attack_tween.kill()
+	_active_attack_tween = get_tree().create_tween()
+	for i in range(shot_count):
+		_active_attack_tween.tween_callback(fire_shot_at_player)
+		if i < shot_count - 1:
+			_active_attack_tween.tween_interval(delay)
+
+
+# --- Private Methods ---
 
 
 func _die() -> void:
@@ -114,6 +121,9 @@ func _die() -> void:
 	collision_layer = 0
 	collision_mask = 0
 	deactivate()
+
+	if is_instance_valid(_active_attack_tween):
+		_active_attack_tween.kill()
 
 	var fc: FXComponent = get_component(FXComponent)
 	var death_tween: Tween = fc.play_effect(dissolve_effect)
@@ -159,7 +169,6 @@ func _initialize_and_setup_components() -> void:
 
 	var per_component_deps := {
 		sm: {"states": states, "initial_state_key": Identifiers.MinionStates.IDLE},
-		# THE FIX: Pass the exported variable to the FXComponent's dependencies.
 		fc: {"visual_node": visual, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}
@@ -170,6 +179,15 @@ func _initialize_and_setup_components() -> void:
 func _connect_signals() -> void:
 	var hc: HealthComponent = get_component(HealthComponent)
 	hc.died.connect(_on_health_component_died)
+
+
+func _update_player_tracking() -> void:
+	if not is_instance_valid(_player):
+		return
+
+	var dir_to_player: float = _player.global_position.x - global_position.x
+	if not is_zero_approx(dir_to_player):
+		entity_data.facing_direction = sign(dir_to_player)
 
 
 # --- Signal Handlers ---

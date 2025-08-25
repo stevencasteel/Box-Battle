@@ -1,12 +1,13 @@
-[gd_resource type="Resource" script_class="MinionBehavior" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="MinionBehavior" load_steps=4 format=3 uid="uid://dp642amrtq5i3"]
 
 [ext_resource type="Script" path="res://src/entities/minions/data/minion_behavior.gd" id="1_script"]
 [ext_resource type="Resource" path="res://src/entities/minions/movement_logic/stationary_movement.tres" id="2_movement"]
+[ext_resource type="Resource" uid="uid://bve7t5ucr1k" path="res://src/entities/boss/attack_patterns/single_shot.tres" id="3_attack_pattern"]
 
 [resource]
 script = ExtResource("1_script")
 max_health = 3
 movement_logic = ExtResource("2_movement")
-attack_cooldown = 2.0
 detection_radius = 400.0
 projectile_pool_key = &"turret_shots"
+attack_patterns = [ExtResource("3_attack_pattern")]

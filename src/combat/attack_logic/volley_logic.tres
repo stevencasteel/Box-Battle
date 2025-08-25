@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="ProjectileLogic" load_steps=2 format=3 uid="uid://dw7h56g0o6aex"]
+
+[ext_resource type="Script" path="res://src/combat/attack_logic/projectile_logic.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
