@@ -24,6 +24,26 @@
 
 
 
+feat(debug): Overhaul debug overlay UI and functionality
+
+Revamped the developer debug overlay to significantly improve its usability, readability, and feature set. This provides a more powerful tool for testing and debugging gameplay mechanics.
+
+- **UI Redesign:** Replaced the old single-panel layout with a two-panel design, separating global stats from entity-specific information. Added a dark, semi-transparent background and a monospaced font for improved readability. Object pool stats are now in a ScrollContainer to prevent overflow.
+
+- **Pause Functionality:** Fixed a critical bug where pausing the game would freeze the overlay, preventing unpausing. The overlay's `process_mode` is now set to `always` to ensure it can always process input.
+
+- **Interactive Toggles:** Added new buttons and keyboard shortcuts (Y, U, O, P, L, H) for common debug actions:
+  - Toggling collision shape visibility (`O`).
+  - Pausing/unpausing the game (`P`).
+  - Granting the player invincibility (`L`).
+
+- **Feature Removal:** Removed the unstable frame-advance feature to prevent engine crashes.
+
+- **Scene Naming:** Renamed the root node of the stationary minion's scene from "Minion" to "Turret" for better clarity in the debugger and scene tree.
+
+
+
+
 refactor(display): Adapt UI layouts to 1000x1000 viewport
 
 Refactored the game's display settings and UI scenes to use a 1000x1000 viewport resolution. This change provides a consistent, square aspect ratio which is better suited for the arena combat design.

@@ -1,101 +1,191 @@
-[gd_scene load_steps=2 format=3 uid="uid://debug_overlay_scene_id"]
+[gd_scene load_steps=3 format=3 uid="uid://debug_overlay_scene_id"]
 
 [ext_resource type="Script" path="res://src/ui/dev/debug_overlay.gd" id="1_debug_script"]
+[ext_resource type="FontFile" path="res://addons/gut/fonts/AnonymousPro-Regular.ttf" id="2_font"]
 
 [node name="DebugOverlay" type="CanvasLayer"]
 layer = 100
 script = ExtResource("1_debug_script")
 
-[node name="Panel" type="Panel" parent="."]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 910.0
-offset_bottom = 330.0
-mouse_filter = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="Panel"]
-layout_mode = 1
+[node name="MainMargin" type="MarginContainer" parent="."]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="Columns" type="HBoxContainer" parent="Panel/MarginContainer"]
+[node name="HBox" type="HBoxContainer" parent="MainMargin"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 10
 
-[node name="EntityInfoColumn" type="VBoxContainer" parent="Panel/MarginContainer/Columns"]
+[node name="EntityPanel" type="PanelContainer" parent="MainMargin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(450, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="StateLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
-unique_name_in_owner = true
+[node name="Margin" type="MarginContainer" parent="MainMargin/HBox/EntityPanel"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "State:"
-autowrap_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
-[node name="VelocityLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
+[node name="EntityInfoVBox" type="VBoxContainer" parent="MainMargin/HBox/EntityPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TargetLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "Target: NONE"
+
+[node name="PositionLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "Position:"
+
+[node name="VelocityLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "Velocity:"
 
-[node name="FlagsLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
+[node name="HealthLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "Health:"
+
+[node name="StateLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "State:"
+
+[node name="FlagsLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "Flags:"
-autowrap_mode = 2
+autowrap_mode = 3
 
-[node name="StateHistoryLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
+[node name="TimersLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
-text = "History:"
-autowrap_mode = 2
+text = "Timers:"
+autowrap_mode = 3
 
-[node name="InputBufferLabel" type="Label" parent="Panel/MarginContainer/Columns/EntityInfoColumn"]
+[node name="InputBufferLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "Input:"
-autowrap_mode = 2
+autowrap_mode = 3
 
-[node name="VSeparator" type="VSeparator" parent="Panel/MarginContainer/Columns"]
+[node name="StateHistoryLabel" type="Label" parent="MainMargin/HBox/EntityPanel/Margin/EntityInfoVBox"]
+unique_name_in_owner = true
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "History:"
+autowrap_mode = 3
 
-[node name="GlobalInfoColumn" type="VBoxContainer" parent="Panel/MarginContainer/Columns"]
+[node name="GlobalPanel" type="PanelContainer" parent="MainMargin/HBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="FPSLabel" type="Label" parent="Panel/MarginContainer/Columns/GlobalInfoColumn"]
+[node name="Margin" type="MarginContainer" parent="MainMargin/HBox/GlobalPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="GlobalInfoVBox" type="VBoxContainer" parent="MainMargin/HBox/GlobalPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FPSLabel" type="Label" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "FPS:"
 
-[node name="PoolsLabel" type="Label" parent="Panel/MarginContainer/Columns/GlobalInfoColumn"]
+[node name="FXLabel" type="Label" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
-theme_override_font_sizes/font_size = 20
-text = "Pools:"
-autowrap_mode = 2
-
-[node name="FXLabel" type="Label" parent="Panel/MarginContainer/Columns/GlobalInfoColumn"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 20
 text = "FX:"
-autowrap_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+layout_mode = 2
+
+[node name="PoolsLabel" type="Label" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 20
+text = "Object Pools:"
+
+[node name="PoolsScroll" type="ScrollContainer" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PoolsVBox" type="VBoxContainer" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/PoolsScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HSeparator2" type="HSeparator" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+layout_mode = 2
+
+[node name="ButtonsGrid" type="GridContainer" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox"]
+layout_mode = 2
+columns = 2
+
+[node name="ToggleCollisionButton" type="Button" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "Shapes (O)"
+
+[node name="ToggleInvincibilityButton" type="Button" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "Player God (L)"
+
+[node name="PauseButton" type="Button" parent="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+toggle_mode = true
+text = "Pause (P)"
+
+[connection signal="toggled" from="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid/ToggleCollisionButton" to="." method="_on_toggle_collision_toggled"]
+[connection signal="toggled" from="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid/ToggleInvincibilityButton" to="." method="_on_toggle_invincibility_toggled"]
+[connection signal="toggled" from="MainMargin/HBox/GlobalPanel/Margin/GlobalInfoVBox/ButtonsGrid/PauseButton" to="." method="_on_pause_toggled"]
