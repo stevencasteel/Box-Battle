@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://c0mbo7v80afg1"]
+[gd_scene load_steps=9 format=3 uid="uid://c0mbo7v80afg1"]
 
 [ext_resource type="Script" uid="uid://4xepmjomesfc" path="res://src/entities/minions/minion.gd" id="1_minion_script"]
 [ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
@@ -9,6 +9,9 @@
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
 size = Vector2(50, 50)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_rangedetector"]
+radius = 400.0
 
 [node name="PatrollingLancer" type="CharacterBody2D" groups=["enemy"]]
 collision_layer = 4
@@ -34,6 +37,7 @@ one_shot = true
 collision_layer = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RangeDetector"]
+shape = SubResource("CircleShape2D_rangedetector")
 
 [connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
 [connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]

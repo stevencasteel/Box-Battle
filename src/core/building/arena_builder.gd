@@ -47,7 +47,6 @@ func build_level_async() -> Node:
 	await _spawn_hud_async()
 	await _spawn_minions_async()
 	
-	# The builder's job is now done. It no longer runs the intro sequence.
 	await get_tree().process_frame
 
 	return _current_level_container
@@ -89,7 +88,12 @@ func _spawn_hud_async() -> void:
 func _spawn_minions_async() -> void:
 	for spawn_data in _current_build_data.minion_spawns:
 		var instance: Node = spawn_data.scene.instantiate()
-
+		
+		# Add the node to the tree FIRST. This is critical.
+		# Its name will be temporary (e.g., @CharacterBody2D@667).
+		_current_level_container.add_child(instance)
+		
+		# Now that it's in the tree, we can get its base name and assign a unique one.
 		var base_name: String = instance.name
 		var current_count: int = _minion_spawn_counts.get(base_name, 0) + 1
 		_minion_spawn_counts[base_name] = current_count
@@ -101,5 +105,4 @@ func _spawn_minions_async() -> void:
 		if instance is BaseEntity:
 			instance.inject_dependencies(ServiceLocator)
 			
-		_current_level_container.add_child(instance)
 		await get_tree().process_frame

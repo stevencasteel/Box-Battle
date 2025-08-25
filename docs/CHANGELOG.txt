@@ -24,6 +24,21 @@
 
 
 
+
+refactor(entities): Improve minion naming and fix debug overlay bugs
+
+Performed a refactoring of the minion entity architecture to improve clarity, maintainability, and fix several related bugs in the debug overlay.
+
+- **Architectural Naming:** Renamed the generic `minion.tscn` to the more descriptive `turret.tscn` to accurately reflect its role. Updated all asset paths and encounter data to use the new scene name, establishing a clearer convention where each minion type has its own dedicated scene.
+
+- **Debug Overlay Target Cycling:** Fixed a critical bug where spawned minions (like the Patrolling Lancer) would not appear as selectable targets in the debug overlay. The target cycling logic now re-queries the scene tree for all enemies on each cycle, ensuring it always has a live, up-to-date list of entities.
+
+- **Spawner Naming Bug:** Corrected an issue where spawned minions were given temporary internal names (e.g., `@CharacterBody2D@667`) in the overlay. The spawner logic now adds the instanced minion to the scene tree *before* assigning its unique indexed name, resolving the race condition.
+
+- **Editor Warning:** Fixed a warning on `patrolling_lancer.tscn` by adding the missing `CircleShape2D` resource to its `RangeDetector`'s `CollisionShape2D`.
+
+
+
 feat(debug): Overhaul debug overlay UI and functionality
 
 Revamped the developer debug overlay to significantly improve its usability, readability, and feature set. This provides a more powerful tool for testing and debugging gameplay mechanics.

@@ -119,7 +119,8 @@ func _initialize_debug_inspector() -> void:
 	add_child(_debug_overlay)
 	_debug_overlay.visible = false
 
-	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.PLAYER))
+	# Initial population. _cycle_debug_target will refresh this list live.
+	_inspectable_entities.append(get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER))
 	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
 
 	if not _inspectable_entities.is_empty():
@@ -127,6 +128,12 @@ func _initialize_debug_inspector() -> void:
 
 
 func _cycle_debug_target() -> void:
+	# This is the fix. We re-query the scene tree every time we cycle.
+	_inspectable_entities.clear()
+	_inspectable_entities.append(get_tree().get_first_node_in_group(Identifiers.Groups.PLAYER))
+	_inspectable_entities.append_array(get_tree().get_nodes_in_group(Identifiers.Groups.ENEMY))
+
+	# Filter out any nulls just in case
 	_inspectable_entities = _inspectable_entities.filter(func(e): return is_instance_valid(e))
 
 	if _inspectable_entities.is_empty():

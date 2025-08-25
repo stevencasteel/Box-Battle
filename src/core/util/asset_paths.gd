@@ -26,7 +26,7 @@ const SCENE_BASE_BOSS = "res://src/entities/boss/base_boss.tscn"
 const SCENE_BOSS_SHOT = "res://src/projectiles/boss_shot.tscn"
 const SCENE_HOMING_BOSS_SHOT = "res://src/projectiles/homing_boss_shot.tscn"
 const SCENE_TELEGRAPH_COMPONENT = "res://src/entities/components/telegraph_component.tscn"
-const SCENE_MINION = "res://src/entities/minions/minion.tscn"
+const SCENE_TURRET = "res://src/entities/minions/turret.tscn"
 const SCENE_MINION_SHOT = "res://src/projectiles/turret_shot.tscn" # This path is still correct
 
 # --- UI & SCENES ---
