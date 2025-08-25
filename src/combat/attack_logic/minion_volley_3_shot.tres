@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://cihbnl4747m0a"]
+[gd_resource type="Resource" script_class="AttackPattern" load_steps=3 format=3 uid="uid://cbc89272af394"]
 
 [ext_resource type="Script" uid="uid://dy4xl0q65hagu" path="res://src/entities/boss/attack_patterns/attack_pattern.gd" id="1_attack_pattern"]
 [ext_resource type="Resource" uid="uid://dw7h56g0o6aex" path="res://src/combat/attack_logic/volley_logic.tres" id="2_logic"]
