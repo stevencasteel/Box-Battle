@@ -82,7 +82,7 @@ func deactivate() -> void:
 	set_physics_process(false)
 	$RangeDetector.monitoring = false
 
-# THE FIX: Add the concrete implementation of the attack functions.
+
 func fire_shot_at_player() -> void:
 	if _is_dead or not is_instance_valid(_player):
 		return
@@ -92,7 +92,7 @@ func fire_shot_at_player() -> void:
 	if not is_instance_valid(shot):
 		push_error("Minion failed to get projectile from pool: '%s'" % pool_key)
 		return
-	
+
 	_update_player_tracking()
 
 	shot.direction = (self._player.global_position - self.global_position).normalized()
@@ -164,11 +164,14 @@ func _initialize_and_setup_components() -> void:
 		Identifiers.MinionStates.IDLE:
 		load("res://src/entities/minions/states/state_minion_idle.gd").new(self, sm, entity_data),
 		Identifiers.MinionStates.ATTACK:
-		load("res://src/entities/minions/states/state_minion_attack.gd").new(self, sm, entity_data)
+		load("res://src/entities/minions/states/state_minion_attack.gd").new(self, sm, entity_data),
+		Identifiers.MinionStates.FALL:
+		load("res://src/entities/states/state_entity_fall.gd").new(self, sm, entity_data),
 	}
 
 	var per_component_deps := {
-		sm: {"states": states, "initial_state_key": Identifiers.MinionStates.IDLE},
+		# THE FIX: Read the initial state from the behavior resource.
+		sm: {"states": states, "initial_state_key": entity_data.behavior.initial_state_key},
 		fc: {"visual_node": visual, "hit_effect": hit_flash_effect},
 		hc: {"hit_spark_effect": hit_spark_effect}
 	}

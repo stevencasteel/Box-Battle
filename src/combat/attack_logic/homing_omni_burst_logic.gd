@@ -8,7 +8,8 @@ extends AttackLogic
 
 
 func get_telegraph_info(_owner: BaseEntity, _pattern: AttackPattern) -> Dictionary:
-	return {"size": Vector2(600, 600), "offset": Vector2.ZERO}
+	# THE FIX: Reduced size to 100x100, which is slightly larger than the boss's 60x60 body.
+	return {"size": Vector2(100, 100), "offset": Vector2.ZERO}
 
 
 func execute(owner: BaseEntity, _pattern: AttackPattern) -> Callable:

@@ -48,9 +48,11 @@ class BossStates:
 	const COOLDOWN = &"cooldown"
 	const PATROL = &"patrol"
 	const LUNGE = &"lunge"
+	const FALL = &"fall"
 
 
 ## Container for all Minion state keys.
 class MinionStates:
 	const IDLE = &"idle"
 	const ATTACK = &"attack"
+	const FALL = &"fall"

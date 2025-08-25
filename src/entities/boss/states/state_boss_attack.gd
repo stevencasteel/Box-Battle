@@ -54,7 +54,8 @@ func _start_telegraph_and_attack() -> void:
 		_current_pattern.telegraph_duration,
 		telegraph_size,
 		telegraph_position,
-		Palette.COLOR_HAZARD_PRIMARY
+		# THE FIX: Use a darker color from the palette.
+		Palette.COLOR_UI_PANEL_BG
 	)
 	await telegraph.telegraph_finished
 

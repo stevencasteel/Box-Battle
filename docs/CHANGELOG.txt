@@ -35,6 +35,22 @@
 ║                                                                              ║
 ║                                                                              ║
 
+feat(Entities): Implement compositional Minion framework and unified Fall State
+
+Implements a major architectural overhaul to refactor the hard-coded Turret into a flexible, data-driven, and compositional framework for all non-boss entities. Additionally, unifies core physics states for all entities to improve robustness and consistency.
+
+Key changes:
+- Created a `MinionBehavior` Resource that acts as a "character sheet," defining a minion's stats, movement, and attack patterns.
+- Implemented a `MovementLogic` strategy pattern, allowing movement behaviors (e.g., Stationary, Patrol) to be assigned as interchangeable Resources.
+- Refactored `AttackPattern` to hold all attack-specific data (like `projectile_count`), allowing multiple patterns to share a single, pure `AttackLogic` resource.
+- Moved all `AttackLogic` to a shared `src/combat/` directory, unifying them for use by any entity (Boss or Minion).
+- Created a generic `state_entity_fall.gd` and integrated it into both the Minion and BaseBoss, removing scattered gravity calculations and fixing physics bugs like "floaty" falling.
+- The `Minion.tscn` is now a generic entity whose entire behavior is dictated by its assigned `MinionBehavior` resource.
+- Created two distinct minion types to prove the system: a stationary Sentry Turret and a Patrolling Lancer that fires volleys.
+- Refactored hit-flash effects to be injected dependencies, adhering to the DRY principle.
+
+
+
 feat(Minions): Implement compositional minion behavior framework
 
 Completes the full refactor of the minion system to be data-driven and compositional, enabling the creation of diverse enemies without new code.

@@ -11,12 +11,12 @@ extends Resource
 @export_group("Stats")
 @export_range(1, 100, 1) var max_health: int = 3
 
-@export_group("Movement")
+@export_group("State & Movement")
+# THE FIX: Allow behavior to define the starting state.
+@export var initial_state_key: StringName = &"fall"
 @export var movement_logic: MovementLogic
 
 @export_group("Combat")
 @export_range(50, 1000, 10) var detection_radius: float = 400.0
-# THE FIX: Add the projectile pool key back. This defines WHAT projectile the
-# minion fires, while the AttackPattern defines HOW it's fired.
 @export var projectile_pool_key: StringName = &"turret_shots"
 @export var attack_patterns: Array[AttackPattern] = []

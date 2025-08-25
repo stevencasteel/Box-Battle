@@ -9,9 +9,12 @@ extends MovementLogic
 func execute(delta: float, minion: Minion, state_data: MinionStateData) -> Vector2:
 	var new_velocity := minion.velocity
 
-	# THE FIX: Gravity is now handled by the movement strategy itself.
+	# THE FIX: A patrolling entity is responsible for its own gravity.
 	if not minion.is_on_floor():
 		new_velocity.y += state_data.services.combat_config.gravity * delta
+	else:
+		# Apply a small amount of downward velocity to keep it stuck to slopes.
+		new_velocity.y += 10
 
 	if minion.is_on_wall():
 		state_data.facing_direction *= -1.0
