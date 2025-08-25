@@ -1,7 +1,8 @@
 # src/core/systems/fx_bindings/fx_manager_adapter.gd
-## An adapter that implements the IFXManager interface by delegating calls
+## An adapter that implements multiple FX interfaces by delegating calls
 ## to the real FXManager autoload singleton. This script is registered as an
 ## autoload itself and should NOT have a matching class_name.
+# THE FIX: Extend the main interface to satisfy the static type checker.
 extends IFXManager
 
 # --- Private Member Variables ---
@@ -9,11 +10,11 @@ var _real_fx_manager: Node
 
 # --- Godot Lifecycle Methods ---
 func _ready() -> void:
-	# Find the actual autoloaded singleton in the scene tree.
 	_real_fx_manager = get_node("/root/FXManager")
 	assert(is_instance_valid(_real_fx_manager), "FXManagerAdapter could not find /root/FXManager")
 
-# --- IFXManager Implementation ---
+# --- Interface Implementation ---
+# These methods override the empty virtual methods in IFXManager.
 
 func register_camera_shaker(shaker: CameraShaker) -> void:
 	_real_fx_manager.register_camera_shaker(shaker)

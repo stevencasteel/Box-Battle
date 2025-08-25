@@ -5,11 +5,9 @@
 ## resolving parse order errors.
 extends Node
 
-
 func _ready() -> void:
 	# Preload all interfaces and critical base classes to register them globally.
 	preload("res://src/api/interfaces/IComponent.gd")
-	# IDamageable now extends IComponent, so we preload it after.
 	preload("res://src/api/interfaces/IDamageable.gd")
 	preload("res://src/api/interfaces/IPoolable.gd")
 	preload("res://src/api/interfaces/ISceneController.gd")

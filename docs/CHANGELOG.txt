@@ -23,6 +23,18 @@
 
 
 
+refactor(isp): Revert to unified IFXManager interface
+
+This commit finalizes Task 3.1 by reverting the attempt to segregate the IFXManager interface.
+
+The initial goal was to break IFXManager into smaller interfaces (IVFXPlayer, etc.) to adhere strictly to the Interface Segregation Principle. However, this introduced a fundamental conflict with GDScript's static typing system, which requires direct inheritance for typed variables (`var x: MyType`). Since a script cannot extend multiple "interface" scripts, this approach led to cascading type errors.
+
+The decision was made to revert to a single, unified `IFXManager`. While this interface is slightly "larger" than ideal for some components, it works harmoniously with GDScript's type checker and maintains the primary architectural goal: the components remain fully decoupled from the concrete FXManager singleton and receive the IFXManager as an injected dependency.
+
+This strategic retreat results in a stable, robust, and understandable architecture that respects the constraints of the engine. All related interface files (`IVFXPlayer`, etc.) have been removed, and components like HealthComponent have been updated to depend on `IFXManager` once again.
+
+
+
 
 refactor(DI): Decouple components from ServiceLocator via injection
 
