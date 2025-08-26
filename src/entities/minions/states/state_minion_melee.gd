@@ -42,8 +42,8 @@ func _on_attack_finished() -> void:
 	if state_machine.current_state == self:
 		var attack_data = _melee_component._current_attack_data
 		if is_instance_valid(attack_data) and is_instance_valid(_minion.attack_timer):
-			# Use a generic cooldown for minions for now.
 			_minion.attack_timer.wait_time = 2.0 
 			_minion.attack_timer.start()
 		
-		state_machine.change_state(Identifiers.MinionStates.IDLE)
+		# Go directly back to patrolling, which is the default active state.
+		state_machine.change_state("patrol")

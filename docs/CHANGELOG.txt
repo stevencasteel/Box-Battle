@@ -24,6 +24,15 @@
 
 
 
+refactor(ai): Refine minion state logic for immediate patrol resumption
+
+Fine-tuned the Patrolling Lancer's state machine logic to eliminate a pause that occurred after a melee attack.
+
+- The `StateMinionMelee` now transitions directly back to the `Patrol` state upon completion, instead of the `Idle` state.
+- This prevents the minion from getting "stuck" in the `Idle` state while its global attack timer is on cooldown, ensuring it resumes patrolling immediately after a melee attack if the player is no longer in close range.
+- The AI now correctly prioritizes movement and feels more responsive when disengaging from close-quarters combat.
+
+
 
 feat(combat): Add melee attack system to boss and minions
 
