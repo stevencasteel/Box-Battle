@@ -34,4 +34,5 @@ func exit() -> void:
 func process_physics(delta: float) -> void:
 	_lunge_duration -= delta
 	if _lunge_duration <= 0:
-		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
+		# This is the key change: transition to melee instead of cooldown.
+		state_machine.change_state("melee")

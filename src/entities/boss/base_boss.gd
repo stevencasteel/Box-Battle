@@ -8,7 +8,6 @@ extends BaseEntity
 @export var behavior: BossBehavior
 @export_group("Juice & Feedback")
 @export var hit_flash_effect: ShaderEffect
-@export var intro_shake_effect: ScreenShakeEffect
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
@@ -19,6 +18,7 @@ extends BaseEntity
 @export var state_cooldown_script: Script
 @export var state_patrol_script: Script
 @export var state_lunge_script: Script
+@export var state_melee_script: Script
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -48,16 +48,7 @@ func _ready() -> void:
 		return
 
 	_initialize_data()
-	EntityBuilder.build(self) # Replaces all old setup calls
-
-	if (
-		is_instance_valid(intro_shake_effect)
-		and is_instance_valid(_services)
-		and is_instance_valid(_services.fx_manager)
-		and _services.fx_manager.has_method("is_camera_shaker_registered")
-		and _services.fx_manager.is_camera_shaker_registered()
-	):
-		_services.fx_manager.request_screen_shake(intro_shake_effect)
+	EntityBuilder.build(self)
 
 
 func _exit_tree() -> void:
@@ -153,6 +144,16 @@ func _update_player_tracking() -> void:
 
 
 # --- Signal Handlers ---
+func _on_close_range_detector_body_entered(body: Node) -> void:
+	if is_instance_valid(entity_data) and body is Player:
+		entity_data.is_player_in_close_range = true
+
+
+func _on_close_range_detector_body_exited(body: Node) -> void:
+	if is_instance_valid(entity_data) and body is Player:
+		entity_data.is_player_in_close_range = false
+
+
 func _on_health_threshold_reached(health_percentage: float) -> void:
 	if not is_instance_valid(behavior):
 		return

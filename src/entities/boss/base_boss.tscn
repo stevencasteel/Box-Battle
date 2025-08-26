@@ -1,7 +1,8 @@
-[gd_scene load_steps=15 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=18 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" uid="uid://5bkyx4fguxor" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
+[ext_resource type="PackedScene" path="res://src/entities/components/melee_component.tscn" id="3_melee_component"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="7_phase_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_death_shake.tres" id="8_death_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="9_hit_spark_effect"]
@@ -11,28 +12,32 @@
 [ext_resource type="Script" uid="uid://dgok3ph2i0i47" path="res://src/entities/boss/states/state_boss_cooldown.gd" id="14_state_cooldown"]
 [ext_resource type="Script" uid="uid://bsmqi0p5h8urh" path="res://src/entities/boss/states/state_boss_patrol.gd" id="15_state_patrol"]
 [ext_resource type="Script" uid="uid://b47bmwcdrdd8d" path="res://src/entities/boss/states/state_boss_lunge.gd" id="16_state_lunge"]
-[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="17_dissolve_effect"]
-[ext_resource type="Resource" uid="uid://cypy26d84f23b" path="res://src/entities/boss/data/default_boss_behavior.tres" id="18_default_behavior"]
+[ext_resource type="Script" uid="uid://cfirfsn8ugufx" path="res://src/entities/boss/states/state_boss_melee.gd" id="17_state_melee"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="18_dissolve_effect"]
+[ext_resource type="Resource" uid="uid://cypy26d84f23b" path="res://src/entities/boss/data/default_boss_behavior.tres" id="19_default_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_closetrigger"]
+radius = 100.0
 
 [node name="BaseBoss" type="CharacterBody2D"]
 collision_layer = 12
 collision_mask = 131
 script = ExtResource("1_26qjf")
-behavior = ExtResource("18_default_behavior")
+behavior = ExtResource("19_default_behavior")
 hit_flash_effect = ExtResource("2_hit_flash")
-intro_shake_effect = ExtResource("7_phase_shake")
 phase_change_shake_effect = ExtResource("7_phase_shake")
 death_shake_effect = ExtResource("8_death_shake")
 hit_spark_effect = ExtResource("9_hit_spark_effect")
-dissolve_effect = ExtResource("17_dissolve_effect")
+dissolve_effect = ExtResource("18_dissolve_effect")
 state_idle_script = ExtResource("12_state_idle")
 state_attack_script = ExtResource("13_state_attack")
 state_cooldown_script = ExtResource("14_state_cooldown")
 state_patrol_script = ExtResource("15_state_patrol")
 state_lunge_script = ExtResource("16_state_lunge")
+state_melee_script = ExtResource("17_state_melee")
 archetype = ExtResource("10_archetype")
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -53,5 +58,15 @@ one_shot = true
 wait_time = 3.0
 one_shot = true
 
+[node name="MeleeComponent" parent="." instance=ExtResource("3_melee_component")]
+
+[node name="CloseRangeDetector" type="Area2D" parent="."]
+collision_layer = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CloseRangeDetector"]
+shape = SubResource("CircleShape2D_closetrigger")
+
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]
+[connection signal="body_entered" from="CloseRangeDetector" to="." method="_on_close_range_detector_body_entered"]
+[connection signal="body_exited" from="CloseRangeDetector" to="." method="_on_close_range_detector_body_exited"]

@@ -23,6 +23,35 @@
 
 
 
+
+
+
+
+
+
+
+feat(combat): Implement data-driven MeleeComponent for boss
+
+Implemented a new, reusable MeleeComponent to provide a data-driven melee attack system for entities. This refactors the boss's combat logic to be more modular and prepares the codebase for more complex enemy behaviors.
+
+- New Resource: Created `MeleeAttackData` (`.gd` and `.tres` files) to define the properties of a melee attack (shape, damage, duration, etc.) in data, decoupling attack design from code.
+- New Component: Built `MeleeComponent` (`.tscn` and `.gd`), a self-contained scene that manages an Area2D hitbox. It reads `MeleeAttackData` resources to execute attacks, handle collision detection, and apply damage.
+- Boss Integration:
+    - Added the `MeleeComponent` to the `base_boss.tscn`.
+    - Created a new `StateBossMelee` to trigger attacks via the component.
+    - Added a `CloseRangeDetector` Area2D to the boss to detect the player.
+- New Behaviors:
+    - The boss now performs a powerful melee follow-up attack immediately after finishing a lunge.
+    - The boss now performs a quick, reactive melee swipe if the player enters its close-range detector while it is patrolling.
+- Bug Fixes:
+    - Resolved critical physics layer/mask misconfigurations on the new `Area2D` nodes that were preventing collision detection.
+    - Corrected the `MeleeComponent` to properly listen for `area_entered` signals from hurtboxes, not just `body_entered`.
+    - Refined the `MeleeComponent` scene structure and script inheritance to correctly function as both a `Node2D` (for positioning) and an `IComponent` (for system integration).
+
+
+
+
+
 feat(ui): Improve boss phase indicators on HUD
 
 Updated the boss phase indicators on the Game HUD to provide clearer visual feedback when the boss transitions between phases.
@@ -40,13 +69,13 @@ refactor(entities): Improve minion naming and fix debug overlay bugs
 
 Performed a refactoring of the minion entity architecture to improve clarity, maintainability, and fix several related bugs in the debug overlay.
 
-- **Architectural Naming:** Renamed the generic `minion.tscn` to the more descriptive `turret.tscn` to accurately reflect its role. Updated all asset paths and encounter data to use the new scene name, establishing a clearer convention where each minion type has its own dedicated scene.
+- Architectural Naming: Renamed the generic `minion.tscn` to the more descriptive `turret.tscn` to accurately reflect its role. Updated all asset paths and encounter data to use the new scene name, establishing a clearer convention where each minion type has its own dedicated scene.
 
-- **Debug Overlay Target Cycling:** Fixed a critical bug where spawned minions (like the Patrolling Lancer) would not appear as selectable targets in the debug overlay. The target cycling logic now re-queries the scene tree for all enemies on each cycle, ensuring it always has a live, up-to-date list of entities.
+- Debug Overlay Target Cycling: Fixed a critical bug where spawned minions (like the Patrolling Lancer) would not appear as selectable targets in the debug overlay. The target cycling logic now re-queries the scene tree for all enemies on each cycle, ensuring it always has a live, up-to-date list of entities.
 
-- **Spawner Naming Bug:** Corrected an issue where spawned minions were given temporary internal names (e.g., `@CharacterBody2D@667`) in the overlay. The spawner logic now adds the instanced minion to the scene tree *before* assigning its unique indexed name, resolving the race condition.
+- Spawner Naming Bug: Corrected an issue where spawned minions were given temporary internal names (e.g., `@CharacterBody2D@667`) in the overlay. The spawner logic now adds the instanced minion to the scene tree *before* assigning its unique indexed name, resolving the race condition.
 
-- **Editor Warning:** Fixed a warning on `patrolling_lancer.tscn` by adding the missing `CircleShape2D` resource to its `RangeDetector`'s `CollisionShape2D`.
+- Editor Warning: Fixed a warning on `patrolling_lancer.tscn` by adding the missing `CircleShape2D` resource to its `RangeDetector`'s `CollisionShape2D`.
 
 
 
@@ -54,18 +83,18 @@ feat(debug): Overhaul debug overlay UI and functionality
 
 Revamped the developer debug overlay to significantly improve its usability, readability, and feature set. This provides a more powerful tool for testing and debugging gameplay mechanics.
 
-- **UI Redesign:** Replaced the old single-panel layout with a two-panel design, separating global stats from entity-specific information. Added a dark, semi-transparent background and a monospaced font for improved readability. Object pool stats are now in a ScrollContainer to prevent overflow.
+- UI Redesign: Replaced the old single-panel layout with a two-panel design, separating global stats from entity-specific information. Added a dark, semi-transparent background and a monospaced font for improved readability. Object pool stats are now in a ScrollContainer to prevent overflow.
 
-- **Pause Functionality:** Fixed a critical bug where pausing the game would freeze the overlay, preventing unpausing. The overlay's `process_mode` is now set to `always` to ensure it can always process input.
+- Pause Functionality: Fixed a critical bug where pausing the game would freeze the overlay, preventing unpausing. The overlay's `process_mode` is now set to `always` to ensure it can always process input.
 
-- **Interactive Toggles:** Added new buttons and keyboard shortcuts (Y, U, O, P, L, H) for common debug actions:
+- Interactive Toggles: Added new buttons and keyboard shortcuts (Y, U, O, P, L, H) for common debug actions:
   - Toggling collision shape visibility (`O`).
   - Pausing/unpausing the game (`P`).
   - Granting the player invincibility (`L`).
 
-- **Feature Removal:** Removed the unstable frame-advance feature to prevent engine crashes.
+- Feature Removal: Removed the unstable frame-advance feature to prevent engine crashes.
 
-- **Scene Naming:** Renamed the root node of the stationary minion's scene from "Minion" to "Turret" for better clarity in the debugger and scene tree.
+- Scene Naming: Renamed the root node of the stationary minion's scene from "Minion" to "Turret" for better clarity in the debugger and scene tree.
 
 
 
@@ -399,19 +428,19 @@ have been fixed, and new, more robust testing patterns have been
 established.
 
 Key Changes:
-- **Fixed `test_combat_utils`:** Updated tests to align with the new
+- Fixed `test_combat_utils`: Updated tests to align with the new
   'find entity root, then get component' logic, removing dependency on
   scene tree traversal.
-- **Fixed `test_health_component`:** Refactored the test to use the
+- Fixed `test_health_component`: Refactored the test to use the
   new robust `FakeServiceLocator` and properly typed test doubles,
   resolving all crashes and failures.
-- **Created `FakeDamageable`:** A new, lightweight test double that
+- Created `FakeDamageable`: A new, lightweight test double that
   fulfills the `IDamageable` contract for use in other tests.
-- **Created `test_idamageable_contract`:** A new contract test suite
+- Created `test_idamageable_contract`: A new contract test suite
   that programmatically enforces the Liskov Substitution Principle. It
   verifies that both the real `HealthComponent` and the `FakeDamageable`
   are valid substitutes for the `IDamageable` interface.
-- **Reverted `test_combat_component`:** The tests for this component have
+- Reverted `test_combat_component`: The tests for this component have
   been returned to a 'pending' state. This decision was made to
   stabilize the test suite after encountering persistent, complex parse
   errors with the GUT test double framework. The working test harness
@@ -431,20 +460,20 @@ This decouples combat systems from the concrete `HealthComponent`
 implementation, allowing them to depend on the abstraction instead.
 
 Key Changes:
-- **Formalized Interface:** `IDamageable.gd` now extends `IComponent`,
+- Formalized Interface: `IDamageable.gd` now extends `IComponent`,
   making it a formal part of the component system.
-- **Explicit Implementation:** `HealthComponent.gd` now formally
+- Explicit Implementation: `HealthComponent.gd` now formally
   `extends IDamageable`, adopting the contract.
-- **Interface-Aware Lookups:** `BaseEntity.get_component()` has been
+- Interface-Aware Lookups: `BaseEntity.get_component()` has been
   significantly enhanced. It can now find a component not only by its
   direct script but also by any interface script in its inheritance
   chain. This is the core of the LSP/DIP improvement.
-- **Robust `CombatUtils`:** The `find_damageable()` utility has been
+- Robust `CombatUtils`: The `find_damageable()` utility has been
   refactored to be safer and more aligned with the component architecture.
   It no longer traverses the scene tree looking for a specific node name.
   Instead, it finds the target's root `BaseEntity` and asks it for its
   `IDamageable` component directly.
-- **Bugfix:** Resolved a shadowed variable warning in `BaseEntity` by
+- Bugfix: Resolved a shadowed variable warning in `BaseEntity` by
   removing a redundant `DependencyValidator` constant.
 
 
@@ -472,14 +501,14 @@ Changes:
   `DebugOverlay`) to depend on the `IObjectPool` interface.
 
 Bugfixes & Debugging Journey:
-- **Fixed Missing Pool:** The `homing_boss_shots` pool was never being
+- Fixed Missing Pool: The `homing_boss_shots` pool was never being
   created at startup. Added the missing initialization call to
   `ObjectPool._ready()`.
-- **Fixed Projectile Pooling:** Corrected a logic error in `HomingBossShot`
+- Fixed Projectile Pooling: Corrected a logic error in `HomingBossShot`
   where its unique tweening behavior prevented the `VisibleOnScreenNotifier2D`
   from correctly detecting it, which broke the pooling cycle. The fix
   defers the tween until the notifier has had a chance to register the object.
-- **Fixed Debug Overlay Layout:** The overlay was using a single-column layout
+- Fixed Debug Overlay Layout: The overlay was using a single-column layout
   that was fragile and caused UI elements to jump when text changed length.
   Refactored the `.tscn` to use a robust two-column layout, isolating
   dynamic text and preventing layout shifts. This also fixed a rendering

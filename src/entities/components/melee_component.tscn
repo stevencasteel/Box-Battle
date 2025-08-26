@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://melee_component_scene"]
+
+[ext_resource type="Script" path="res://src/entities/components/melee_component.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_placeholder"]
+size = Vector2(10, 10)
+
+[node name="MeleeComponent" type="Node2D"]
+script = ExtResource("1_script")
+metadata/REQUIRED_DEPS = PackedStringArray("services")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 0
+monitorable = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("RectangleShape2D_placeholder")
+disabled = true

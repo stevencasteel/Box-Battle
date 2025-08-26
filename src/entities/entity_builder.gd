@@ -5,7 +5,7 @@
 class_name EntityBuilder
 extends RefCounted
 
-## The main entry point. Takes a freshly instantiated entity and performs
+# The main entry point. Takes a freshly instantiated entity and performs
 ## all necessary component setup and signal wiring.
 static func build(entity: BaseEntity) -> void:
 	if entity is Player:
@@ -108,6 +108,7 @@ static func _build_boss(boss: BaseBoss) -> void:
 		Identifiers.BossStates.COOLDOWN: boss.state_cooldown_script.new(boss, sm, boss.entity_data),
 		Identifiers.BossStates.PATROL: boss.state_patrol_script.new(boss, sm, boss.entity_data),
 		Identifiers.BossStates.LUNGE: boss.state_lunge_script.new(boss, sm, boss.entity_data),
+		"melee": boss.state_melee_script.new(boss, sm, boss.entity_data),
 	}
 
 	var per_component_deps := {

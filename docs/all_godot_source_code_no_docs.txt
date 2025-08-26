@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 25 17:54:24 CDT 2025
+Generated on: Mon Aug 25 19:21:16 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -193,7 +193,8 @@ PROJECT DIRECTORY STRUCTURE:
 │   ├── api
 │   │   ├── combat
 │   │   │   ├── damage_info.gd
-│   │   │   └── damage_result.gd
+│   │   │   ├── damage_result.gd
+│   │   │   └── melee_attack_data.gd
 │   │   ├── global_preloader.gd
 │   │   └── interfaces
 │   │       ├── IComponent.gd
@@ -284,6 +285,10 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── audio
 │   │   │   ├── sfx_player_footsteps.tres
 │   │   │   └── sfx_player_impact.tres
+│   │   ├── combat
+│   │   │   └── attacks
+│   │   │       ├── boss_lunge_melee.tres
+│   │   │       └── boss_quick_swipe.tres
 │   │   ├── combat_config.tres
 │   │   ├── dialogue
 │   │   │   ├── dialogue_data.gd
@@ -324,6 +329,7 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │       ├── state_boss_cooldown.gd
 │   │   │       ├── state_boss_idle.gd
 │   │   │       ├── state_boss_lunge.gd
+│   │   │       ├── state_boss_melee.gd
 │   │   │       └── state_boss_patrol.gd
 │   │   ├── builders
 │   │   ├── components
@@ -338,6 +344,8 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── health_component.tscn
 │   │   │   ├── input_component.gd
 │   │   │   ├── input_component.tscn
+│   │   │   ├── melee_component.gd
+│   │   │   ├── melee_component.tscn
 │   │   │   ├── telegraph_component.gd
 │   │   │   └── telegraph_component.tscn
 │   │   ├── entity_builder.gd
@@ -482,7 +490,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-90 directories, 384 files
+92 directories, 390 files
 
 
 =====================================
@@ -7450,6 +7458,39 @@ var impact_normal: Vector2 = Vector2.ZERO
 
 
 =====================================
+FILE: ./src/api/combat/melee_attack_data.gd
+=====================================
+# src/api/combat/melee_attack_data.gd
+@tool
+## A data resource that defines the properties of a single melee attack.
+## This allows for creating varied attacks without changing code.
+class_name MeleeAttackData
+extends Resource
+
+@export_group("Core Properties")
+## The Shape2D resource that defines the hitbox area.
+@export var shape: Shape2D
+## The local offset from the entity's origin where the hitbox should be centered.
+@export var offset: Vector2 = Vector2.ZERO
+## The base damage dealt by the attack.
+@export var damage_amount: int = 1
+
+@export_group("Timing")
+## The duration in seconds the hitbox remains active.
+@export_range(0.05, 1.0, 0.01) var duration: float = 0.15
+## The duration in seconds of the telegraph visual before the attack becomes active.
+@export_range(0.0, 2.0, 0.05) var telegraph_duration: float = 0.3
+
+@export_group("Feedback & Juice")
+## The duration in seconds of hit-stop to apply on a successful hit.
+@export_range(0.0, 0.5, 0.01) var hit_stop_duration: float = 0.0
+## The screen shake effect to trigger on a successful hit.
+@export var screen_shake_effect: ScreenShakeEffect
+## The VFX to spawn at the impact point on a successful hit.
+@export var hit_spark_effect: VFXEffect
+
+
+=====================================
 FILE: ./src/api/combat/damage_result.gd
 =====================================
 # src/api/combat/damage_result.gd
@@ -8088,6 +8129,46 @@ func _on_screen_exited() -> void:
 
 
 =====================================
+FILE: ./src/data/combat/attacks/boss_lunge_melee.tres
+=====================================
+[gd_resource type="Resource" script_class="MeleeAttackData" load_steps=4 format=3 uid="uid://b1v2c3d4e5f6g"]
+
+[ext_resource type="Script" path="res://src/api/combat/melee_attack_data.gd" id="1_script"]
+[ext_resource type="Shape2D" uid="uid://c1b2d3e4f5g6h" path="res://src/entities/player/data/forward_attack_shape.tres" id="2_shape"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="3_hit_spark"]
+
+[resource]
+script = ExtResource("1_script")
+shape = ExtResource("2_shape")
+offset = Vector2(60, 0)
+damage_amount = 2
+duration = 0.2
+telegraph_duration = 0.4
+hit_stop_duration = 0.05
+hit_spark_effect = ExtResource("3_hit_spark")
+
+
+=====================================
+FILE: ./src/data/combat/attacks/boss_quick_swipe.tres
+=====================================
+[gd_resource type="Resource" script_class="MeleeAttackData" load_steps=3 format=3 uid="uid://d1c2b3a4e5f6g"]
+
+[ext_resource type="Script" uid="uid://yas33ux44jbi" path="res://src/api/combat/melee_attack_data.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_b4h5g"]
+size = Vector2(90, 25)
+
+[resource]
+script = ExtResource("1_script")
+shape = SubResource("RectangleShape2D_b4h5g")
+offset = Vector2(75, 0)
+damage_amount = 1
+duration = 0.15
+telegraph_duration = 0.2
+hit_stop_duration = 0.02
+
+
+=====================================
 FILE: ./src/data/dialogue/dialogue_line.gd
 =====================================
 # src/data/dialogue/dialogue_line.gd
@@ -8607,7 +8688,7 @@ FILE: ./src/entities/entity_builder.gd
 class_name EntityBuilder
 extends RefCounted
 
-## The main entry point. Takes a freshly instantiated entity and performs
+# The main entry point. Takes a freshly instantiated entity and performs
 ## all necessary component setup and signal wiring.
 static func build(entity: BaseEntity) -> void:
 	if entity is Player:
@@ -8710,6 +8791,7 @@ static func _build_boss(boss: BaseBoss) -> void:
 		Identifiers.BossStates.COOLDOWN: boss.state_cooldown_script.new(boss, sm, boss.entity_data),
 		Identifiers.BossStates.PATROL: boss.state_patrol_script.new(boss, sm, boss.entity_data),
 		Identifiers.BossStates.LUNGE: boss.state_lunge_script.new(boss, sm, boss.entity_data),
+		"melee": boss.state_melee_script.new(boss, sm, boss.entity_data),
 	}
 
 	var per_component_deps := {
@@ -8907,16 +8989,20 @@ var health: int = 30:
 		health = clamp(value, 0, max_health)
 var projectile_pool_key: StringName = &""
 
+# --- Targeting ---
+var is_player_in_close_range: bool = false
+
 # --- Physics & Movement ---
 var facing_direction: float = -1.0
 
 =====================================
 FILE: ./src/entities/boss/base_boss.tscn
 =====================================
-[gd_scene load_steps=15 format=3 uid="uid://dmej4a7ykn2q0"]
+[gd_scene load_steps=18 format=3 uid="uid://dmej4a7ykn2q0"]
 
 [ext_resource type="Script" uid="uid://5bkyx4fguxor" path="res://src/entities/boss/base_boss.gd" id="1_26qjf"]
 [ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
+[ext_resource type="PackedScene" path="res://src/entities/components/melee_component.tscn" id="3_melee_component"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_phase_change_shake.tres" id="7_phase_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/boss_death_shake.tres" id="8_death_shake"]
 [ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="9_hit_spark_effect"]
@@ -8926,28 +9012,32 @@ FILE: ./src/entities/boss/base_boss.tscn
 [ext_resource type="Script" uid="uid://dgok3ph2i0i47" path="res://src/entities/boss/states/state_boss_cooldown.gd" id="14_state_cooldown"]
 [ext_resource type="Script" uid="uid://bsmqi0p5h8urh" path="res://src/entities/boss/states/state_boss_patrol.gd" id="15_state_patrol"]
 [ext_resource type="Script" uid="uid://b47bmwcdrdd8d" path="res://src/entities/boss/states/state_boss_lunge.gd" id="16_state_lunge"]
-[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="17_dissolve_effect"]
-[ext_resource type="Resource" uid="uid://cypy26d84f23b" path="res://src/entities/boss/data/default_boss_behavior.tres" id="18_default_behavior"]
+[ext_resource type="Script" uid="uid://cfirfsn8ugufx" path="res://src/entities/boss/states/state_boss_melee.gd" id="17_state_melee"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="18_dissolve_effect"]
+[ext_resource type="Resource" uid="uid://cypy26d84f23b" path="res://src/entities/boss/data/default_boss_behavior.tres" id="19_default_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bossbody"]
 size = Vector2(60, 60)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_closetrigger"]
+radius = 100.0
 
 [node name="BaseBoss" type="CharacterBody2D"]
 collision_layer = 12
 collision_mask = 131
 script = ExtResource("1_26qjf")
-behavior = ExtResource("18_default_behavior")
+behavior = ExtResource("19_default_behavior")
 hit_flash_effect = ExtResource("2_hit_flash")
-intro_shake_effect = ExtResource("7_phase_shake")
 phase_change_shake_effect = ExtResource("7_phase_shake")
 death_shake_effect = ExtResource("8_death_shake")
 hit_spark_effect = ExtResource("9_hit_spark_effect")
-dissolve_effect = ExtResource("17_dissolve_effect")
+dissolve_effect = ExtResource("18_dissolve_effect")
 state_idle_script = ExtResource("12_state_idle")
 state_attack_script = ExtResource("13_state_attack")
 state_cooldown_script = ExtResource("14_state_cooldown")
 state_patrol_script = ExtResource("15_state_patrol")
 state_lunge_script = ExtResource("16_state_lunge")
+state_melee_script = ExtResource("17_state_melee")
 archetype = ExtResource("10_archetype")
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -8968,8 +9058,65 @@ one_shot = true
 wait_time = 3.0
 one_shot = true
 
+[node name="MeleeComponent" parent="." instance=ExtResource("3_melee_component")]
+
+[node name="CloseRangeDetector" type="Area2D" parent="."]
+collision_layer = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CloseRangeDetector"]
+shape = SubResource("CircleShape2D_closetrigger")
+
 [connection signal="timeout" from="CooldownTimer" to="." method="_on_cooldown_timer_timeout"]
 [connection signal="timeout" from="PatrolTimer" to="." method="_on_patrol_timer_timeout"]
+[connection signal="body_entered" from="CloseRangeDetector" to="." method="_on_close_range_detector_body_entered"]
+[connection signal="body_exited" from="CloseRangeDetector" to="." method="_on_close_range_detector_body_exited"]
+
+
+=====================================
+FILE: ./src/entities/boss/states/state_boss_melee.gd
+=====================================
+# src/entities/boss/states/state_boss_melee.gd
+## A state that triggers a melee attack and waits for it to complete.
+class_name BossStateMelee
+extends BaseState
+
+# --- Constants ---
+const LungeMeleeAttackData = preload("res://src/data/combat/attacks/boss_lunge_melee.tres")
+
+# --- Private Member Variables ---
+var _melee_component: MeleeComponent
+
+
+func enter(msg := {}) -> void:
+	owner.velocity = Vector2.ZERO
+	_melee_component = owner.get_component(MeleeComponent)
+	
+	if not is_instance_valid(_melee_component):
+		push_error("BossStateMelee requires a MeleeComponent on the owner. Aborting attack.")
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
+		return
+	
+	# Default to the lunge follow-up, but allow other states to specify a different attack.
+	var attack_to_perform = msg.get("attack_data", LungeMeleeAttackData)
+	
+	_melee_component.attack_finished.connect(_on_attack_finished, CONNECT_ONE_SHOT)
+	_melee_component.perform_attack(attack_to_perform)
+
+
+func exit() -> void:
+	if is_instance_valid(_melee_component) and _melee_component.attack_finished.is_connected(_on_attack_finished):
+		_melee_component.attack_finished.disconnect(_on_attack_finished)
+
+
+# --- Signal Handlers ---
+func _on_attack_finished() -> void:
+	if state_machine.current_state == self:
+		# Use the cooldown from the attack we just performed.
+		var attack_data = _melee_component._current_attack_data
+		if is_instance_valid(attack_data):
+			owner.cooldown_timer.wait_time = attack_data.telegraph_duration + attack_data.duration + 0.5
+		
+		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
 
 
 =====================================
@@ -9034,8 +9181,8 @@ func exit() -> void:
 func process_physics(delta: float) -> void:
 	_lunge_duration -= delta
 	if _lunge_duration <= 0:
-		state_machine.change_state(Identifiers.BossStates.COOLDOWN)
-
+		# This is the key change: transition to melee instead of cooldown.
+		state_machine.change_state("melee")
 
 =====================================
 FILE: ./src/entities/boss/states/state_boss_cooldown.gd
@@ -9135,12 +9282,18 @@ FILE: ./src/entities/boss/states/state_boss_patrol.gd
 extends BaseState
 class_name BossStatePatrol
 
+const QuickSwipeData = preload("res://src/data/combat/attacks/boss_quick_swipe.tres")
 
 func enter(_msg := {}) -> void:
 	owner.patrol_timer.start()
 
 
 func process_physics(_delta: float) -> void:
+	# High-priority check: if player gets too close, interrupt patrol to attack.
+	if state_data.is_player_in_close_range and owner.cooldown_timer.is_stopped():
+		state_machine.change_state("melee", {"attack_data": QuickSwipeData})
+		return
+		
 	owner.velocity.x = state_data.facing_direction * state_data.config.boss_patrol_speed
 
 
@@ -9157,7 +9310,6 @@ extends BaseEntity
 @export var behavior: BossBehavior
 @export_group("Juice & Feedback")
 @export var hit_flash_effect: ShaderEffect
-@export var intro_shake_effect: ScreenShakeEffect
 @export var phase_change_shake_effect: ScreenShakeEffect
 @export var death_shake_effect: ScreenShakeEffect
 @export var hit_spark_effect: VFXEffect
@@ -9168,6 +9320,7 @@ extends BaseEntity
 @export var state_cooldown_script: Script
 @export var state_patrol_script: Script
 @export var state_lunge_script: Script
+@export var state_melee_script: Script
 
 # --- Node References ---
 @onready var visual_sprite: ColorRect = $ColorRect
@@ -9197,16 +9350,7 @@ func _ready() -> void:
 		return
 
 	_initialize_data()
-	EntityBuilder.build(self) # Replaces all old setup calls
-
-	if (
-		is_instance_valid(intro_shake_effect)
-		and is_instance_valid(_services)
-		and is_instance_valid(_services.fx_manager)
-		and _services.fx_manager.has_method("is_camera_shaker_registered")
-		and _services.fx_manager.is_camera_shaker_registered()
-	):
-		_services.fx_manager.request_screen_shake(intro_shake_effect)
+	EntityBuilder.build(self)
 
 
 func _exit_tree() -> void:
@@ -9302,6 +9446,16 @@ func _update_player_tracking() -> void:
 
 
 # --- Signal Handlers ---
+func _on_close_range_detector_body_entered(body: Node) -> void:
+	if is_instance_valid(entity_data) and body is Player:
+		entity_data.is_player_in_close_range = true
+
+
+func _on_close_range_detector_body_exited(body: Node) -> void:
+	if is_instance_valid(entity_data) and body is Player:
+		entity_data.is_player_in_close_range = false
+
+
 func _on_health_threshold_reached(health_percentage: float) -> void:
 	if not is_instance_valid(behavior):
 		return
@@ -9772,6 +9926,29 @@ func trigger_pogo(pogo_target: Node) -> bool:
 
 
 =====================================
+FILE: ./src/entities/components/melee_component.tscn
+=====================================
+[gd_scene load_steps=3 format=3 uid="uid://melee_component_scene"]
+
+[ext_resource type="Script" path="res://src/entities/components/melee_component.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_placeholder"]
+size = Vector2(10, 10)
+
+[node name="MeleeComponent" type="Node2D"]
+script = ExtResource("1_script")
+metadata/REQUIRED_DEPS = PackedStringArray("services")
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 0
+monitorable = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("RectangleShape2D_placeholder")
+disabled = true
+
+=====================================
 FILE: ./src/entities/components/telegraph_component.tscn
 =====================================
 [gd_scene load_steps=2 format=3 uid="uid://b1i2c3d4e5f6g"]
@@ -10177,6 +10354,142 @@ func play_effect(effect: ShaderEffect, overrides: Dictionary = {}, opts: Diction
 func _on_owner_took_damage(_damage_info: DamageInfo, _damage_result: DamageResult) -> void:
 	if is_instance_valid(_hit_effect):
 		play_effect(_hit_effect)
+
+
+=====================================
+FILE: ./src/entities/components/melee_component.gd
+=====================================
+# src/entities/components/melee_component.gd
+@tool
+## A generic, data-driven component for executing melee attacks.
+##
+## This component manages a hitbox Area2D and orchestrates the telegraph,
+## attack duration, and damage application based on a provided MeleeAttackData resource.
+class_name MeleeComponent
+extends IComponent
+
+# --- Signals ---
+## Emitted when the attack successfully hits a valid target.
+signal hit_confirmed
+## Emitted when the full attack sequence (telegraph + duration) is complete.
+signal attack_finished
+
+# --- Node References ---
+@onready var hitbox: Area2D = $Hitbox
+@onready var collision_shape: CollisionShape2D = $Hitbox/CollisionShape2D
+
+# --- Private Member Variables ---
+var _owner: BaseEntity
+var _services: ServiceLocator
+var _current_attack_data: MeleeAttackData
+var _hit_targets_this_swing: Dictionary = {}
+var _is_attacking: bool = false
+
+# --- IComponent Contract ---
+func setup(p_owner: Node, p_dependencies: Dictionary = {}) -> void:
+	self._owner = p_owner as BaseEntity
+	self._services = p_dependencies.get("services")
+	assert(is_instance_valid(_owner), "MeleeComponent must be owned by a BaseEntity.")
+	assert(is_instance_valid(_services), "MeleeComponent requires a ServiceLocator.")
+	
+	hitbox.body_entered.connect(_on_hitbox_body_entered)
+	hitbox.area_entered.connect(_on_hitbox_area_entered)
+
+
+func teardown() -> void:
+	if is_instance_valid(hitbox):
+		if hitbox.body_entered.is_connected(_on_hitbox_body_entered):
+			hitbox.body_entered.disconnect(_on_hitbox_body_entered)
+		if hitbox.area_entered.is_connected(_on_hitbox_area_entered):
+			hitbox.area_entered.disconnect(_on_hitbox_area_entered)
+	_owner = null
+	_services = null
+
+
+# --- Public API ---
+## The main entry point to start a melee attack sequence.
+func perform_attack(attack_data: MeleeAttackData) -> void:
+	if _is_attacking or not is_instance_valid(attack_data):
+		return
+
+	_is_attacking = true
+	_current_attack_data = attack_data
+	_hit_targets_this_swing.clear()
+	
+	_execute_attack_sequence()
+
+
+# --- Private Logic ---
+func _execute_attack_sequence() -> void:
+	# TODO: Implement telegraph logic in a future step if needed.
+	
+	collision_shape.shape = _current_attack_data.shape
+	
+	var facing_direction = _owner.entity_data.facing_direction if "facing_direction" in _owner.entity_data else 1.0
+	hitbox.position = _current_attack_data.offset * Vector2(facing_direction, 1.0)
+	
+	hitbox.monitoring = true
+	if _owner.is_in_group(Identifiers.Groups.PLAYER):
+		hitbox.collision_layer = PhysicsLayers.PLAYER_HITBOX
+		hitbox.collision_mask = PhysicsLayers.ENEMY | PhysicsLayers.ENEMY_PROJECTILE
+	else:
+		hitbox.collision_layer = PhysicsLayers.HAZARD
+		hitbox.collision_mask = PhysicsLayers.PLAYER_HURTBOX
+	
+	collision_shape.disabled = false
+	
+	var timer = get_tree().create_timer(_current_attack_data.duration)
+	await timer.timeout
+	
+	if not is_instance_valid(self):
+		return
+		
+	collision_shape.disabled = true
+	hitbox.monitoring = false
+	hitbox.collision_layer = 0
+	hitbox.collision_mask = 0
+	
+	_is_attacking = false
+	attack_finished.emit()
+
+
+func _process_hit(collider: Node) -> void:
+	var target_id = collider.get_instance_id()
+	if _hit_targets_this_swing.has(target_id):
+		return
+
+	_hit_targets_this_swing[target_id] = true
+	
+	var damageable: IDamageable = _services.combat_utils.find_damageable(collider)
+	if is_instance_valid(damageable):
+		var damage_info := DamageInfo.new()
+		damage_info.amount = _current_attack_data.damage_amount
+		damage_info.source_node = _owner
+		damage_info.impact_position = collider.global_position
+		damage_info.impact_normal = (collider.global_position - _owner.global_position).normalized()
+		
+		var result := damageable.apply_damage(damage_info)
+		if result.was_damaged:
+			if is_instance_valid(_current_attack_data.hit_spark_effect):
+				_services.fx_manager.play_vfx(
+					_current_attack_data.hit_spark_effect,
+					damage_info.impact_position,
+					damage_info.impact_normal
+				)
+			
+			if _current_attack_data.hit_stop_duration > 0.0:
+				_services.fx_manager.request_hit_stop(_current_attack_data.hit_stop_duration)
+			
+			hit_confirmed.emit()
+
+
+# --- Signal Handlers ---
+func _on_hitbox_body_entered(body: Node) -> void:
+	_process_hit(body)
+
+
+func _on_hitbox_area_entered(area: Area2D) -> void:
+	_process_hit(area)
 
 
 =====================================
