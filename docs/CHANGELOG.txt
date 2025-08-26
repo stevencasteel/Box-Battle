@@ -23,6 +23,8 @@
 
 
 
+Fixed flying patroller detection field from receiving player projectile damage
+
 
 feat(ai): Implement minion melee and add flying patroller
 
