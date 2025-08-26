@@ -1,27 +1,28 @@
-[gd_scene load_steps=9 format=3 uid="uid://c0mbo7v80afg1"]
+[gd_scene load_steps=10 format=3 uid="uid://c0mbo7v80afg1"]
 
 [ext_resource type="Script" uid="uid://4xepmjomesfc" path="res://src/entities/minions/minion.gd" id="1_minion_script"]
 [ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
-[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="3_hit_spark_effect"]
-[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="4_archetype"]
-[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="5_dissolve_effect"]
-[ext_resource type="Resource" uid="uid://d2b4w7h1qxy5c" path="res://src/entities/minions/data/patrolling_lancer_behavior.tres" id="6_lancer_behavior"]
+[ext_resource type="PackedScene" path="res://src/entities/components/melee_component.tscn" id="3_melee_component"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="4_hit_spark_effect"]
+[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="5_archetype"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="6_dissolve_effect"]
+[ext_resource type="Resource" uid="uid://d2b4w7h1qxy5c" path="res://src/entities/minions/data/patrolling_lancer_behavior.tres" id="7_lancer_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
 size = Vector2(50, 50)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_rangedetector"]
-radius = 400.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_meleetrigger"]
+radius = 90.0
 
 [node name="PatrollingLancer" type="CharacterBody2D" groups=["enemy"]]
 collision_layer = 4
-collision_mask = 131
+collision_mask = 129
 script = ExtResource("1_minion_script")
-behavior = ExtResource("6_lancer_behavior")
+behavior = ExtResource("7_lancer_behavior")
 hit_flash_effect = ExtResource("2_hit_flash")
-hit_spark_effect = ExtResource("3_hit_spark_effect")
-dissolve_effect = ExtResource("5_dissolve_effect")
-archetype = ExtResource("4_archetype")
+hit_spark_effect = ExtResource("4_hit_spark_effect")
+dissolve_effect = ExtResource("6_dissolve_effect")
+archetype = ExtResource("5_archetype")
 
 [node name="Visual" type="Polygon2D" parent="."]
 color = Color(0.9, 0.4, 0.4, 1)
@@ -34,10 +35,20 @@ shape = SubResource("RectangleShape2D_minionbody")
 one_shot = true
 
 [node name="RangeDetector" type="Area2D" parent="."]
-collision_layer = 0
+collision_layer = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RangeDetector"]
-shape = SubResource("CircleShape2D_rangedetector")
+shape = SubResource("CircleShape2D_meleetrigger")
+
+[node name="MeleeRangeDetector" type="Area2D" parent="."]
+collision_layer = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeRangeDetector"]
+shape = SubResource("CircleShape2D_meleetrigger")
+
+[node name="MeleeComponent" parent="." instance=ExtResource("3_melee_component")]
 
 [connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
 [connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]
+[connection signal="body_entered" from="MeleeRangeDetector" to="." method="_on_melee_range_detector_body_entered"]
+[connection signal="body_exited" from="MeleeRangeDetector" to="." method="_on_melee_range_detector_body_exited"]

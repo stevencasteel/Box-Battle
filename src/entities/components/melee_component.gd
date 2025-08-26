@@ -13,6 +13,9 @@ signal hit_confirmed
 ## Emitted when the full attack sequence (telegraph + duration) is complete.
 signal attack_finished
 
+# --- Constants ---
+const TelegraphScene = preload(AssetPaths.SCENE_TELEGRAPH_COMPONENT)
+
 # --- Node References ---
 @onready var hitbox: Area2D = $Hitbox
 @onready var collision_shape: CollisionShape2D = $Hitbox/CollisionShape2D
@@ -60,19 +63,39 @@ func perform_attack(attack_data: MeleeAttackData) -> void:
 
 # --- Private Logic ---
 func _execute_attack_sequence() -> void:
-	# TODO: Implement telegraph logic in a future step if needed.
-	
-	collision_shape.shape = _current_attack_data.shape
-	
 	var facing_direction = _owner.entity_data.facing_direction if "facing_direction" in _owner.entity_data else 1.0
+	
+	# --- 1. Telegraph Phase ---
+	if _current_attack_data.telegraph_duration > 0.0:
+		var telegraph := TelegraphScene.instantiate()
+		_owner.add_child(telegraph)
+		
+		var telegraph_size = _current_attack_data.shape.get_rect().size
+		var telegraph_offset = _current_attack_data.offset
+		var telegraph_position = _owner.global_position + (telegraph_offset * Vector2(facing_direction, 1.0))
+		
+		telegraph.start_telegraph(
+			_current_attack_data.telegraph_duration,
+			telegraph_size,
+			telegraph_position,
+			Palette.COLOR_UI_PANEL_BG
+		)
+		await telegraph.telegraph_finished
+		
+		if not is_instance_valid(self):
+			return
+
+	# --- 2. Attack Phase ---
+	collision_shape.shape = _current_attack_data.shape
 	hitbox.position = _current_attack_data.offset * Vector2(facing_direction, 1.0)
 	
 	hitbox.monitoring = true
+	# Use the new dedicated hitbox layer.
+	hitbox.collision_layer = PhysicsLayers.HITBOX
+	
 	if _owner.is_in_group(Identifiers.Groups.PLAYER):
-		hitbox.collision_layer = PhysicsLayers.PLAYER_HITBOX
 		hitbox.collision_mask = PhysicsLayers.ENEMY | PhysicsLayers.ENEMY_PROJECTILE
 	else:
-		hitbox.collision_layer = PhysicsLayers.HAZARD
 		hitbox.collision_mask = PhysicsLayers.PLAYER_HURTBOX
 	
 	collision_shape.disabled = false
@@ -83,6 +106,7 @@ func _execute_attack_sequence() -> void:
 	if not is_instance_valid(self):
 		return
 		
+	# --- 3. Cleanup ---
 	collision_shape.disabled = true
 	hitbox.monitoring = false
 	hitbox.collision_layer = 0

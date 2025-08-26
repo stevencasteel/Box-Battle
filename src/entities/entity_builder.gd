@@ -154,6 +154,10 @@ static func _build_minion(minion: Minion) -> void:
 		load("res://src/entities/minions/states/state_minion_attack.gd").new(minion, sm, minion.entity_data),
 		Identifiers.MinionStates.FALL:
 		load("res://src/entities/states/state_entity_fall.gd").new(minion, sm, minion.entity_data),
+		"melee":
+		load("res://src/entities/minions/states/state_minion_melee.gd").new(minion, sm, minion.entity_data),
+		"patrol":
+		load("res://src/entities/minions/states/state_minion_patrol.gd").new(minion, sm, minion.entity_data),
 	}
 
 	var per_component_deps := {

@@ -2,7 +2,7 @@
 |       B O X  B A T T L E        |
 |  Godot Project Source Context   |
 +---------------------------------+
-Generated on: Mon Aug 25 19:21:16 CDT 2025
+Generated on: Mon Aug 25 20:46:41 CDT 2025
 
 =====================================
 PROJECT DIRECTORY STRUCTURE:
@@ -288,7 +288,8 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   ├── combat
 │   │   │   └── attacks
 │   │   │       ├── boss_lunge_melee.tres
-│   │   │       └── boss_quick_swipe.tres
+│   │   │       ├── boss_quick_swipe.tres
+│   │   │       └── lancer_poke.tres
 │   │   ├── combat_config.tres
 │   │   ├── dialogue
 │   │   │   ├── dialogue_data.gd
@@ -365,7 +366,9 @@ PROJECT DIRECTORY STRUCTURE:
 │   │   │   ├── patrolling_lancer.tscn
 │   │   │   ├── states
 │   │   │   │   ├── state_minion_attack.gd
-│   │   │   │   └── state_minion_idle.gd
+│   │   │   │   ├── state_minion_idle.gd
+│   │   │   │   ├── state_minion_melee.gd
+│   │   │   │   └── state_minion_patrol.gd
 │   │   │   └── turret.tscn
 │   │   ├── player
 │   │   │   ├── components
@@ -490,7 +493,7 @@ PROJECT DIRECTORY STRUCTURE:
     ├── fx_playground.tscn
     └── mock_entity.gd
 
-92 directories, 390 files
+92 directories, 393 files
 
 
 =====================================
@@ -1124,6 +1127,7 @@ debug_toggle_invincibility={
 2d_physics/layer_6="player_hitbox"
 2d_physics/layer_7="player_hurtbox"
 2d_physics/layer_8="solid_world"
+2d_physics/layer_9="hitbox"
 
 [rendering]
 
@@ -4528,7 +4532,7 @@ const ENEMY_PROJECTILE = 16  # Layer 5
 const PLAYER_HITBOX = 32  # Layer 6
 const PLAYER_HURTBOX = 64  # Layer 7
 const SOLID_WORLD = 128  # Layer 8
-
+const HITBOX = 256 # Layer 9
 
 =====================================
 FILE: ./src/core/util/scene_validator.gd
@@ -8129,6 +8133,26 @@ func _on_screen_exited() -> void:
 
 
 =====================================
+FILE: ./src/data/combat/attacks/lancer_poke.tres
+=====================================
+[gd_resource type="Resource" script_class="MeleeAttackData" load_steps=3 format=3 uid="uid://c1x2y304a5b6c"]
+
+[ext_resource type="Script" uid="uid://yas33ux44jbi" path="res://src/api/combat/melee_attack_data.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lancerpoke"]
+size = Vector2(80, 20)
+
+[resource]
+script = ExtResource("1_script")
+shape = SubResource("RectangleShape2D_lancerpoke")
+offset = Vector2(65, 0)
+damage_amount = 1
+duration = 0.15
+telegraph_duration = 0.3
+hit_stop_duration = 0.03
+
+
+=====================================
 FILE: ./src/data/combat/attacks/boss_lunge_melee.tres
 =====================================
 [gd_resource type="Resource" script_class="MeleeAttackData" load_steps=4 format=3 uid="uid://b1v2c3d4e5f6g"]
@@ -8837,6 +8861,10 @@ static func _build_minion(minion: Minion) -> void:
 		load("res://src/entities/minions/states/state_minion_attack.gd").new(minion, sm, minion.entity_data),
 		Identifiers.MinionStates.FALL:
 		load("res://src/entities/states/state_entity_fall.gd").new(minion, sm, minion.entity_data),
+		"melee":
+		load("res://src/entities/minions/states/state_minion_melee.gd").new(minion, sm, minion.entity_data),
+		"patrol":
+		load("res://src/entities/minions/states/state_minion_patrol.gd").new(minion, sm, minion.entity_data),
 	}
 
 	var per_component_deps := {
@@ -9668,7 +9696,7 @@ var _current_state_key
 
 
 func _ready() -> void:
-	process_priority = 0
+	process_priority = -10
 
 
 func _notification(what: int) -> void:
@@ -9734,6 +9762,10 @@ func change_state(new_state_key, msg := {}) -> void:
 	state_history.push_front(state_name)
 	if state_history.size() > MAX_HISTORY_SIZE:
 		state_history.pop_back()
+
+
+func get_current_state_key() -> StringName:
+	return _current_state_key
 
 
 =====================================
@@ -10374,6 +10406,9 @@ signal hit_confirmed
 ## Emitted when the full attack sequence (telegraph + duration) is complete.
 signal attack_finished
 
+# --- Constants ---
+const TelegraphScene = preload(AssetPaths.SCENE_TELEGRAPH_COMPONENT)
+
 # --- Node References ---
 @onready var hitbox: Area2D = $Hitbox
 @onready var collision_shape: CollisionShape2D = $Hitbox/CollisionShape2D
@@ -10421,19 +10456,39 @@ func perform_attack(attack_data: MeleeAttackData) -> void:
 
 # --- Private Logic ---
 func _execute_attack_sequence() -> void:
-	# TODO: Implement telegraph logic in a future step if needed.
-	
-	collision_shape.shape = _current_attack_data.shape
-	
 	var facing_direction = _owner.entity_data.facing_direction if "facing_direction" in _owner.entity_data else 1.0
+	
+	# --- 1. Telegraph Phase ---
+	if _current_attack_data.telegraph_duration > 0.0:
+		var telegraph := TelegraphScene.instantiate()
+		_owner.add_child(telegraph)
+		
+		var telegraph_size = _current_attack_data.shape.get_rect().size
+		var telegraph_offset = _current_attack_data.offset
+		var telegraph_position = _owner.global_position + (telegraph_offset * Vector2(facing_direction, 1.0))
+		
+		telegraph.start_telegraph(
+			_current_attack_data.telegraph_duration,
+			telegraph_size,
+			telegraph_position,
+			Palette.COLOR_UI_PANEL_BG
+		)
+		await telegraph.telegraph_finished
+		
+		if not is_instance_valid(self):
+			return
+
+	# --- 2. Attack Phase ---
+	collision_shape.shape = _current_attack_data.shape
 	hitbox.position = _current_attack_data.offset * Vector2(facing_direction, 1.0)
 	
 	hitbox.monitoring = true
+	# Use the new dedicated hitbox layer.
+	hitbox.collision_layer = PhysicsLayers.HITBOX
+	
 	if _owner.is_in_group(Identifiers.Groups.PLAYER):
-		hitbox.collision_layer = PhysicsLayers.PLAYER_HITBOX
 		hitbox.collision_mask = PhysicsLayers.ENEMY | PhysicsLayers.ENEMY_PROJECTILE
 	else:
-		hitbox.collision_layer = PhysicsLayers.HAZARD
 		hitbox.collision_mask = PhysicsLayers.PLAYER_HURTBOX
 	
 	collision_shape.disabled = false
@@ -10444,6 +10499,7 @@ func _execute_attack_sequence() -> void:
 	if not is_instance_valid(self):
 		return
 		
+	# --- 3. Cleanup ---
 	collision_shape.disabled = true
 	hitbox.monitoring = false
 	hitbox.collision_layer = 0
@@ -10684,12 +10740,17 @@ func _ready() -> void:
 	EntityBuilder.build(self)
 
 
-func _physics_process(_delta: float) -> void:
-	if not _is_dead:
-		move_and_slide()
+func _physics_process(delta: float) -> void:
+	if _is_dead or not is_instance_valid(entity_data):
+		return
+	
+	if not is_on_floor():
+		velocity.y += entity_data.services.combat_config.gravity * delta
+		
+	move_and_slide()
 
-		if is_instance_valid(entity_data) and entity_data.behavior.is_anchored:
-			velocity = Vector2.ZERO
+	if entity_data.behavior.is_anchored:
+		velocity = Vector2.ZERO
 
 
 func _notification(what: int) -> void:
@@ -10706,6 +10767,11 @@ func teardown() -> void:
 
 	super.teardown()
 	entity_data = null
+
+
+## A public method for states to request the minion updates its facing direction.
+func update_player_tracking() -> void:
+	_update_player_tracking()
 
 
 func deactivate() -> void:
@@ -10765,17 +10831,23 @@ func _update_player_tracking() -> void:
 
 # --- Signal Handlers ---
 func _on_range_detector_body_entered(body: Node) -> void:
-	if not entity_data:
-		return
-	if body.is_in_group(Identifiers.Groups.PLAYER):
+	if is_instance_valid(entity_data) and body is Player:
 		entity_data.is_player_in_range = true
 
 
 func _on_range_detector_body_exited(body: Node) -> void:
-	if not entity_data:
-		return
-	if body.is_in_group(Identifiers.Groups.PLAYER):
+	if is_instance_valid(entity_data) and body is Player:
 		entity_data.is_player_in_range = false
+
+
+func _on_melee_range_detector_body_entered(body: Node) -> void:
+	if is_instance_valid(entity_data) and body is Player:
+		entity_data.is_player_in_melee_range = true
+
+
+func _on_melee_range_detector_body_exited(body: Node) -> void:
+	if is_instance_valid(entity_data) and body is Player:
+		entity_data.is_player_in_melee_range = false
 
 
 func _on_health_component_died() -> void:
@@ -10852,20 +10924,18 @@ extends MovementLogic
 
 ## Moves the minion horizontally, applying gravity, and reverses on wall collision.
 func execute(delta: float, minion: Minion, state_data: MinionStateData) -> Vector2:
-	var new_velocity := minion.velocity
+	var new_velocity := Vector2.ZERO
+	# Preserve vertical momentum for gravity, but reset horizontal.
+	new_velocity.y = minion.velocity.y
 
-	# A patrolling entity is responsible for its own gravity.
 	if not minion.is_on_floor():
 		new_velocity.y += state_data.services.combat_config.gravity * delta
 	else:
-		# Apply a small amount of downward velocity to keep it stuck to slopes.
-		new_velocity.y += 10
+		new_velocity.y += 10 # Apply a small downward force to stick to slopes.
 
 	if minion.is_on_wall():
 		state_data.facing_direction *= -1.0
 
-	# NOTE: We currently use boss_patrol_speed. We can add a minion-specific
-	# speed to MinionBehavior later if needed.
 	new_velocity.x = state_data.facing_direction * state_data.services.combat_config.boss_patrol_speed
 	return new_velocity
 
@@ -10892,6 +10962,7 @@ var projectile_pool_key: StringName = &""
 
 # --- Targeting ---
 var is_player_in_range: bool = false
+var is_player_in_melee_range: bool = false
 
 # --- Physics & Movement ---
 var facing_direction: float = -1.0
@@ -10963,15 +11034,15 @@ func _start_telegraph_and_attack() -> void:
 	if state_machine.current_state == self:
 		_minion.attack_timer.wait_time = _current_pattern.cooldown
 		_minion.attack_timer.start()
-		state_machine.change_state(Identifiers.MinionStates.IDLE)
+		# Return to patrol so the minion moves during its attack cooldown.
+		state_machine.change_state("patrol")
 
 =====================================
-FILE: ./src/entities/minions/states/state_minion_idle.gd
+FILE: ./src/entities/minions/states/state_minion_patrol.gd
 =====================================
-# src/entities/minions/states/state_minion_idle.gd
-## The default state for a minion. It handles movement via the assigned
-## MovementLogic and checks for conditions to transition to other states.
-class_name MinionStateIdle
+# src/entities/minions/states/state_minion_patrol.gd
+## The state where a minion actively moves according to its movement logic.
+class_name MinionStatePatrol
 extends BaseState
 
 var _minion: Minion
@@ -10985,57 +11056,157 @@ func process_physics(delta: float) -> void:
 	if not is_instance_valid(_minion):
 		return
 
-	# --- State Transition Checks (Prioritized) ---
-
-	# 1. Check for falling (ONLY if the entity is not anchored).
-	if not state_data.behavior.is_anchored and not _minion.is_on_floor():
-		state_machine.change_state(Identifiers.MinionStates.FALL)
+	# --- Priority 1: Melee Interrupt ---
+	# If player gets too close, this action takes precedence over everything.
+	if state_data.is_player_in_melee_range:
+		_minion.velocity = Vector2.ZERO
+		_minion.attack_timer.stop() 
+		state_machine.change_state("melee")
 		return
 
-	# 2. Check for attack conditions.
-	var can_attack: bool = (
+	# --- Priority 2: Ranged Attack (while continuing to patrol) ---
+	if (
 		state_data.is_player_in_range
 		and _minion.attack_timer.is_stopped()
 		and not state_data.behavior.attack_patterns.is_empty()
-	)
-	if can_attack:
-		state_machine.change_state(Identifiers.MinionStates.ATTACK, {"pattern": state_data.behavior.attack_patterns.pick_random()})
-		return
+	):
+		_minion.update_player_tracking()
+		var pattern: AttackPattern = state_data.behavior.attack_patterns.pick_random()
+		_minion.attack_timer.wait_time = pattern.cooldown
+		_minion.attack_timer.start()
+		
+		if is_instance_valid(pattern.logic):
+			var attack_command: Callable = pattern.logic.execute(_minion, pattern)
+			if attack_command.is_valid():
+				attack_command.call()
 
-	# --- Default Action: Execute Movement ---
+	# --- Default Action: Always Execute Movement ---
 	if is_instance_valid(state_data.behavior.movement_logic):
 		var new_velocity: Vector2 = state_data.behavior.movement_logic.execute(
 			delta, _minion, state_data
 		)
 		_minion.velocity = new_velocity
 
+
+=====================================
+FILE: ./src/entities/minions/states/state_minion_melee.gd
+=====================================
+# src/entities/minions/states/state_minion_melee.gd
+## A state that triggers a minion's melee attack.
+class_name MinionStateMelee
+extends BaseState
+
+# --- Constants ---
+const LancerPokeData = preload("res://src/data/combat/attacks/lancer_poke.tres")
+
+# --- Private Member Variables ---
+var _melee_component: MeleeComponent
+var _minion: Minion
+
+
+func enter(_msg := {}) -> void:
+	self._minion = owner as Minion
+	_minion.velocity = Vector2.ZERO
+	_melee_component = _minion.get_component(MeleeComponent)
+	
+	if not is_instance_valid(_melee_component):
+		push_error("MinionStateMelee requires a MeleeComponent on the owner. Aborting.")
+		state_machine.change_state(Identifiers.MinionStates.IDLE)
+		return
+	
+	_melee_component.attack_finished.connect(_on_attack_finished, CONNECT_ONE_SHOT)
+	_melee_component.perform_attack(LancerPokeData)
+
+
+func exit() -> void:
+	if is_instance_valid(_melee_component) and _melee_component.attack_finished.is_connected(_on_attack_finished):
+		_melee_component.attack_finished.disconnect(_on_attack_finished)
+
+
+func process_physics(_delta: float) -> void:
+	# If the player leaves the melee zone during the attack, immediately go back to patrolling.
+	if not state_data.is_player_in_melee_range:
+		state_machine.change_state("patrol")
+		return
+
+
+# --- Signal Handlers ---
+func _on_attack_finished() -> void:
+	if state_machine.current_state == self:
+		var attack_data = _melee_component._current_attack_data
+		if is_instance_valid(attack_data) and is_instance_valid(_minion.attack_timer):
+			# Use a generic cooldown for minions for now.
+			_minion.attack_timer.wait_time = 2.0 
+			_minion.attack_timer.start()
+		
+		state_machine.change_state(Identifiers.MinionStates.IDLE)
+
+=====================================
+FILE: ./src/entities/minions/states/state_minion_idle.gd
+=====================================
+# src/entities/minions/states/state_minion_idle.gd
+## The default "thinking" state for a minion. It decides what action to take next.
+class_name MinionStateIdle
+extends BaseState
+
+var _minion: Minion
+
+func enter(_msg := {}) -> void:
+	self._minion = owner as Minion
+	# An idle minion does not move.
+	_minion.velocity = Vector2.ZERO
+
+
+func process_physics(_delta: float) -> void:
+	if not is_instance_valid(_minion):
+		return
+
+	# --- State Transition Checks (Prioritized) ---
+
+	# 1. Check for melee attack conditions.
+	if state_data.is_player_in_melee_range and _minion.attack_timer.is_stopped():
+		state_machine.change_state("melee")
+		return
+
+	# 2. Check for ranged attack conditions.
+	if state_data.is_player_in_range and _minion.attack_timer.is_stopped():
+		if not state_data.behavior.attack_patterns.is_empty():
+			state_machine.change_state(Identifiers.MinionStates.ATTACK, {"pattern": state_data.behavior.attack_patterns.pick_random()})
+			return
+
+	# 3. If no other action is taken, start patrolling.
+	if _minion.attack_timer.is_stopped():
+		state_machine.change_state("patrol")
+		return
+
 =====================================
 FILE: ./src/entities/minions/patrolling_lancer.tscn
 =====================================
-[gd_scene load_steps=9 format=3 uid="uid://c0mbo7v80afg1"]
+[gd_scene load_steps=10 format=3 uid="uid://c0mbo7v80afg1"]
 
 [ext_resource type="Script" uid="uid://4xepmjomesfc" path="res://src/entities/minions/minion.gd" id="1_minion_script"]
 [ext_resource type="Resource" path="res://src/data/effects/entity_hit_flash_effect.tres" id="2_hit_flash"]
-[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="3_hit_spark_effect"]
-[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="4_archetype"]
-[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="5_dissolve_effect"]
-[ext_resource type="Resource" uid="uid://d2b4w7h1qxy5c" path="res://src/entities/minions/data/patrolling_lancer_behavior.tres" id="6_lancer_behavior"]
+[ext_resource type="PackedScene" path="res://src/entities/components/melee_component.tscn" id="3_melee_component"]
+[ext_resource type="Resource" path="res://src/core/data/effects/player_hit_spark_effect.tres" id="4_hit_spark_effect"]
+[ext_resource type="Resource" path="res://src/entities/archetypes/minion_archetype.tres" id="5_archetype"]
+[ext_resource type="Resource" uid="uid://bps1fb52qcel8" path="res://src/core/data/effects/dissolve_effect.tres" id="6_dissolve_effect"]
+[ext_resource type="Resource" uid="uid://d2b4w7h1qxy5c" path="res://src/entities/minions/data/patrolling_lancer_behavior.tres" id="7_lancer_behavior"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_minionbody"]
 size = Vector2(50, 50)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_rangedetector"]
-radius = 400.0
+[sub_resource type="CircleShape2D" id="CircleShape2D_meleetrigger"]
+radius = 90.0
 
 [node name="PatrollingLancer" type="CharacterBody2D" groups=["enemy"]]
 collision_layer = 4
-collision_mask = 131
+collision_mask = 129
 script = ExtResource("1_minion_script")
-behavior = ExtResource("6_lancer_behavior")
+behavior = ExtResource("7_lancer_behavior")
 hit_flash_effect = ExtResource("2_hit_flash")
-hit_spark_effect = ExtResource("3_hit_spark_effect")
-dissolve_effect = ExtResource("5_dissolve_effect")
-archetype = ExtResource("4_archetype")
+hit_spark_effect = ExtResource("4_hit_spark_effect")
+dissolve_effect = ExtResource("6_dissolve_effect")
+archetype = ExtResource("5_archetype")
 
 [node name="Visual" type="Polygon2D" parent="."]
 color = Color(0.9, 0.4, 0.4, 1)
@@ -11048,13 +11219,23 @@ shape = SubResource("RectangleShape2D_minionbody")
 one_shot = true
 
 [node name="RangeDetector" type="Area2D" parent="."]
-collision_layer = 0
+collision_layer = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="RangeDetector"]
-shape = SubResource("CircleShape2D_rangedetector")
+shape = SubResource("CircleShape2D_meleetrigger")
+
+[node name="MeleeRangeDetector" type="Area2D" parent="."]
+collision_layer = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeRangeDetector"]
+shape = SubResource("CircleShape2D_meleetrigger")
+
+[node name="MeleeComponent" parent="." instance=ExtResource("3_melee_component")]
 
 [connection signal="body_entered" from="RangeDetector" to="." method="_on_range_detector_body_entered"]
 [connection signal="body_exited" from="RangeDetector" to="." method="_on_range_detector_body_exited"]
+[connection signal="body_entered" from="MeleeRangeDetector" to="." method="_on_melee_range_detector_body_entered"]
+[connection signal="body_exited" from="MeleeRangeDetector" to="." method="_on_melee_range_detector_body_exited"]
 
 
 =====================================
@@ -11146,7 +11327,7 @@ FILE: ./src/entities/minions/data/patrolling_lancer_behavior.tres
 [resource]
 script = ExtResource("1_script")
 max_health = 5
-initial_state_key = &"fall"
+initial_state_key = &"patrol"
 is_anchored = false
 movement_logic = ExtResource("2_movement")
 detection_radius = 400.0

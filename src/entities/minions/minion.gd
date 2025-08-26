@@ -39,12 +39,17 @@ func _ready() -> void:
 	EntityBuilder.build(self)
 
 
-func _physics_process(_delta: float) -> void:
-	if not _is_dead:
-		move_and_slide()
+func _physics_process(delta: float) -> void:
+	if _is_dead or not is_instance_valid(entity_data):
+		return
+	
+	if not is_on_floor():
+		velocity.y += entity_data.services.combat_config.gravity * delta
+		
+	move_and_slide()
 
-		if is_instance_valid(entity_data) and entity_data.behavior.is_anchored:
-			velocity = Vector2.ZERO
+	if entity_data.behavior.is_anchored:
+		velocity = Vector2.ZERO
 
 
 func _notification(what: int) -> void:
@@ -61,6 +66,11 @@ func teardown() -> void:
 
 	super.teardown()
 	entity_data = null
+
+
+## A public method for states to request the minion updates its facing direction.
+func update_player_tracking() -> void:
+	_update_player_tracking()
 
 
 func deactivate() -> void:
@@ -120,17 +130,23 @@ func _update_player_tracking() -> void:
 
 # --- Signal Handlers ---
 func _on_range_detector_body_entered(body: Node) -> void:
-	if not entity_data:
-		return
-	if body.is_in_group(Identifiers.Groups.PLAYER):
+	if is_instance_valid(entity_data) and body is Player:
 		entity_data.is_player_in_range = true
 
 
 func _on_range_detector_body_exited(body: Node) -> void:
-	if not entity_data:
-		return
-	if body.is_in_group(Identifiers.Groups.PLAYER):
+	if is_instance_valid(entity_data) and body is Player:
 		entity_data.is_player_in_range = false
+
+
+func _on_melee_range_detector_body_entered(body: Node) -> void:
+	if is_instance_valid(entity_data) and body is Player:
+		entity_data.is_player_in_melee_range = true
+
+
+func _on_melee_range_detector_body_exited(body: Node) -> void:
+	if is_instance_valid(entity_data) and body is Player:
+		entity_data.is_player_in_melee_range = false
 
 
 func _on_health_component_died() -> void:

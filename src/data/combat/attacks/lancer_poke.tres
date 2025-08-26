@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MeleeAttackData" load_steps=3 format=3 uid="uid://c1x2y304a5b6c"]
+
+[ext_resource type="Script" uid="uid://yas33ux44jbi" path="res://src/api/combat/melee_attack_data.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lancerpoke"]
+size = Vector2(80, 20)
+
+[resource]
+script = ExtResource("1_script")
+shape = SubResource("RectangleShape2D_lancerpoke")
+offset = Vector2(65, 0)
+damage_amount = 1
+duration = 0.15
+telegraph_duration = 0.3
+hit_stop_duration = 0.03

@@ -8,7 +8,7 @@
 [resource]
 script = ExtResource("1_script")
 max_health = 5
-initial_state_key = &"fall"
+initial_state_key = &"patrol"
 is_anchored = false
 movement_logic = ExtResource("2_movement")
 detection_radius = 400.0

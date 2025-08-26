@@ -14,3 +14,4 @@ const ENEMY_PROJECTILE = 16  # Layer 5
 const PLAYER_HITBOX = 32  # Layer 6
 const PLAYER_HURTBOX = 64  # Layer 7
 const SOLID_WORLD = 128  # Layer 8
+const HITBOX = 256 # Layer 9

@@ -18,7 +18,7 @@ var _current_state_key
 
 
 func _ready() -> void:
-	process_priority = 0
+	process_priority = -10
 
 
 func _notification(what: int) -> void:
@@ -84,3 +84,7 @@ func change_state(new_state_key, msg := {}) -> void:
 	state_history.push_front(state_name)
 	if state_history.size() > MAX_HISTORY_SIZE:
 		state_history.pop_back()
+
+
+func get_current_state_key() -> StringName:
+	return _current_state_key

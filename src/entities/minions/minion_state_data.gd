@@ -18,6 +18,7 @@ var projectile_pool_key: StringName = &""
 
 # --- Targeting ---
 var is_player_in_range: bool = false
+var is_player_in_melee_range: bool = false
 
 # --- Physics & Movement ---
 var facing_direction: float = -1.0

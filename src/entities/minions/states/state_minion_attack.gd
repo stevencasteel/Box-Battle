@@ -62,4 +62,5 @@ func _start_telegraph_and_attack() -> void:
 	if state_machine.current_state == self:
 		_minion.attack_timer.wait_time = _current_pattern.cooldown
 		_minion.attack_timer.start()
-		state_machine.change_state(Identifiers.MinionStates.IDLE)
+		# Return to patrol so the minion moves during its attack cooldown.
+		state_machine.change_state("patrol")
