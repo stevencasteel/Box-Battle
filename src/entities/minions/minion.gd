@@ -43,13 +43,11 @@ func _physics_process(delta: float) -> void:
 	if _is_dead or not is_instance_valid(entity_data):
 		return
 	
-	if not is_on_floor():
+	# Only apply gravity if the entity is not anchored (i.e., it's a ground unit).
+	if not entity_data.behavior.is_anchored and not is_on_floor():
 		velocity.y += entity_data.services.combat_config.gravity * delta
 		
 	move_and_slide()
-
-	if entity_data.behavior.is_anchored:
-		velocity = Vector2.ZERO
 
 
 func _notification(what: int) -> void:

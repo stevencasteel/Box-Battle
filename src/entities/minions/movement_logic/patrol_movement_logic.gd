@@ -7,15 +7,12 @@ extends MovementLogic
 
 ## Moves the minion horizontally, applying gravity, and reverses on wall collision.
 func execute(delta: float, minion: Minion, state_data: MinionStateData) -> Vector2:
-	var new_velocity := Vector2.ZERO
-	# Preserve vertical momentum for gravity, but reset horizontal.
-	new_velocity.y = minion.velocity.y
+	var new_velocity := minion.velocity
 
+	# This logic is now responsible for applying gravity to itself.
 	if not minion.is_on_floor():
 		new_velocity.y += state_data.services.combat_config.gravity * delta
-	else:
-		new_velocity.y += 10 # Apply a small downward force to stick to slopes.
-
+	
 	if minion.is_on_wall():
 		state_data.facing_direction *= -1.0
 

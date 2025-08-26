@@ -8,7 +8,7 @@ class_name LevelLayout
 extends Resource
 
 # --- Editor Properties ---
-@export var terrain_data: PackedStringArray = []:
+@export var terrain_data: Array[String] = []:
 	set(value):
 		terrain_data = value
 		# Tell the editor to refresh its property list, which re-runs the warning check.

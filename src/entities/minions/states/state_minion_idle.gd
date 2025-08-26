@@ -5,6 +5,7 @@ extends BaseState
 
 var _minion: Minion
 
+
 func enter(_msg := {}) -> void:
 	self._minion = owner as Minion
 	# An idle minion does not move.
@@ -17,10 +18,12 @@ func process_physics(_delta: float) -> void:
 
 	# --- State Transition Checks (Prioritized) ---
 
-	# 1. Check for melee attack conditions.
+	# 1. Check for melee attack conditions, but only if the minion has that capability.
 	if state_data.is_player_in_melee_range and _minion.attack_timer.is_stopped():
-		state_machine.change_state("melee")
-		return
+		# This check prevents minions without melee (like the Turret) from erroring.
+		if _minion.get_component(MeleeComponent):
+			state_machine.change_state("melee")
+			return
 
 	# 2. Check for ranged attack conditions.
 	if state_data.is_player_in_range and _minion.attack_timer.is_stopped():

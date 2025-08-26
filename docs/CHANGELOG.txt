@@ -24,6 +24,29 @@
 
 
 
+feat(ai): Implement minion melee and add flying patroller
+
+Upgraded minion AI by adding a reactive melee attack to the Patrolling Lancer and introducing a new Flying Patroller enemy type. This was achieved by refactoring the minion state machine to better handle different movement and attack behaviors.
+
+- Minion AI Refactor:
+  - The base `minion.gd` script now delegates all movement and gravity logic to `MovementLogic` resources, mirroring the more robust boss architecture. States now have full control over movement, fixing bugs where minions would move when they should be stationary.
+  - The minion state machine was restructured with a new `StateMinionPatrol` to handle simultaneous movement and ranged firing, while `StateMinionIdle` now acts as a pure decision-making state.
+
+- Patrolling Lancer Melee:
+  - The lancer now has a `MeleeRangeDetector` and uses the `MeleeComponent`. It will instantly interrupt its patrol to perform a high-priority melee attack if the player enters its close-range zone.
+  - Fixed logic to ensure the lancer immediately resumes patrolling once the player leaves its melee range, making its behavior more responsive.
+
+- New Flying Patroller Minion:
+  - Created a new `FlyingPatrolMovementLogic` for gravity-immune, kinematic movement between defined waypoints.
+  - Added the `flying_patroller.tscn` scene and its corresponding behavior resource, which now patrols a set vertical path in the arena.
+
+- Workflow Improvements:
+  - Updated `level_layout.gd` to use `Array[String]`, making the `.tres` level file human-readable with multi-line formatting.
+  - Established a clear, zero-based (X, Y) grid coordinate system for all future spatial communication and waypoint logic.
+
+
+
+
 refactor(ai): Refine minion state logic for immediate patrol resumption
 
 Fine-tuned the Patrolling Lancer's state machine logic to eliminate a pause that occurred after a melee attack.
@@ -38,23 +61,23 @@ feat(combat): Add melee attack system to boss and minions
 
 Implemented a new data-driven melee attack system and extended it to both the boss and the patrolling lancer minion, creating more dynamic and reactive enemy AI.
 
-- **New Melee System:**
+- New Melee System:
   - Created a reusable `MeleeComponent` to handle all hitbox activation, timing, and collision logic for melee attacks.
   - Introduced a `MeleeAttackData` resource to define attack properties (shape, damage, duration, telegraph) in data, decoupling design from code.
 
-- **Boss Enhancements:**
+- Boss Enhancements:
   - Added a `CloseRangeDetector` Area2D.
   - The boss now performs an immediate, high-priority melee swipe if the player enters its close range while it's patrolling.
   - The boss now performs a powerful melee follow-up attack after completing its lunge.
   - Added telegraph visuals for all melee attacks.
 
-- **Minion AI Refactor:**
+- Minion AI Refactor:
   - Refactored the minion state machine to emulate the more robust boss architecture, where states have full control over movement.
   - Created a new `StateMinionPatrol` to handle simultaneous movement and ranged attacks.
   - `StateMinionIdle` is now a pure decision-making state.
   - Added a `MeleeRangeDetector` to the Patrolling Lancer, allowing it to perform an instant melee attack that interrupts its patrol.
 
-- **Architectural Improvements:**
+- Architectural Improvements:
   - Added a dedicated "hitbox" physics layer to prevent entities from colliding with their own attack areas.
   - Resolved a complex execution order bug by giving the state machine a higher `process_priority`, ensuring AI logic runs before physics are applied.
 
